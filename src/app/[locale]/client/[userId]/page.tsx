@@ -3,11 +3,22 @@
 import { useMemo } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useLiveQuery } from "dexie-react-hooks";
+import db from "@/db";
 import { useWorkouts } from "@/hooks/useWorkouts";
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
+import { useReadiness, readinessScore } from "@/hooks/useReadiness";
+import { useNutritionForDate, sumMacros } from "@/hooks/useNutrition";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, TrendingUp, CheckCircle } from "lucide-react";
+import { Calendar, TrendingUp, CheckCircle, HeartPulse, Apple } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+function scoreColor(s: number) {
+  if (s >= 75) return "text-green-600";
+  if (s >= 50) return "text-amber-600";
+  return "text-rose-600";
+}
 
 export default function ClientDetailPage() {
   const t = useTranslations("teams");
@@ -15,8 +26,21 @@ export default function ClientDetailPage() {
   const params = useParams();
   const userId = params.userId as string;
 
+  const tr = useTranslations("readiness");
+  const tn = useTranslations("nutrition");
+
   const workouts = useWorkouts(userId);
   const sets = useAllWorkoutSets(userId);
+  const readiness = useReadiness(userId);
+  const today = new Date().toISOString().split("T")[0];
+  const nutritionToday = useNutritionForDate(today, userId);
+  const macros = sumMacros(nutritionToday);
+
+  const clientProfile = useLiveQuery(
+    async () => (await db.athleteProfiles.toArray()).find((p) => !p.deletedAt && p.userId === userId),
+    [userId]
+  );
+  const targets = clientProfile?.nutritionTargets;
 
   const workoutDate = useMemo(() => new Map(workouts.map((w) => [w.id, w.date])), [workouts]);
 
@@ -62,6 +86,67 @@ export default function ClientDetailPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Readiness */}
+        {readiness.length > 0 && (
+          <section className="space-y-2">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+              <HeartPulse className="h-4 w-4 text-rose-500" /> {tr("title")}
+            </h2>
+            <Card>
+              <CardContent className="flex items-end gap-1.5 py-3">
+                {readiness.slice(0, 14).reverse().map((r) => {
+                  const s = readinessScore(r) ?? 0;
+                  return (
+                    <div key={r.id} className="flex flex-1 flex-col items-center gap-1" title={`${r.date}: ${s}`}>
+                      <div className="flex h-20 w-full items-end">
+                        <div
+                          className={cn(
+                            "w-full rounded-sm",
+                            s >= 75 ? "bg-green-500" : s >= 50 ? "bg-amber-500" : "bg-rose-500"
+                          )}
+                          style={{ height: `${Math.max(6, s)}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+            {readiness[0] && (
+              <p className="text-xs text-muted-foreground">
+                {tr("score")}: <span className={cn("font-semibold", scoreColor(readinessScore(readiness[0]) ?? 0))}>
+                  {readinessScore(readiness[0]) ?? "–"}/100
+                </span> · {readiness[0].date}
+              </p>
+            )}
+          </section>
+        )}
+
+        {/* Nutrition (today) */}
+        {nutritionToday.length > 0 && (
+          <section className="space-y-2">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+              <Apple className="h-4 w-4 text-emerald-500" /> {tn("title")} · {tn("today")}
+            </h2>
+            <Card>
+              <CardContent className="grid grid-cols-4 gap-2 py-3 text-center">
+                {[
+                  { label: tn("calories"), val: macros.calories, tgt: targets?.calories },
+                  { label: tn("protein"), val: macros.protein, tgt: targets?.protein },
+                  { label: tn("carbs"), val: macros.carbs, tgt: targets?.carbs },
+                  { label: tn("fat"), val: macros.fat, tgt: targets?.fat },
+                ].map((m) => (
+                  <div key={m.label}>
+                    <p className="text-sm font-bold">{Math.round(m.val)}</p>
+                    {m.tgt ? <p className="text-[10px] text-muted-foreground">/ {m.tgt}</p> : null}
+                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{m.label}</p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </section>
+        )}
 
         <section className="space-y-2">
           <h2 className="text-sm font-semibold text-muted-foreground">{tp("title")}</h2>
