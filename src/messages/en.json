@@ -191,5 +191,30 @@
     "deleteAccountConfirm": "Type DELETE to confirm.",
     "deleteAccountConfirmWord": "DELETE",
     "deleteAccountSuccess": "Account deleted. Goodbye."
+  },
+  "programs": {
+    "title": "Programs",
+    "create": "New program",
+    "untitled": "Untitled program",
+    "day": "Day",
+    "days": "days",
+    "assignedToMe": "Assigned to me",
+    "myPrograms": "My programs",
+    "noPrograms": "No programs yet. Create one to plan your training.",
+    "assigned": "assigned",
+    "edit": "Edit program",
+    "name": "Program name",
+    "description": "Description",
+    "assignTo": "Assign to client",
+    "notAssigned": "Not assigned (personal)",
+    "assign": "Assign",
+    "sets": "Sets",
+    "reps": "Reps",
+    "rest": "Rest (s)",
+    "addExercise": "Add exercise",
+    "addDay": "Add day",
+    "deleteProgram": "Delete program",
+    "save": "Save",
+    "noClients": "No clients yet. Invite some from Teams."
   }
 }

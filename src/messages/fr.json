@@ -191,5 +191,30 @@
     "deleteAccountConfirm": "Tapez SUPPRIMER pour confirmer.",
     "deleteAccountConfirmWord": "SUPPRIMER",
     "deleteAccountSuccess": "Compte supprimé. Au revoir."
+  },
+  "programs": {
+    "title": "Programmes",
+    "create": "Nouveau programme",
+    "untitled": "Programme sans titre",
+    "day": "Jour",
+    "days": "jours",
+    "assignedToMe": "Qui me sont assignés",
+    "myPrograms": "Mes programmes",
+    "noPrograms": "Aucun programme. Créez-en un pour planifier vos entraînements.",
+    "assigned": "assigné",
+    "edit": "Modifier le programme",
+    "name": "Nom du programme",
+    "description": "Description",
+    "assignTo": "Assigner à un client",
+    "notAssigned": "Non assigné (personnel)",
+    "assign": "Assigner",
+    "sets": "Séries",
+    "reps": "Répétitions",
+    "rest": "Repos (s)",
+    "addExercise": "Ajouter un exercice",
+    "addDay": "Ajouter un jour",
+    "deleteProgram": "Supprimer le programme",
+    "save": "Enregistrer",
+    "noClients": "Aucun client. Invitez-en depuis Équipes."
   }
 }

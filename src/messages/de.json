@@ -191,5 +191,30 @@
     "deleteAccountConfirm": "Tippe LÖSCHEN zum Bestätigen.",
     "deleteAccountConfirmWord": "LÖSCHEN",
     "deleteAccountSuccess": "Konto gelöscht. Auf Wiedersehen."
+  },
+  "programs": {
+    "title": "Programme",
+    "create": "Neues Programm",
+    "untitled": "Unbenanntes Programm",
+    "day": "Tag",
+    "days": "Tage",
+    "assignedToMe": "Mir zugewiesen",
+    "myPrograms": "Meine Programme",
+    "noPrograms": "Noch keine Programme. Erstelle eines, um dein Training zu planen.",
+    "assigned": "zugewiesen",
+    "edit": "Programm bearbeiten",
+    "name": "Programmname",
+    "description": "Beschreibung",
+    "assignTo": "Klient zuweisen",
+    "notAssigned": "Nicht zugewiesen (persönlich)",
+    "assign": "Zuweisen",
+    "sets": "Sätze",
+    "reps": "Wdh.",
+    "rest": "Pause (s)",
+    "addExercise": "Übung hinzufügen",
+    "addDay": "Tag hinzufügen",
+    "deleteProgram": "Programm löschen",
+    "save": "Speichern",
+    "noClients": "Noch keine Klienten. Lade welche unter Teams ein."
   }
 }

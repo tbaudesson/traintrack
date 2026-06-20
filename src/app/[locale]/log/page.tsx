@@ -8,13 +8,15 @@ import { usePrograms } from "@/hooks/usePrograms";
 import { useExercises, createCustomExercise } from "@/hooks/useExercises";
 import { addWorkoutSet } from "@/hooks/useWorkoutSets";
 import type { ProgramDay } from "@/db";
+import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Dumbbell, Calendar, ChevronRight, Loader2 } from "lucide-react";
+import { Plus, Dumbbell, Calendar, ChevronRight, Loader2, ClipboardList } from "lucide-react";
 
 export default function LogPage() {
   const t = useTranslations("log");
+  const tPrograms = useTranslations("programs");
   const router = useRouter();
   const workouts = useWorkouts();
   const programs = usePrograms();
@@ -58,7 +60,17 @@ export default function LogPage() {
 
   return (
     <>
-      <PageHeader title={t("title")} />
+      <PageHeader
+        title={t("title")}
+        actions={
+          <Link href="/programs">
+            <Button size="sm" variant="outline">
+              <ClipboardList className="mr-1 h-4 w-4" />
+              {tPrograms("title")}
+            </Button>
+          </Link>
+        }
+      />
       <div className="space-y-6 p-4 pb-24">
         <Button className="w-full" onClick={startEmpty} disabled={busy}>
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="mr-1 h-4 w-4" />{t("newWorkout")}</>}
