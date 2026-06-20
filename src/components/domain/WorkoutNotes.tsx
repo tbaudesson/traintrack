@@ -39,7 +39,7 @@ export function WorkoutNotes({ workoutId }: { workoutId: number }) {
         return (
           <div key={n.id} className="rounded-lg bg-muted/50 px-3 py-2 text-sm">
             <div className="mb-0.5 flex items-center gap-2">
-              <span className="text-xs font-medium text-indigo-600">{n.authorName ?? "—"}</span>
+              <span className="text-xs font-medium text-accent-600">{n.authorName ?? "—"}</span>
               <span className="text-[10px] text-muted-foreground">{n.createdAt.split("T")[0]}</span>
               {mine && n.id && (
                 <button

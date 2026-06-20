@@ -372,5 +372,15 @@
     "b_readiness_week": "7 Form-Check-ins",
     "b_nutrition_week": "7 Ernährungstage",
     "b_level_5": "Level 5 erreicht"
+  },
+  "appearance": {
+    "section": "Darstellung",
+    "mode": "Design",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "system": "System",
+    "accent": "Akzentfarbe",
+    "navSection": "Untere Navigation",
+    "navDesc": "Wähle bis zu 5 Tabs für die untere Leiste."
   }
 }

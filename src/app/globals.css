@@ -29,6 +29,18 @@
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
+  /* Themeable brand accent scale (text-accent-500, bg-accent-600, …) */
+  --color-accent-50: var(--accent-50);
+  --color-accent-100: var(--accent-100);
+  --color-accent-200: var(--accent-200);
+  --color-accent-300: var(--accent-300);
+  --color-accent-400: var(--accent-400);
+  --color-accent-500: var(--accent-500);
+  --color-accent-600: var(--accent-600);
+  --color-accent-700: var(--accent-700);
+  --color-accent-800: var(--accent-800);
+  --color-accent-900: var(--accent-900);
+  --color-accent-950: var(--accent-950);
   --color-muted-foreground: var(--muted-foreground);
   --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -81,6 +93,19 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Default accent: Indigo */
+  --accent-50: #eef2ff;
+  --accent-100: #e0e7ff;
+  --accent-200: #c7d2fe;
+  --accent-300: #a5b4fc;
+  --accent-400: #818cf8;
+  --accent-500: #6366f1;
+  --accent-600: #4f46e5;
+  --accent-700: #4338ca;
+  --accent-800: #3730a3;
+  --accent-900: #312e81;
+  --accent-950: #1e1b4b;
 }
 
 .dark {
@@ -135,141 +160,32 @@
   }
 }
 
-/* ─── Accessibility: text size scaling ────────────────────────
-   Increasing html font-size scales all rem-based Tailwind
-   classes proportionally (text, padding, gaps, heights). */
-html.text-large {
-  font-size: 19px;
-}
-html.text-extra-large {
-  font-size: 22px;
-}
-
 /* ═══════════════════════════════════════════════════════════════
-   DESIGN THEMES — 4 distinct visual styles for Rucher
+   ACCENT THEMES — swap the brand accent color app-wide.
+   A class on <html> overrides the accent-* scale.
    ═══════════════════════════════════════════════════════════════ */
 
-/* ─── CLASSIC (default amber) — no overrides needed ────────── */
-html.theme-classic { --radius: 0.625rem; }
-
-/* ─── NATURE: Warm earth tones, organic feel ───────────────── */
-html.theme-nature {
-  --radius: 1rem;
-  --background: oklch(0.98 0.005 80);
-  --card: oklch(0.99 0.003 80);
-  --border: oklch(0.88 0.02 70);
-  --muted: oklch(0.95 0.01 75);
-  --muted-foreground: oklch(0.45 0.03 60);
+html.accent-emerald {
+  --accent-50: #ecfdf5; --accent-100: #d1fae5; --accent-200: #a7f3d0;
+  --accent-300: #6ee7b7; --accent-400: #34d399; --accent-500: #10b981;
+  --accent-600: #059669; --accent-700: #047857; --accent-800: #065f46;
+  --accent-900: #064e3b; --accent-950: #022c22;
 }
-html.theme-nature.dark {
-  --background: oklch(0.16 0.01 60);
-  --card: oklch(0.2 0.01 60);
-  --border: oklch(0.3 0.02 60);
+html.accent-rose {
+  --accent-50: #fff1f2; --accent-100: #ffe4e6; --accent-200: #fecdd3;
+  --accent-300: #fda4af; --accent-400: #fb7185; --accent-500: #f43f5e;
+  --accent-600: #e11d48; --accent-700: #be123c; --accent-800: #9f1239;
+  --accent-900: #881337; --accent-950: #4c0519;
 }
-html.theme-nature body {
-  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23a3917a' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+html.accent-amber {
+  --accent-50: #fffbeb; --accent-100: #fef3c7; --accent-200: #fde68a;
+  --accent-300: #fcd34d; --accent-400: #fbbf24; --accent-500: #f59e0b;
+  --accent-600: #d97706; --accent-700: #b45309; --accent-800: #92400e;
+  --accent-900: #78350f; --accent-950: #451a03;
 }
-html.theme-nature [class*="border-amber"] {
-  border-color: oklch(0.7 0.08 70) !important;
-}
-html.theme-nature [class*="bg-amber-500"],
-html.theme-nature [class*="bg-amber-600"] {
-  background-color: oklch(0.55 0.12 65) !important;
-}
-html.theme-nature [class*="text-amber-600"],
-html.theme-nature [class*="text-amber-500"] {
-  color: oklch(0.5 0.1 60) !important;
-}
-html.theme-nature [class*="bg-amber-50"] {
-  background-color: oklch(0.96 0.01 75) !important;
-}
-html.theme-nature [class*="bg-amber-100"] {
-  background-color: oklch(0.93 0.02 72) !important;
-}
-
-/* ─── MODERN: Clean, sharp, minimal ──────────────────────── */
-html.theme-modern {
-  --radius: 0.25rem;
-  --border: oklch(0.94 0 0);
-}
-html.theme-modern.dark { --border: oklch(0.25 0 0); }
-html.theme-modern [class*="rounded-lg"] { border-radius: 0.375rem !important; }
-html.theme-modern [class*="rounded-full"] { border-radius: 0.375rem !important; }
-html.theme-modern [class*="border-amber"] {
-  border-color: oklch(0.92 0 0) !important;
-}
-html.theme-modern.dark [class*="border-amber"] {
-  border-color: oklch(0.25 0 0) !important;
-}
-html.theme-modern [class*="bg-amber-50"],
-html.theme-modern [class*="bg-amber-100"] {
-  background-color: oklch(0.97 0 0) !important;
-}
-html.theme-modern.dark [class*="bg-amber-50"],
-html.theme-modern.dark [class*="bg-amber-100"] {
-  background-color: oklch(0.2 0 0) !important;
-}
-html.theme-modern [class*="bg-amber-500"] {
-  background-color: oklch(0.25 0 0) !important;
-}
-html.theme-modern [class*="bg-amber-600"] {
-  background-color: oklch(0.2 0 0) !important;
-}
-html.theme-modern.dark [class*="bg-amber-500"],
-html.theme-modern.dark [class*="bg-amber-600"] {
-  background-color: oklch(0.9 0 0) !important;
-  color: oklch(0.15 0 0) !important;
-}
-html.theme-modern [class*="text-amber-600"],
-html.theme-modern [class*="text-amber-500"] {
-  color: oklch(0.3 0 0) !important;
-}
-html.theme-modern.dark [class*="text-amber-600"],
-html.theme-modern.dark [class*="text-amber-500"] {
-  color: oklch(0.85 0 0) !important;
-}
-html.theme-modern body { letter-spacing: -0.01em; }
-html.theme-modern h1, html.theme-modern h2 {
-  font-weight: 800 !important;
-  letter-spacing: -0.03em;
-}
-
-/* ─── PLAYFUL: Bold colors, rounded, fun ─────────────────── */
-html.theme-playful { --radius: 1.25rem; }
-html.theme-playful [class*="rounded-lg"] { border-radius: 1rem !important; }
-html.theme-playful [class*="rounded-full"] { border-radius: 9999px !important; }
-html.theme-playful [class*="border-amber"] {
-  border-color: transparent !important;
-  box-shadow: 0 2px 8px oklch(0.65 0.15 70 / 0.2) !important;
-}
-html.theme-playful [class*="bg-amber-500"] {
-  background: linear-gradient(135deg, oklch(0.7 0.18 70), oklch(0.65 0.18 50)) !important;
-}
-html.theme-playful [class*="bg-amber-600"] {
-  background: linear-gradient(135deg, oklch(0.65 0.18 70), oklch(0.6 0.18 50)) !important;
-}
-html.theme-playful [class*="text-amber-600"],
-html.theme-playful [class*="text-amber-500"] {
-  color: oklch(0.55 0.18 60) !important;
-}
-html.theme-playful [class*="bg-amber-50"] {
-  background-color: oklch(0.97 0.02 70) !important;
-}
-html.theme-playful [class*="bg-amber-100"] {
-  background: linear-gradient(135deg, oklch(0.95 0.03 65), oklch(0.96 0.02 80)) !important;
-}
-html.theme-playful body {
-  background: linear-gradient(180deg, oklch(0.98 0.01 70) 0%, oklch(0.97 0.005 50) 100%) !important;
-  background-attachment: fixed !important;
-}
-html.theme-playful.dark body {
-  background: linear-gradient(180deg, oklch(0.15 0.02 70) 0%, oklch(0.13 0.01 50) 100%) !important;
-  background-attachment: fixed !important;
-}
-html.theme-playful h1 {
-  background: linear-gradient(135deg, oklch(0.6 0.2 60), oklch(0.5 0.15 30));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: 800 !important;
+html.accent-slate {
+  --accent-50: #f8fafc; --accent-100: #f1f5f9; --accent-200: #e2e8f0;
+  --accent-300: #cbd5e1; --accent-400: #94a3b8; --accent-500: #64748b;
+  --accent-600: #475569; --accent-700: #334155; --accent-800: #1e293b;
+  --accent-900: #0f172a; --accent-950: #020617;
 }

@@ -22,7 +22,7 @@ export default function MorePage() {
     ...(hasFeature("readiness")
       ? [{ href: "/readiness", icon: HeartPulse, label: t("readiness"), color: "text-rose-500" }]
       : []),
-    { href: "/exercises", icon: ListChecks, label: t("exercises"), color: "text-indigo-500" },
+    { href: "/exercises", icon: ListChecks, label: t("exercises"), color: "text-accent-500" },
     { href: "/programs", icon: ClipboardList, label: t("programs"), color: "text-violet-500" },
     { href: "/teams", icon: Users, label: t("teams"), color: "text-emerald-500" },
     { href: "/settings", icon: Settings, label: t("settings"), color: "text-muted-foreground" },

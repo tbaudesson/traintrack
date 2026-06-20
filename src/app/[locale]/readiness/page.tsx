@@ -44,7 +44,7 @@ function Scale({
                 active
                   ? invert
                     ? "border-rose-500 bg-rose-500 text-white"
-                    : "border-indigo-500 bg-indigo-500 text-white"
+                    : "border-accent-500 bg-accent-500 text-white"
                   : "border-border text-muted-foreground hover:bg-accent"
               )}
             >

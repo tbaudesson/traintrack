@@ -39,7 +39,7 @@ export default function ProfilePage() {
         <Card className="overflow-hidden">
           <CardContent className="py-5">
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-2xl font-bold text-white">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-500 to-violet-600 text-2xl font-bold text-white">
                 {g.level}
               </div>
               <div className="flex-1">
@@ -49,7 +49,7 @@ export default function ProfilePage() {
                 </p>
                 <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500"
+                    className="h-full rounded-full bg-gradient-to-r from-accent-500 to-violet-500"
                     style={{ width: `${g.progressPct}%` }}
                   />
                 </div>
@@ -63,7 +63,7 @@ export default function ProfilePage() {
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
-          <Stat icon={<Dumbbell className="h-5 w-5 text-indigo-500" />} value={g.totalWorkouts} label={t("workouts")} />
+          <Stat icon={<Dumbbell className="h-5 w-5 text-accent-500" />} value={g.totalWorkouts} label={t("workouts")} />
           <Stat icon={<TrendingUp className="h-5 w-5 text-emerald-500" />} value={g.totalVolume.toLocaleString()} label={t("volume")} />
           <Stat
             icon={<Flame className="h-5 w-5 text-orange-500" />}

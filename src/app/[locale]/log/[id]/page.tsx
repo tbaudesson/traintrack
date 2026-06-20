@@ -106,7 +106,7 @@ export default function SessionLoggerPage() {
             <Card key={exerciseId}>
               <CardContent className="space-y-2 py-3">
                 <div className="flex items-center gap-2">
-                  <Dumbbell className="h-4 w-4 text-indigo-500" />
+                  <Dumbbell className="h-4 w-4 text-accent-500" />
                   <h3 className="flex-1 font-semibold">{ex?.name ?? "?"}</h3>
                 </div>
 
@@ -172,7 +172,7 @@ export default function SessionLoggerPage() {
 
       {/* Rest timer */}
       {rest !== null && (
-        <div className="fixed bottom-24 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-full bg-indigo-600 px-5 py-2.5 text-white shadow-lg">
+        <div className="fixed bottom-24 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-full bg-accent-600 px-5 py-2.5 text-white shadow-lg">
           <Timer className="h-4 w-4" />
           <span className="font-mono text-lg font-semibold tabular-nums">
             {Math.floor(rest / 60)}:{String(rest % 60).padStart(2, "0")}
@@ -196,7 +196,7 @@ export default function SessionLoggerPage() {
                 onClick={() => e.id && addExercise(e.id)}
                 className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent"
               >
-                <Dumbbell className="h-4 w-4 text-indigo-500" />
+                <Dumbbell className="h-4 w-4 text-accent-500" />
                 {e.name}
               </button>
             ))}
@@ -217,7 +217,7 @@ function NumCell({ value, onChange }: { value?: number; onChange: (v: number | u
         const v = e.target.value === "" ? undefined : Number(e.target.value);
         onChange(v);
       }}
-      className="w-full rounded-md border border-border bg-transparent px-2 py-1.5 text-center text-sm outline-none focus:border-indigo-500"
+      className="w-full rounded-md border border-border bg-transparent px-2 py-1.5 text-center text-sm outline-none focus:border-accent-500"
     />
   );
 }

@@ -73,7 +73,7 @@ export default function ExercisesPage() {
                     <button
                       key={g}
                       onClick={() => setMg(g)}
-                      className={`rounded-full border px-2.5 py-1 text-xs ${mg === g ? "border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40" : "border-border text-muted-foreground"}`}
+                      className={`rounded-full border px-2.5 py-1 text-xs ${mg === g ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-950/40" : "border-border text-muted-foreground"}`}
                     >
                       {t(`mg_${g}`)}
                     </button>
@@ -103,7 +103,7 @@ export default function ExercisesPage() {
             {grouped.get(g)!.map((e) => (
               <Card key={e.id}>
                 <CardContent className="flex items-center gap-3 py-2.5">
-                  <Dumbbell className="h-4 w-4 text-indigo-500" />
+                  <Dumbbell className="h-4 w-4 text-accent-500" />
                   <span className="flex-1 text-sm font-medium">{e.name}</span>
                   {e.isCustom && (
                     <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">

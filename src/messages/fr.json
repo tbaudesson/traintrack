@@ -372,5 +372,15 @@
     "b_readiness_week": "7 check-ins forme",
     "b_nutrition_week": "7 jours de nutrition",
     "b_level_5": "Niveau 5 atteint"
+  },
+  "appearance": {
+    "section": "Apparence",
+    "mode": "Thème",
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système",
+    "accent": "Couleur d'accent",
+    "navSection": "Barre de navigation",
+    "navDesc": "Choisissez jusqu'à 5 onglets pour la barre du bas."
   }
 }

@@ -11,9 +11,20 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Download, Shield, LogOut, Trash2, Loader2, Globe, Sparkles, Check, Type, ShieldCheck } from "lucide-react";
+import { Download, Shield, LogOut, Trash2, Loader2, Globe, Sparkles, Check, Type, ShieldCheck, Palette, LayoutGrid } from "lucide-react";
 import { getApiKey, setApiKey, clearApiKey } from "@/lib/aiService";
 import { getTextSize, applyTextSize, type TextSize } from "@/lib/textSize";
+import { getMode, applyMode, getAccent, applyAccent, ACCENTS, type ThemeMode, type Accent } from "@/lib/appTheme";
+import { NAV_CATALOG, getNavItemIds, setNavItemIds, MAX_NAV_ITEMS } from "@/lib/navConfig";
+import { cn } from "@/lib/utils";
+
+const ACCENT_SWATCH: Record<Accent, string> = {
+  indigo: "#6366f1",
+  emerald: "#10b981",
+  rose: "#f43f5e",
+  amber: "#f59e0b",
+  slate: "#64748b",
+};
 
 const LOCALES = ["fr", "en", "de"] as const;
 
@@ -34,10 +45,33 @@ export default function SettingsPage() {
   const [keyIsSet, setKeyIsSet] = useState(() => !!getApiKey());
   const [keySavedFlag, setKeySavedFlag] = useState(false);
   const [textSize, setTextSize] = useState<TextSize>(() => getTextSize());
+  const [mode, setMode] = useState<ThemeMode>(() => getMode());
+  const [accent, setAccent] = useState<Accent>(() => getAccent());
+  const [navIds, setNavIds] = useState<string[]>(() => getNavItemIds());
+  const ta = useTranslations("appearance");
+  const tnav = useTranslations("nav");
 
   function chooseTextSize(s: TextSize) {
     applyTextSize(s);
     setTextSize(s);
+  }
+  function chooseMode(m: ThemeMode) {
+    applyMode(m);
+    setMode(m);
+  }
+  function chooseAccent(a: Accent) {
+    applyAccent(a);
+    setAccent(a);
+  }
+  function toggleNav(id: string) {
+    setNavIds((cur) => {
+      let next: string[];
+      if (cur.includes(id)) next = cur.filter((x) => x !== id);
+      else if (cur.length >= MAX_NAV_ITEMS) return cur;
+      else next = [...cur, id];
+      setNavItemIds(next);
+      return next;
+    });
   }
 
   function saveKey() {
@@ -78,7 +112,7 @@ export default function SettingsPage() {
               <p className="font-medium">{profile?.display_name ?? user?.email}</p>
               <p className="text-sm text-muted-foreground">{user?.email}</p>
               {profile?.role === "admin" && (
-                <span className="mt-1 inline-block rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-medium text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+                <span className="mt-1 inline-block rounded-full bg-accent-100 px-2 py-0.5 text-[10px] font-medium text-accent-700 dark:bg-accent-900/40 dark:text-accent-300">
                   admin
                 </span>
               )}
@@ -103,6 +137,87 @@ export default function SettingsPage() {
               </Button>
             ))}
           </div>
+        </section>
+
+        {/* Appearance — theme mode + accent */}
+        <section className="space-y-2">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+            <Palette className="h-4 w-4" /> {ta("section")}
+          </h2>
+          <Card>
+            <CardContent className="space-y-3 py-4">
+              <div>
+                <p className="mb-1.5 text-xs text-muted-foreground">{ta("mode")}</p>
+                <div className="flex gap-2">
+                  {(["light", "dark", "system"] as ThemeMode[]).map((m) => (
+                    <Button
+                      key={m}
+                      size="sm"
+                      variant={mode === m ? "default" : "outline"}
+                      onClick={() => chooseMode(m)}
+                      className="flex-1"
+                    >
+                      {ta(m)}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="mb-1.5 text-xs text-muted-foreground">{ta("accent")}</p>
+                <div className="flex gap-3">
+                  {ACCENTS.map((a) => (
+                    <button
+                      key={a}
+                      onClick={() => chooseAccent(a)}
+                      aria-label={a}
+                      className={cn(
+                        "h-8 w-8 rounded-full border-2 transition-transform active:scale-90",
+                        accent === a ? "border-foreground" : "border-transparent"
+                      )}
+                      style={{ backgroundColor: ACCENT_SWATCH[a] }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Bottom navigation customization */}
+        <section className="space-y-2">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+            <LayoutGrid className="h-4 w-4" /> {ta("navSection")}
+          </h2>
+          <Card>
+            <CardContent className="space-y-1 py-3">
+              <p className="pb-1 text-xs text-muted-foreground">{ta("navDesc")}</p>
+              {NAV_CATALOG.map((item) => {
+                const checked = navIds.includes(item.id);
+                const atMax = !checked && navIds.length >= MAX_NAV_ITEMS;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => toggleNav(item.id)}
+                    disabled={atMax}
+                    className={cn(
+                      "flex w-full items-center gap-2 rounded-md px-1 py-2 text-left text-sm",
+                      atMax && "opacity-40"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "flex h-5 w-5 shrink-0 items-center justify-center rounded border",
+                        checked ? "border-accent-500 bg-accent-500 text-white" : "border-gray-400"
+                      )}
+                    >
+                      {checked && <Check className="h-3.5 w-3.5" />}
+                    </span>
+                    {tnav(item.key)}
+                  </button>
+                );
+              })}
+            </CardContent>
+          </Card>
         </section>
 
         {/* Accessibility — text size */}
@@ -135,7 +250,7 @@ export default function SettingsPage() {
         {isAdmin && (
           <Link href="/admin" className="block">
             <Button variant="outline" className="w-full justify-start">
-              <ShieldCheck className="mr-2 h-4 w-4 text-indigo-500" />
+              <ShieldCheck className="mr-2 h-4 w-4 text-accent-500" />
               {ta11y("adminConsole")}
             </Button>
           </Link>
@@ -164,7 +279,7 @@ export default function SettingsPage() {
         {/* AI program builder key */}
         <section className="space-y-2">
           <h2 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-            <Sparkles className="h-4 w-4 text-indigo-500" /> {tai("section")}
+            <Sparkles className="h-4 w-4 text-accent-500" /> {tai("section")}
           </h2>
           <Card>
             <CardContent className="space-y-3 py-4">

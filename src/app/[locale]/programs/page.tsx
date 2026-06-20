@@ -143,8 +143,8 @@ export default function ProgramsPage() {
               <Card key={p.id}>
                 <CardContent className="py-0">
                   <button onClick={() => router.push(`/programs/${p.id}`)} className="flex w-full items-center gap-3 py-3 text-left">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
-                      <ClipboardList className="h-5 w-5 text-indigo-600" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-100 dark:bg-accent-900/30">
+                      <ClipboardList className="h-5 w-5 text-accent-600" />
                     </div>
                     <div className="flex-1">
                       <p className="font-medium">{p.name}</p>
@@ -167,7 +167,7 @@ export default function ProgramsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-indigo-500" />
+              <Sparkles className="h-5 w-5 text-accent-500" />
               {tai("generateTitle")}
             </DialogTitle>
           </DialogHeader>

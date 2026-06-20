@@ -163,7 +163,7 @@ export default function ProgramEditorPage() {
               {day.exercises.map((ex, ei) => (
                 <div key={ei} className="rounded-lg border border-border p-2">
                   <div className="mb-2 flex items-center gap-2">
-                    <Dumbbell className="h-4 w-4 text-indigo-500" />
+                    <Dumbbell className="h-4 w-4 text-accent-500" />
                     <span className="flex-1 text-sm font-medium">{ex.exerciseName}</span>
                     <button onClick={() => removeExercise(di, ei)} className="text-muted-foreground hover:text-destructive">
                       <X className="h-4 w-4" />
@@ -232,7 +232,7 @@ export default function ProgramEditorPage() {
                 onClick={() => pickerDay !== null && addExerciseToDay(pickerDay, e.name, e.uuid)}
                 className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent"
               >
-                <Dumbbell className="h-4 w-4 text-indigo-500" />
+                <Dumbbell className="h-4 w-4 text-accent-500" />
                 {e.name}
               </button>
             ))}

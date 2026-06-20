@@ -79,7 +79,7 @@ export default function TeamsPage() {
 
       <div className="space-y-6 p-4 pb-24">
         {toast && (
-          <div className="fixed left-1/2 top-16 z-50 -translate-x-1/2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-lg">
+          <div className="fixed left-1/2 top-16 z-50 -translate-x-1/2 rounded-lg bg-accent-600 px-4 py-2 text-sm font-medium text-white shadow-lg">
             {toast}
           </div>
         )}
@@ -109,7 +109,7 @@ export default function TeamsPage() {
           <section className="space-y-2">
             <h2 className="text-sm font-semibold text-muted-foreground">{t("pendingInvites")}</h2>
             {pendingInvites.map((inv) => (
-              <Card key={inv.member_id} className="border-indigo-200 dark:border-indigo-900">
+              <Card key={inv.member_id} className="border-accent-200 dark:border-accent-900">
                 <CardContent className="flex items-center gap-3 py-3">
                   <div className="flex-1">
                     <p className="font-medium">{inv.group_name}</p>
@@ -183,8 +183,8 @@ export default function TeamsPage() {
                   .map((m) => (
                     <Card key={m.member_id}>
                       <CardContent className="flex items-center gap-3 py-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/30">
-                          <Users className="h-5 w-5 text-indigo-600" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-100 dark:bg-accent-900/30">
+                          <Users className="h-5 w-5 text-accent-600" />
                         </div>
                         <div className="flex-1">
                           <p className="font-medium">{m.group_name}</p>
@@ -260,8 +260,8 @@ function TeamCard({
     <Card>
       <CardContent className="py-3">
         <button onClick={onToggle} className="flex w-full items-center gap-3 text-left">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/30">
-            <Users className="h-5 w-5 text-indigo-600" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-100 dark:bg-accent-900/30">
+            <Users className="h-5 w-5 text-accent-600" />
           </div>
           <div className="flex-1">
             <p className="font-medium">{name}</p>

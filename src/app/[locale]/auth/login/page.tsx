@@ -53,8 +53,8 @@ export default function LoginPage() {
     <div className="flex min-h-screen flex-col items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-100 dark:bg-indigo-900/30">
-            <Dumbbell className="h-9 w-9 text-indigo-600" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-100 dark:bg-accent-900/30">
+            <Dumbbell className="h-9 w-9 text-accent-600" />
           </div>
           <h1 className="mt-4 text-2xl font-bold text-gray-900 dark:text-gray-100">
             TrainTrack
@@ -65,7 +65,7 @@ export default function LoginPage() {
         </div>
 
         {magicLinkSent ? (
-          <p className="rounded-lg bg-indigo-50 p-4 text-center text-sm text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">
+          <p className="rounded-lg bg-accent-50 p-4 text-center text-sm text-accent-700 dark:bg-accent-950/40 dark:text-accent-300">
             {t("magicLinkSent")}
           </p>
         ) : (
@@ -80,7 +80,7 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t("emailPlaceholder")}
                   required
-                  className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-3 text-sm outline-none focus:border-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+                  className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-3 text-sm outline-none focus:border-accent-500 dark:border-gray-700 dark:bg-gray-900"
                 />
               </div>
             </div>
@@ -95,7 +95,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={t("passwordPlaceholder")}
                   required
-                  className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-3 text-sm outline-none focus:border-indigo-500 dark:border-gray-700 dark:bg-gray-900"
+                  className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-3 text-sm outline-none focus:border-accent-500 dark:border-gray-700 dark:bg-gray-900"
                 />
               </div>
             </div>
@@ -122,10 +122,10 @@ export default function LoginPage() {
             </Button>
 
             <div className="flex items-center justify-between text-sm">
-              <Link href="/auth/reset" className="text-indigo-600 hover:underline">
+              <Link href="/auth/reset" className="text-accent-600 hover:underline">
                 {t("forgotPassword")}
               </Link>
-              <Link href="/auth/signup" className="text-indigo-600 hover:underline">
+              <Link href="/auth/signup" className="text-accent-600 hover:underline">
                 {t("signUp")}
               </Link>
             </div>

@@ -55,7 +55,7 @@ export default function HomePage() {
   return (
     <div className="space-y-6 p-4 pb-24">
       <div className="relative -mx-4 -mt-4 overflow-hidden px-4 pb-2 pt-6">
-        <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/5 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-accent-500/5 to-transparent" />
         <div className="relative flex items-center justify-between">
           <h1 className="text-2xl font-bold tracking-tight">{t("greeting", { name })}</h1>
           <div className="flex items-center gap-1">
@@ -76,8 +76,8 @@ export default function HomePage() {
       {needsOnboarding ? (
         <Card>
           <CardContent className="flex flex-col items-center gap-3 py-8 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/30">
-              <Dumbbell className="h-7 w-7 text-indigo-600" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-accent-100 dark:bg-accent-900/30">
+              <Dumbbell className="h-7 w-7 text-accent-600" />
             </div>
             <p className="text-sm text-muted-foreground">{t("completeProfile")}</p>
             <Link href="/onboarding">
@@ -90,7 +90,7 @@ export default function HomePage() {
           <div className="grid grid-cols-2 gap-3">
             <Card>
               <CardContent className="flex flex-col items-center gap-1 py-4">
-                <TrendingUp className="h-5 w-5 text-indigo-500" />
+                <TrendingUp className="h-5 w-5 text-accent-500" />
                 <p className="text-xl font-bold">{weeklyVolume.toLocaleString()}</p>
                 <p className="text-xs text-muted-foreground">{t("weeklyVolume")}</p>
               </CardContent>

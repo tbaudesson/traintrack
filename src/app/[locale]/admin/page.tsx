@@ -108,7 +108,7 @@ function UsersTab() {
                 {t(u.status)}
               </span>
               {u.role === "admin" && (
-                <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-medium text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+                <span className="rounded-full bg-accent-100 px-2 py-0.5 text-[10px] font-medium text-accent-700 dark:bg-accent-900/40 dark:text-accent-300">
                   {t("role_admin")}
                 </span>
               )}
@@ -224,7 +224,7 @@ function PlanCard({ plan, onChanged }: { plan: Plan; onChanged: () => void }) {
             >
               <span className={cn(
                 "flex h-4 w-4 shrink-0 items-center justify-center rounded border",
-                features.includes(f) ? "border-indigo-500 bg-indigo-500 text-white" : "border-gray-400"
+                features.includes(f) ? "border-accent-500 bg-accent-500 text-white" : "border-gray-400"
               )}>
                 {features.includes(f) && <Check className="h-3 w-3" />}
               </span>
@@ -287,7 +287,7 @@ function GdprTab() {
     <Card>
       <CardContent className="space-y-3 py-4">
         <p className="flex items-center gap-2 text-sm font-semibold">
-          <ShieldCheck className="h-4 w-4 text-indigo-500" /> {t("gdpr")}
+          <ShieldCheck className="h-4 w-4 text-accent-500" /> {t("gdpr")}
         </p>
         {field("company_name", t("companyName"))}
         {field("company_address", t("companyAddress"))}

@@ -75,7 +75,7 @@ export default function ClientDetailPage() {
           </Card>
           <Card>
             <CardContent className="flex flex-col items-center gap-1 py-4 text-center">
-              <TrendingUp className="h-5 w-5 text-indigo-500" />
+              <TrendingUp className="h-5 w-5 text-accent-500" />
               <p className="text-lg font-bold">{totalVolume.toLocaleString()}</p>
               <p className="text-[10px] text-muted-foreground">{tp("volume")}</p>
             </CardContent>
@@ -204,7 +204,7 @@ function ClientWorkoutCard({
               {date} · {setCount} {t("roster")}
             </p>
           </div>
-          <span className="text-sm font-semibold text-indigo-600">{volume}</span>
+          <span className="text-sm font-semibold text-accent-600">{volume}</span>
           {open ? (
             <ChevronUp className="h-4 w-4 text-muted-foreground" />
           ) : (

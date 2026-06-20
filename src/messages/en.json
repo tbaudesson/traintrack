@@ -372,5 +372,15 @@
     "b_readiness_week": "7 readiness check-ins",
     "b_nutrition_week": "7 nutrition days",
     "b_level_5": "Reached level 5"
+  },
+  "appearance": {
+    "section": "Appearance",
+    "mode": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "accent": "Accent color",
+    "navSection": "Bottom navigation",
+    "navDesc": "Pick up to 5 tabs for the bottom bar."
   }
 }

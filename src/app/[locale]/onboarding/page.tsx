@@ -62,7 +62,7 @@ export default function OnboardingPage() {
     cn(
       "rounded-full border px-3 py-1.5 text-sm transition-colors",
       active
-        ? "border-indigo-500 bg-indigo-50 font-medium text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300"
+        ? "border-accent-500 bg-accent-50 font-medium text-accent-700 dark:bg-accent-950/40 dark:text-accent-300"
         : "border-border text-muted-foreground hover:bg-accent"
     );
 
@@ -143,7 +143,7 @@ export default function OnboardingPage() {
         </div>
 
         {/* Consent (Art. 9) */}
-        <Card className="border-indigo-200 dark:border-indigo-900">
+        <Card className="border-accent-200 dark:border-accent-900">
           <CardContent className="py-4">
             <button
               onClick={() => setConsent((c) => !c)}
@@ -152,7 +152,7 @@ export default function OnboardingPage() {
               <span
                 className={cn(
                   "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border",
-                  consent ? "border-indigo-500 bg-indigo-500 text-white" : "border-gray-400"
+                  consent ? "border-accent-500 bg-accent-500 text-white" : "border-gray-400"
                 )}
               >
                 {consent && <Check className="h-3.5 w-3.5" />}

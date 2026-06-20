@@ -30,7 +30,7 @@ function MacroRing({ label, value, target, unit }: { label: string; value: numbe
           {target ? (
             <circle
               cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" strokeWidth="3"
-              strokeDasharray={`${pct} ${100 - pct}`} strokeLinecap="round" className="text-indigo-500"
+              strokeDasharray={`${pct} ${100 - pct}`} strokeLinecap="round" className="text-accent-500"
             />
           ) : null}
         </svg>
@@ -156,7 +156,7 @@ export default function NutritionPage() {
                   <button
                     key={m}
                     onClick={() => setMeal(m)}
-                    className={`rounded-full border px-2.5 py-1 text-xs ${meal === m ? "border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40" : "border-border text-muted-foreground"}`}
+                    className={`rounded-full border px-2.5 py-1 text-xs ${meal === m ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-950/40" : "border-border text-muted-foreground"}`}
                   >
                     {t(`meal_${m}`)}
                   </button>
