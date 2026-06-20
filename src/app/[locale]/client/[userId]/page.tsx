@@ -11,8 +11,10 @@ import { useReadiness, readinessScore } from "@/hooks/useReadiness";
 import { useNutritionForDate, sumMacros } from "@/hooks/useNutrition";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, TrendingUp, CheckCircle, HeartPulse, Apple } from "lucide-react";
+import { Calendar, TrendingUp, CheckCircle, HeartPulse, Apple, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 
 function scoreColor(s: number) {
   if (s >= 75) return "text-green-600";
@@ -153,29 +155,68 @@ export default function ClientDetailPage() {
           {workouts.length === 0 ? (
             <p className="rounded-lg bg-card/60 py-6 text-center text-sm text-muted-foreground">{tp("noData")}</p>
           ) : (
-            workouts.map((w) => {
-              const wSets = sets.filter((s) => s.workoutId === w.id);
-              const vol = wSets.reduce((a, s) => a + (s.completed && s.weightKg && s.reps ? s.weightKg * s.reps : 0), 0);
-              return (
-                <Card key={w.id}>
-                  <CardContent className="flex items-center gap-3 py-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                      <Calendar className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium">{w.title || tp("title")}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {w.date} · {wSets.length} {t("roster")}
-                      </p>
-                    </div>
-                    <span className="text-sm font-semibold text-indigo-600">{Math.round(vol)}</span>
-                  </CardContent>
-                </Card>
-              );
-            })
+            workouts.map((w) => (
+              <ClientWorkoutCard
+                key={w.id}
+                workoutId={w.id!}
+                title={w.title || tp("title")}
+                date={w.date}
+                setCount={sets.filter((s) => s.workoutId === w.id).length}
+                volume={Math.round(
+                  sets
+                    .filter((s) => s.workoutId === w.id)
+                    .reduce((a, s) => a + (s.completed && s.weightKg && s.reps ? s.weightKg * s.reps : 0), 0)
+                )}
+              />
+            ))
           )}
         </section>
       </div>
     </>
+  );
+}
+
+function ClientWorkoutCard({
+  workoutId,
+  title,
+  date,
+  setCount,
+  volume,
+}: {
+  workoutId: number;
+  title: string;
+  date: string;
+  setCount: number;
+  volume: number;
+}) {
+  const t = useTranslations("teams");
+  const [open, setOpen] = useState(false);
+  return (
+    <Card>
+      <CardContent className="py-0">
+        <button onClick={() => setOpen((v) => !v)} className="flex w-full items-center gap-3 py-3 text-left">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+            <Calendar className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <div className="flex-1">
+            <p className="font-medium">{title}</p>
+            <p className="text-xs text-muted-foreground">
+              {date} · {setCount} {t("roster")}
+            </p>
+          </div>
+          <span className="text-sm font-semibold text-indigo-600">{volume}</span>
+          {open ? (
+            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          )}
+        </button>
+        {open && (
+          <div className="border-t border-border py-3">
+            <WorkoutNotes workoutId={workoutId} />
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

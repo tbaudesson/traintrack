@@ -11,13 +11,15 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Download, Shield, LogOut, Trash2, Loader2, Globe } from "lucide-react";
+import { Download, Shield, LogOut, Trash2, Loader2, Globe, Sparkles, Check } from "lucide-react";
+import { getApiKey, setApiKey, clearApiKey } from "@/lib/aiService";
 
 const LOCALES = ["fr", "en", "de"] as const;
 
 export default function SettingsPage() {
   const t = useTranslations("settings");
   const tAuth = useTranslations("auth");
+  const tai = useTranslations("ai");
   const { user, profile, signOut } = useAuth();
   const locale = useLocale();
   const router = useRouter();
@@ -26,6 +28,22 @@ export default function SettingsPage() {
   const [confirmText, setConfirmText] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState("");
+  const [keyIsSet, setKeyIsSet] = useState(() => !!getApiKey());
+  const [keySavedFlag, setKeySavedFlag] = useState(false);
+
+  function saveKey() {
+    if (!apiKeyInput.trim()) return;
+    setApiKey(apiKeyInput.trim());
+    setApiKeyInput("");
+    setKeyIsSet(true);
+    setKeySavedFlag(true);
+    setTimeout(() => setKeySavedFlag(false), 2000);
+  }
+  function removeKey() {
+    clearApiKey();
+    setKeyIsSet(false);
+  }
 
   async function handleDelete() {
     setDeleting(true);
@@ -95,6 +113,39 @@ export default function SettingsPage() {
                   {t("privacy")}
                 </Button>
               </Link>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* AI program builder key */}
+        <section className="space-y-2">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+            <Sparkles className="h-4 w-4 text-indigo-500" /> {tai("section")}
+          </h2>
+          <Card>
+            <CardContent className="space-y-3 py-4">
+              <p className="text-xs text-muted-foreground">{tai("keyDesc")}</p>
+              {keyIsSet && (
+                <p className="flex items-center gap-1.5 text-sm text-green-600">
+                  <Check className="h-4 w-4" /> {tai("keySet")}
+                </p>
+              )}
+              <Input
+                type="password"
+                value={apiKeyInput}
+                onChange={(e) => setApiKeyInput(e.target.value)}
+                placeholder={tai("keyPlaceholder")}
+              />
+              <div className="flex gap-2">
+                <Button onClick={saveKey} disabled={!apiKeyInput.trim()} className="flex-1">
+                  {keySavedFlag ? <><Check className="mr-1 h-4 w-4" />{tai("keySaved")}</> : tai("saveKey")}
+                </Button>
+                {keyIsSet && (
+                  <Button variant="outline" onClick={removeKey}>
+                    {tai("clearKey")}
+                  </Button>
+                )}
+              </div>
             </CardContent>
           </Card>
         </section>

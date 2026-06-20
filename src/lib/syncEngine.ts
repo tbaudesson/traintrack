@@ -107,6 +107,15 @@ const TABLE_CONFIGS: TableSyncConfig[] = [
     hasUpdatedAt: true,
     trainerVisible: true,
   },
+  {
+    dexieTable: "workoutNotes",
+    supabaseTable: "workout_notes",
+    fkMappings: {
+      workoutId: { parentDexieTable: "workouts", supabaseColumn: "workout_id" },
+    },
+    hasUpdatedAt: true,
+    trainerVisible: true,
+  },
 ];
 
 // Sync order: parents first, then children
@@ -119,6 +128,7 @@ const SYNC_ORDER = [
   "bodyMetrics",
   "readinessCheckins",
   "nutritionEntries",
+  "workoutNotes",
 ];
 
 // ─── Retry with exponential backoff ───────────────────────────────────

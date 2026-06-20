@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Check, Trash2, Timer, X, Dumbbell } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 
 export default function SessionLoggerPage() {
   const t = useTranslations("log");
@@ -163,6 +164,10 @@ export default function SessionLoggerPage() {
           <Plus className="mr-1 h-4 w-4" />
           {t("addExercise")}
         </Button>
+
+        <div className="pt-2">
+          <WorkoutNotes workoutId={workoutId} />
+        </div>
       </div>
 
       {/* Rest timer */}

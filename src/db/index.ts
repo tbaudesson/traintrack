@@ -74,6 +74,15 @@ export interface ReadinessCheckin extends SyncFields {
   updatedAt: string;
 }
 
+export interface WorkoutNote extends SyncFields {
+  id?: number;
+  workoutId: number;
+  authorName?: string;
+  body: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type Meal = "breakfast" | "lunch" | "dinner" | "snack";
 
 export interface NutritionEntry extends SyncFields {
@@ -198,6 +207,7 @@ const db = new Dexie("TrainTrack") as Dexie & {
   bodyMetrics: EntityTable<BodyMetric, "id">;
   readinessCheckins: EntityTable<ReadinessCheckin, "id">;
   nutritionEntries: EntityTable<NutritionEntry, "id">;
+  workoutNotes: EntityTable<WorkoutNote, "id">;
   formDrafts: EntityTable<FormDraft, "id">;
   syncMeta: EntityTable<SyncMeta, "tableName">;
   authMeta: EntityTable<AuthMeta, "key">;
@@ -224,6 +234,21 @@ db.version(2).stores({
   bodyMetrics: "++id, date, uuid, _dirty",
   readinessCheckins: "++id, date, uuid, _dirty",
   nutritionEntries: "++id, date, uuid, _dirty",
+  formDrafts: "++id, &formKey, updatedAt",
+  syncMeta: "tableName",
+  authMeta: "&key",
+});
+
+db.version(3).stores({
+  athleteProfiles: "++id, uuid, _dirty",
+  exercises: "++id, name, muscleGroup, isCustom, uuid, _dirty",
+  programs: "++id, assignedToUserId, groupId, uuid, _dirty",
+  workouts: "++id, date, programId, uuid, _dirty",
+  workoutSets: "++id, workoutId, exerciseId, uuid, _dirty",
+  bodyMetrics: "++id, date, uuid, _dirty",
+  readinessCheckins: "++id, date, uuid, _dirty",
+  nutritionEntries: "++id, date, uuid, _dirty",
+  workoutNotes: "++id, workoutId, uuid, _dirty",
   formDrafts: "++id, &formKey, updatedAt",
   syncMeta: "tableName",
   authMeta: "&key",

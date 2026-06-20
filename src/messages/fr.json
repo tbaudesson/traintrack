@@ -271,5 +271,34 @@
     "teams": "Équipes",
     "settings": "Réglages",
     "readiness": "Forme du jour"
+  },
+  "notes": {
+    "title": "Notes",
+    "placeholder": "Ajouter une note…",
+    "add": "Ajouter"
+  },
+  "ai": {
+    "section": "Générateur IA de programmes",
+    "keyLabel": "Clé API Anthropic",
+    "keyDesc": "Stockée uniquement sur cet appareil, envoyée directement à Anthropic. Sert à générer des programmes avec Claude.",
+    "keyPlaceholder": "sk-ant-...",
+    "saveKey": "Enregistrer la clé",
+    "clearKey": "Supprimer la clé",
+    "keySaved": "Clé enregistrée",
+    "keySet": "Clé API configurée",
+    "noKey": "Aucune clé API",
+    "generate": "Générer avec l'IA",
+    "generateTitle": "Générer un programme",
+    "goal": "Objectif",
+    "daysPerWeek": "Jours par semaine",
+    "experience": "Expérience",
+    "focus": "Focus supplémentaire (optionnel)",
+    "focusPlaceholder": "ex. accent pectoraux, genoux fragiles…",
+    "generating": "Génération…",
+    "generateBtn": "Générer",
+    "needKey": "Configurez d'abord votre clé API Anthropic dans les Réglages.",
+    "errBadKey": "Clé API invalide. Vérifiez-la dans les Réglages.",
+    "errRate": "Limite Anthropic atteinte. Réessayez bientôt.",
+    "errGeneric": "Échec de la génération. Réessayez."
   }
 }

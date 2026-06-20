@@ -271,5 +271,34 @@
     "teams": "Teams",
     "settings": "Einstellungen",
     "readiness": "Tagesform"
+  },
+  "notes": {
+    "title": "Notizen",
+    "placeholder": "Notiz hinzufügen…",
+    "add": "Hinzufügen"
+  },
+  "ai": {
+    "section": "KI-Programmgenerator",
+    "keyLabel": "Anthropic API-Schlüssel",
+    "keyDesc": "Nur auf diesem Gerät gespeichert, direkt an Anthropic gesendet. Dient zur Programmerstellung mit Claude.",
+    "keyPlaceholder": "sk-ant-...",
+    "saveKey": "Schlüssel speichern",
+    "clearKey": "Schlüssel entfernen",
+    "keySaved": "Schlüssel gespeichert",
+    "keySet": "API-Schlüssel gesetzt",
+    "noKey": "Kein API-Schlüssel",
+    "generate": "Mit KI generieren",
+    "generateTitle": "Programm generieren",
+    "goal": "Ziel",
+    "daysPerWeek": "Tage pro Woche",
+    "experience": "Erfahrung",
+    "focus": "Zusätzlicher Fokus (optional)",
+    "focusPlaceholder": "z. B. Brust betonen, schlechte Knie…",
+    "generating": "Generiere…",
+    "generateBtn": "Generieren",
+    "needKey": "Lege zuerst deinen Anthropic API-Schlüssel in den Einstellungen fest.",
+    "errBadKey": "Ungültiger API-Schlüssel. Prüfe ihn in den Einstellungen.",
+    "errRate": "Anthropic-Limit erreicht. Versuche es gleich erneut.",
+    "errGeneric": "Generierung fehlgeschlagen. Erneut versuchen."
   }
 }

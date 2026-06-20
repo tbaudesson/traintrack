@@ -271,5 +271,34 @@
     "teams": "Teams",
     "settings": "Settings",
     "readiness": "Daily readiness"
+  },
+  "notes": {
+    "title": "Notes",
+    "placeholder": "Add a note…",
+    "add": "Add note"
+  },
+  "ai": {
+    "section": "AI program builder",
+    "keyLabel": "Anthropic API key",
+    "keyDesc": "Stored only on this device, sent directly to Anthropic. Used to generate programs with Claude.",
+    "keyPlaceholder": "sk-ant-...",
+    "saveKey": "Save key",
+    "clearKey": "Remove key",
+    "keySaved": "Key saved",
+    "keySet": "API key set",
+    "noKey": "No API key set",
+    "generate": "Generate with AI",
+    "generateTitle": "Generate a program",
+    "goal": "Goal",
+    "daysPerWeek": "Days per week",
+    "experience": "Experience",
+    "focus": "Extra focus (optional)",
+    "focusPlaceholder": "e.g. emphasize chest, bad knees…",
+    "generating": "Generating…",
+    "generateBtn": "Generate",
+    "needKey": "Set your Anthropic API key in Settings first.",
+    "errBadKey": "Invalid API key. Check it in Settings.",
+    "errRate": "Rate limited by Anthropic. Try again shortly.",
+    "errGeneric": "Generation failed. Try again."
   }
 }
