@@ -9,6 +9,8 @@ import {
   sumMacros,
 } from "@/hooks/useNutrition";
 import { useAthleteProfile, updateNutritionTargets } from "@/hooks/useAthleteProfile";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
+import { UpgradeNotice } from "@/components/domain/UpgradeNotice";
 import type { Meal } from "@/db";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -42,6 +44,7 @@ function MacroRing({ label, value, target, unit }: { label: string; value: numbe
 
 export default function NutritionPage() {
   const t = useTranslations("nutrition");
+  const { hasFeature } = useFeatureAccess();
   const today = new Date().toISOString().split("T")[0];
   const entries = useNutritionForDate(today);
   const profile = useAthleteProfile();
@@ -92,6 +95,15 @@ export default function NutritionPage() {
       fat: tFat ? Number(tFat) : undefined,
     });
     setEditTargets(false);
+  }
+
+  if (!hasFeature("nutrition")) {
+    return (
+      <>
+        <PageHeader title={t("title")} />
+        <UpgradeNotice />
+      </>
+    );
   }
 
   return (

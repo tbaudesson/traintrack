@@ -14,6 +14,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Loader2, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
+import { UpgradeNotice } from "@/components/domain/UpgradeNotice";
 
 function Scale({
   label,
@@ -63,6 +65,7 @@ function scoreColor(s: number) {
 
 export default function ReadinessPage() {
   const t = useTranslations("readiness");
+  const { hasFeature } = useFeatureAccess();
   const today = useTodayReadiness();
   const history = useReadiness();
 
@@ -98,6 +101,15 @@ export default function ReadinessPage() {
   const liveScore = readinessScore({ mood, energy, sleep, soreness });
   const rec =
     liveScore == null ? null : liveScore >= 75 ? t("recHigh") : liveScore >= 50 ? t("recMid") : t("recLow");
+
+  if (!hasFeature("readiness")) {
+    return (
+      <>
+        <PageHeader title={t("title")} />
+        <UpgradeNotice />
+      </>
+    );
+  }
 
   return (
     <>

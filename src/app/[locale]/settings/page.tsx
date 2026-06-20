@@ -11,8 +11,9 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Download, Shield, LogOut, Trash2, Loader2, Globe, Sparkles, Check } from "lucide-react";
+import { Download, Shield, LogOut, Trash2, Loader2, Globe, Sparkles, Check, Type, ShieldCheck } from "lucide-react";
 import { getApiKey, setApiKey, clearApiKey } from "@/lib/aiService";
+import { getTextSize, applyTextSize, type TextSize } from "@/lib/textSize";
 
 const LOCALES = ["fr", "en", "de"] as const;
 
@@ -20,7 +21,8 @@ export default function SettingsPage() {
   const t = useTranslations("settings");
   const tAuth = useTranslations("auth");
   const tai = useTranslations("ai");
-  const { user, profile, signOut } = useAuth();
+  const ta11y = useTranslations("a11y");
+  const { user, profile, signOut, isAdmin } = useAuth();
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -31,6 +33,12 @@ export default function SettingsPage() {
   const [apiKeyInput, setApiKeyInput] = useState("");
   const [keyIsSet, setKeyIsSet] = useState(() => !!getApiKey());
   const [keySavedFlag, setKeySavedFlag] = useState(false);
+  const [textSize, setTextSize] = useState<TextSize>(() => getTextSize());
+
+  function chooseTextSize(s: TextSize) {
+    applyTextSize(s);
+    setTextSize(s);
+  }
 
   function saveKey() {
     if (!apiKeyInput.trim()) return;
@@ -96,6 +104,42 @@ export default function SettingsPage() {
             ))}
           </div>
         </section>
+
+        {/* Accessibility — text size */}
+        <section className="space-y-2">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+            <Type className="h-4 w-4" /> {ta11y("section")}
+          </h2>
+          <Card>
+            <CardContent className="space-y-2 py-4">
+              <p className="text-xs text-muted-foreground">{ta11y("textSize")}</p>
+              <div className="flex gap-2">
+                {(["small", "normal", "large"] as TextSize[]).map((s) => (
+                  <Button
+                    key={s}
+                    variant={textSize === s ? "default" : "outline"}
+                    onClick={() => chooseTextSize(s)}
+                    className="flex-1"
+                  >
+                    <span className={s === "small" ? "text-xs" : s === "large" ? "text-lg" : "text-sm"}>
+                      {ta11y(s)}
+                    </span>
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Admin console (admins only) */}
+        {isAdmin && (
+          <Link href="/admin" className="block">
+            <Button variant="outline" className="w-full justify-start">
+              <ShieldCheck className="mr-2 h-4 w-4 text-indigo-500" />
+              {ta11y("adminConsole")}
+            </Button>
+          </Link>
+        )}
 
         {/* Data & privacy */}
         <section className="space-y-2">

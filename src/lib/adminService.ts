@@ -36,6 +36,89 @@ export interface Invitation {
   created_at: string;
 }
 
+// ─── Plans / licences ────────────────────────────────────────────────
+
+/** All gateable feature keys. */
+export const FEATURE_KEYS = [
+  "ai_programs",
+  "nutrition",
+  "readiness",
+  "coaching",
+  "advanced_progress",
+] as const;
+export type FeatureKey = (typeof FEATURE_KEYS)[number];
+
+export interface Plan {
+  id: string;
+  name: string;
+  description: string | null;
+  features: string[];
+  is_default: boolean;
+  sort_order: number;
+}
+
+export async function listPlans(): Promise<Plan[]> {
+  const { data, error } = await supabase
+    .from("plans")
+    .select("id,name,description,features,is_default,sort_order")
+    .order("sort_order", { ascending: true });
+  if (error) throw new Error(error.message);
+  return (data as Plan[]) ?? [];
+}
+
+export async function createPlan(p: {
+  name: string;
+  description?: string;
+  features: string[];
+}): Promise<void> {
+  const { error } = await supabase.from("plans").insert({
+    name: p.name,
+    description: p.description ?? null,
+    features: p.features,
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function updatePlan(
+  id: string,
+  fields: Partial<Pick<Plan, "name" | "description" | "features">>
+): Promise<void> {
+  const { error } = await supabase.from("plans").update(fields).eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function deletePlan(id: string): Promise<void> {
+  const { error } = await supabase.from("plans").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function adminSetUserPlan(userId: string, planId: string): Promise<void> {
+  const { error } = await supabase.rpc("admin_set_user_plan", {
+    p_user_id: userId,
+    p_plan_id: planId,
+  });
+  if (error) throw new Error(error.message);
+}
+
+// ─── App settings (GDPR config, etc.) ────────────────────────────────
+
+export async function getAppSettings(): Promise<Record<string, string>> {
+  const { data, error } = await supabase.from("app_settings").select("key,value");
+  if (error) throw new Error(error.message);
+  const out: Record<string, string> = {};
+  for (const row of (data as { key: string; value: string | null }[]) ?? []) {
+    out[row.key] = row.value ?? "";
+  }
+  return out;
+}
+
+export async function setAppSetting(key: string, value: string): Promise<void> {
+  const { error } = await supabase
+    .from("app_settings")
+    .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
+  if (error) throw new Error(error.message);
+}
+
 // ─── Account Deletion ────────────────────────────────────────────────
 
 /**

@@ -3,19 +3,22 @@
 import { useTranslations } from "next-intl";
 import { usePathname, Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { Home, Dumbbell, TrendingUp, Apple, Menu } from "lucide-react";
 
 const TABS = [
-  { id: "home", href: "/", icon: Home, key: "home" },
-  { id: "log", href: "/log", icon: Dumbbell, key: "log" },
-  { id: "nutrition", href: "/nutrition", icon: Apple, key: "nutrition" },
-  { id: "progress", href: "/progress", icon: TrendingUp, key: "progress" },
-  { id: "more", href: "/more", icon: Menu, key: "more" },
+  { id: "home", href: "/", icon: Home, key: "home", feature: null },
+  { id: "log", href: "/log", icon: Dumbbell, key: "log", feature: null },
+  { id: "nutrition", href: "/nutrition", icon: Apple, key: "nutrition", feature: "nutrition" as const },
+  { id: "progress", href: "/progress", icon: TrendingUp, key: "progress", feature: null },
+  { id: "more", href: "/more", icon: Menu, key: "more", feature: null },
 ] as const;
 
 export function BottomNav() {
   const t = useTranslations("nav");
   const pathname = usePathname();
+  const { hasFeature } = useFeatureAccess();
+  const tabs = TABS.filter((tab) => !tab.feature || hasFeature(tab.feature));
 
   return (
     <nav
@@ -24,7 +27,7 @@ export function BottomNav() {
       className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur-sm safe-area-pb dark:border-gray-800 dark:bg-gray-900/95"
     >
       <div className="mx-auto flex max-w-lg items-center justify-around">
-        {TABS.map(({ id, href, icon: Icon, key }) => {
+        {tabs.map(({ id, href, icon: Icon, key }) => {
           const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (
             <Link

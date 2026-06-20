@@ -2,15 +2,14 @@
 
 import { useLocale } from "next-intl";
 import { PageHeader } from "@/components/layout/PageHeader";
-
-// Placeholder company / DPO details — replace with your real legal entity.
-const COMPANY = "TrainTrack";
-const DPO_EMAIL = "privacy@traintrack.app";
+import { useAppSettings } from "@/hooks/useAppSettings";
 
 type Section = { h: string; p: string };
 type Doc = { title: string; updated: string; intro: string; sections: Section[] };
 
-const CONTENT: Record<string, Doc> = {
+// Company / DPO details come from admin-configured app settings.
+function buildContent(COMPANY: string, DPO_EMAIL: string): Record<string, Doc> {
+  return {
   en: {
     title: "Privacy Policy",
     updated: "Last updated: 2026-06-20",
@@ -62,11 +61,17 @@ const CONTENT: Record<string, Doc> = {
       { h: "10. Änderungen", p: "Wir informieren dich in der App über wesentliche Änderungen dieser Erklärung." },
     ],
   },
-};
+  };
+}
 
 export default function PrivacyPage() {
   const locale = useLocale();
-  const doc = CONTENT[locale] ?? CONTENT.en;
+  const settings = useAppSettings();
+  const content = buildContent(
+    settings.company_name || "TrainTrack",
+    settings.dpo_email || "privacy@traintrack.app"
+  );
+  const doc = content[locale] ?? content.en;
 
   return (
     <>

@@ -8,9 +8,10 @@ import { useAthleteProfile } from "@/hooks/useAthleteProfile";
 import { useWorkouts } from "@/hooks/useWorkouts";
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
 import { useTodayReadiness, readinessScore } from "@/hooks/useReadiness";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dumbbell, Plus, Settings, TrendingUp, Flame, HeartPulse, ChevronRight } from "lucide-react";
+import { Dumbbell, Plus, Settings, TrendingUp, Flame, HeartPulse, ChevronRight, Trophy } from "lucide-react";
 
 export default function HomePage() {
   const t = useTranslations("home");
@@ -20,6 +21,7 @@ export default function HomePage() {
   const workouts = useWorkouts();
   const sets = useAllWorkoutSets();
   const todayReadiness = useTodayReadiness();
+  const { hasFeature } = useFeatureAccess();
   const name = user?.email?.split("@")[0] ?? "";
   const readyScore = todayReadiness ? readinessScore(todayReadiness) : null;
 
@@ -56,11 +58,18 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/5 to-transparent" />
         <div className="relative flex items-center justify-between">
           <h1 className="text-2xl font-bold tracking-tight">{t("greeting", { name })}</h1>
-          <Link href="/settings">
-            <button className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground">
-              <Settings className="h-5 w-5" />
-            </button>
-          </Link>
+          <div className="flex items-center gap-1">
+            <Link href="/profile">
+              <button className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground">
+                <Trophy className="h-5 w-5" />
+              </button>
+            </Link>
+            <Link href="/settings">
+              <button className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground">
+                <Settings className="h-5 w-5" />
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -96,6 +105,7 @@ export default function HomePage() {
           </div>
 
           {/* Readiness prompt / score */}
+          {hasFeature("readiness") && (
           <Link href="/readiness" className="block">
             <Card className="active:scale-[0.99]">
               <CardContent className="flex items-center gap-3 py-3">
@@ -117,6 +127,7 @@ export default function HomePage() {
               </CardContent>
             </Card>
           </Link>
+          )}
 
           <Card>
             <CardContent className="flex flex-col items-center gap-3 py-8 text-center">

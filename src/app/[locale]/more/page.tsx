@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -15,9 +16,12 @@ import {
 
 export default function MorePage() {
   const t = useTranslations("more");
+  const { hasFeature } = useFeatureAccess();
 
   const items = [
-    { href: "/readiness", icon: HeartPulse, label: t("readiness"), color: "text-rose-500" },
+    ...(hasFeature("readiness")
+      ? [{ href: "/readiness", icon: HeartPulse, label: t("readiness"), color: "text-rose-500" }]
+      : []),
     { href: "/exercises", icon: ListChecks, label: t("exercises"), color: "text-indigo-500" },
     { href: "/programs", icon: ClipboardList, label: t("programs"), color: "text-violet-500" },
     { href: "/teams", icon: Users, label: t("teams"), color: "text-emerald-500" },

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useTeams } from "@/hooks/useTeams";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import {
   createGroup,
   inviteGroupMember,
@@ -30,6 +31,7 @@ import {
 
 export default function TeamsPage() {
   const t = useTranslations("teams");
+  const { hasFeature } = useFeatureAccess();
   const { myGroups, memberships, loading, refresh } = useTeams();
 
   const [creating, setCreating] = useState(false);
@@ -66,10 +68,12 @@ export default function TeamsPage() {
       <PageHeader
         title={t("title")}
         actions={
-          <Button size="sm" onClick={() => setCreating((v) => !v)}>
-            <Plus className="mr-1 h-4 w-4" />
-            {t("createTeam")}
-          </Button>
+          hasFeature("coaching") ? (
+            <Button size="sm" onClick={() => setCreating((v) => !v)}>
+              <Plus className="mr-1 h-4 w-4" />
+              {t("createTeam")}
+            </Button>
+          ) : undefined
         }
       />
 

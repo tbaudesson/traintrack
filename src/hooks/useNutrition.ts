@@ -13,6 +13,15 @@ export function useNutritionForDate(date: string, userId?: string) {
   }, [date, userId]) ?? [];
 }
 
+/** All of the user's nutrition entries (for gamification / stats). */
+export function useAllNutrition(userId?: string) {
+  return useLiveQuery(async () => {
+    const uid = userId ?? getCurrentUserIdSync();
+    const all = await db.nutritionEntries.filter((n) => !n.deletedAt).toArray();
+    return uid ? all.filter((n) => n.userId === uid) : all;
+  }, [userId]) ?? [];
+}
+
 export interface MacroTotals {
   calories: number;
   protein: number;

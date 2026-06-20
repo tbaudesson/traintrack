@@ -6,6 +6,7 @@ import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
 import { useWorkouts } from "@/hooks/useWorkouts";
 import { useBodyMetrics, addBodyMetric } from "@/hooks/useBodyMetrics";
 import { useExercises } from "@/hooks/useExercises";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,6 +27,7 @@ function epley1rm(weight: number, reps: number): number {
 
 export default function ProgressPage() {
   const t = useTranslations("progress");
+  const { hasFeature } = useFeatureAccess();
   const sets = useAllWorkoutSets();
   const workouts = useWorkouts();
   const metrics = useBodyMetrics();
@@ -122,7 +124,7 @@ export default function ProgressPage() {
           </ChartCard>
         )}
 
-        {liftsWithData.length > 0 && (
+        {hasFeature("advanced_progress") && liftsWithData.length > 0 && (
           <ChartCard
             title={t("estimated1rm")}
             header={

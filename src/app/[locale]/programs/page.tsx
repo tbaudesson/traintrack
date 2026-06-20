@@ -6,6 +6,7 @@ import { useRouter } from "@/i18n/navigation";
 import { usePrograms, createProgram } from "@/hooks/usePrograms";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAthleteProfile } from "@/hooks/useAthleteProfile";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { getApiKey, generateProgram } from "@/lib/aiService";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ export default function ProgramsPage() {
   const router = useRouter();
   const programs = usePrograms();
   const { user } = useAuth();
+  const { hasFeature } = useFeatureAccess();
   const profile = useAthleteProfile();
   const [busy, setBusy] = useState(false);
 
@@ -100,10 +102,12 @@ export default function ProgramsPage() {
         showBack
         actions={
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={openAi}>
-              <Sparkles className="mr-1 h-4 w-4" />
-              {tai("generate")}
-            </Button>
+            {hasFeature("ai_programs") && (
+              <Button size="sm" variant="outline" onClick={openAi}>
+                <Sparkles className="mr-1 h-4 w-4" />
+                {tai("generate")}
+              </Button>
+            )}
             <Button size="sm" onClick={handleCreate} disabled={busy}>
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="mr-1 h-4 w-4" />{t("create")}</>}
             </Button>
