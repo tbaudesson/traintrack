@@ -8,7 +8,9 @@
     "log": "Séance",
     "progress": "Progrès",
     "exercises": "Exercices",
-    "teams": "Équipes"
+    "teams": "Équipes",
+    "nutrition": "Nutrition",
+    "more": "Plus"
   },
   "sync": {
     "synced": "Synchronisé",
@@ -216,5 +218,58 @@
     "deleteProgram": "Supprimer le programme",
     "save": "Enregistrer",
     "noClients": "Aucun client. Invitez-en depuis Équipes."
+  },
+  "readiness": {
+    "title": "Forme du jour",
+    "todayPrompt": "Comment vous sentez-vous aujourd'hui ?",
+    "checkIn": "Faire le point",
+    "mood": "Humeur",
+    "energy": "Énergie",
+    "sleep": "Sommeil",
+    "soreness": "Courbatures",
+    "note": "Note",
+    "notePlaceholder": "Quelque chose d'impactant aujourd'hui ?",
+    "save": "Enregistrer",
+    "saved": "Enregistré",
+    "score": "Forme",
+    "done": "Évalué aujourd'hui",
+    "recHigh": "En pleine forme — poussez fort aujourd'hui.",
+    "recMid": "Bon état — entraînement comme prévu.",
+    "recLow": "Forme basse — privilégiez des charges légères ou un deload.",
+    "history": "Historique",
+    "low": "Basse",
+    "high": "Haute",
+    "veryLow": "Très basse",
+    "veryHigh": "Très haute"
+  },
+  "nutrition": {
+    "title": "Nutrition",
+    "today": "Aujourd'hui",
+    "calories": "Calories",
+    "protein": "Protéines",
+    "carbs": "Glucides",
+    "fat": "Lipides",
+    "addFood": "Ajouter un aliment",
+    "foodName": "Nom de l'aliment",
+    "meal": "Repas",
+    "meal_breakfast": "Petit-déjeuner",
+    "meal_lunch": "Déjeuner",
+    "meal_dinner": "Dîner",
+    "meal_snack": "Collation",
+    "add": "Ajouter",
+    "noEntries": "Aucun aliment enregistré aujourd'hui.",
+    "targets": "Objectifs quotidiens",
+    "editTargets": "Modifier les objectifs",
+    "saveTargets": "Enregistrer",
+    "ofTarget": "sur {target}",
+    "remaining": "{n} restant"
+  },
+  "more": {
+    "title": "Plus",
+    "exercises": "Exercices",
+    "programs": "Programmes",
+    "teams": "Équipes",
+    "settings": "Réglages",
+    "readiness": "Forme du jour"
   }
 }

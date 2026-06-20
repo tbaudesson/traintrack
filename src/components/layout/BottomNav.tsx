@@ -3,14 +3,14 @@
 import { useTranslations } from "next-intl";
 import { usePathname, Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { Home, Dumbbell, TrendingUp, ListChecks, Users } from "lucide-react";
+import { Home, Dumbbell, TrendingUp, Apple, Menu } from "lucide-react";
 
 const TABS = [
   { id: "home", href: "/", icon: Home, key: "home" },
   { id: "log", href: "/log", icon: Dumbbell, key: "log" },
+  { id: "nutrition", href: "/nutrition", icon: Apple, key: "nutrition" },
   { id: "progress", href: "/progress", icon: TrendingUp, key: "progress" },
-  { id: "exercises", href: "/exercises", icon: ListChecks, key: "exercises" },
-  { id: "teams", href: "/teams", icon: Users, key: "teams" },
+  { id: "more", href: "/more", icon: Menu, key: "more" },
 ] as const;
 
 export function BottomNav() {

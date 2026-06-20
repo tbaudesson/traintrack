@@ -8,7 +8,9 @@
     "log": "Log",
     "progress": "Progress",
     "exercises": "Exercises",
-    "teams": "Teams"
+    "teams": "Teams",
+    "nutrition": "Nutrition",
+    "more": "More"
   },
   "sync": {
     "synced": "Synced",
@@ -216,5 +218,58 @@
     "deleteProgram": "Delete program",
     "save": "Save",
     "noClients": "No clients yet. Invite some from Teams."
+  },
+  "readiness": {
+    "title": "Daily readiness",
+    "todayPrompt": "How do you feel today?",
+    "checkIn": "Check in",
+    "mood": "Mood",
+    "energy": "Energy",
+    "sleep": "Sleep",
+    "soreness": "Soreness",
+    "note": "Note",
+    "notePlaceholder": "Anything affecting today?",
+    "save": "Save check-in",
+    "saved": "Check-in saved",
+    "score": "Readiness",
+    "done": "Checked in today",
+    "recHigh": "You're primed — push hard today.",
+    "recMid": "Solid — train as planned.",
+    "recLow": "Low readiness — consider lighter loads or deload.",
+    "history": "History",
+    "low": "Low",
+    "high": "High",
+    "veryLow": "Very low",
+    "veryHigh": "Very high"
+  },
+  "nutrition": {
+    "title": "Nutrition",
+    "today": "Today",
+    "calories": "Calories",
+    "protein": "Protein",
+    "carbs": "Carbs",
+    "fat": "Fat",
+    "addFood": "Add food",
+    "foodName": "Food name",
+    "meal": "Meal",
+    "meal_breakfast": "Breakfast",
+    "meal_lunch": "Lunch",
+    "meal_dinner": "Dinner",
+    "meal_snack": "Snack",
+    "add": "Add",
+    "noEntries": "No food logged today.",
+    "targets": "Daily targets",
+    "editTargets": "Edit targets",
+    "saveTargets": "Save targets",
+    "ofTarget": "of {target}",
+    "remaining": "{n} left"
+  },
+  "more": {
+    "title": "More",
+    "exercises": "Exercises",
+    "programs": "Programs",
+    "teams": "Teams",
+    "settings": "Settings",
+    "readiness": "Daily readiness"
   }
 }

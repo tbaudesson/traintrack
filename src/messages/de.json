@@ -8,7 +8,9 @@
     "log": "Einheit",
     "progress": "Fortschritt",
     "exercises": "Übungen",
-    "teams": "Teams"
+    "teams": "Teams",
+    "nutrition": "Ernährung",
+    "more": "Mehr"
   },
   "sync": {
     "synced": "Synchronisiert",
@@ -216,5 +218,58 @@
     "deleteProgram": "Programm löschen",
     "save": "Speichern",
     "noClients": "Noch keine Klienten. Lade welche unter Teams ein."
+  },
+  "readiness": {
+    "title": "Tagesform",
+    "todayPrompt": "Wie fühlst du dich heute?",
+    "checkIn": "Check-in",
+    "mood": "Stimmung",
+    "energy": "Energie",
+    "sleep": "Schlaf",
+    "soreness": "Muskelkater",
+    "note": "Notiz",
+    "notePlaceholder": "Etwas, das heute beeinflusst?",
+    "save": "Check-in speichern",
+    "saved": "Gespeichert",
+    "score": "Form",
+    "done": "Heute eingecheckt",
+    "recHigh": "Topfit — heute hart trainieren.",
+    "recMid": "Solide — wie geplant trainieren.",
+    "recLow": "Geringe Form — leichtere Lasten oder Deload erwägen.",
+    "history": "Verlauf",
+    "low": "Niedrig",
+    "high": "Hoch",
+    "veryLow": "Sehr niedrig",
+    "veryHigh": "Sehr hoch"
+  },
+  "nutrition": {
+    "title": "Ernährung",
+    "today": "Heute",
+    "calories": "Kalorien",
+    "protein": "Protein",
+    "carbs": "Kohlenhydrate",
+    "fat": "Fett",
+    "addFood": "Lebensmittel hinzufügen",
+    "foodName": "Name",
+    "meal": "Mahlzeit",
+    "meal_breakfast": "Frühstück",
+    "meal_lunch": "Mittagessen",
+    "meal_dinner": "Abendessen",
+    "meal_snack": "Snack",
+    "add": "Hinzufügen",
+    "noEntries": "Heute nichts protokolliert.",
+    "targets": "Tagesziele",
+    "editTargets": "Ziele bearbeiten",
+    "saveTargets": "Speichern",
+    "ofTarget": "von {target}",
+    "remaining": "{n} übrig"
+  },
+  "more": {
+    "title": "Mehr",
+    "exercises": "Übungen",
+    "programs": "Programme",
+    "teams": "Teams",
+    "settings": "Einstellungen",
+    "readiness": "Tagesform"
   }
 }

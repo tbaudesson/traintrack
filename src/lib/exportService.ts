@@ -4,7 +4,7 @@ import db from "@/db";
  * GDPR data portability (Art. 20): export all of the user's local data as JSON.
  */
 export async function exportJSON(): Promise<string> {
-  const [athleteProfiles, exercises, programs, workouts, workoutSets, bodyMetrics] =
+  const [athleteProfiles, exercises, programs, workouts, workoutSets, bodyMetrics, readinessCheckins, nutritionEntries] =
     await Promise.all([
       db.athleteProfiles.filter((r) => !r.deletedAt).toArray(),
       db.exercises.filter((r) => !r.deletedAt && r.isCustom).toArray(),
@@ -12,11 +12,13 @@ export async function exportJSON(): Promise<string> {
       db.workouts.filter((r) => !r.deletedAt).toArray(),
       db.workoutSets.filter((r) => !r.deletedAt).toArray(),
       db.bodyMetrics.filter((r) => !r.deletedAt).toArray(),
+      db.readinessCheckins.filter((r) => !r.deletedAt).toArray(),
+      db.nutritionEntries.filter((r) => !r.deletedAt).toArray(),
     ]);
 
   const data = {
     app: "TrainTrack",
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
     athleteProfiles,
     exercises,
@@ -24,6 +26,8 @@ export async function exportJSON(): Promise<string> {
     workouts,
     workoutSets,
     bodyMetrics,
+    readinessCheckins,
+    nutritionEntries,
   };
 
   return JSON.stringify(data, null, 2);

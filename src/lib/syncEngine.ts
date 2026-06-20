@@ -48,7 +48,7 @@ const TABLE_CONFIGS: TableSyncConfig[] = [
   {
     dexieTable: "athleteProfiles",
     supabaseTable: "athlete_profiles",
-    jsonFields: ["goals", "equipment"],
+    jsonFields: ["goals", "equipment", "nutritionTargets"],
     hasUpdatedAt: true,
     trainerVisible: true,
   },
@@ -95,6 +95,18 @@ const TABLE_CONFIGS: TableSyncConfig[] = [
     hasUpdatedAt: true,
     trainerVisible: true,
   },
+  {
+    dexieTable: "readinessCheckins",
+    supabaseTable: "readiness_checkins",
+    hasUpdatedAt: true,
+    trainerVisible: true,
+  },
+  {
+    dexieTable: "nutritionEntries",
+    supabaseTable: "nutrition_entries",
+    hasUpdatedAt: true,
+    trainerVisible: true,
+  },
 ];
 
 // Sync order: parents first, then children
@@ -105,6 +117,8 @@ const SYNC_ORDER = [
   "workouts",
   "workoutSets",
   "bodyMetrics",
+  "readinessCheckins",
+  "nutritionEntries",
 ];
 
 // ─── Retry with exponential backoff ───────────────────────────────────

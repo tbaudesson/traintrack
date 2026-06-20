@@ -36,3 +36,20 @@ export async function saveAthleteProfile(
   schedulePush();
   return id;
 }
+
+/** Update just the daily macro targets on the current profile. */
+export async function updateNutritionTargets(
+  targets: { calories?: number; protein?: number; carbs?: number; fat?: number }
+): Promise<void> {
+  const uid = getCurrentUserIdSync();
+  const existing = (await db.athleteProfiles.toArray()).find(
+    (p) => !p.deletedAt && (p.userId === uid || p.userId == null)
+  );
+  if (!existing?.id) return;
+  await db.athleteProfiles.update(existing.id, {
+    nutritionTargets: targets,
+    updatedAt: new Date().toISOString(),
+    _dirty: 1,
+  });
+  schedulePush();
+}

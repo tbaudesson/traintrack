@@ -53,9 +53,38 @@ export interface AthleteProfile extends SyncFields {
   heightCm?: number;
   birthDate?: string;
   equipment: Equipment[];
+  /** Optional daily macro targets */
+  nutritionTargets?: { calories?: number; protein?: number; carbs?: number; fat?: number };
   /** GDPR Art. 9 explicit consent to process health/fitness data */
   consentHealthData: boolean;
   consentAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReadinessCheckin extends SyncFields {
+  id?: number;
+  date: string;
+  mood?: number; // 1..5
+  energy?: number; // 1..5
+  sleep?: number; // sleep quality 1..5
+  soreness?: number; // 1..5 (higher = more sore)
+  note?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type Meal = "breakfast" | "lunch" | "dinner" | "snack";
+
+export interface NutritionEntry extends SyncFields {
+  id?: number;
+  date: string;
+  meal?: Meal;
+  name: string;
+  calories?: number;
+  proteinG?: number;
+  carbsG?: number;
+  fatG?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -167,6 +196,8 @@ const db = new Dexie("TrainTrack") as Dexie & {
   workouts: EntityTable<Workout, "id">;
   workoutSets: EntityTable<WorkoutSet, "id">;
   bodyMetrics: EntityTable<BodyMetric, "id">;
+  readinessCheckins: EntityTable<ReadinessCheckin, "id">;
+  nutritionEntries: EntityTable<NutritionEntry, "id">;
   formDrafts: EntityTable<FormDraft, "id">;
   syncMeta: EntityTable<SyncMeta, "tableName">;
   authMeta: EntityTable<AuthMeta, "key">;
@@ -179,6 +210,20 @@ db.version(1).stores({
   workouts: "++id, date, programId, uuid, _dirty",
   workoutSets: "++id, workoutId, exerciseId, uuid, _dirty",
   bodyMetrics: "++id, date, uuid, _dirty",
+  formDrafts: "++id, &formKey, updatedAt",
+  syncMeta: "tableName",
+  authMeta: "&key",
+});
+
+db.version(2).stores({
+  athleteProfiles: "++id, uuid, _dirty",
+  exercises: "++id, name, muscleGroup, isCustom, uuid, _dirty",
+  programs: "++id, assignedToUserId, groupId, uuid, _dirty",
+  workouts: "++id, date, programId, uuid, _dirty",
+  workoutSets: "++id, workoutId, exerciseId, uuid, _dirty",
+  bodyMetrics: "++id, date, uuid, _dirty",
+  readinessCheckins: "++id, date, uuid, _dirty",
+  nutritionEntries: "++id, date, uuid, _dirty",
   formDrafts: "++id, &formKey, updatedAt",
   syncMeta: "tableName",
   authMeta: "&key",

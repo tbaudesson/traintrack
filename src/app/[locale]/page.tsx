@@ -7,17 +7,21 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAthleteProfile } from "@/hooks/useAthleteProfile";
 import { useWorkouts } from "@/hooks/useWorkouts";
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
+import { useTodayReadiness, readinessScore } from "@/hooks/useReadiness";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dumbbell, Plus, Settings, TrendingUp, Flame } from "lucide-react";
+import { Dumbbell, Plus, Settings, TrendingUp, Flame, HeartPulse, ChevronRight } from "lucide-react";
 
 export default function HomePage() {
   const t = useTranslations("home");
+  const tr = useTranslations("readiness");
   const { user } = useAuth();
   const profile = useAthleteProfile();
   const workouts = useWorkouts();
   const sets = useAllWorkoutSets();
+  const todayReadiness = useTodayReadiness();
   const name = user?.email?.split("@")[0] ?? "";
+  const readyScore = todayReadiness ? readinessScore(todayReadiness) : null;
 
   const workoutDates = useMemo(() => new Set(workouts.map((w) => w.date)), [workouts]);
 
@@ -90,6 +94,29 @@ export default function HomePage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Readiness prompt / score */}
+          <Link href="/readiness" className="block">
+            <Card className="active:scale-[0.99]">
+              <CardContent className="flex items-center gap-3 py-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100 dark:bg-rose-900/30">
+                  <HeartPulse className="h-5 w-5 text-rose-500" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{tr("title")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {readyScore != null ? `${tr("score")}: ${readyScore}/100` : tr("todayPrompt")}
+                  </p>
+                </div>
+                {readyScore == null && (
+                  <span className="rounded-full bg-rose-500 px-2.5 py-1 text-xs font-medium text-white">
+                    {tr("checkIn")}
+                  </span>
+                )}
+                <ChevronRight className="h-4 w-4 text-muted-foreground/40" />
+              </CardContent>
+            </Card>
+          </Link>
 
           <Card>
             <CardContent className="flex flex-col items-center gap-3 py-8 text-center">
