@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { useTeams } from "@/hooks/useTeams";
 import {
   createGroup,
@@ -292,7 +293,13 @@ function TeamCard({
               <div className="space-y-1">
                 {members.map((m) => (
                   <div key={m.id} className="flex items-center gap-2 rounded-md px-1 py-1.5 text-sm">
-                    <span className="flex-1 truncate">{m.display_name}</span>
+                    {m.status === "active" && m.user_id ? (
+                      <Link href={`/client/${m.user_id}`} className="flex-1 truncate hover:underline">
+                        {m.display_name}
+                      </Link>
+                    ) : (
+                      <span className="flex-1 truncate">{m.display_name}</span>
+                    )}
                     <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
                       {m.status === "pending" ? t("status_pending") : t(`role_${m.role}`)}
                     </span>
