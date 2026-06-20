@@ -1,4 +1,4 @@
-const CACHE_NAME = "traintrack-v1";
+const CACHE_NAME = "traintrack-v2";
 
 const PRECACHE_URLS = ["/fr", "/en"];
 
