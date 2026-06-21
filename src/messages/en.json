@@ -188,7 +188,10 @@
     "lastActivity": "Last activity",
     "compliance": "7-day compliance",
     "viewProgress": "View progress",
-    "never": "Never"
+    "never": "Never",
+    "complianceTip": "Hasn't trained recently — may need a nudge.",
+    "noActivity": "No activity",
+    "daysAgo": "{days}d ago"
   },
   "settings": {
     "title": "Settings",
@@ -369,6 +372,16 @@
     "send": "Send",
     "relation_client": "Client",
     "relation_trainer": "Trainer"
+  },
+  "notifications": {
+    "section": "Notifications",
+    "desc": "Get a push alert when a client stops training. Works on Android/desktop and installed iOS 16.4+ apps.",
+    "enable": "Enable notifications",
+    "disable": "Disable notifications",
+    "denied": "Permission was denied. Allow notifications in your browser settings.",
+    "notConfigured": "Push notifications are not configured for this deployment yet.",
+    "unsupported": "This device doesn't support push notifications.",
+    "error": "Could not update notifications."
   },
   "notes": {
     "title": "Notes",

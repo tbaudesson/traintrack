@@ -1,4 +1,4 @@
-const CACHE_NAME = "traintrack-v2";
+const CACHE_NAME = "traintrack-v3";
 
 const PRECACHE_URLS = ["/fr", "/en"];
 
@@ -102,27 +102,43 @@ self.addEventListener("message", (event) => {
   }
 });
 
+// --- Web Push handler ---
+// Receives a server-sent push and shows a notification. Payload is JSON:
+// { title, body, url }.
+self.addEventListener("push", (event) => {
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch {
+    payload = { body: event.data ? event.data.text() : "" };
+  }
+  const title = payload.title || "TrainTrack";
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: payload.body || "",
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      tag: payload.tag || "traintrack-push",
+      data: { url: payload.url || "/" },
+      vibrate: [200, 100, 200],
+    })
+  );
+});
+
 // --- Notification click handler ---
-// Opens or focuses the tasks page when the user taps a notification.
+// Focuses an existing app window (or opens one) on the notification's target.
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
+  const target = (event.notification.data && event.notification.data.url) || "/";
 
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
-      // Try to focus an existing window that is on the tasks page
-      for (const client of clientList) {
-        if (client.url.includes("/calendar/tasks") && "focus" in client) {
-          return client.focus();
-        }
-      }
-      // Otherwise try to focus any existing app window and navigate it
       for (const client of clientList) {
         if ("focus" in client && "navigate" in client) {
-          return client.focus().then(() => client.navigate("/fr/calendar/tasks"));
+          return client.focus().then(() => client.navigate(target).catch(() => {}));
         }
       }
-      // As a last resort open a new window
-      return self.clients.openWindow("/fr/calendar/tasks");
+      return self.clients.openWindow(target);
     })
   );
 });

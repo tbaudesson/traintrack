@@ -188,7 +188,10 @@
     "lastActivity": "Letzte Aktivität",
     "compliance": "Einhaltung (7 Tage)",
     "viewProgress": "Fortschritt ansehen",
-    "never": "Nie"
+    "never": "Nie",
+    "complianceTip": "Hat kürzlich nicht trainiert — vielleicht ein Anstoß nötig.",
+    "noActivity": "Keine Aktivität",
+    "daysAgo": "vor {days}T"
   },
   "settings": {
     "title": "Einstellungen",
@@ -369,6 +372,16 @@
     "send": "Senden",
     "relation_client": "Klient",
     "relation_trainer": "Trainer"
+  },
+  "notifications": {
+    "section": "Benachrichtigungen",
+    "desc": "Erhalte eine Push-Warnung, wenn ein Klient aufhört zu trainieren. Funktioniert auf Android/Desktop und installierten iOS-16.4+-Apps.",
+    "enable": "Benachrichtigungen aktivieren",
+    "disable": "Benachrichtigungen deaktivieren",
+    "denied": "Berechtigung verweigert. Erlaube Benachrichtigungen in den Browsereinstellungen.",
+    "notConfigured": "Push-Benachrichtigungen sind für dieses Deployment noch nicht konfiguriert.",
+    "unsupported": "Dieses Gerät unterstützt keine Push-Benachrichtigungen.",
+    "error": "Benachrichtigungen konnten nicht aktualisiert werden."
   },
   "notes": {
     "title": "Notizen",

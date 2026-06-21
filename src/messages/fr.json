@@ -188,7 +188,10 @@
     "lastActivity": "Dernière activité",
     "compliance": "Assiduité (7 j)",
     "viewProgress": "Voir les progrès",
-    "never": "Jamais"
+    "never": "Jamais",
+    "complianceTip": "Ne s'est pas entraîné récemment — une relance s'impose peut-être.",
+    "noActivity": "Aucune activité",
+    "daysAgo": "il y a {days}j"
   },
   "settings": {
     "title": "Réglages",
@@ -369,6 +372,16 @@
     "send": "Envoyer",
     "relation_client": "Client",
     "relation_trainer": "Coach"
+  },
+  "notifications": {
+    "section": "Notifications",
+    "desc": "Recevez une alerte push lorsqu'un client cesse de s'entraîner. Fonctionne sur Android/ordinateur et les apps iOS 16.4+ installées.",
+    "enable": "Activer les notifications",
+    "disable": "Désactiver les notifications",
+    "denied": "Autorisation refusée. Activez les notifications dans les réglages du navigateur.",
+    "notConfigured": "Les notifications push ne sont pas encore configurées pour ce déploiement.",
+    "unsupported": "Cet appareil ne prend pas en charge les notifications push.",
+    "error": "Impossible de mettre à jour les notifications."
   },
   "notes": {
     "title": "Notes",

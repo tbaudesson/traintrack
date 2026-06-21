@@ -13,6 +13,7 @@ import {
   respondToInvitation,
   type GroupMember,
 } from "@/lib/groupService";
+import { useClientLastWorkout, daysSince } from "@/hooks/useClientActivity";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,6 +28,7 @@ import {
   Loader2,
   ChevronDown,
   ChevronUp,
+  AlertTriangle,
 } from "lucide-react";
 
 export default function TeamsPage() {
@@ -202,6 +204,24 @@ export default function TeamsPage() {
   );
 }
 
+/** Amber warning chip when a client hasn't trained recently (compliance). */
+function ComplianceFlag({ userId }: { userId: string }) {
+  const t = useTranslations("teams");
+  const last = useClientLastWorkout(userId);
+  if (last === undefined) return null; // loading
+  const days = last === null ? null : daysSince(last);
+  if (days !== null && days < 3) return null; // training recently — no flag
+  return (
+    <span
+      className="flex items-center gap-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+      title={t("complianceTip")}
+    >
+      <AlertTriangle className="h-3 w-3" />
+      {days === null ? t("noActivity") : t("daysAgo", { days })}
+    </span>
+  );
+}
+
 function TeamCard({
   groupId,
   name,
@@ -304,6 +324,7 @@ function TeamCard({
                     ) : (
                       <span className="flex-1 truncate">{m.display_name}</span>
                     )}
+                    {m.status === "active" && m.user_id && <ComplianceFlag userId={m.user_id} />}
                     <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
                       {m.status === "pending" ? t("status_pending") : t(`role_${m.role}`)}
                     </span>

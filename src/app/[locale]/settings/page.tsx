@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter, usePathname, Link } from "@/i18n/navigation";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,6 +13,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { getApiKey, setApiKey, clearApiKey } from "@/lib/aiService";
+import {
+  isPushSupported, isPushConfigured, getPushSubscription, subscribeToPush, unsubscribeFromPush,
+} from "@/lib/pushService";
 import { getTextSize, applyTextSize, type TextSize } from "@/lib/textSize";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { getMode, applyMode, getAccent, applyAccent, ACCENTS, type ThemeMode, type Accent } from "@/lib/appTheme";
@@ -23,7 +26,7 @@ import {
   Download, Shield, LogOut, Trash2, Loader2, Sparkles, Check, Type, ShieldCheck,
   Palette, LayoutGrid, Monitor, Sun, Moon, Globe, RotateCcw, CheckCircle2, User, Trophy,
   Home, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse,
-  Pencil, X,
+  Pencil, X, Bell, BellOff,
   type LucideIcon,
 } from "lucide-react";
 
@@ -65,6 +68,7 @@ export default function SettingsPage() {
   const ta11y = useTranslations("a11y");
   const ta = useTranslations("appearance");
   const tnav = useTranslations("nav");
+  const tn = useTranslations("notifications");
   const { user, profile, signOut, isAdmin, refreshProfile } = useAuth();
   const { hasFeature } = useFeatureAccess();
   const locale = useLocale();
@@ -84,6 +88,37 @@ export default function SettingsPage() {
   const [editName, setEditName] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
   const [savingName, setSavingName] = useState(false);
+  const [pushOn, setPushOn] = useState(false);
+  const [pushBusy, setPushBusy] = useState(false);
+  const [pushError, setPushError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isPushSupported()) getPushSubscription().then((s) => setPushOn(!!s)).catch(() => {});
+  }, []);
+
+  async function togglePush() {
+    setPushBusy(true);
+    setPushError(null);
+    try {
+      if (pushOn) {
+        await unsubscribeFromPush();
+        setPushOn(false);
+      } else {
+        await subscribeToPush();
+        setPushOn(true);
+      }
+    } catch (e) {
+      const code = e instanceof Error ? e.message : "";
+      setPushError(
+        code === "PERMISSION_DENIED" ? tn("denied")
+          : code === "PUSH_NOT_CONFIGURED" ? tn("notConfigured")
+          : code === "PUSH_UNSUPPORTED" ? tn("unsupported")
+          : code || tn("error")
+      );
+    } finally {
+      setPushBusy(false);
+    }
+  }
 
   const name = profile?.display_name ?? user?.email?.split("@")[0] ?? "";
   const initials = name.slice(0, 2).toUpperCase();
@@ -359,6 +394,30 @@ export default function SettingsPage() {
             {keyIsSet && <Button variant="outline" onClick={removeKey}>{tai("clearKey")}</Button>}
           </div>
         </Section>
+
+        {/* Push notifications */}
+        {isPushSupported() && (
+          <Section icon={Bell} title={tn("section")}>
+            <p className="mb-3 text-xs text-muted-foreground">{tn("desc")}</p>
+            {!isPushConfigured() ? (
+              <p className="rounded-md bg-muted p-2 text-xs text-muted-foreground">{tn("notConfigured")}</p>
+            ) : (
+              <>
+                <Button
+                  variant={pushOn ? "outline" : "default"}
+                  onClick={togglePush}
+                  disabled={pushBusy}
+                  className="w-full"
+                >
+                  {pushBusy ? <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                    : pushOn ? <BellOff className="mr-1 h-4 w-4" /> : <Bell className="mr-1 h-4 w-4" />}
+                  {pushOn ? tn("disable") : tn("enable")}
+                </Button>
+                {pushError && <p className="mt-2 text-xs text-destructive">{pushError}</p>}
+              </>
+            )}
+          </Section>
+        )}
 
         {/* Data & privacy */}
         <Section icon={Download} title={t("export")}>
