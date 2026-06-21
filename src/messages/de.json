@@ -232,7 +232,11 @@
     "deleteAccountDesc": "Löscht dein Konto und alle Daten unwiderruflich.",
     "deleteAccountConfirm": "Tippe LÖSCHEN zum Bestätigen.",
     "deleteAccountConfirmWord": "LÖSCHEN",
-    "deleteAccountSuccess": "Konto gelöscht. Auf Wiedersehen."
+    "deleteAccountSuccess": "Konto gelöscht. Auf Wiedersehen.",
+    "resyncTitle": "Synchronisierung",
+    "resyncDesc": "Erzwinge einen frischen Download aller Daten vom Server (behebt nicht Synchronisiertes, z. B. neue Übungsvideos).",
+    "resyncBtn": "Vom Server aktualisieren",
+    "resyncDone": "Aktuell"
   },
   "programs": {
     "title": "Programme",

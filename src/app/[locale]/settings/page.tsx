@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { getApiKey, setApiKey, clearApiKey } from "@/lib/aiService";
+import { forceFullResync } from "@/lib/syncEngine";
 import {
   isPushSupported, isPushConfigured, getPushSubscription, subscribeToPush, unsubscribeFromPush,
 } from "@/lib/pushService";
@@ -91,6 +92,18 @@ export default function SettingsPage() {
   const [pushOn, setPushOn] = useState(false);
   const [pushBusy, setPushBusy] = useState(false);
   const [pushError, setPushError] = useState<string | null>(null);
+  const [resyncState, setResyncState] = useState<"idle" | "busy" | "done">("idle");
+
+  async function handleResync() {
+    setResyncState("busy");
+    try {
+      await forceFullResync();
+      setResyncState("done");
+      setTimeout(() => setResyncState("idle"), 2500);
+    } catch {
+      setResyncState("idle");
+    }
+  }
 
   useEffect(() => {
     if (isPushSupported()) getPushSubscription().then((s) => setPushOn(!!s)).catch(() => {});
@@ -418,6 +431,17 @@ export default function SettingsPage() {
             )}
           </Section>
         )}
+
+        {/* Refresh from server */}
+        <Section icon={RotateCcw} title={t("resyncTitle")}>
+          <p className="mb-3 text-xs text-muted-foreground">{t("resyncDesc")}</p>
+          <Button variant="outline" onClick={handleResync} disabled={resyncState === "busy"} className="w-full">
+            {resyncState === "busy" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              : resyncState === "done" ? <Check className="mr-2 h-4 w-4" />
+              : <RotateCcw className="mr-2 h-4 w-4" />}
+            {resyncState === "done" ? t("resyncDone") : t("resyncBtn")}
+          </Button>
+        </Section>
 
         {/* Data & privacy */}
         <Section icon={Download} title={t("export")}>

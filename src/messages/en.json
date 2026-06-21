@@ -232,7 +232,11 @@
     "deleteAccountDesc": "Permanently deletes your account and all your data. This cannot be undone.",
     "deleteAccountConfirm": "Type DELETE to confirm.",
     "deleteAccountConfirmWord": "DELETE",
-    "deleteAccountSuccess": "Account deleted. Goodbye."
+    "deleteAccountSuccess": "Account deleted. Goodbye.",
+    "resyncTitle": "Sync",
+    "resyncDesc": "Force a fresh download of all your data from the server (fixes anything that didn't sync, e.g. new exercise videos).",
+    "resyncBtn": "Refresh from server",
+    "resyncDone": "Up to date"
   },
   "programs": {
     "title": "Programs",

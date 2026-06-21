@@ -232,7 +232,11 @@
     "deleteAccountDesc": "Supprime définitivement votre compte et toutes vos données. Action irréversible.",
     "deleteAccountConfirm": "Tapez SUPPRIMER pour confirmer.",
     "deleteAccountConfirmWord": "SUPPRIMER",
-    "deleteAccountSuccess": "Compte supprimé. Au revoir."
+    "deleteAccountSuccess": "Compte supprimé. Au revoir.",
+    "resyncTitle": "Synchronisation",
+    "resyncDesc": "Forcer un nouveau téléchargement de toutes vos données depuis le serveur (corrige ce qui n'a pas été synchronisé, ex. nouvelles vidéos d'exercices).",
+    "resyncBtn": "Actualiser depuis le serveur",
+    "resyncDone": "À jour"
   },
   "programs": {
     "title": "Programmes",

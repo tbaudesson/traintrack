@@ -563,6 +563,16 @@ export function getSyncState(): SyncState {
 /**
  * Run a full push+pull sync cycle for all tables.
  */
+/**
+ * Clear every table's pull cursor and re-pull from scratch. Used by the
+ * Settings "Refresh from server" action to recover any rows a stale cursor
+ * may have skipped (idempotent — upserts by uuid, dirty local edits kept).
+ */
+export async function forceFullResync(): Promise<void> {
+  await db.syncMeta.clear();
+  await syncAll();
+}
+
 export async function syncAll(): Promise<void> {
   if (_syncInProgress) return;
   if (!navigator.onLine) {
