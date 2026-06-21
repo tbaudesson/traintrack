@@ -17,13 +17,13 @@ import { Dumbbell, Plus, Settings, TrendingUp, Flame, HeartPulse, ChevronRight, 
 export default function HomePage() {
   const t = useTranslations("home");
   const tr = useTranslations("readiness");
-  const { user } = useAuth();
+  const { user, profile: account } = useAuth();
   const profile = useAthleteProfile();
   const workouts = useWorkouts();
   const sets = useAllWorkoutSets();
   const todayReadiness = useTodayReadiness();
   const { hasFeature } = useFeatureAccess();
-  const name = user?.email?.split("@")[0] ?? "";
+  const name = account?.display_name ?? user?.email?.split("@")[0] ?? "";
   const readyScore = todayReadiness ? readinessScore(todayReadiness) : null;
 
   const workoutDates = useMemo(() => new Set(workouts.map((w) => w.date)), [workouts]);

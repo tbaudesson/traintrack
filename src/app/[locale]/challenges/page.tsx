@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/contexts/AuthContext";
-import { getMyGroups, type Group } from "@/lib/groupService";
+import { getMyGroups, createGroup, type Group } from "@/lib/groupService";
 import {
   getMyChallenges, createChallenge, deleteChallenge, getChallengeLeaderboard,
   type Challenge, type ChallengeType, type LeaderboardRow,
@@ -43,19 +43,15 @@ export default function ChallengesPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  const canCreate = groups.length > 0;
-
   return (
     <>
       <PageHeader
         title={t("title")}
         showBack
         actions={
-          canCreate ? (
-            <Button size="sm" onClick={() => setCreateOpen(true)}>
-              <Plus className="mr-1 h-4 w-4" />{t("create")}
-            </Button>
-          ) : null
+          <Button size="sm" onClick={() => setCreateOpen(true)}>
+            <Plus className="mr-1 h-4 w-4" />{t("create")}
+          </Button>
         }
       />
       <div className="space-y-3 p-4 pb-24">
@@ -190,7 +186,10 @@ function CreateChallengeDialog({
   open, onOpenChange, groups, onCreated,
 }: { open: boolean; onOpenChange: (v: boolean) => void; groups: Group[]; onCreated: () => void }) {
   const t = useTranslations("challenges");
+  const tt = useTranslations("teams");
+  const noTeam = groups.length === 0;
   const [groupId, setGroupId] = useState("");
+  const [teamName, setTeamName] = useState("");
   const [name, setName] = useState("");
   const [type, setType] = useState<ChallengeType>("volume");
   const [start, setStart] = useState(todayISO());
@@ -203,12 +202,17 @@ function CreateChallengeDialog({
   }, [open, groups, groupId]);
 
   async function submit() {
-    if (!groupId || !name.trim()) return;
+    if (!name.trim()) return;
+    if (noTeam && !teamName.trim()) return;
+    if (!noTeam && !groupId) return;
     setBusy(true);
     setError(null);
     try {
-      await createChallenge({ groupId, name: name.trim(), type, start, end });
+      // First-time users have no team — create one on the fly.
+      const gid = noTeam ? await createGroup(teamName.trim()) : groupId;
+      await createChallenge({ groupId: gid, name: name.trim(), type, start, end });
       setName("");
+      setTeamName("");
       onCreated();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -226,7 +230,13 @@ function CreateChallengeDialog({
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          {groups.length > 1 && (
+          {noTeam ? (
+            <div>
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">{t("newTeamLabel")}</label>
+              <Input value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder={tt("teamName")} />
+              <p className="mt-1 text-[11px] text-muted-foreground">{t("newTeamHint")}</p>
+            </div>
+          ) : groups.length > 1 ? (
             <div>
               <label className="mb-1 block text-xs font-medium text-muted-foreground">{t("team")}</label>
               <div className="flex flex-wrap gap-1.5">
@@ -239,7 +249,7 @@ function CreateChallengeDialog({
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
           <div>
             <label className="mb-1 block text-xs font-medium text-muted-foreground">{t("name")}</label>
             <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("namePlaceholder")} />
@@ -268,7 +278,7 @@ function CreateChallengeDialog({
             </div>
           </div>
           {error && <p className="rounded-md bg-destructive/10 p-2 text-sm text-destructive">{error}</p>}
-          <Button className="w-full" onClick={submit} disabled={busy || !name.trim() || !groupId}>
+          <Button className="w-full" onClick={submit} disabled={busy || !name.trim() || (noTeam ? !teamName.trim() : !groupId)}>
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : t("create")}
           </Button>
         </div>

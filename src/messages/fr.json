@@ -144,7 +144,18 @@
     "prs": "Records personnels",
     "noData": "Enregistrez des séances pour voir vos progrès.",
     "addBodyMetric": "Enregistrer le poids",
-    "selectLift": "Choisir un mouvement"
+    "selectLift": "Choisir un mouvement",
+    "workouts": "Séances",
+    "sets": "Séries",
+    "totalVolume": "Volume total",
+    "thisWeek": "Cette semaine",
+    "byExercise": "Par exercice",
+    "metric_e1rm": "1RM est.",
+    "metric_top": "Meilleure série",
+    "metric_reps": "Répétitions",
+    "metric_vol": "Volume",
+    "muscleVolume": "Volume par muscle (30 jours)",
+    "prsHint": "Meilleur 1RM estimé par exercice (formule d'Epley)."
   },
   "exercises": {
     "title": "Exercices",
@@ -373,6 +384,8 @@
     "team": "Équipe",
     "name": "Nom",
     "namePlaceholder": "ex. Sprint de volume d'octobre",
+    "newTeamLabel": "Nom de l'équipe",
+    "newTeamHint": "Vous n'avez pas encore d'équipe — nous la créons et vous pourrez inviter des clients depuis l'onglet Équipes.",
     "type": "Type",
     "start": "Début",
     "end": "Fin",

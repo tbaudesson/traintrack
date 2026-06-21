@@ -144,7 +144,18 @@
     "prs": "Personal records",
     "noData": "Log some workouts to see your progress.",
     "addBodyMetric": "Log bodyweight",
-    "selectLift": "Select a lift"
+    "selectLift": "Select a lift",
+    "workouts": "Workouts",
+    "sets": "Sets",
+    "totalVolume": "Total volume",
+    "thisWeek": "This week",
+    "byExercise": "By exercise",
+    "metric_e1rm": "Est. 1RM",
+    "metric_top": "Top set",
+    "metric_reps": "Reps",
+    "metric_vol": "Volume",
+    "muscleVolume": "Volume by muscle (30 days)",
+    "prsHint": "Best estimated 1-rep max per exercise (Epley formula)."
   },
   "exercises": {
     "title": "Exercises",
@@ -373,6 +384,8 @@
     "team": "Team",
     "name": "Name",
     "namePlaceholder": "e.g. October Volume Sprint",
+    "newTeamLabel": "Team name",
+    "newTeamHint": "You have no team yet — we'll create this one and you can invite clients later from the Teams tab.",
     "type": "Type",
     "start": "Start",
     "end": "End",

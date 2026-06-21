@@ -144,7 +144,18 @@
     "prs": "Persönliche Rekorde",
     "noData": "Protokolliere Einheiten, um deinen Fortschritt zu sehen.",
     "addBodyMetric": "Körpergewicht erfassen",
-    "selectLift": "Übung wählen"
+    "selectLift": "Übung wählen",
+    "workouts": "Einheiten",
+    "sets": "Sätze",
+    "totalVolume": "Gesamtvolumen",
+    "thisWeek": "Diese Woche",
+    "byExercise": "Pro Übung",
+    "metric_e1rm": "Gesch. 1RM",
+    "metric_top": "Bester Satz",
+    "metric_reps": "Wdh.",
+    "metric_vol": "Volumen",
+    "muscleVolume": "Volumen pro Muskel (30 Tage)",
+    "prsHint": "Bestes geschätztes 1RM pro Übung (Epley-Formel)."
   },
   "exercises": {
     "title": "Übungen",
@@ -373,6 +384,8 @@
     "team": "Team",
     "name": "Name",
     "namePlaceholder": "z. B. Oktober-Volumen-Sprint",
+    "newTeamLabel": "Teamname",
+    "newTeamHint": "Du hast noch kein Team — wir erstellen dieses und du kannst später im Team-Tab Klienten einladen.",
     "type": "Typ",
     "start": "Start",
     "end": "Ende",
