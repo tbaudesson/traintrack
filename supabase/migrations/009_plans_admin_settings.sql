@@ -79,7 +79,7 @@ BEGIN
   SELECT p.id, p.user_id, p.display_name, p.email, p.role, p.status, p.created_at,
          pl.id, pl.name, COALESCE(pl.features, '[]'::jsonb)
   FROM profiles p
-  LEFT JOIN plans pl ON pl.id = COALESCE(p.plan_id, (SELECT id FROM plans WHERE is_default LIMIT 1))
+  LEFT JOIN plans pl ON pl.id = COALESCE(p.plan_id, (SELECT dp.id FROM plans dp WHERE dp.is_default LIMIT 1))
   WHERE p.user_id = auth.uid();
 END;
 $$;
