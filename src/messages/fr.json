@@ -186,7 +186,8 @@
     "save": "Enregistrer",
     "delete": "Supprimer",
     "descPlaceholder": "Comment l'exécuter…",
-    "videoPlaceholder": "https://…"
+    "videoPlaceholder": "https://…",
+    "videoEmbedHint": "Collez un lien YouTube ou Vimeo pour le lire dans l'application. Un lien de recherche ouvre YouTube."
   },
   "teams": {
     "title": "Équipes",

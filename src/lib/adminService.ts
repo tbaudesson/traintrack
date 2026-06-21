@@ -114,6 +114,20 @@ export async function updateMyDisplayName(name: string): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
+/** Admin: set the description/video on any exercise, including built-ins. */
+export async function adminUpdateExerciseContent(
+  exerciseUuid: string,
+  description: string,
+  videoUrl: string
+): Promise<void> {
+  const { error } = await supabase.rpc("admin_update_exercise_content", {
+    p_uuid: exerciseUuid,
+    p_description: description,
+    p_video_url: videoUrl,
+  });
+  if (error) throw new Error(error.message);
+}
+
 // ─── App settings (GDPR config, etc.) ────────────────────────────────
 
 export async function getAppSettings(): Promise<Record<string, string>> {

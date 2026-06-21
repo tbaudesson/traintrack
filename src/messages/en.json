@@ -186,7 +186,8 @@
     "save": "Save",
     "delete": "Delete",
     "descPlaceholder": "How to perform it…",
-    "videoPlaceholder": "https://…"
+    "videoPlaceholder": "https://…",
+    "videoEmbedHint": "Paste a YouTube or Vimeo link to play it inside the app. A search link opens YouTube instead."
   },
   "teams": {
     "title": "Teams",

@@ -186,7 +186,8 @@
     "save": "Speichern",
     "delete": "Löschen",
     "descPlaceholder": "Ausführung…",
-    "videoPlaceholder": "https://…"
+    "videoPlaceholder": "https://…",
+    "videoEmbedHint": "Füge einen YouTube- oder Vimeo-Link ein, um ihn in der App abzuspielen. Ein Suchlink öffnet YouTube."
   },
   "teams": {
     "title": "Teams",

@@ -49,3 +49,13 @@ export async function deleteExercise(id: number): Promise<void> {
   await db.exercises.update(id, { deletedAt: new Date().toISOString(), _dirty: 1 });
   schedulePush();
 }
+
+/**
+ * Optimistically reflect an admin content edit to a shared (global) exercise
+ * locally WITHOUT marking it dirty — the authoritative write happens via the
+ * admin RPC and syncs back down. Avoids the local push (which RLS would reject
+ * for user_id = NULL rows).
+ */
+export async function patchExerciseLocal(id: number, data: Partial<Exercise>): Promise<void> {
+  await db.exercises.update(id, { ...data, updatedAt: new Date().toISOString() });
+}

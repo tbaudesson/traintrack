@@ -2,13 +2,16 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { useExercises, createCustomExercise, updateExercise, deleteExercise } from "@/hooks/useExercises";
+import { useExercises, createCustomExercise, updateExercise, deleteExercise, patchExerciseLocal } from "@/hooks/useExercises";
+import { useAuth } from "@/contexts/AuthContext";
+import { adminUpdateExerciseContent } from "@/lib/adminService";
 import type { Exercise, MuscleGroup, Equipment } from "@/db";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { VideoEmbed } from "@/components/domain/VideoEmbed";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Loader2, Dumbbell, ChevronDown, ChevronUp, Pencil, Trash2, PlayCircle, Check, X } from "lucide-react";
+import { Plus, Search, Loader2, Dumbbell, ChevronDown, ChevronUp, Pencil, Trash2, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const MUSCLE_GROUPS: MuscleGroup[] = ["chest", "back", "legs", "shoulders", "arms", "core", "full_body", "other"];
@@ -129,21 +132,40 @@ function AddExerciseForm({ onDone }: { onDone: () => void }) {
 
 function ExerciseRow({ ex }: { ex: Exercise }) {
   const t = useTranslations("exercises");
+  const { isAdmin } = useAuth();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [name, setName] = useState(ex.name);
   const [description, setDescription] = useState(ex.description ?? "");
   const [videoUrl, setVideoUrl] = useState(ex.videoUrl ?? "");
   const hasDetail = !!ex.description || !!ex.videoUrl;
+  // Custom exercises are fully editable by their owner; admins can also curate
+  // the description/video on the shared built-in library.
+  const canEdit = ex.isCustom || isAdmin;
 
   async function save() {
-    await updateExercise(ex.id!, {
-      name: name.trim() || ex.name,
-      description: description.trim() || undefined,
-      videoUrl: videoUrl.trim() || undefined,
-    });
-    setEditing(false);
-    setOpen(true);
+    setBusy(true);
+    try {
+      if (ex.isCustom) {
+        await updateExercise(ex.id!, {
+          name: name.trim() || ex.name,
+          description: description.trim() || undefined,
+          videoUrl: videoUrl.trim() || undefined,
+        });
+      } else if (isAdmin && ex.uuid) {
+        // Built-in row: write server-side via the admin RPC, then reflect locally.
+        await adminUpdateExerciseContent(ex.uuid, description.trim(), videoUrl.trim());
+        await patchExerciseLocal(ex.id!, {
+          description: description.trim() || undefined,
+          videoUrl: videoUrl.trim() || undefined,
+        });
+      }
+      setEditing(false);
+      setOpen(true);
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -155,41 +177,41 @@ function ExerciseRow({ ex }: { ex: Exercise }) {
           {ex.isCustom && (
             <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">{t("custom")}</span>
           )}
-          {(hasDetail || ex.isCustom) && (open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />)}
+          {(hasDetail || canEdit) && (open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />)}
         </button>
 
         {open && (
           <div className="mt-2 space-y-2 border-t border-border pt-2">
             {editing ? (
               <>
-                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("name")} />
+                {ex.isCustom && <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("name")} />}
                 <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("descPlaceholder")} />
                 <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder={t("videoPlaceholder")} />
+                <p className="text-[11px] text-muted-foreground">{t("videoEmbedHint")}</p>
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={save} className="flex-1"><Check className="mr-1 h-4 w-4" />{t("save")}</Button>
+                  <Button size="sm" onClick={save} disabled={busy} className="flex-1">
+                    {busy ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Check className="mr-1 h-4 w-4" />}{t("save")}
+                  </Button>
                   <Button size="sm" variant="ghost" onClick={() => setEditing(false)}><X className="h-4 w-4" /></Button>
                 </div>
               </>
             ) : (
               <>
                 {ex.description && <p className="text-sm text-muted-foreground">{ex.description}</p>}
-                {ex.videoUrl && (
-                  <a href={ex.videoUrl} target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-accent-600">
-                    <PlayCircle className="h-4 w-4" /> {t("watch")}
-                  </a>
-                )}
+                {ex.videoUrl && <VideoEmbed url={ex.videoUrl} />}
                 {!hasDetail && !ex.isCustom && (
                   <p className="text-xs text-muted-foreground">{ex.equipment ?? ""}</p>
                 )}
-                {ex.isCustom && (
+                {canEdit && (
                   <div className="flex gap-2 pt-1">
                     <Button size="xs" variant="outline" onClick={() => setEditing(true)}>
                       <Pencil className="mr-1 h-3 w-3" />{t("edit")}
                     </Button>
-                    <Button size="xs" variant="ghost" className="text-destructive" onClick={() => ex.id && deleteExercise(ex.id)}>
-                      <Trash2 className="mr-1 h-3 w-3" />{t("delete")}
-                    </Button>
+                    {ex.isCustom && (
+                      <Button size="xs" variant="ghost" className="text-destructive" onClick={() => ex.id && deleteExercise(ex.id)}>
+                        <Trash2 className="mr-1 h-3 w-3" />{t("delete")}
+                      </Button>
+                    )}
                   </div>
                 )}
               </>
