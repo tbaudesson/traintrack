@@ -270,7 +270,8 @@
     "programs": "Programmes",
     "teams": "Équipes",
     "settings": "Réglages",
-    "readiness": "Forme du jour"
+    "readiness": "Forme du jour",
+    "admin": "Console admin"
   },
   "notes": {
     "title": "Notes",
@@ -381,6 +382,19 @@
     "system": "Système",
     "accent": "Couleur d'accent",
     "navSection": "Barre de navigation",
-    "navDesc": "Choisissez jusqu'à 5 onglets pour la barre du bas."
+    "navDesc": "Choisissez jusqu'à 5 onglets pour la barre du bas.",
+    "style": "Style visuel",
+    "reset": "Réinitialiser",
+    "account": "Compte",
+    "acc_indigo": "Indigo",
+    "acc_indigo_d": "Le look d'origine",
+    "acc_emerald": "Émeraude",
+    "acc_emerald_d": "Frais & vert",
+    "acc_rose": "Rose",
+    "acc_rose_d": "Audacieux & vif",
+    "acc_amber": "Ambre",
+    "acc_amber_d": "Chaud & énergique",
+    "acc_slate": "Ardoise",
+    "acc_slate_d": "Calme & minimal"
   }
 }

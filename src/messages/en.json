@@ -270,7 +270,8 @@
     "programs": "Programs",
     "teams": "Teams",
     "settings": "Settings",
-    "readiness": "Daily readiness"
+    "readiness": "Daily readiness",
+    "admin": "Admin console"
   },
   "notes": {
     "title": "Notes",
@@ -381,6 +382,19 @@
     "system": "System",
     "accent": "Accent color",
     "navSection": "Bottom navigation",
-    "navDesc": "Pick up to 5 tabs for the bottom bar."
+    "navDesc": "Pick up to 5 tabs for the bottom bar.",
+    "style": "Visual style",
+    "reset": "Reset",
+    "account": "Account",
+    "acc_indigo": "Indigo",
+    "acc_indigo_d": "The original look",
+    "acc_emerald": "Emerald",
+    "acc_emerald_d": "Fresh & green",
+    "acc_rose": "Rose",
+    "acc_rose_d": "Bold & vivid",
+    "acc_amber": "Amber",
+    "acc_amber_d": "Warm & energetic",
+    "acc_slate": "Slate",
+    "acc_slate_d": "Calm & minimal"
   }
 }

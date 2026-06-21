@@ -270,7 +270,8 @@
     "programs": "Programme",
     "teams": "Teams",
     "settings": "Einstellungen",
-    "readiness": "Tagesform"
+    "readiness": "Tagesform",
+    "admin": "Admin-Konsole"
   },
   "notes": {
     "title": "Notizen",
@@ -381,6 +382,19 @@
     "system": "System",
     "accent": "Akzentfarbe",
     "navSection": "Untere Navigation",
-    "navDesc": "Wähle bis zu 5 Tabs für die untere Leiste."
+    "navDesc": "Wähle bis zu 5 Tabs für die untere Leiste.",
+    "style": "Visueller Stil",
+    "reset": "Zurücksetzen",
+    "account": "Konto",
+    "acc_indigo": "Indigo",
+    "acc_indigo_d": "Der Originallook",
+    "acc_emerald": "Smaragd",
+    "acc_emerald_d": "Frisch & grün",
+    "acc_rose": "Rosé",
+    "acc_rose_d": "Kräftig & lebhaft",
+    "acc_amber": "Bernstein",
+    "acc_amber_d": "Warm & energisch",
+    "acc_slate": "Schiefer",
+    "acc_slate_d": "Ruhig & minimal"
   }
 }

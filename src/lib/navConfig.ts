@@ -44,3 +44,8 @@ export function setNavItemIds(ids: string[]): void {
   window.localStorage.setItem(KEY, JSON.stringify(ids.slice(0, MAX_NAV_ITEMS)));
   window.dispatchEvent(new Event("navitemschange"));
 }
+
+export function resetNavItemIds(): string[] {
+  setNavItemIds(DEFAULT_IDS);
+  return [...DEFAULT_IDS];
+}
