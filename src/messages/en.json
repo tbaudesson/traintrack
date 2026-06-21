@@ -10,6 +10,7 @@
     "exercises": "Exercises",
     "teams": "Teams",
     "nutrition": "Nutrition",
+    "challenges": "Challenges",
     "more": "More"
   },
   "sync": {
@@ -327,7 +328,34 @@
     "settings": "Settings",
     "readiness": "Daily readiness",
     "admin": "Admin console",
-    "profile": "Profile"
+    "profile": "Profile",
+    "challenges": "Challenges",
+    "messages": "Messages"
+  },
+  "challenges": {
+    "title": "Challenges",
+    "create": "New",
+    "createTitle": "Create a challenge",
+    "empty": "No challenges yet. Trainers can create one for their team.",
+    "team": "Team",
+    "name": "Name",
+    "namePlaceholder": "e.g. October Volume Sprint",
+    "type": "Type",
+    "start": "Start",
+    "end": "End",
+    "delete": "Delete challenge",
+    "noScores": "No scores logged in this period yet.",
+    "sessionsUnit": "sessions",
+    "daysUnit": "days",
+    "type_volume": "Most volume",
+    "type_sessions": "Most sessions",
+    "type_consistency": "Most consistent",
+    "typeHint_volume": "Ranks members by total weight lifted (kg) during the window.",
+    "typeHint_sessions": "Ranks members by number of workouts logged.",
+    "typeHint_consistency": "Ranks members by number of distinct training days.",
+    "status_active": "Active",
+    "status_upcoming": "Upcoming",
+    "status_ended": "Ended"
   },
   "notes": {
     "title": "Notes",

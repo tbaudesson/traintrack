@@ -8,11 +8,11 @@ import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { NAV_CATALOG, getNavItemIds } from "@/lib/navConfig";
 import {
   Home, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList,
-  Users, HeartPulse, Trophy, type LucideIcon,
+  Users, HeartPulse, Trophy, Flag, MessageCircle, type LucideIcon,
 } from "lucide-react";
 
 const ICONS: Record<string, LucideIcon> = {
-  Home, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse, Trophy,
+  Home, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse, Trophy, Flag, MessageCircle,
 };
 
 export function BottomNav() {

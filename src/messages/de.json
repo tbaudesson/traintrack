@@ -10,6 +10,7 @@
     "exercises": "Übungen",
     "teams": "Teams",
     "nutrition": "Ernährung",
+    "challenges": "Challenges",
     "more": "Mehr"
   },
   "sync": {
@@ -327,7 +328,34 @@
     "settings": "Einstellungen",
     "readiness": "Tagesform",
     "admin": "Admin-Konsole",
-    "profile": "Profil"
+    "profile": "Profil",
+    "challenges": "Challenges",
+    "messages": "Nachrichten"
+  },
+  "challenges": {
+    "title": "Challenges",
+    "create": "Neu",
+    "createTitle": "Challenge erstellen",
+    "empty": "Noch keine Challenges. Trainer können eine für ihr Team erstellen.",
+    "team": "Team",
+    "name": "Name",
+    "namePlaceholder": "z. B. Oktober-Volumen-Sprint",
+    "type": "Typ",
+    "start": "Start",
+    "end": "Ende",
+    "delete": "Challenge löschen",
+    "noScores": "In diesem Zeitraum noch keine Werte erfasst.",
+    "sessionsUnit": "Einheiten",
+    "daysUnit": "Tage",
+    "type_volume": "Meistes Volumen",
+    "type_sessions": "Meiste Einheiten",
+    "type_consistency": "Am beständigsten",
+    "typeHint_volume": "Reiht Mitglieder nach gesamtem gehobenem Gewicht (kg) im Zeitraum.",
+    "typeHint_sessions": "Reiht Mitglieder nach Anzahl erfasster Workouts.",
+    "typeHint_consistency": "Reiht Mitglieder nach Anzahl verschiedener Trainingstage.",
+    "status_active": "Aktiv",
+    "status_upcoming": "Bevorstehend",
+    "status_ended": "Beendet"
   },
   "notes": {
     "title": "Notizen",

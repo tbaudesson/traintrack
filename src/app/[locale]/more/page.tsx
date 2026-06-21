@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   ListChecks, ClipboardList, Users, HeartPulse, Settings, ChevronRight,
-  User, Shield,
+  User, Shield, Flag, MessageCircle,
 } from "lucide-react";
 
 export default function MorePage() {
@@ -28,6 +28,8 @@ export default function MorePage() {
     { href: "/exercises", icon: ListChecks, label: t("exercises"), color: "text-accent-500" },
     { href: "/programs", icon: ClipboardList, label: t("programs"), color: "text-violet-500" },
     { href: "/teams", icon: Users, label: t("teams"), color: "text-emerald-500" },
+    { href: "/challenges", icon: Flag, label: t("challenges"), color: "text-orange-500" },
+    { href: "/messages", icon: MessageCircle, label: t("messages"), color: "text-sky-500" },
   ];
 
   return (

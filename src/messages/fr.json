@@ -10,6 +10,7 @@
     "exercises": "Exercices",
     "teams": "Équipes",
     "nutrition": "Nutrition",
+    "challenges": "Défis",
     "more": "Plus"
   },
   "sync": {
@@ -327,7 +328,34 @@
     "settings": "Réglages",
     "readiness": "Forme du jour",
     "admin": "Console admin",
-    "profile": "Profil"
+    "profile": "Profil",
+    "challenges": "Défis",
+    "messages": "Messages"
+  },
+  "challenges": {
+    "title": "Défis",
+    "create": "Nouveau",
+    "createTitle": "Créer un défi",
+    "empty": "Aucun défi pour l'instant. Les coachs peuvent en créer un pour leur équipe.",
+    "team": "Équipe",
+    "name": "Nom",
+    "namePlaceholder": "ex. Sprint de volume d'octobre",
+    "type": "Type",
+    "start": "Début",
+    "end": "Fin",
+    "delete": "Supprimer le défi",
+    "noScores": "Aucun score enregistré sur cette période.",
+    "sessionsUnit": "séances",
+    "daysUnit": "jours",
+    "type_volume": "Plus de volume",
+    "type_sessions": "Plus de séances",
+    "type_consistency": "Plus régulier",
+    "typeHint_volume": "Classe les membres par poids total soulevé (kg) sur la période.",
+    "typeHint_sessions": "Classe les membres par nombre de séances enregistrées.",
+    "typeHint_consistency": "Classe les membres par nombre de jours d'entraînement distincts.",
+    "status_active": "En cours",
+    "status_upcoming": "À venir",
+    "status_ended": "Terminé"
   },
   "notes": {
     "title": "Notes",
