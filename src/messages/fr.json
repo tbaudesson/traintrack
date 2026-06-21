@@ -433,7 +433,16 @@
   "notes": {
     "title": "Notes",
     "placeholder": "Ajouter une note…",
-    "add": "Ajouter"
+    "add": "Ajouter",
+    "scopeWorkout": "Séance entière",
+    "scopeExercise": "Sur {name}",
+    "recordVoice": "Enregistrer une note vocale",
+    "stopSend": "Envoyer",
+    "cancel": "Annuler",
+    "playVoice": "Écouter la note vocale",
+    "micDenied": "Accès au microphone refusé.",
+    "voiceUnsupported": "Les notes vocales ne sont pas prises en charge sur cet appareil.",
+    "voiceError": "Échec de l'envoi de la note vocale."
   },
   "ai": {
     "section": "Générateur IA de programmes",

@@ -433,7 +433,16 @@
   "notes": {
     "title": "Notes",
     "placeholder": "Add a note…",
-    "add": "Add note"
+    "add": "Add note",
+    "scopeWorkout": "Whole workout",
+    "scopeExercise": "On {name}",
+    "recordVoice": "Record voice note",
+    "stopSend": "Send",
+    "cancel": "Cancel",
+    "playVoice": "Play voice note",
+    "micDenied": "Microphone access was denied.",
+    "voiceUnsupported": "Voice notes aren't supported on this device.",
+    "voiceError": "Couldn't upload the voice note."
   },
   "ai": {
     "section": "AI program builder",

@@ -433,7 +433,16 @@
   "notes": {
     "title": "Notizen",
     "placeholder": "Notiz hinzufügen…",
-    "add": "Hinzufügen"
+    "add": "Hinzufügen",
+    "scopeWorkout": "Ganzes Workout",
+    "scopeExercise": "Zu {name}",
+    "recordVoice": "Sprachnotiz aufnehmen",
+    "stopSend": "Senden",
+    "cancel": "Abbrechen",
+    "playVoice": "Sprachnotiz abspielen",
+    "micDenied": "Mikrofonzugriff verweigert.",
+    "voiceUnsupported": "Sprachnotizen werden auf diesem Gerät nicht unterstützt.",
+    "voiceError": "Sprachnotiz konnte nicht hochgeladen werden."
   },
   "ai": {
     "section": "KI-Programmgenerator",

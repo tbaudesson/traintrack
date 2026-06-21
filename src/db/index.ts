@@ -79,6 +79,11 @@ export interface WorkoutNote extends SyncFields {
   workoutId: number;
   authorName?: string;
   body: string;
+  /** Optional anchor to a specific exercise within the workout (stable uuid). */
+  exerciseUuid?: string;
+  exerciseName?: string;
+  /** Storage path of an attached voice note, if any. */
+  audioPath?: string;
   createdAt: string;
   updatedAt: string;
 }
