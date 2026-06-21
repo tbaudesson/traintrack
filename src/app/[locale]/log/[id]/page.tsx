@@ -4,19 +4,20 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import { useWorkout } from "@/hooks/useWorkouts";
+import { useWorkout, updateWorkout, deleteWorkout } from "@/hooks/useWorkouts";
 import { useWorkoutSets, addWorkoutSet, updateWorkoutSet, deleteWorkoutSet } from "@/hooks/useWorkoutSets";
 import { useExercises } from "@/hooks/useExercises";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Check, Trash2, Timer, X, Dumbbell } from "lucide-react";
+import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 
@@ -31,6 +32,9 @@ export default function SessionLoggerPage() {
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const [rest, setRest] = useState<number | null>(null);
+  const [editMeta, setEditMeta] = useState(false);
+  const [titleDraft, setTitleDraft] = useState("");
+  const [dateDraft, setDateDraft] = useState("");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const exMap = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises]);
@@ -86,13 +90,64 @@ export default function SessionLoggerPage() {
         title={workout?.title || t("title")}
         showBack
         actions={
-          <Button size="sm" onClick={() => router.push("/log")}>
-            {t("finishWorkout")}
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              aria-label={t("editWorkout")}
+              onClick={() => {
+                setTitleDraft(workout?.title ?? "");
+                setDateDraft(workout?.date ?? "");
+                setEditMeta((v) => !v);
+              }}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button size="sm" onClick={() => router.push("/log")}>
+              {t("finishWorkout")}
+            </Button>
+          </div>
         }
       />
 
       <div className="space-y-4 p-4 pb-28">
+        {editMeta && (
+          <Card>
+            <CardContent className="space-y-2 py-3">
+              <Input value={titleDraft} onChange={(e) => setTitleDraft(e.target.value)} placeholder={t("title")} />
+              <Input type="date" value={dateDraft} onChange={(e) => setDateDraft(e.target.value)} />
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  className="flex-1"
+                  onClick={async () => {
+                    await updateWorkout(workoutId, {
+                      title: titleDraft.trim() || undefined,
+                      date: dateDraft || workout?.date,
+                    });
+                    setEditMeta(false);
+                  }}
+                >
+                  <Check className="mr-1 h-4 w-4" />
+                  {t("save")}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-destructive"
+                  onClick={async () => {
+                    await deleteWorkout(workoutId);
+                    router.push("/log");
+                  }}
+                >
+                  <Trash2 className="mr-1 h-4 w-4" />
+                  {t("deleteWorkout")}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {groups.length === 0 && (
           <p className="rounded-lg bg-card/60 py-8 text-center text-sm text-muted-foreground">
             {t("noExercises")}

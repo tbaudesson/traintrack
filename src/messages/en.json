@@ -121,7 +121,10 @@
     "selectExercise": "Select an exercise",
     "restTimer": "Rest timer",
     "history": "History",
-    "noWorkouts": "No workouts logged yet."
+    "noWorkouts": "No workouts logged yet.",
+    "editWorkout": "Edit workout",
+    "deleteWorkout": "Delete workout",
+    "save": "Save"
   },
   "progress": {
     "title": "Progress",
@@ -150,7 +153,15 @@
     "mg_full_body": "Full body",
     "mg_other": "Other",
     "added": "Exercise added",
-    "search": "Search exercises"
+    "search": "Search exercises",
+    "description": "Description",
+    "videoUrl": "Video URL",
+    "watch": "Watch video",
+    "edit": "Edit",
+    "save": "Save",
+    "delete": "Delete",
+    "descPlaceholder": "How to perform it…",
+    "videoPlaceholder": "https://…"
   },
   "teams": {
     "title": "Teams",
@@ -348,7 +359,19 @@
     "feat_coaching": "Coaching (create teams)",
     "feat_advanced_progress": "Advanced progress (1RM)",
     "upgradeTitle": "Upgrade required",
-    "upgradeDesc": "This feature isn't included in your current plan. Contact your administrator."
+    "upgradeDesc": "This feature isn't included in your current plan. Contact your administrator.",
+    "invitations": "Invitations",
+    "invite": "Invite by email",
+    "inviteEmail": "Email address",
+    "send": "Send invite",
+    "revoke": "Revoke",
+    "noInvitations": "No invitations yet.",
+    "invSent": "Invitation sent",
+    "inv_pending": "pending",
+    "inv_accepted": "accepted",
+    "inv_revoked": "revoked",
+    "editName": "Edit name",
+    "nameSaved": "Saved"
   },
   "profile": {
     "title": "Profile",

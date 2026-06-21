@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { getApiKey, setApiKey, clearApiKey } from "@/lib/aiService";
 import { getTextSize, applyTextSize, type TextSize } from "@/lib/textSize";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { getMode, applyMode, getAccent, applyAccent, ACCENTS, type ThemeMode, type Accent } from "@/lib/appTheme";
 import {
   NAV_CATALOG, getNavItemIds, setNavItemIds, resetNavItemIds, MAX_NAV_ITEMS, LOCKED_NAV_ID,
@@ -64,6 +65,7 @@ export default function SettingsPage() {
   const ta = useTranslations("appearance");
   const tnav = useTranslations("nav");
   const { user, profile, signOut, isAdmin } = useAuth();
+  const { hasFeature } = useFeatureAccess();
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -89,9 +91,16 @@ export default function SettingsPage() {
     if (id === LOCKED_NAV_ID) return; // "more" is mandatory
     setNavIds((cur) => {
       let next: string[];
-      if (cur.includes(id)) next = cur.filter((x) => x !== id);
-      else if (cur.length >= MAX_NAV_ITEMS) return cur;
-      else next = [...cur, id];
+      if (cur.includes(id)) {
+        next = cur.filter((x) => x !== id);
+      } else {
+        next = [...cur, id];
+        // If over the cap, evict the oldest removable tab so adding always works
+        if (next.length > MAX_NAV_ITEMS) {
+          const victim = next.find((x) => x !== LOCKED_NAV_ID && x !== id);
+          if (victim) next = next.filter((x) => x !== victim);
+        }
+      }
       setNavItemIds(next);
       return next;
     });
@@ -262,22 +271,20 @@ export default function SettingsPage() {
         >
           <p className="mb-3 text-xs text-muted-foreground">{ta("navDesc")}</p>
           <div className="grid grid-cols-2 gap-2">
-            {NAV_CATALOG.map((item) => {
+            {NAV_CATALOG.filter((item) => !item.feature || hasFeature(item.feature)).map((item) => {
               const checked = navIds.includes(item.id);
               const locked = item.id === LOCKED_NAV_ID;
-              const atMax = !checked && !locked && navIds.length >= MAX_NAV_ITEMS;
               const Icon = NAV_ICONS[item.icon] ?? Home;
               return (
                 <button
                   key={item.id}
                   onClick={() => toggleNav(item.id)}
-                  disabled={atMax || locked}
+                  disabled={locked}
                   className={cn(
                     "flex items-center gap-2 rounded-lg border p-2.5 text-xs transition-colors",
                     checked || locked
                       ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-900/20"
                       : "border-border text-muted-foreground hover:border-accent-300",
-                    atMax && "opacity-40",
                     locked && "opacity-70"
                   )}
                 >

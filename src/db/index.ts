@@ -103,6 +103,8 @@ export interface Exercise extends SyncFields {
   name: string;
   muscleGroup: MuscleGroup;
   equipment?: Equipment;
+  description?: string;
+  videoUrl?: string;
   /** true = user-created custom exercise; false = seeded library row */
   isCustom: boolean;
   createdAt: string;

@@ -5,18 +5,19 @@ import { useTranslations } from "next-intl";
 import {
   useNutritionForDate,
   addNutritionEntry,
+  updateNutritionEntry,
   deleteNutritionEntry,
   sumMacros,
 } from "@/hooks/useNutrition";
 import { useAthleteProfile, updateNutritionTargets } from "@/hooks/useAthleteProfile";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { UpgradeNotice } from "@/components/domain/UpgradeNotice";
-import type { Meal } from "@/db";
+import type { Meal, NutritionEntry } from "@/db";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, Settings2, Loader2 } from "lucide-react";
+import { Plus, Trash2, Settings2, Loader2, Pencil } from "lucide-react";
 
 const MEALS: Meal[] = ["breakfast", "lunch", "dinner", "snack"];
 
@@ -188,28 +189,73 @@ export default function NutritionPage() {
             <section key={m} className="space-y-1.5">
               <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t(`meal_${m}`)}</h2>
               {entries.filter((e) => e.meal === m).map((e) => (
-                <Card key={e.id}>
-                  <CardContent className="flex items-center gap-3 py-2.5">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{e.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {Math.round(e.calories ?? 0)} kcal · P{Math.round(e.proteinG ?? 0)} C{Math.round(e.carbsG ?? 0)} F{Math.round(e.fatG ?? 0)}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => e.id && deleteNutritionEntry(e.id)}
-                      className="rounded-md p-1 text-muted-foreground hover:text-destructive"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </CardContent>
-                </Card>
+                <NutritionRow key={e.id} entry={e} />
               ))}
             </section>
           ))
         )}
       </div>
     </>
+  );
+}
+
+function NutritionRow({ entry }: { entry: NutritionEntry }) {
+  const t = useTranslations("nutrition");
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(entry.name);
+  const [cal, setCal] = useState(entry.calories?.toString() ?? "");
+  const [pro, setPro] = useState(entry.proteinG?.toString() ?? "");
+  const [carb, setCarb] = useState(entry.carbsG?.toString() ?? "");
+  const [fat, setFat] = useState(entry.fatG?.toString() ?? "");
+
+  async function save() {
+    await updateNutritionEntry(entry.id!, {
+      name: name.trim() || entry.name,
+      calories: cal ? Number(cal) : undefined,
+      proteinG: pro ? Number(pro) : undefined,
+      carbsG: carb ? Number(carb) : undefined,
+      fatG: fat ? Number(fat) : undefined,
+    });
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <Card>
+        <CardContent className="space-y-2 py-3">
+          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("foodName")} />
+          <div className="grid grid-cols-4 gap-2">
+            <LabeledInput label={t("calories")} value={cal} onChange={setCal} />
+            <LabeledInput label="P" value={pro} onChange={setPro} />
+            <LabeledInput label="C" value={carb} onChange={setCarb} />
+            <LabeledInput label="F" value={fat} onChange={setFat} />
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" className="flex-1" onClick={save}>{t("add")}</Button>
+            <Button size="sm" variant="ghost" onClick={() => setEditing(false)}>✕</Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardContent className="flex items-center gap-3 py-2.5">
+        <div className="flex-1">
+          <p className="text-sm font-medium">{entry.name}</p>
+          <p className="text-xs text-muted-foreground">
+            {Math.round(entry.calories ?? 0)} kcal · P{Math.round(entry.proteinG ?? 0)} C{Math.round(entry.carbsG ?? 0)} F{Math.round(entry.fatG ?? 0)}
+          </p>
+        </div>
+        <button onClick={() => setEditing(true)} className="rounded-md p-1 text-muted-foreground hover:text-foreground">
+          <Pencil className="h-3.5 w-3.5" />
+        </button>
+        <button onClick={() => entry.id && deleteNutritionEntry(entry.id)} className="rounded-md p-1 text-muted-foreground hover:text-destructive">
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
+      </CardContent>
+    </Card>
   );
 }
 

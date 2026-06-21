@@ -15,22 +15,28 @@ import {
   deletePlan,
   getAppSettings,
   setAppSetting,
+  adminUpdateDisplayName,
+  adminCreateInvitation,
+  adminListInvitations,
+  adminRevokeInvitation,
   FEATURE_KEYS,
   type AdminUserProfile,
   type Plan,
   type FeatureKey,
+  type Invitation,
 } from "@/lib/adminService";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Check, Trash2, Loader2, ShieldCheck, Plus, Users2, CreditCard, type LucideIcon } from "lucide-react";
+import { Check, Trash2, Loader2, ShieldCheck, Plus, Users2, CreditCard, Mail, Pencil, X, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Tab = "users" | "plans" | "gdpr";
+type Tab = "users" | "invitations" | "plans" | "gdpr";
 
 const TABS: { id: Tab; icon: LucideIcon }[] = [
   { id: "users", icon: Users2 },
+  { id: "invitations", icon: Mail },
   { id: "plans", icon: CreditCard },
   { id: "gdpr", icon: ShieldCheck },
 ];
@@ -40,7 +46,7 @@ export default function AdminPage() {
   const router = useRouter();
   const { isAdmin, loading } = useAuth();
   const [tab, setTab] = useState<Tab>("users");
-  const [counts, setCounts] = useState<{ users?: number; plans?: number }>({});
+  const [counts, setCounts] = useState<{ users?: number; plans?: number; invitations?: number }>({});
 
   useEffect(() => {
     if (!loading && !isAdmin) router.replace("/");
@@ -48,8 +54,10 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!isAdmin) return;
-    Promise.all([adminListUsers(), listPlans()])
-      .then(([u, p]) => setCounts({ users: u.length, plans: p.length }))
+    Promise.all([adminListUsers(), listPlans(), adminListInvitations()])
+      .then(([u, p, i]) =>
+        setCounts({ users: u.length, plans: p.length, invitations: i.filter((x) => x.status === "pending").length })
+      )
       .catch(() => {});
   }, [isAdmin]);
 
@@ -59,9 +67,13 @@ export default function AdminPage() {
     <>
       <PageHeader title={t("title")} showBack />
       <div className="space-y-4 p-4 pb-24">
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           {TABS.map(({ id, icon: Icon }) => {
-            const count = id === "users" ? counts.users : id === "plans" ? counts.plans : undefined;
+            const count =
+              id === "users" ? counts.users
+              : id === "plans" ? counts.plans
+              : id === "invitations" ? counts.invitations
+              : undefined;
             return (
               <button
                 key={id}
@@ -74,13 +86,14 @@ export default function AdminPage() {
                 )}
               >
                 <Icon className="h-5 w-5" />
-                <span>{t(id)}{count != null ? ` (${count})` : ""}</span>
+                <span className="text-center leading-tight">{t(id)}{count ? ` (${count})` : ""}</span>
               </button>
             );
           })}
         </div>
 
         {tab === "users" && <UsersTab />}
+        {tab === "invitations" && <InvitationsTab />}
         {tab === "plans" && <PlansTab />}
         {tab === "gdpr" && <GdprTab />}
       </div>
@@ -93,6 +106,8 @@ function UsersTab() {
   const [users, setUsers] = useState<AdminUserProfile[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
 
   async function refresh() {
     setLoading(true);
@@ -121,7 +136,31 @@ function UsersTab() {
           <CardContent className="space-y-2 py-3">
             <div className="flex items-center gap-2">
               <div className="flex-1 min-w-0">
-                <p className="truncate font-medium">{u.display_name ?? u.email}</p>
+                {editId === u.user_id ? (
+                  <div className="flex items-center gap-1">
+                    <Input value={draft} onChange={(e) => setDraft(e.target.value)} className="h-8" />
+                    <Button
+                      size="xs"
+                      onClick={async () => { await adminUpdateDisplayName(u.user_id, draft.trim()); setEditId(null); refresh(); }}
+                    >
+                      <Check className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button size="xs" variant="ghost" onClick={() => setEditId(null)}>
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="flex items-center gap-1.5 truncate font-medium">
+                    {u.display_name ?? u.email}
+                    <button
+                      onClick={() => { setEditId(u.user_id); setDraft(u.display_name ?? ""); }}
+                      className="text-muted-foreground hover:text-foreground"
+                      aria-label={t("editName")}
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </button>
+                  </p>
+                )}
                 <p className="truncate text-xs text-muted-foreground">{u.email}</p>
               </div>
               <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium", statusColor[u.status])}>
@@ -171,6 +210,83 @@ function UsersTab() {
           </CardContent>
         </Card>
       ))}
+    </div>
+  );
+}
+
+function InvitationsTab() {
+  const t = useTranslations("admin");
+  const [invites, setInvites] = useState<Invitation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function refresh() {
+    setLoading(true);
+    setInvites(await adminListInvitations());
+    setLoading(false);
+  }
+  useEffect(() => { refresh(); }, []);
+
+  async function send() {
+    if (!email.trim()) return;
+    setBusy(true);
+    setErr(null);
+    try {
+      await adminCreateInvitation(email.trim());
+      setEmail("");
+      await refresh();
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const statusColor: Record<string, string> = {
+    pending: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
+    accepted: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
+    revoked: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+  };
+
+  return (
+    <div className="space-y-3">
+      <Card>
+        <CardContent className="space-y-2 py-4">
+          <p className="text-sm font-medium">{t("invite")}</p>
+          <div className="flex gap-2">
+            <Input type="email" placeholder={t("inviteEmail")} value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Button onClick={send} disabled={busy || !email.trim()}>
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Mail className="mr-1 h-4 w-4" />{t("send")}</>}
+            </Button>
+          </div>
+          {err && <p className="text-xs text-red-600">{err}</p>}
+        </CardContent>
+      </Card>
+
+      {loading ? (
+        <Loader2 className="mx-auto my-8 h-6 w-6 animate-spin text-muted-foreground" />
+      ) : invites.length === 0 ? (
+        <p className="py-6 text-center text-sm text-muted-foreground">{t("noInvitations")}</p>
+      ) : (
+        invites.map((inv) => (
+          <Card key={inv.id}>
+            <CardContent className="flex items-center gap-2 py-3">
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              <span className="flex-1 truncate text-sm">{inv.email}</span>
+              <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium", statusColor[inv.status])}>
+                {t(`inv_${inv.status}`)}
+              </span>
+              {inv.status === "pending" && (
+                <Button size="xs" variant="ghost" className="text-destructive" onClick={async () => { await adminRevokeInvitation(inv.id); refresh(); }}>
+                  {t("revoke")}
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        ))
+      )}
     </div>
   );
 }

@@ -121,7 +121,10 @@
     "selectExercise": "Übung wählen",
     "restTimer": "Pausen-Timer",
     "history": "Verlauf",
-    "noWorkouts": "Noch keine Einheiten protokolliert."
+    "noWorkouts": "Noch keine Einheiten protokolliert.",
+    "editWorkout": "Einheit bearbeiten",
+    "deleteWorkout": "Einheit löschen",
+    "save": "Speichern"
   },
   "progress": {
     "title": "Fortschritt",
@@ -150,7 +153,15 @@
     "mg_full_body": "Ganzkörper",
     "mg_other": "Andere",
     "added": "Übung hinzugefügt",
-    "search": "Übungen suchen"
+    "search": "Übungen suchen",
+    "description": "Beschreibung",
+    "videoUrl": "Video-Link",
+    "watch": "Video ansehen",
+    "edit": "Bearbeiten",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "descPlaceholder": "Ausführung…",
+    "videoPlaceholder": "https://…"
   },
   "teams": {
     "title": "Teams",
@@ -348,7 +359,19 @@
     "feat_coaching": "Coaching (Teams erstellen)",
     "feat_advanced_progress": "Erweiterter Fortschritt (1RM)",
     "upgradeTitle": "Upgrade erforderlich",
-    "upgradeDesc": "Diese Funktion ist in deiner Lizenz nicht enthalten. Kontaktiere deinen Administrator."
+    "upgradeDesc": "Diese Funktion ist in deiner Lizenz nicht enthalten. Kontaktiere deinen Administrator.",
+    "invitations": "Einladungen",
+    "invite": "Per E-Mail einladen",
+    "inviteEmail": "E-Mail-Adresse",
+    "send": "Einladen",
+    "revoke": "Widerrufen",
+    "noInvitations": "Keine Einladungen.",
+    "invSent": "Einladung gesendet",
+    "inv_pending": "ausstehend",
+    "inv_accepted": "angenommen",
+    "inv_revoked": "widerrufen",
+    "editName": "Name bearbeiten",
+    "nameSaved": "Gespeichert"
   },
   "profile": {
     "title": "Profil",

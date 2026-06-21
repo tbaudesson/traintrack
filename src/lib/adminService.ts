@@ -100,6 +100,14 @@ export async function adminSetUserPlan(userId: string, planId: string): Promise<
   if (error) throw new Error(error.message);
 }
 
+export async function adminUpdateDisplayName(userId: string, name: string): Promise<void> {
+  const { error } = await supabase.rpc("admin_update_display_name", {
+    p_user_id: userId,
+    p_name: name,
+  });
+  if (error) throw new Error(error.message);
+}
+
 // ─── App settings (GDPR config, etc.) ────────────────────────────────
 
 export async function getAppSettings(): Promise<Record<string, string>> {

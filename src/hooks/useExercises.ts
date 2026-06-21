@@ -19,12 +19,16 @@ export async function createCustomExercise(data: {
   name: string;
   muscleGroup: MuscleGroup;
   equipment?: Equipment;
+  description?: string;
+  videoUrl?: string;
 }): Promise<number> {
   const now = new Date().toISOString();
   const id = (await db.exercises.add({
     name: data.name,
     muscleGroup: data.muscleGroup,
     equipment: data.equipment,
+    description: data.description,
+    videoUrl: data.videoUrl,
     isCustom: true,
     uuid: crypto.randomUUID(),
     userId: getCurrentUserIdSync(),

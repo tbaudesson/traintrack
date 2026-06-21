@@ -63,6 +63,14 @@ export async function addNutritionEntry(data: {
   return id;
 }
 
+export async function updateNutritionEntry(
+  id: number,
+  data: Partial<Pick<NutritionEntry, "name" | "meal" | "calories" | "proteinG" | "carbsG" | "fatG">>
+): Promise<void> {
+  await db.nutritionEntries.update(id, { ...data, updatedAt: new Date().toISOString(), _dirty: 1 });
+  schedulePush();
+}
+
 export async function deleteNutritionEntry(id: number): Promise<void> {
   await db.nutritionEntries.update(id, { deletedAt: new Date().toISOString(), _dirty: 1 });
   schedulePush();
