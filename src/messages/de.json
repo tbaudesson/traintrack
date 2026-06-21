@@ -12,6 +12,9 @@
     "nutrition": "Ernährung",
     "challenges": "Challenges",
     "health": "Gesundheit",
+    "programs": "Programme",
+    "readiness": "Tagesform",
+    "profile": "Profil",
     "more": "Mehr"
   },
   "sync": {
@@ -155,7 +158,8 @@
     "metric_reps": "Wdh.",
     "metric_vol": "Volumen",
     "muscleVolume": "Volumen pro Muskel (30 Tage)",
-    "prsHint": "Bestes geschätztes 1RM pro Übung (Epley-Formel)."
+    "prsHint": "Bestes geschätztes 1RM pro Übung (Epley-Formel).",
+    "analyticsHint": "Protokolliere ein Workout (mit Gewicht und Wdh.), um Volumen, Übungsfortschritt, Muskelbalance und Rekorde freizuschalten."
   },
   "exercises": {
     "title": "Übungen",

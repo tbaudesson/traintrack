@@ -12,6 +12,9 @@
     "nutrition": "Nutrition",
     "challenges": "Défis",
     "health": "Santé",
+    "programs": "Programmes",
+    "readiness": "Forme",
+    "profile": "Profil",
     "more": "Plus"
   },
   "sync": {
@@ -155,7 +158,8 @@
     "metric_reps": "Répétitions",
     "metric_vol": "Volume",
     "muscleVolume": "Volume par muscle (30 jours)",
-    "prsHint": "Meilleur 1RM estimé par exercice (formule d'Epley)."
+    "prsHint": "Meilleur 1RM estimé par exercice (formule d'Epley).",
+    "analyticsHint": "Enregistrez une séance (avec poids et répétitions) pour débloquer le volume, la progression par exercice, l'équilibre musculaire et les records."
   },
   "exercises": {
     "title": "Exercices",

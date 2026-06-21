@@ -172,6 +172,14 @@ export default function ProgressPage() {
           <p className="rounded-lg bg-card/60 py-8 text-center text-sm text-muted-foreground">{t("noData")}</p>
         )}
 
+        {/* Bodyweight logged but no workout sets yet → explain the empty analytics. */}
+        {scored.length === 0 && bwData.length > 0 && (
+          <div className="flex items-start gap-3 rounded-lg border border-dashed border-border p-4">
+            <Dumbbell className="mt-0.5 h-5 w-5 shrink-0 text-accent-500" />
+            <p className="text-sm text-muted-foreground">{t("analyticsHint")}</p>
+          </div>
+        )}
+
         {/* Volume over time */}
         {volumeData.length > 0 && (
           <ChartCard title={t("volume")}>

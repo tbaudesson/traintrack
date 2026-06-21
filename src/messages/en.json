@@ -12,6 +12,9 @@
     "nutrition": "Nutrition",
     "challenges": "Challenges",
     "health": "Health",
+    "programs": "Programs",
+    "readiness": "Readiness",
+    "profile": "Profile",
     "more": "More"
   },
   "sync": {
@@ -155,7 +158,8 @@
     "metric_reps": "Reps",
     "metric_vol": "Volume",
     "muscleVolume": "Volume by muscle (30 days)",
-    "prsHint": "Best estimated 1-rep max per exercise (Epley formula)."
+    "prsHint": "Best estimated 1-rep max per exercise (Epley formula).",
+    "analyticsHint": "Log a workout (with weight and reps) to unlock volume, per-exercise progression, muscle balance and PRs."
   },
   "exercises": {
     "title": "Exercises",
