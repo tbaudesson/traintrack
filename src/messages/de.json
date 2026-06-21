@@ -271,7 +271,8 @@
     "teams": "Teams",
     "settings": "Einstellungen",
     "readiness": "Tagesform",
-    "admin": "Admin-Konsole"
+    "admin": "Admin-Konsole",
+    "profile": "Profil"
   },
   "notes": {
     "title": "Notizen",

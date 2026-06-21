@@ -271,7 +271,8 @@
     "teams": "Teams",
     "settings": "Settings",
     "readiness": "Daily readiness",
-    "admin": "Admin console"
+    "admin": "Admin console",
+    "profile": "Profile"
   },
   "notes": {
     "title": "Notes",

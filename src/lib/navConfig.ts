@@ -23,8 +23,17 @@ export const NAV_CATALOG: NavItemDef[] = [
 ];
 
 export const MAX_NAV_ITEMS = 5;
+// "more" is mandatory — it's the entry point to profile/settings/admin.
+export const LOCKED_NAV_ID = "more";
 const DEFAULT_IDS = ["home", "log", "nutrition", "progress", "more"];
 const KEY = "traintrack.navItems";
+
+/** Guarantee "more" is always present (appended if missing), capped at MAX. */
+function ensureMore(ids: string[]): string[] {
+  const out = ids.filter((id) => id !== LOCKED_NAV_ID).slice(0, MAX_NAV_ITEMS - 1);
+  out.push(LOCKED_NAV_ID);
+  return out;
+}
 
 export function getNavItemIds(): string[] {
   if (typeof window === "undefined") return DEFAULT_IDS;
@@ -32,7 +41,7 @@ export function getNavItemIds(): string[] {
     const raw = window.localStorage.getItem(KEY);
     if (raw) {
       const ids = JSON.parse(raw) as string[];
-      if (Array.isArray(ids) && ids.length > 0) return ids.slice(0, MAX_NAV_ITEMS);
+      if (Array.isArray(ids) && ids.length > 0) return ensureMore(ids);
     }
   } catch {
     /* ignore */
@@ -41,7 +50,7 @@ export function getNavItemIds(): string[] {
 }
 
 export function setNavItemIds(ids: string[]): void {
-  window.localStorage.setItem(KEY, JSON.stringify(ids.slice(0, MAX_NAV_ITEMS)));
+  window.localStorage.setItem(KEY, JSON.stringify(ensureMore(ids)));
   window.dispatchEvent(new Event("navitemschange"));
 }
 

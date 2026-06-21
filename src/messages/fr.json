@@ -271,7 +271,8 @@
     "teams": "Équipes",
     "settings": "Réglages",
     "readiness": "Forme du jour",
-    "admin": "Console admin"
+    "admin": "Console admin",
+    "profile": "Profil"
   },
   "notes": {
     "title": "Notes",

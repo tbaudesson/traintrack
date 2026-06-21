@@ -16,7 +16,7 @@ import { getApiKey, setApiKey, clearApiKey } from "@/lib/aiService";
 import { getTextSize, applyTextSize, type TextSize } from "@/lib/textSize";
 import { getMode, applyMode, getAccent, applyAccent, ACCENTS, type ThemeMode, type Accent } from "@/lib/appTheme";
 import {
-  NAV_CATALOG, getNavItemIds, setNavItemIds, resetNavItemIds, MAX_NAV_ITEMS,
+  NAV_CATALOG, getNavItemIds, setNavItemIds, resetNavItemIds, MAX_NAV_ITEMS, LOCKED_NAV_ID,
 } from "@/lib/navConfig";
 import {
   Download, Shield, LogOut, Trash2, Loader2, Sparkles, Check, Type, ShieldCheck,
@@ -86,6 +86,7 @@ export default function SettingsPage() {
   function chooseMode(m: ThemeMode) { applyMode(m); setMode(m); }
   function chooseAccent(a: Accent) { applyAccent(a); setAccent(a); }
   function toggleNav(id: string) {
+    if (id === LOCKED_NAV_ID) return; // "more" is mandatory
     setNavIds((cur) => {
       let next: string[];
       if (cur.includes(id)) next = cur.filter((x) => x !== id);
@@ -263,24 +264,26 @@ export default function SettingsPage() {
           <div className="grid grid-cols-2 gap-2">
             {NAV_CATALOG.map((item) => {
               const checked = navIds.includes(item.id);
-              const atMax = !checked && navIds.length >= MAX_NAV_ITEMS;
+              const locked = item.id === LOCKED_NAV_ID;
+              const atMax = !checked && !locked && navIds.length >= MAX_NAV_ITEMS;
               const Icon = NAV_ICONS[item.icon] ?? Home;
               return (
                 <button
                   key={item.id}
                   onClick={() => toggleNav(item.id)}
-                  disabled={atMax}
+                  disabled={atMax || locked}
                   className={cn(
                     "flex items-center gap-2 rounded-lg border p-2.5 text-xs transition-colors",
-                    checked
+                    checked || locked
                       ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-900/20"
                       : "border-border text-muted-foreground hover:border-accent-300",
-                    atMax && "opacity-40"
+                    atMax && "opacity-40",
+                    locked && "opacity-70"
                   )}
                 >
                   <Icon className="h-4 w-4" />
                   {tnav(item.key)}
-                  {checked && <CheckCircle2 className="ml-auto h-3.5 w-3.5 text-accent-500" />}
+                  {(checked || locked) && <CheckCircle2 className="ml-auto h-3.5 w-3.5 text-accent-500" />}
                 </button>
               );
             })}

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   ListChecks, ClipboardList, Users, HeartPulse, Settings, ChevronRight,
-  User, Trophy, Shield,
+  User, Shield,
 } from "lucide-react";
 
 export default function MorePage() {
@@ -20,6 +20,7 @@ export default function MorePage() {
   const name = profile?.display_name ?? user?.email?.split("@")[0] ?? "";
   const initials = name.slice(0, 2).toUpperCase();
 
+  // Functional destinations (profile/settings/admin live in the header).
   const items = [
     ...(hasFeature("readiness")
       ? [{ href: "/readiness", icon: HeartPulse, label: t("readiness"), color: "text-rose-500" }]
@@ -27,15 +28,13 @@ export default function MorePage() {
     { href: "/exercises", icon: ListChecks, label: t("exercises"), color: "text-accent-500" },
     { href: "/programs", icon: ClipboardList, label: t("programs"), color: "text-violet-500" },
     { href: "/teams", icon: Users, label: t("teams"), color: "text-emerald-500" },
-    ...(isAdmin ? [{ href: "/admin", icon: Shield, label: t("admin"), color: "text-accent-500" }] : []),
-    { href: "/settings", icon: Settings, label: t("settings"), color: "text-muted-foreground" },
   ];
 
   return (
     <>
       <PageHeader title={t("title")} />
       <div className="space-y-3 p-4 pb-24">
-        {/* User header */}
+        {/* User header with quick-access icons */}
         <Card>
           <CardContent className="flex items-center gap-3 py-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent-500 to-accent-700 text-sm font-bold text-white">
@@ -52,11 +51,18 @@ export default function MorePage() {
             </div>
             <div className="flex gap-1">
               <Link href="/profile">
-                <Button variant="ghost" size="sm" aria-label="profile"><Trophy className="h-5 w-5" /></Button>
+                <Button variant="ghost" size="sm" aria-label={t("profile")}><User className="h-5 w-5" /></Button>
               </Link>
               <Link href="/settings">
-                <Button variant="ghost" size="sm" aria-label="settings"><Settings className="h-5 w-5" /></Button>
+                <Button variant="ghost" size="sm" aria-label={t("settings")}><Settings className="h-5 w-5" /></Button>
               </Link>
+              {isAdmin && (
+                <Link href="/admin">
+                  <Button variant="ghost" size="sm" className="text-accent-600" aria-label={t("admin")}>
+                    <Shield className="h-5 w-5" />
+                  </Button>
+                </Link>
+              )}
             </div>
           </CardContent>
         </Card>
