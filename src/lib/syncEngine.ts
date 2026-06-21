@@ -413,14 +413,18 @@ async function pullTable(
     ? supabase.from(config.supabaseTable).select("*")
     : supabase.from(config.supabaseTable).select("*").eq("user_id", userId);
 
-  // For tables with updated_at, use it as the delta cursor
+  // For tables with updated_at, use it as the delta cursor.
+  // Use `gte` (not `gt`) because the cursor is advanced to the newest row we
+  // actually received (a server timestamp); re-fetching the boundary row each
+  // pull is harmless (upserts are idempotent) and avoids skipping rows that
+  // share the cursor's exact timestamp.
   if (config.hasUpdatedAt && lastPullAt) {
-    query = query.gt("updated_at", lastPullAt);
+    query = query.gte("updated_at", lastPullAt);
   } else if (lastPullAt) {
     // For tables without updated_at, use created_at as fallback
     // This means updates to existing records won't be pulled — acceptable
     // for append-only tables like queens, treatments, harvests
-    query = query.gt("created_at", lastPullAt);
+    query = query.gte("created_at", lastPullAt);
   }
 
   // Also pull soft-deleted records
@@ -445,8 +449,17 @@ async function pullTable(
   if (data.length === 0) return 0;
 
   let pulled = 0;
+  // Advance the cursor to the newest server timestamp we actually receive —
+  // never to the client clock (which can run ahead of the server and silently
+  // skip rows updated in the gap).
+  let maxCursor: string | undefined = lastPullAt;
 
   for (const row of data) {
+    const rowTime =
+      ((row as Record<string, unknown>).updated_at as string | undefined) ??
+      ((row as Record<string, unknown>).created_at as string | undefined);
+    if (rowTime && (!maxCursor || rowTime > maxCursor)) maxCursor = rowTime;
+
     const dexieRecord = supabaseToDexie(
       row as Record<string, unknown>,
       config,
@@ -498,12 +511,14 @@ async function pullTable(
     }
   }
 
-  // Update lastPullAt
-  const now = new Date().toISOString();
-  await db.syncMeta.put({
-    tableName: config.dexieTable,
-    lastPullAt: now,
-  } as SyncMeta);
+  // Advance the cursor to the newest row we received (server time), not the
+  // client clock. Only move it forward.
+  if (maxCursor && maxCursor !== lastPullAt) {
+    await db.syncMeta.put({
+      tableName: config.dexieTable,
+      lastPullAt: maxCursor,
+    } as SyncMeta);
+  }
 
   // Rebuild FK maps after pulling new records (for child tables)
   // This is handled by the caller — we just return the count
@@ -693,7 +708,25 @@ function subscribeRealtime(userId: string): void {
  * Start the sync engine: initial sync, realtime subscription, periodic pull.
  * Call this after the user has authenticated.
  */
+// Bump this when a sync-correctness fix requires existing devices to re-pull
+// everything once (clears the per-table cursors so the next pull is full).
+const SYNC_HEAL_KEY = "traintrack.syncHeal.v1";
+async function healStaleCursors(): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    if (window.localStorage.getItem(SYNC_HEAL_KEY)) return;
+    await db.syncMeta.clear();
+    window.localStorage.setItem(SYNC_HEAL_KEY, "1");
+    console.log("[Sync] Cleared pull cursors for a one-time full re-sync");
+  } catch {
+    /* non-critical */
+  }
+}
+
 export async function startSync(userId: string): Promise<void> {
+  // One-time heal for the client-clock cursor bug (skipped server updates).
+  await healStaleCursors();
+
   // Initial full sync
   await syncAll();
 
