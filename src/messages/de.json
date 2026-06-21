@@ -276,7 +276,21 @@
     "remaining": "{n} übrig",
     "searchFood": "Lebensmittel suchen…",
     "grams": "Menge (g)",
-    "clear": "Löschen"
+    "clear": "Löschen",
+    "water": "Wasser",
+    "removeWater": "250 ml entfernen",
+    "reset": "Zurücksetzen",
+    "mealTiming": "Mahlzeiten-Timing",
+    "mealTimingPre": "Iss 1–2 Std. vor dem Training eine ausgewogene Mahlzeit mit Kohlenhydraten + Protein.",
+    "mealTimingPost": "Du hast heute trainiert — iss innerhalb von 1–2 Std. Protein + Kohlenhydrate zur Erholung.",
+    "scan": "Barcode scannen",
+    "scanTitle": "Barcode scannen",
+    "scanning": "Richte die Kamera auf einen Barcode…",
+    "scanUnsupported": "Barcode-Scannen wird auf diesem Gerät nicht unterstützt. Gib die Nummer unten manuell ein.",
+    "cameraDenied": "Kamerazugriff verweigert. Gib den Barcode unten manuell ein.",
+    "enterBarcode": "Oder Barcode eingeben",
+    "lookup": "Suchen",
+    "scanNotFound": "Produkt nicht gefunden — füge es manuell hinzu."
   },
   "templates": {
     "choose": "Auswählen",

@@ -276,7 +276,21 @@
     "remaining": "{n} left",
     "searchFood": "Search foods…",
     "grams": "Amount (g)",
-    "clear": "Clear"
+    "clear": "Clear",
+    "water": "Water",
+    "removeWater": "Remove 250 ml",
+    "reset": "Reset",
+    "mealTiming": "Meal timing",
+    "mealTimingPre": "Eat a balanced meal with carbs + protein 1–2h before training.",
+    "mealTimingPost": "You trained today — have protein + carbs within 1–2h to recover.",
+    "scan": "Scan barcode",
+    "scanTitle": "Scan a barcode",
+    "scanning": "Point the camera at a barcode…",
+    "scanUnsupported": "Barcode scanning isn't supported on this device. Enter the number manually below.",
+    "cameraDenied": "Camera access was denied. Enter the barcode manually below.",
+    "enterBarcode": "Or enter the barcode",
+    "lookup": "Look up",
+    "scanNotFound": "Product not found — add it manually."
   },
   "templates": {
     "choose": "Choose",

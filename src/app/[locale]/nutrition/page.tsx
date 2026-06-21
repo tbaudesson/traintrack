@@ -10,15 +10,19 @@ import {
   sumMacros,
 } from "@/hooks/useNutrition";
 import { useAthleteProfile, updateNutritionTargets } from "@/hooks/useAthleteProfile";
+import { useTodayHydration, addWater, setWater } from "@/hooks/useHydration";
+import { useWorkouts } from "@/hooks/useWorkouts";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { UpgradeNotice } from "@/components/domain/UpgradeNotice";
+import { BarcodeScanner } from "@/components/domain/BarcodeScanner";
+import { lookupBarcode } from "@/lib/openFoodFacts";
 import type { Meal, NutritionEntry } from "@/db";
 import { searchFoods, scaleFood, type FoodItem } from "@/lib/foodCatalog";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, Settings2, Loader2, Pencil, Search } from "lucide-react";
+import { Plus, Trash2, Settings2, Loader2, Pencil, Search, ScanLine, Droplet, Minus, Clock } from "lucide-react";
 
 const MEALS: Meal[] = ["breakfast", "lunch", "dinner", "snack"];
 
@@ -50,8 +54,12 @@ export default function NutritionPage() {
   const today = new Date().toISOString().split("T")[0];
   const entries = useNutritionForDate(today);
   const profile = useAthleteProfile();
+  const hydration = useTodayHydration(today);
+  const workouts = useWorkouts();
+  const trainedToday = workouts.some((w) => w.date === today);
   const totals = sumMacros(entries);
   const targets = profile?.nutritionTargets;
+  const waterGoal = targets?.water ?? 2500;
 
   const [adding, setAdding] = useState(false);
   const [editTargets, setEditTargets] = useState(false);
@@ -67,6 +75,10 @@ export default function NutritionPage() {
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
   const [grams, setGrams] = useState("");
   const matches = foodQuery && !selectedFood ? searchFoods(foodQuery) : [];
+  // Barcode scanner
+  const [scanOpen, setScanOpen] = useState(false);
+  const [scanBusy, setScanBusy] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
 
   function pickFood(food: FoodItem, g = food.serving) {
     const m = scaleFood(food, g);
@@ -102,6 +114,25 @@ export default function NutritionPage() {
   const [tPro, setTPro] = useState(targets?.protein?.toString() ?? "");
   const [tCarb, setTCarb] = useState(targets?.carbs?.toString() ?? "");
   const [tFat, setTFat] = useState(targets?.fat?.toString() ?? "");
+  const [tWater, setTWater] = useState(targets?.water?.toString() ?? "");
+
+  async function handleScan(code: string) {
+    setScanOpen(false);
+    setScanBusy(true);
+    setScanError(null);
+    try {
+      const food = await lookupBarcode(code);
+      if (!food) {
+        setScanError(t("scanNotFound"));
+        setAdding(true);
+        return;
+      }
+      setAdding(true);
+      pickFood(food);
+    } finally {
+      setScanBusy(false);
+    }
+  }
 
   async function handleAdd() {
     if (!name.trim()) return;
@@ -130,6 +161,7 @@ export default function NutritionPage() {
       protein: tPro ? Number(tPro) : undefined,
       carbs: tCarb ? Number(tCarb) : undefined,
       fat: tFat ? Number(tFat) : undefined,
+      water: tWater ? Number(tWater) : undefined,
     });
     setEditTargets(false);
   }
@@ -168,6 +200,63 @@ export default function NutritionPage() {
           </CardContent>
         </Card>
 
+        {/* Hydration */}
+        <Card>
+          <CardContent className="py-4">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="flex items-center gap-2 text-sm font-semibold">
+                <Droplet className="h-4 w-4 text-sky-500" /> {t("water")}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {(hydration?.ml ?? 0)} / {waterGoal} ml
+              </p>
+            </div>
+            <div className="mb-3 h-2 overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-sky-500 transition-all"
+                style={{ width: `${Math.min(100, Math.round(((hydration?.ml ?? 0) / waterGoal) * 100))}%` }}
+              />
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button size="sm" variant="outline" onClick={() => addWater(250)}>
+                <Plus className="mr-1 h-3.5 w-3.5" />250 ml
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => addWater(500)}>
+                <Plus className="mr-1 h-3.5 w-3.5" />500 ml
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => addWater(-250)}
+                disabled={(hydration?.ml ?? 0) <= 0}
+                aria-label={t("removeWater")}
+              >
+                <Minus className="h-3.5 w-3.5" />
+              </Button>
+              {(hydration?.ml ?? 0) > 0 && (
+                <button onClick={() => setWater(0)} className="ml-auto text-xs text-muted-foreground hover:text-foreground">
+                  {t("reset")}
+                </button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Meal timing guidance */}
+        <Card>
+          <CardContent className="flex items-start gap-3 py-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-100 text-accent-600 dark:bg-accent-900/30">
+              <Clock className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-sm font-medium">{t("mealTiming")}</p>
+              <p className="text-xs text-muted-foreground">
+                {trainedToday ? t("mealTimingPost") : t("mealTimingPre")}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
         {editTargets && (
           <Card>
             <CardContent className="space-y-3 py-4">
@@ -177,6 +266,7 @@ export default function NutritionPage() {
                 <LabeledInput label={t("protein")} value={tPro} onChange={setTPro} />
                 <LabeledInput label={t("carbs")} value={tCarb} onChange={setTCarb} />
                 <LabeledInput label={t("fat")} value={tFat} onChange={setTFat} />
+                <LabeledInput label={`${t("water")} (ml)`} value={tWater} onChange={setTWater} />
               </div>
               <Button onClick={handleSaveTargets} className="w-full">{t("saveTargets")}</Button>
             </CardContent>
@@ -187,8 +277,9 @@ export default function NutritionPage() {
         {adding ? (
           <Card>
             <CardContent className="space-y-3 py-4">
-              {/* Search the built-in food database */}
-              <div className="relative">
+              {/* Search the built-in food database + barcode scan */}
+              <div className="flex gap-2">
+                <div className="relative flex-1">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <Input
                   placeholder={t("searchFood")}
@@ -210,7 +301,15 @@ export default function NutritionPage() {
                     ))}
                   </div>
                 )}
+                </div>
+                <Button variant="outline" size="icon" onClick={() => { setScanError(null); setScanOpen(true); }} aria-label={t("scan")}>
+                  {scanBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ScanLine className="h-4 w-4" />}
+                </Button>
               </div>
+
+              {scanError && (
+                <p className="rounded-md bg-amber-100 px-3 py-2 text-xs text-amber-700 dark:bg-amber-900/30">{scanError}</p>
+              )}
 
               {selectedFood && (
                 <div className="flex items-center gap-2 rounded-md bg-accent-50 px-3 py-2 dark:bg-accent-950/30">
@@ -272,6 +371,8 @@ export default function NutritionPage() {
           ))
         )}
       </div>
+
+      <BarcodeScanner open={scanOpen} onOpenChange={setScanOpen} onDetected={handleScan} />
     </>
   );
 }

@@ -276,7 +276,21 @@
     "remaining": "{n} restant",
     "searchFood": "Rechercher un aliment…",
     "grams": "Quantité (g)",
-    "clear": "Effacer"
+    "clear": "Effacer",
+    "water": "Eau",
+    "removeWater": "Retirer 250 ml",
+    "reset": "Réinitialiser",
+    "mealTiming": "Timing des repas",
+    "mealTimingPre": "Prenez un repas équilibré (glucides + protéines) 1 à 2 h avant l'entraînement.",
+    "mealTimingPost": "Vous vous êtes entraîné — prenez protéines + glucides dans les 1 à 2 h pour récupérer.",
+    "scan": "Scanner un code-barres",
+    "scanTitle": "Scanner un code-barres",
+    "scanning": "Pointez la caméra vers un code-barres…",
+    "scanUnsupported": "Le scan de code-barres n'est pas pris en charge sur cet appareil. Saisissez le numéro ci-dessous.",
+    "cameraDenied": "Accès à la caméra refusé. Saisissez le code-barres ci-dessous.",
+    "enterBarcode": "Ou saisissez le code-barres",
+    "lookup": "Rechercher",
+    "scanNotFound": "Produit introuvable — ajoutez-le manuellement."
   },
   "templates": {
     "choose": "Choisir",
