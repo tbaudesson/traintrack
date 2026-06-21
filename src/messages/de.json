@@ -273,7 +273,37 @@
     "editTargets": "Ziele bearbeiten",
     "saveTargets": "Speichern",
     "ofTarget": "von {target}",
-    "remaining": "{n} übrig"
+    "remaining": "{n} übrig",
+    "searchFood": "Lebensmittel suchen…",
+    "grams": "Menge (g)",
+    "clear": "Löschen"
+  },
+  "templates": {
+    "choose": "Auswählen",
+    "title": "Programm wählen",
+    "subtitle": "Wähle ein fertiges Programm passend zu deinen Zielen — kein Aufbau von Grund auf nötig.",
+    "goal": "Ziel",
+    "level": "Niveau",
+    "days": "Tage / Woche",
+    "daysShort": "T/Wo",
+    "use": "Dieses Programm verwenden",
+    "goal_strength": "Kraft",
+    "goal_hypertrophy": "Muskeln",
+    "goal_fat_loss": "Fettabbau",
+    "goal_general": "Allgemein",
+    "level_beginner": "Anfänger",
+    "level_intermediate": "Fortgeschritten",
+    "level_advanced": "Profi"
+  },
+  "recommend": {
+    "title": "Für dich empfohlen",
+    "recover": "Deine Bereitschaft ist niedrig ({score}/100). Mach es heute locker oder leg einen Ruhetag ein.",
+    "train": "Seit deiner letzten Einheit sind {days} Tage vergangen — Zeit zu trainieren.",
+    "rest": "Du hast {days} Tage am Stück trainiert. Ein Ruhetag hilft bei der Erholung.",
+    "protein": "Du hast heute trainiert — etwa {remaining}g mehr Protein unterstützen die Erholung.",
+    "calories": "Du liegst deutlich unter deinem Kalorienziel. Tank auf für eine gute Erholung.",
+    "consistency": "Strebe diese Woche mindestens 2–3 Einheiten an — Beständigkeit schlägt Intensität.",
+    "keepGoing": "Super Arbeit — {count} Einheiten in den letzten 7 Tagen. Weiter so!"
   },
   "more": {
     "title": "Mehr",

@@ -273,7 +273,37 @@
     "editTargets": "Modifier les objectifs",
     "saveTargets": "Enregistrer",
     "ofTarget": "sur {target}",
-    "remaining": "{n} restant"
+    "remaining": "{n} restant",
+    "searchFood": "Rechercher un aliment…",
+    "grams": "Quantité (g)",
+    "clear": "Effacer"
+  },
+  "templates": {
+    "choose": "Choisir",
+    "title": "Choisir un programme",
+    "subtitle": "Choisissez un programme prêt à l'emploi adapté à vos objectifs — pas besoin de tout créer.",
+    "goal": "Objectif",
+    "level": "Niveau",
+    "days": "Jours / semaine",
+    "daysShort": "j/sem",
+    "use": "Utiliser ce programme",
+    "goal_strength": "Force",
+    "goal_hypertrophy": "Muscle",
+    "goal_fat_loss": "Perte de gras",
+    "goal_general": "Général",
+    "level_beginner": "Débutant",
+    "level_intermediate": "Intermédiaire",
+    "level_advanced": "Avancé"
+  },
+  "recommend": {
+    "title": "Recommandé pour vous",
+    "recover": "Votre forme est basse ({score}/100). Allez-y doucement ou prenez un jour de repos.",
+    "train": "Cela fait {days} jours depuis votre dernière séance — il est temps de vous entraîner.",
+    "rest": "Vous vous êtes entraîné {days} jours d'affilée. Un jour de repos favorisera votre récupération.",
+    "protein": "Vous vous êtes entraîné aujourd'hui — environ {remaining}g de protéines en plus aideront votre récupération.",
+    "calories": "Vous êtes bien en dessous de votre objectif calorique. Rechargez pour bien récupérer.",
+    "consistency": "Visez au moins 2–3 séances cette semaine — la régularité prime sur l'intensité.",
+    "keepGoing": "Excellent travail — {count} séances ces 7 derniers jours. Continuez !"
   },
   "more": {
     "title": "Plus",

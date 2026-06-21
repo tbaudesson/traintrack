@@ -13,11 +13,12 @@ import { useAthleteProfile, updateNutritionTargets } from "@/hooks/useAthletePro
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { UpgradeNotice } from "@/components/domain/UpgradeNotice";
 import type { Meal, NutritionEntry } from "@/db";
+import { searchFoods, scaleFood, type FoodItem } from "@/lib/foodCatalog";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, Settings2, Loader2, Pencil } from "lucide-react";
+import { Plus, Trash2, Settings2, Loader2, Pencil, Search } from "lucide-react";
 
 const MEALS: Meal[] = ["breakfast", "lunch", "dinner", "snack"];
 
@@ -61,6 +62,40 @@ export default function NutritionPage() {
   const [carb, setCarb] = useState("");
   const [fat, setFat] = useState("");
   const [busy, setBusy] = useState(false);
+  // Food-database search
+  const [foodQuery, setFoodQuery] = useState("");
+  const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
+  const [grams, setGrams] = useState("");
+  const matches = foodQuery && !selectedFood ? searchFoods(foodQuery) : [];
+
+  function pickFood(food: FoodItem, g = food.serving) {
+    const m = scaleFood(food, g);
+    setSelectedFood(food);
+    setGrams(String(g));
+    setFoodQuery(food.name);
+    setName(m.name);
+    setCal(String(m.calories));
+    setPro(String(m.proteinG));
+    setCarb(String(m.carbsG));
+    setFat(String(m.fatG));
+  }
+
+  function changeGrams(g: string) {
+    setGrams(g);
+    if (selectedFood && g) {
+      const m = scaleFood(selectedFood, Number(g));
+      setCal(String(m.calories));
+      setPro(String(m.proteinG));
+      setCarb(String(m.carbsG));
+      setFat(String(m.fatG));
+    }
+  }
+
+  function clearFood() {
+    setSelectedFood(null);
+    setFoodQuery("");
+    setGrams("");
+  }
 
   // target edit fields
   const [tCal, setTCal] = useState(targets?.calories?.toString() ?? "");
@@ -82,6 +117,7 @@ export default function NutritionPage() {
         fatG: fat ? Number(fat) : undefined,
       });
       setName(""); setCal(""); setPro(""); setCarb(""); setFat("");
+      clearFood();
       setAdding(false);
     } finally {
       setBusy(false);
@@ -151,6 +187,47 @@ export default function NutritionPage() {
         {adding ? (
           <Card>
             <CardContent className="space-y-3 py-4">
+              {/* Search the built-in food database */}
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Input
+                  placeholder={t("searchFood")}
+                  value={foodQuery}
+                  onChange={(e) => { setFoodQuery(e.target.value); setSelectedFood(null); }}
+                  className="pl-10"
+                />
+                {matches.length > 0 && (
+                  <div className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-md border border-border bg-popover shadow-lg">
+                    {matches.map((f) => (
+                      <button
+                        key={f.name}
+                        onClick={() => pickFood(f)}
+                        className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-accent"
+                      >
+                        <span>{f.name}</span>
+                        <span className="shrink-0 text-xs text-muted-foreground">{f.kcal} kcal/100g</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {selectedFood && (
+                <div className="flex items-center gap-2 rounded-md bg-accent-50 px-3 py-2 dark:bg-accent-950/30">
+                  <label className="text-xs text-muted-foreground">{t("grams")}</label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    value={grams}
+                    onChange={(e) => changeGrams(e.target.value)}
+                    className="h-8 w-24"
+                  />
+                  <button onClick={clearFood} className="ml-auto text-xs text-muted-foreground hover:text-foreground">
+                    {t("clear")}
+                  </button>
+                </div>
+              )}
+
               <Input placeholder={t("foodName")} value={name} onChange={(e) => setName(e.target.value)} />
               <div className="flex flex-wrap gap-1.5">
                 {MEALS.map((m) => (

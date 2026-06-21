@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter, usePathname, Link } from "@/i18n/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { deleteMyAccount } from "@/lib/adminService";
+import { deleteMyAccount, updateMyDisplayName } from "@/lib/adminService";
 import { downloadJSONBackup } from "@/lib/exportService";
 import db from "@/db";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -23,6 +23,7 @@ import {
   Download, Shield, LogOut, Trash2, Loader2, Sparkles, Check, Type, ShieldCheck,
   Palette, LayoutGrid, Monitor, Sun, Moon, Globe, RotateCcw, CheckCircle2, User, Trophy,
   Home, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse,
+  Pencil, X,
   type LucideIcon,
 } from "lucide-react";
 
@@ -64,7 +65,7 @@ export default function SettingsPage() {
   const ta11y = useTranslations("a11y");
   const ta = useTranslations("appearance");
   const tnav = useTranslations("nav");
-  const { user, profile, signOut, isAdmin } = useAuth();
+  const { user, profile, signOut, isAdmin, refreshProfile } = useAuth();
   const { hasFeature } = useFeatureAccess();
   const locale = useLocale();
   const router = useRouter();
@@ -80,9 +81,25 @@ export default function SettingsPage() {
   const [mode, setMode] = useState<ThemeMode>(() => getMode());
   const [accent, setAccent] = useState<Accent>(() => getAccent());
   const [navIds, setNavIds] = useState<string[]>(() => getNavItemIds());
+  const [editName, setEditName] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
+  const [savingName, setSavingName] = useState(false);
 
   const name = profile?.display_name ?? user?.email?.split("@")[0] ?? "";
   const initials = name.slice(0, 2).toUpperCase();
+
+  async function saveName() {
+    setSavingName(true);
+    try {
+      await updateMyDisplayName(nameDraft.trim());
+      await refreshProfile();
+      setEditName(false);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSavingName(false);
+    }
+  }
 
   function chooseTextSize(s: TextSize) { applyTextSize(s); setTextSize(s); }
   function chooseMode(m: ThemeMode) { applyMode(m); setMode(m); }
@@ -140,7 +157,31 @@ export default function SettingsPage() {
               {initials || <User className="h-5 w-5" />}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate font-semibold">{name}</p>
+              {editName ? (
+                <div className="flex items-center gap-1.5">
+                  <Input
+                    autoFocus
+                    value={nameDraft}
+                    onChange={(e) => setNameDraft(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && saveName()}
+                    className="h-8"
+                  />
+                  <Button size="sm" className="h-8 px-2" onClick={saveName} disabled={savingName}>
+                    {savingName ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                  </Button>
+                  <Button size="sm" variant="ghost" className="h-8 px-2" onClick={() => setEditName(false)}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <button
+                  className="flex items-center gap-1.5 text-left"
+                  onClick={() => { setNameDraft(profile?.display_name ?? ""); setEditName(true); }}
+                >
+                  <span className="truncate font-semibold">{name}</span>
+                  <Pencil className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                </button>
+              )}
               <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
               {profile?.plan_name && (
                 <span className="mt-1 inline-block rounded-full bg-accent-100 px-2 py-0.5 text-[10px] font-medium text-accent-700 dark:bg-accent-900/40 dark:text-accent-300">

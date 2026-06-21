@@ -273,7 +273,37 @@
     "editTargets": "Edit targets",
     "saveTargets": "Save targets",
     "ofTarget": "of {target}",
-    "remaining": "{n} left"
+    "remaining": "{n} left",
+    "searchFood": "Search foods…",
+    "grams": "Amount (g)",
+    "clear": "Clear"
+  },
+  "templates": {
+    "choose": "Choose",
+    "title": "Choose a program",
+    "subtitle": "Pick a ready-made program that fits your goals — no need to build one from scratch.",
+    "goal": "Goal",
+    "level": "Level",
+    "days": "Days / week",
+    "daysShort": "days/wk",
+    "use": "Use this program",
+    "goal_strength": "Strength",
+    "goal_hypertrophy": "Muscle",
+    "goal_fat_loss": "Fat loss",
+    "goal_general": "General",
+    "level_beginner": "Beginner",
+    "level_intermediate": "Intermediate",
+    "level_advanced": "Advanced"
+  },
+  "recommend": {
+    "title": "Recommended for you",
+    "recover": "Your readiness is low ({score}/100). Keep today light or take a rest day.",
+    "train": "It's been {days} days since your last session — time to train.",
+    "rest": "You've trained {days} days in a row. A rest day will help you recover and grow.",
+    "protein": "You trained today — about {remaining}g more protein will help you recover.",
+    "calories": "You're well under your calorie target. Fuel up to support recovery.",
+    "consistency": "Aim for at least 2–3 sessions this week — consistency beats intensity.",
+    "keepGoing": "Great work — {count} sessions in the last 7 days. Keep it up!"
   },
   "more": {
     "title": "More",

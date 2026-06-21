@@ -11,6 +11,7 @@ import { useTodayReadiness, readinessScore } from "@/hooks/useReadiness";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Recommendations } from "@/components/domain/Recommendations";
 import { Dumbbell, Plus, Settings, TrendingUp, Flame, HeartPulse, ChevronRight, Trophy } from "lucide-react";
 
 export default function HomePage() {
@@ -128,6 +129,8 @@ export default function HomePage() {
             </Card>
           </Link>
           )}
+
+          <Recommendations />
 
           <Card>
             <CardContent className="flex flex-col items-center gap-3 py-8 text-center">

@@ -108,6 +108,12 @@ export async function adminUpdateDisplayName(userId: string, name: string): Prom
   if (error) throw new Error(error.message);
 }
 
+/** The signed-in user edits their own display name (no privilege escalation). */
+export async function updateMyDisplayName(name: string): Promise<void> {
+  const { error } = await supabase.rpc("update_my_display_name", { p_name: name });
+  if (error) throw new Error(error.message);
+}
+
 // ─── App settings (GDPR config, etc.) ────────────────────────────────
 
 export async function getAppSettings(): Promise<Record<string, string>> {
