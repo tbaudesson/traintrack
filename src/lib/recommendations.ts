@@ -10,6 +10,7 @@ export type RecKind =
   | "protein"
   | "calories"
   | "consistency"
+  | "sleep"
   | "keepGoing";
 
 export type RecTone = "good" | "info" | "warn";
@@ -37,6 +38,8 @@ export interface RecInput {
   /** Calories eaten today and the target, if set. */
   caloriesToday: number;
   caloriesTarget?: number;
+  /** Last recorded sleep (hours) from health metrics, if any. */
+  sleepHours?: number;
 }
 
 /**
@@ -48,6 +51,11 @@ export function buildRecommendations(i: RecInput): Recommendation[] {
   // 1. Low readiness → take it easy.
   if (i.readinessScore != null && i.readinessScore < 50) {
     recs.push({ kind: "recover", tone: "warn", params: { score: i.readinessScore } });
+  }
+
+  // 1b. Poor sleep → recovery focus.
+  if (i.sleepHours != null && i.sleepHours > 0 && i.sleepHours < 6) {
+    recs.push({ kind: "sleep", tone: "warn", params: { hours: Math.round(i.sleepHours * 10) / 10 } });
   }
 
   // 2. Long lay-off → nudge to train (unless already trained today).

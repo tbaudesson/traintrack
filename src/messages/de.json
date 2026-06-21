@@ -11,6 +11,7 @@
     "teams": "Teams",
     "nutrition": "Ernährung",
     "challenges": "Challenges",
+    "health": "Gesundheit",
     "more": "Mehr"
   },
   "sync": {
@@ -125,7 +126,15 @@
     "noWorkouts": "Noch keine Einheiten protokolliert.",
     "editWorkout": "Einheit bearbeiten",
     "deleteWorkout": "Einheit löschen",
-    "save": "Speichern"
+    "save": "Speichern",
+    "heartRate": "Herzfrequenz",
+    "hrConnect": "HF verbinden",
+    "hrConnecting": "Verbinde…",
+    "hrDisconnect": "Trennen",
+    "hrAvg": "Ø",
+    "hrMax": "Max",
+    "hrUnsupported": "Herzfrequenz-Sensoren brauchen Chrome auf Android oder Desktop.",
+    "hrError": "Verbindung zum Herzfrequenz-Sensor fehlgeschlagen."
   },
   "progress": {
     "title": "Fortschritt",
@@ -321,6 +330,7 @@
     "protein": "Du hast heute trainiert — etwa {remaining}g mehr Protein unterstützen die Erholung.",
     "calories": "Du liegst deutlich unter deinem Kalorienziel. Tank auf für eine gute Erholung.",
     "consistency": "Strebe diese Woche mindestens 2–3 Einheiten an — Beständigkeit schlägt Intensität.",
+    "sleep": "Nur {hours} Std. Schlaf — mach es heute lockerer und priorisiere die Erholung.",
     "keepGoing": "Super Arbeit — {count} Einheiten in den letzten 7 Tagen. Weiter so!"
   },
   "more": {
@@ -333,7 +343,27 @@
     "admin": "Admin-Konsole",
     "profile": "Profil",
     "challenges": "Challenges",
-    "messages": "Nachrichten"
+    "messages": "Nachrichten",
+    "health": "Gesundheit & Wearables"
+  },
+  "health": {
+    "title": "Gesundheit & Wearables",
+    "today": "Heute",
+    "steps": "Schritte",
+    "restingHr": "Ruhe-HF",
+    "hrv": "HRV",
+    "sleep": "Schlaf",
+    "save": "Speichern",
+    "saved": "Gespeichert",
+    "import": "Importieren",
+    "imported": "{n} Tage importiert ({skipped} übersprungen).",
+    "importError": "CSV-Datei konnte nicht gelesen werden.",
+    "importHint": "Verbinde während des Trainings einen Herzfrequenz-Gurt oder importiere eine CSV (date, steps, resting_hr, hrv, sleep) aus Apple Health oder Google Fit.",
+    "workoutHr": "Herzfrequenz im Training",
+    "hrAvg": "Ø",
+    "hrMax": "max",
+    "history": "Verlauf",
+    "stepsShort": "Schritte"
   },
   "challenges": {
     "title": "Challenges",

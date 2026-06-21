@@ -11,6 +11,7 @@
     "teams": "Teams",
     "nutrition": "Nutrition",
     "challenges": "Challenges",
+    "health": "Health",
     "more": "More"
   },
   "sync": {
@@ -125,7 +126,15 @@
     "noWorkouts": "No workouts logged yet.",
     "editWorkout": "Edit workout",
     "deleteWorkout": "Delete workout",
-    "save": "Save"
+    "save": "Save",
+    "heartRate": "Heart rate",
+    "hrConnect": "Connect HR",
+    "hrConnecting": "Connecting…",
+    "hrDisconnect": "Disconnect",
+    "hrAvg": "Avg",
+    "hrMax": "Max",
+    "hrUnsupported": "Heart-rate monitors need Chrome on Android or desktop.",
+    "hrError": "Couldn't connect to the heart-rate monitor."
   },
   "progress": {
     "title": "Progress",
@@ -321,6 +330,7 @@
     "protein": "You trained today — about {remaining}g more protein will help you recover.",
     "calories": "You're well under your calorie target. Fuel up to support recovery.",
     "consistency": "Aim for at least 2–3 sessions this week — consistency beats intensity.",
+    "sleep": "Only {hours}h of sleep — keep today lighter and prioritise recovery.",
     "keepGoing": "Great work — {count} sessions in the last 7 days. Keep it up!"
   },
   "more": {
@@ -333,7 +343,27 @@
     "admin": "Admin console",
     "profile": "Profile",
     "challenges": "Challenges",
-    "messages": "Messages"
+    "messages": "Messages",
+    "health": "Health & wearables"
+  },
+  "health": {
+    "title": "Health & wearables",
+    "today": "Today",
+    "steps": "Steps",
+    "restingHr": "Resting HR",
+    "hrv": "HRV",
+    "sleep": "Sleep",
+    "save": "Save",
+    "saved": "Saved",
+    "import": "Import",
+    "imported": "Imported {n} days ({skipped} skipped).",
+    "importError": "Couldn't read that CSV file.",
+    "importHint": "Connect a heart-rate strap during a workout, or import a CSV (date, steps, resting_hr, hrv, sleep) exported from Apple Health or Google Fit.",
+    "workoutHr": "Workout heart rate",
+    "hrAvg": "avg",
+    "hrMax": "max",
+    "history": "History",
+    "stepsShort": "steps"
   },
   "challenges": {
     "title": "Challenges",

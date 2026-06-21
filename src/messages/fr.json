@@ -11,6 +11,7 @@
     "teams": "Équipes",
     "nutrition": "Nutrition",
     "challenges": "Défis",
+    "health": "Santé",
     "more": "Plus"
   },
   "sync": {
@@ -125,7 +126,15 @@
     "noWorkouts": "Aucune séance enregistrée.",
     "editWorkout": "Modifier la séance",
     "deleteWorkout": "Supprimer la séance",
-    "save": "Enregistrer"
+    "save": "Enregistrer",
+    "heartRate": "Fréquence cardiaque",
+    "hrConnect": "Connecter FC",
+    "hrConnecting": "Connexion…",
+    "hrDisconnect": "Déconnecter",
+    "hrAvg": "Moy",
+    "hrMax": "Max",
+    "hrUnsupported": "Les capteurs de FC nécessitent Chrome sur Android ou ordinateur.",
+    "hrError": "Connexion au capteur de fréquence cardiaque impossible."
   },
   "progress": {
     "title": "Progrès",
@@ -321,6 +330,7 @@
     "protein": "Vous vous êtes entraîné aujourd'hui — environ {remaining}g de protéines en plus aideront votre récupération.",
     "calories": "Vous êtes bien en dessous de votre objectif calorique. Rechargez pour bien récupérer.",
     "consistency": "Visez au moins 2–3 séances cette semaine — la régularité prime sur l'intensité.",
+    "sleep": "Seulement {hours} h de sommeil — allez-y plus doucement et privilégiez la récupération.",
     "keepGoing": "Excellent travail — {count} séances ces 7 derniers jours. Continuez !"
   },
   "more": {
@@ -333,7 +343,27 @@
     "admin": "Console admin",
     "profile": "Profil",
     "challenges": "Défis",
-    "messages": "Messages"
+    "messages": "Messages",
+    "health": "Santé et objets connectés"
+  },
+  "health": {
+    "title": "Santé et objets connectés",
+    "today": "Aujourd'hui",
+    "steps": "Pas",
+    "restingHr": "FC au repos",
+    "hrv": "VFC",
+    "sleep": "Sommeil",
+    "save": "Enregistrer",
+    "saved": "Enregistré",
+    "import": "Importer",
+    "imported": "{n} jours importés ({skipped} ignorés).",
+    "importError": "Impossible de lire ce fichier CSV.",
+    "importHint": "Connectez une ceinture cardio pendant une séance, ou importez un CSV (date, steps, resting_hr, hrv, sleep) exporté depuis Apple Santé ou Google Fit.",
+    "workoutHr": "FC pendant la séance",
+    "hrAvg": "moy",
+    "hrMax": "max",
+    "history": "Historique",
+    "stepsShort": "pas"
   },
   "challenges": {
     "title": "Défis",

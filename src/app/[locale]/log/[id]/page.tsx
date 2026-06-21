@@ -17,9 +17,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil } from "lucide-react";
+import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
+import { connectHeartRate, isBluetoothSupported, type HeartRateMonitor } from "@/lib/bleHeartRate";
 
 export default function SessionLoggerPage() {
   const t = useTranslations("log");
@@ -37,6 +38,63 @@ export default function SessionLoggerPage() {
   const [dateDraft, setDateDraft] = useState("");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Web Bluetooth heart rate
+  const [hr, setHr] = useState<number | null>(null);
+  const [hrConnected, setHrConnected] = useState(false);
+  const [hrConnecting, setHrConnecting] = useState(false);
+  const [hrStats, setHrStats] = useState<{ avg: number; max: number } | null>(null);
+  const [hrError, setHrError] = useState<string | null>(null);
+  const hrMonitorRef = useRef<HeartRateMonitor | null>(null);
+  const hrSamplesRef = useRef<number[]>([]);
+
+  async function persistHr() {
+    const s = hrSamplesRef.current;
+    if (s.length === 0) return;
+    const avg = Math.round(s.reduce((a, b) => a + b, 0) / s.length);
+    await updateWorkout(workoutId, { avgHr: avg, maxHr: Math.max(...s) });
+  }
+
+  async function connectHr() {
+    setHrError(null);
+    setHrConnecting(true);
+    try {
+      const monitor = await connectHeartRate(
+        (bpm) => {
+          hrSamplesRef.current.push(bpm);
+          setHr(bpm);
+          const s = hrSamplesRef.current;
+          setHrStats({ avg: Math.round(s.reduce((a, b) => a + b, 0) / s.length), max: Math.max(...s) });
+        },
+        () => { hrMonitorRef.current = null; setHrConnected(false); setHr(null); }
+      );
+      hrMonitorRef.current = monitor;
+      setHrConnected(true);
+    } catch (e) {
+      const code = e instanceof Error ? e.message : "";
+      // Ignore the user cancelling the chooser.
+      if (!/cancel|user gesture|chooser/i.test(code)) {
+        setHrError(code === "BLE_UNSUPPORTED" ? t("hrUnsupported") : t("hrError"));
+      }
+    } finally {
+      setHrConnecting(false);
+    }
+  }
+
+  async function disconnectHr() {
+    await hrMonitorRef.current?.stop();
+    hrMonitorRef.current = null;
+    setHrConnected(false);
+    await persistHr();
+    setHr(null);
+  }
+
+  async function finishWorkout() {
+    await hrMonitorRef.current?.stop();
+    hrMonitorRef.current = null;
+    await persistHr();
+    router.push("/log");
+  }
+
   const exMap = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises]);
 
   // Group sets by exercise, preserving insertion order
@@ -52,6 +110,7 @@ export default function SessionLoggerPage() {
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      hrMonitorRef.current?.stop();
     };
   }, []);
 
@@ -103,7 +162,7 @@ export default function SessionLoggerPage() {
             >
               <Pencil className="h-4 w-4" />
             </Button>
-            <Button size="sm" onClick={() => router.push("/log")}>
+            <Button size="sm" onClick={finishWorkout}>
               {t("finishWorkout")}
             </Button>
           </div>
@@ -111,6 +170,41 @@ export default function SessionLoggerPage() {
       />
 
       <div className="space-y-4 p-4 pb-28">
+        {/* Heart-rate monitor (Web Bluetooth) */}
+        {isBluetoothSupported() ? (
+          <Card>
+            <CardContent className="flex items-center gap-3 py-3">
+              <div className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-full",
+                hr ? "bg-rose-100 dark:bg-rose-900/30" : "bg-muted"
+              )}>
+                <Heart className={cn("h-5 w-5", hr ? "animate-pulse text-rose-500" : "text-muted-foreground")} />
+              </div>
+              <div className="flex-1">
+                {hr ? (
+                  <p className="text-lg font-bold tabular-nums">{hr} <span className="text-xs font-normal text-muted-foreground">bpm</span></p>
+                ) : (
+                  <p className="text-sm font-medium">{t("heartRate")}</p>
+                )}
+                {hrStats && (
+                  <p className="text-[11px] text-muted-foreground">
+                    {t("hrAvg")} {hrStats.avg} · {t("hrMax")} {hrStats.max}
+                  </p>
+                )}
+                {hrError && <p className="text-[11px] text-destructive">{hrError}</p>}
+              </div>
+              {hrConnected ? (
+                <Button size="sm" variant="outline" onClick={disconnectHr}>{t("hrDisconnect")}</Button>
+              ) : (
+                <Button size="sm" variant="outline" onClick={connectHr} disabled={hrConnecting}>
+                  <HeartPulse className="mr-1 h-4 w-4" />
+                  {hrConnecting ? t("hrConnecting") : t("hrConnect")}
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        ) : null}
+
         {editMeta && (
           <Card>
             <CardContent className="space-y-2 py-3">

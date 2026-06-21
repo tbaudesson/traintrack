@@ -6,9 +6,10 @@ import { useWorkouts } from "@/hooks/useWorkouts";
 import { useTodayReadiness, readinessScore } from "@/hooks/useReadiness";
 import { useNutritionForDate, sumMacros } from "@/hooks/useNutrition";
 import { useAthleteProfile } from "@/hooks/useAthleteProfile";
+import { useHealthForDate } from "@/hooks/useHealth";
 import { buildRecommendations, type RecKind, type RecTone } from "@/lib/recommendations";
 import { Card, CardContent } from "@/components/ui/card";
-import { HeartPulse, Dumbbell, BedDouble, Beef, Flame, CalendarCheck, Sparkles, type LucideIcon } from "lucide-react";
+import { HeartPulse, Dumbbell, BedDouble, Beef, Flame, CalendarCheck, Sparkles, Moon, type LucideIcon } from "lucide-react";
 
 const ICONS: Record<RecKind, LucideIcon> = {
   recover: HeartPulse,
@@ -17,6 +18,7 @@ const ICONS: Record<RecKind, LucideIcon> = {
   protein: Beef,
   calories: Flame,
   consistency: CalendarCheck,
+  sleep: Moon,
   keepGoing: Sparkles,
 };
 
@@ -37,6 +39,7 @@ export function Recommendations() {
   const today = dayStr(0);
   const nutritionToday = useNutritionForDate(today);
   const profile = useAthleteProfile();
+  const healthToday = useHealthForDate(today);
 
   const recs = useMemo(() => {
     const dates = workouts.map((w) => w.date).sort();
@@ -71,8 +74,9 @@ export function Recommendations() {
       proteinTarget: targets?.protein,
       caloriesToday: macros.calories,
       caloriesTarget: targets?.calories,
+      sleepHours: healthToday?.sleepHours,
     }).slice(0, 3);
-  }, [workouts, nutritionToday, todayReadiness, profile, today]);
+  }, [workouts, nutritionToday, todayReadiness, profile, healthToday, today]);
 
   if (recs.length === 0) return null;
 

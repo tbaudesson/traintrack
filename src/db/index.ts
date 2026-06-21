@@ -147,6 +147,9 @@ export interface Workout extends SyncFields {
   title?: string;
   notes?: string;
   durationMin?: number;
+  /** Average / peak heart rate captured via Web Bluetooth during the session. */
+  avgHr?: number;
+  maxHr?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -182,6 +185,21 @@ export interface HydrationLog extends SyncFields {
   id?: number;
   date: string;
   ml: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** One per (user, date): daily health metrics from a wearable or manual entry. */
+export interface HealthMetric extends SyncFields {
+  id?: number;
+  date: string;
+  steps?: number;
+  restingHr?: number;
+  hrv?: number;
+  sleepHours?: number;
+  vo2max?: number;
+  /** Where the data came from: "manual" | "import" | device name. */
+  source?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -231,6 +249,7 @@ const db = new Dexie("TrainTrack") as Dexie & {
   workoutNotes: EntityTable<WorkoutNote, "id">;
   hydrationLogs: EntityTable<HydrationLog, "id">;
   messages: EntityTable<Message, "id">;
+  healthMetrics: EntityTable<HealthMetric, "id">;
   formDrafts: EntityTable<FormDraft, "id">;
   syncMeta: EntityTable<SyncMeta, "tableName">;
   authMeta: EntityTable<AuthMeta, "key">;
@@ -305,6 +324,24 @@ db.version(5).stores({
   workoutNotes: "++id, workoutId, uuid, _dirty",
   hydrationLogs: "++id, date, uuid, _dirty",
   messages: "++id, recipientId, uuid, _dirty",
+  formDrafts: "++id, &formKey, updatedAt",
+  syncMeta: "tableName",
+  authMeta: "&key",
+});
+
+db.version(6).stores({
+  athleteProfiles: "++id, uuid, _dirty",
+  exercises: "++id, name, muscleGroup, isCustom, uuid, _dirty",
+  programs: "++id, assignedToUserId, groupId, uuid, _dirty",
+  workouts: "++id, date, programId, uuid, _dirty",
+  workoutSets: "++id, workoutId, exerciseId, uuid, _dirty",
+  bodyMetrics: "++id, date, uuid, _dirty",
+  readinessCheckins: "++id, date, uuid, _dirty",
+  nutritionEntries: "++id, date, uuid, _dirty",
+  workoutNotes: "++id, workoutId, uuid, _dirty",
+  hydrationLogs: "++id, date, uuid, _dirty",
+  messages: "++id, recipientId, uuid, _dirty",
+  healthMetrics: "++id, date, uuid, _dirty",
   formDrafts: "++id, &formKey, updatedAt",
   syncMeta: "tableName",
   authMeta: "&key",
