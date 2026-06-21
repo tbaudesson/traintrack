@@ -46,7 +46,7 @@ export default function ProgramsPage() {
     setTplOpen(true);
   }
 
-  async function useTemplate(tplId: string) {
+  async function applyTemplate(tplId: string) {
     const tpl = ranked.find((x) => x.id === tplId);
     if (!tpl) return;
     setBusy(true);
@@ -286,7 +286,7 @@ export default function ProgramsPage() {
                       </div>
                     </div>
                   </div>
-                  <Button size="sm" className="mt-2 w-full" onClick={() => useTemplate(tpl.id)} disabled={busy}>
+                  <Button size="sm" className="mt-2 w-full" onClick={() => applyTemplate(tpl.id)} disabled={busy}>
                     {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : tt("use")}
                   </Button>
                 </CardContent>
