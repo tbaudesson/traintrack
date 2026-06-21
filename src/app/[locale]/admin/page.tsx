@@ -24,20 +24,34 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Check, Trash2, Loader2, ShieldCheck, Plus } from "lucide-react";
+import { Check, Trash2, Loader2, ShieldCheck, Plus, Users2, CreditCard, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Tab = "users" | "plans" | "gdpr";
+
+const TABS: { id: Tab; icon: LucideIcon }[] = [
+  { id: "users", icon: Users2 },
+  { id: "plans", icon: CreditCard },
+  { id: "gdpr", icon: ShieldCheck },
+];
 
 export default function AdminPage() {
   const t = useTranslations("admin");
   const router = useRouter();
   const { isAdmin, loading } = useAuth();
   const [tab, setTab] = useState<Tab>("users");
+  const [counts, setCounts] = useState<{ users?: number; plans?: number }>({});
 
   useEffect(() => {
     if (!loading && !isAdmin) router.replace("/");
   }, [loading, isAdmin, router]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    Promise.all([adminListUsers(), listPlans()])
+      .then(([u, p]) => setCounts({ users: u.length, plans: p.length }))
+      .catch(() => {});
+  }, [isAdmin]);
 
   if (!isAdmin) return null;
 
@@ -45,19 +59,25 @@ export default function AdminPage() {
     <>
       <PageHeader title={t("title")} showBack />
       <div className="space-y-4 p-4 pb-24">
-        <div className="flex gap-1 rounded-lg border p-0.5">
-          {(["users", "plans", "gdpr"] as Tab[]).map((x) => (
-            <button
-              key={x}
-              onClick={() => setTab(x)}
-              className={cn(
-                "flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                tab === x ? "bg-primary text-primary-foreground" : "text-muted-foreground"
-              )}
-            >
-              {t(x)}
-            </button>
-          ))}
+        <div className="grid grid-cols-3 gap-2">
+          {TABS.map(({ id, icon: Icon }) => {
+            const count = id === "users" ? counts.users : id === "plans" ? counts.plans : undefined;
+            return (
+              <button
+                key={id}
+                onClick={() => setTab(id)}
+                className={cn(
+                  "flex flex-col items-center gap-1 rounded-lg border p-3 text-xs font-medium transition-colors",
+                  tab === id
+                    ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-900/20"
+                    : "border-border text-muted-foreground hover:border-accent-300"
+                )}
+              >
+                <Icon className="h-5 w-5" />
+                <span>{t(id)}{count != null ? ` (${count})` : ""}</span>
+              </button>
+            );
+          })}
         </div>
 
         {tab === "users" && <UsersTab />}
@@ -159,7 +179,7 @@ function PlansTab() {
   const t = useTranslations("admin");
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [newName, setNewName] = useState("");
+  const [creating, setCreating] = useState(false);
 
   async function refresh() {
     setLoading(true);
@@ -174,21 +194,21 @@ function PlansTab() {
 
   return (
     <div className="space-y-3">
+      <Button
+        className="w-full"
+        disabled={creating}
+        onClick={async () => {
+          setCreating(true);
+          try { await createPlan({ name: t("newPlan"), features: [] }); await refresh(); }
+          finally { setCreating(false); }
+        }}
+      >
+        {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="mr-1 h-4 w-4" />{t("createPlan")}</>}
+      </Button>
+
       {plans.map((p) => (
         <PlanCard key={p.id} plan={p} onChanged={refresh} />
       ))}
-
-      <Card>
-        <CardContent className="flex gap-2 py-3">
-          <Input placeholder={t("newPlan")} value={newName} onChange={(e) => setNewName(e.target.value)} />
-          <Button
-            disabled={!newName.trim()}
-            onClick={async () => { await createPlan({ name: newName.trim(), features: [] }); setNewName(""); refresh(); }}
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-        </CardContent>
-      </Card>
     </div>
   );
 }
