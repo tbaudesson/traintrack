@@ -357,6 +357,19 @@
     "status_upcoming": "Upcoming",
     "status_ended": "Ended"
   },
+  "messages": {
+    "title": "Messages",
+    "new": "New",
+    "newTitle": "Start a conversation",
+    "empty": "No messages yet.",
+    "noContacts": "You have no trainers or clients to message yet.",
+    "unknown": "Unknown",
+    "threadEmpty": "Say hello 👋",
+    "typeMessage": "Type a message…",
+    "send": "Send",
+    "relation_client": "Client",
+    "relation_trainer": "Trainer"
+  },
   "notes": {
     "title": "Notes",
     "placeholder": "Add a note…",

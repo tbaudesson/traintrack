@@ -82,6 +82,7 @@ async function migrateExistingData(userId: string): Promise<void> {
     "nutritionEntries",
     "workoutNotes",
     "hydrationLogs",
+    "messages",
   ] as const;
 
   await db.transaction(

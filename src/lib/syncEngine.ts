@@ -122,6 +122,14 @@ const TABLE_CONFIGS: TableSyncConfig[] = [
     hasUpdatedAt: true,
     trainerVisible: true,
   },
+  {
+    // recipientId is a plain UUID (no FK mapping). trainerVisible skips the
+    // user_id filter so RLS returns messages where I'm sender OR recipient.
+    dexieTable: "messages",
+    supabaseTable: "messages",
+    hasUpdatedAt: true,
+    trainerVisible: true,
+  },
 ];
 
 // Sync order: parents first, then children
@@ -136,6 +144,7 @@ const SYNC_ORDER = [
   "nutritionEntries",
   "workoutNotes",
   "hydrationLogs",
+  "messages",
 ];
 
 // ─── Retry with exponential backoff ───────────────────────────────────

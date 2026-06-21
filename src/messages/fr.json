@@ -357,6 +357,19 @@
     "status_upcoming": "À venir",
     "status_ended": "Terminé"
   },
+  "messages": {
+    "title": "Messages",
+    "new": "Nouveau",
+    "newTitle": "Démarrer une conversation",
+    "empty": "Aucun message pour l'instant.",
+    "noContacts": "Vous n'avez pas encore de coach ni de client à contacter.",
+    "unknown": "Inconnu",
+    "threadEmpty": "Dites bonjour 👋",
+    "typeMessage": "Écrivez un message…",
+    "send": "Envoyer",
+    "relation_client": "Client",
+    "relation_trainer": "Coach"
+  },
   "notes": {
     "title": "Notes",
     "placeholder": "Ajouter une note…",

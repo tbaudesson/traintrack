@@ -186,6 +186,16 @@ export interface HydrationLog extends SyncFields {
   updatedAt: string;
 }
 
+/** A direct message. user_id = sender; recipientId = the other party. */
+export interface Message extends SyncFields {
+  id?: number;
+  recipientId: string;
+  body: string;
+  readAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ─── Local-only tables ────────────────────────────────────────────────
 
 export interface FormDraft {
@@ -220,6 +230,7 @@ const db = new Dexie("TrainTrack") as Dexie & {
   nutritionEntries: EntityTable<NutritionEntry, "id">;
   workoutNotes: EntityTable<WorkoutNote, "id">;
   hydrationLogs: EntityTable<HydrationLog, "id">;
+  messages: EntityTable<Message, "id">;
   formDrafts: EntityTable<FormDraft, "id">;
   syncMeta: EntityTable<SyncMeta, "tableName">;
   authMeta: EntityTable<AuthMeta, "key">;
@@ -277,6 +288,23 @@ db.version(4).stores({
   nutritionEntries: "++id, date, uuid, _dirty",
   workoutNotes: "++id, workoutId, uuid, _dirty",
   hydrationLogs: "++id, date, uuid, _dirty",
+  formDrafts: "++id, &formKey, updatedAt",
+  syncMeta: "tableName",
+  authMeta: "&key",
+});
+
+db.version(5).stores({
+  athleteProfiles: "++id, uuid, _dirty",
+  exercises: "++id, name, muscleGroup, isCustom, uuid, _dirty",
+  programs: "++id, assignedToUserId, groupId, uuid, _dirty",
+  workouts: "++id, date, programId, uuid, _dirty",
+  workoutSets: "++id, workoutId, exerciseId, uuid, _dirty",
+  bodyMetrics: "++id, date, uuid, _dirty",
+  readinessCheckins: "++id, date, uuid, _dirty",
+  nutritionEntries: "++id, date, uuid, _dirty",
+  workoutNotes: "++id, workoutId, uuid, _dirty",
+  hydrationLogs: "++id, date, uuid, _dirty",
+  messages: "++id, recipientId, uuid, _dirty",
   formDrafts: "++id, &formKey, updatedAt",
   syncMeta: "tableName",
   authMeta: "&key",

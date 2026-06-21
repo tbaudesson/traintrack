@@ -357,6 +357,19 @@
     "status_upcoming": "Bevorstehend",
     "status_ended": "Beendet"
   },
+  "messages": {
+    "title": "Nachrichten",
+    "new": "Neu",
+    "newTitle": "Unterhaltung starten",
+    "empty": "Noch keine Nachrichten.",
+    "noContacts": "Du hast noch keine Trainer oder Klienten zum Schreiben.",
+    "unknown": "Unbekannt",
+    "threadEmpty": "Sag Hallo 👋",
+    "typeMessage": "Nachricht schreiben…",
+    "send": "Senden",
+    "relation_client": "Klient",
+    "relation_trainer": "Trainer"
+  },
   "notes": {
     "title": "Notizen",
     "placeholder": "Notiz hinzufügen…",
