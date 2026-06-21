@@ -710,7 +710,7 @@ function subscribeRealtime(userId: string): void {
  */
 // Bump this when a sync-correctness fix requires existing devices to re-pull
 // everything once (clears the per-table cursors so the next pull is full).
-const SYNC_HEAL_KEY = "traintrack.syncHeal.v1";
+const SYNC_HEAL_KEY = "traintrack.syncHeal.v2";
 async function healStaleCursors(): Promise<void> {
   if (typeof window === "undefined") return;
   try {
