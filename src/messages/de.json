@@ -207,7 +207,12 @@
     "summaryChange": "{percent} % Volumen im Vergleich zum letzten Mal",
     "summaryDone": "Fertig",
     "restLabel": "Pause",
-    "doneShort": "Fertig"
+    "doneShort": "Fertig",
+    "startSet": "Satz {set} starten",
+    "effortLabel": "Belastung",
+    "effortOfSet": "Satz {set}",
+    "finishSet": "Fertig",
+    "secondsShort": "Sek."
   },
   "progress": {
     "title": "Fortschritt",

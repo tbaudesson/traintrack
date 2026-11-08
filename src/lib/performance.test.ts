@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  beatsRecord, bestLifts, valuesForTick, estimateOneRepMax, lastPerformance, platesPerSide, recordHistory, suggestWeight, topOfRepRange,
+  beatsRecord, bestLifts, isTimedTarget, valuesForTick, estimateOneRepMax, lastPerformance, platesPerSide, recordHistory, suggestWeight, topOfRepRange,
 } from "./performance";
 
 const workouts = [
@@ -99,5 +99,13 @@ describe("valuesForTick", () => {
   it("adds no reps for a timed target or a free exercise", () => {
     expect(valuesForTick({}, { targetReps: "30-45s" })).toEqual({});
     expect(valuesForTick({}, {})).toEqual({});
+  });
+});
+
+describe("isTimedTarget", () => {
+  it("recognises a held position", () => {
+    expect(isTimedTarget("30-45s")).toBe(true);
+    expect(isTimedTarget("8-10")).toBe(false);
+    expect(isTimedTarget(undefined)).toBe(false);
   });
 });

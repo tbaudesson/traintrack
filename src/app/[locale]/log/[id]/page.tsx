@@ -16,7 +16,7 @@ import { formatDistance, formatDuration, formatPace, isCardio, isCardioDone, new
 import { SessionSummary, type SessionSummaryData } from "@/components/domain/SessionSummary";
 import db from "@/db";
 import {
-  beatsRecord, bestLifts, elapsedMinutes, timestampIn, valuesForTick, lastPerformance, recordHistory, suggestWeight, topWeight, totalVolume,
+  beatsRecord, bestLifts, elapsedMinutes, isTimedTarget, timestampIn, valuesForTick, lastPerformance, recordHistory, suggestWeight, topWeight, totalVolume,
 } from "@/lib/performance";
 import Image from "next/image";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -29,7 +29,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse, ChevronDown, Target, History, TrendingUp, Trophy, Disc3 } from "lucide-react";
+import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { connectHeartRate, isBluetoothSupported, type HeartRateMonitor } from "@/lib/bleHeartRate";
@@ -59,6 +59,16 @@ export default function SessionLoggerPage() {
   const [dateDraft, setDateDraft] = useState("");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const restEndsAt = useRef(0);
+  const effortRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [effort, setEffort] = useState<{
+    setId: number;
+    setNumber: number;
+    restSec?: number;
+    timed: boolean;
+    hint: { weightKg?: number | null; targetReps?: string };
+    startedAt: number;
+    seconds: number;
+  } | null>(null);
 
   // Web Bluetooth heart rate
   const [hr, setHr] = useState<number | null>(null);
@@ -191,6 +201,7 @@ export default function SessionLoggerPage() {
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (effortRef.current) clearInterval(effortRef.current);
       hrMonitorRef.current?.stop();
     };
   }, []);
@@ -234,6 +245,30 @@ export default function SessionLoggerPage() {
   function stopRest() {
     if (timerRef.current) clearInterval(timerRef.current);
     setRest(null);
+  }
+
+  function startEffort(next: { setId: number; setNumber: number; restSec?: number; timed: boolean; hint: { weightKg?: number | null; targetReps?: string } }) {
+    stopRest();
+    if (effortRef.current) clearInterval(effortRef.current);
+    const startedAt = timestampIn(0);
+    setEffort({ ...next, startedAt, seconds: 0 });
+    effortRef.current = setInterval(() => {
+      setEffort((e) => (e ? { ...e, seconds: Math.floor((timestampIn(0) - e.startedAt) / 1000) } : e));
+    }, 500);
+  }
+
+  function cancelEffort() {
+    if (effortRef.current) clearInterval(effortRef.current);
+    setEffort(null);
+  }
+
+  async function finishEffort() {
+    if (!effort) return;
+    const { setId, restSec, timed, hint, seconds } = effort;
+    cancelEffort();
+    // For a held position the time measured is the result of the set.
+    if (timed && seconds > 0) await updateWorkoutSet(setId, { reps: seconds });
+    await toggleDone(setId, false, restSec, hint);
   }
 
   function extendRest(seconds: number) {
@@ -391,6 +426,7 @@ export default function SessionLoggerPage() {
             (pe) => (pe.exerciseUuid && pe.exerciseUuid === ex?.uuid) || pe.exerciseName.toLowerCase() === ex?.name.toLowerCase()
           );
           const guideOpen = openGuide === exerciseId;
+          const nextSet = exSets.find((s) => !s.completed);
           const previous = lastPerformance(exerciseId, workout, allWorkouts, allSets);
           const previousTop = topWeight(previous);
           const suggestion = target ? suggestWeight(previous, target.targetSets, target.targetReps) : null;
@@ -470,7 +506,7 @@ export default function SessionLoggerPage() {
                 <div className="grid grid-cols-[2rem_1fr_1fr_1fr_2.5rem_2.5rem] items-center gap-1.5 px-1 text-center text-xs leading-tight text-muted-foreground">
                   <span>{t("set")}</span>
                   <span>{t("weight")}</span>
-                  <span aria-hidden="true">{t("repsShort")}</span>
+                  <span aria-hidden="true">{isTimedTarget(target?.targetReps) ? t("secondsShort") : t("repsShort")}</span>
                   <span>{t("rpe")}</span>
                   <span>{t("doneShort")}</span>
                   <span></span>
@@ -504,6 +540,26 @@ export default function SessionLoggerPage() {
                     </button>
                   </div>
                 ))}
+
+                {nextSet && effort?.setId !== nextSet.id && (
+                  <Button
+                    size="sm"
+                    className="w-full rounded-full"
+                    onClick={() =>
+                      nextSet.id &&
+                      startEffort({
+                        setId: nextSet.id,
+                        setNumber: nextSet.setNumber,
+                        restSec: nextSet.restSec,
+                        timed: isTimedTarget(target?.targetReps),
+                        hint: { weightKg: suggestion ?? previousTop, targetReps: target?.targetReps },
+                      })
+                    }
+                  >
+                    <Play className="mr-1 h-4 w-4" aria-hidden="true" />
+                    {t("startSet", { set: nextSet.setNumber })}
+                  </Button>
+                )}
 
                 <Button
                   variant="outline"
@@ -554,6 +610,22 @@ export default function SessionLoggerPage() {
       )}
 
       <SessionSummary data={summary} onClose={() => router.push("/log")} />
+
+      {effort && (
+        <div role="timer" aria-label={t("effortLabel")} className="fixed bottom-24 left-1/2 z-[55] flex -translate-x-1/2 items-center gap-2 rounded-full bg-success-text py-1 pr-1 pl-4 whitespace-nowrap text-background shadow-lg">
+          <Timer className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span className="text-sm font-medium">{t("effortOfSet", { set: effort.setNumber })}</span>
+          <span className="font-mono text-lg font-semibold tabular-nums">
+            {Math.floor(effort.seconds / 60)}:{String(effort.seconds % 60).padStart(2, "0")}
+          </span>
+          <button onClick={finishEffort} className="flex h-10 items-center rounded-full px-2 text-sm font-semibold">
+            {t("finishSet")}
+          </button>
+          <button onClick={cancelEffort} aria-label={tc("cancel")} className="flex size-10 items-center justify-center opacity-80 hover:opacity-100">
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+      )}
 
       {/* Rest timer */}
       {rest !== null && (

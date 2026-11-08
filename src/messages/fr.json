@@ -207,7 +207,12 @@
     "summaryChange": "{percent} % de volume par rapport à la dernière fois",
     "summaryDone": "Terminer",
     "restLabel": "Repos",
-    "doneShort": "Fait"
+    "doneShort": "Fait",
+    "startSet": "Démarrer la série {set}",
+    "effortLabel": "Effort",
+    "effortOfSet": "Série {set}",
+    "finishSet": "Terminer",
+    "secondsShort": "Sec."
   },
   "progress": {
     "title": "Progrès",

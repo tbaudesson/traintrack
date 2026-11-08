@@ -47,6 +47,11 @@ export function topOfRepRange(target: string | undefined): number | null {
   return numbers?.length ? Math.max(...numbers) : null;
 }
 
+/** A target held for time rather than counted: "30-45s". */
+export function isTimedTarget(target: string | undefined): boolean {
+  return !!target && /s\s*$/i.test(target.trim());
+}
+
 /** The bottom of a rep target: "8-10" → 8, "12" → 12. Timed targets have none. */
 export function bottomOfRepRange(target: string | undefined): number | null {
   if (!target || /s\s*$/i.test(target.trim())) return null;
