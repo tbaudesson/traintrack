@@ -15,7 +15,8 @@
     "programs": "Programme",
     "readiness": "Tagesform",
     "profile": "Profil",
-    "more": "Mehr"
+    "more": "Mehr",
+    "activity": "Aktivität"
   },
   "sync": {
     "synced": "Synchronisiert",
@@ -109,7 +110,8 @@
     "chooseSession": "Training auswählen",
     "freeSessionHint": "Ohne Programm, Übungen frei wählen",
     "managePrograms": "Meine Programme verwalten",
-    "manageProgramsHint": "Programm erstellen, ändern oder generieren"
+    "manageProgramsHint": "Programm erstellen, ändern oder generieren",
+    "newComments": "{count, plural, one {Neuer Kommentar deines Coachs} other {# neue Kommentare deines Coachs}}"
   },
   "onboarding": {
     "title": "Dein Athletenprofil",
@@ -322,7 +324,12 @@
     "addDay": "Tag hinzufügen",
     "deleteProgram": "Programm löschen",
     "save": "Speichern",
-    "noClients": "Noch keine Klienten. Lade welche unter Teams ein."
+    "noClients": "Noch keine Klienten. Lade welche unter Teams ein.",
+    "assignTeam": "Einem Team zuweisen",
+    "assignTeamHint": "Jeder Kunde erhält eine eigene Kopie. Erneutes Zuweisen aktualisiert vorhandene Kopien.",
+    "teamMembers": "{count, plural, one {# Kunde} other {# Kunden}}",
+    "teamAssigned": "Programm {team} zugewiesen ({count} Kunden).",
+    "assignedToClients": "Meinen Kunden zugewiesen"
   },
   "readiness": {
     "title": "Tagesform",
@@ -425,7 +432,8 @@
     "profile": "Profil",
     "challenges": "Challenges",
     "messages": "Nachrichten",
-    "health": "Gesundheit & Wearables"
+    "health": "Gesundheit & Wearables",
+    "activity": "Aktivität"
   },
   "health": {
     "title": "Gesundheit & Wearables",
@@ -508,7 +516,10 @@
     "playVoice": "Sprachnotiz abspielen",
     "micDenied": "Mikrofonzugriff verweigert.",
     "voiceUnsupported": "Sprachnotizen werden auf diesem Gerät nicht unterstützt.",
-    "voiceError": "Sprachnotiz konnte nicht hochgeladen werden."
+    "voiceError": "Sprachnotiz konnte nicht hochgeladen werden.",
+    "scopeSet": "Satz {set}",
+    "scopeSetLabel": "{name} · Satz {set}",
+    "scopeLabel": "Worum es im Kommentar geht"
   },
   "ai": {
     "section": "KI-Programmgenerator",
@@ -642,5 +653,17 @@
     "acc_slate_d": "Ruhig & minimal",
     "acc_violet": "Violett",
     "acc_violet_d": "Der neue Look"
+  },
+  "activity": {
+    "title": "Aktivität",
+    "toFollowUp": "Nachfassen",
+    "recent": "Zuletzt",
+    "noClients": "Lade Kunden in ein Team ein, um ihre Aktivität zu verfolgen.",
+    "noEvents": "Keine Einheiten in den letzten 30 Tagen.",
+    "neverTrained": "Hat noch keine Einheit gemacht",
+    "inactiveDays": "Seit {days} Tagen keine Einheit",
+    "recordBy": "{name} hat einen Rekord aufgestellt",
+    "sessionBy": "{name} hat trainiert",
+    "sessionDetail": "{sets} Sätze · {volume} kg"
   }
 }

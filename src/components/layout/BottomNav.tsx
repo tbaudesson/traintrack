@@ -7,12 +7,12 @@ import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { NAV_CATALOG, getNavItemIds } from "@/lib/navConfig";
 import { cn } from "@/lib/utils";
 import {
-  Home, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse, Trophy, Flag, MessageCircle, Activity,
+  Home, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse, Trophy, Flag, MessageCircle, Activity, Newspaper,
   type LucideIcon,
 } from "lucide-react";
 
 const ICONS: Record<string, LucideIcon> = {
-  Home, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse, Trophy, Flag, MessageCircle, Activity,
+  Home, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse, Trophy, Flag, MessageCircle, Activity, Newspaper,
 };
 
 interface WheelEntry {

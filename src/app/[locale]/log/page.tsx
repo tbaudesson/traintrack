@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useWorkouts, createWorkout } from "@/hooks/useWorkouts";
-import { usePrograms } from "@/hooks/usePrograms";
+import { useTrainablePrograms } from "@/hooks/usePrograms";
 import { useExercises } from "@/hooks/useExercises";
 import type { Program } from "@/db";
 import { Link } from "@/i18n/navigation";
@@ -20,7 +20,7 @@ export default function LogPage() {
   const tPrograms = useTranslations("programs");
   const router = useRouter();
   const workouts = useWorkouts();
-  const programs = usePrograms();
+  const programs = useTrainablePrograms();
   const exercises = useExercises();
   const [busy, setBusy] = useState(false);
 

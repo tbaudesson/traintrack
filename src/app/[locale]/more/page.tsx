@@ -11,7 +11,7 @@ import { DetailRow } from "@/components/ui/detail-row";
 import { cn } from "@/lib/utils";
 import {
   ListChecks, ClipboardList, Users, HeartPulse, Settings,
-  User, Shield, Flag, MessageCircle, Activity,
+  User, Shield, Newspaper, Flag, MessageCircle, Activity,
 } from "lucide-react";
 
 export default function MorePage() {
@@ -30,6 +30,7 @@ export default function MorePage() {
     { href: "/exercises", icon: ListChecks, label: t("exercises") },
     { href: "/programs", icon: ClipboardList, label: t("programs") },
     { href: "/teams", icon: Users, label: t("teams") },
+    ...(hasFeature("coaching") ? [{ href: "/activity", icon: Newspaper, label: t("activity") }] : []),
     { href: "/challenges", icon: Flag, label: t("challenges") },
     { href: "/messages", icon: MessageCircle, label: t("messages") },
     { href: "/health", icon: Activity, label: t("health") },

@@ -23,8 +23,10 @@ import { Plus, ClipboardList, Loader2, UserCheck, Sparkles, LayoutTemplate, Dumb
 import { cn } from "@/lib/utils";
 import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
 import { DetailRow } from "@/components/ui/detail-row";
+import { useClients } from "@/hooks/useClients";
 
 export default function ProgramsPage() {
+  const { clients } = useClients();
   const t = useTranslations("programs");
   const tai = useTranslations("ai");
   const router = useRouter();
@@ -124,7 +126,9 @@ export default function ProgramsPage() {
     }
   }
 
-  const mine = programs.filter((p) => !p.assignedToUserId || p.ownerUserId === user?.id);
+  const mine = programs.filter((p) => !p.assignedToUserId || p.assignedToUserId === user?.id);
+  const toClients = programs.filter((p) => p.assignedToUserId && p.assignedToUserId !== user?.id);
+  const clientName = (id?: string | null) => clients.find((c) => c.userId === id)?.displayName ?? "—";
   const assignedToMe = programs.filter((p) => p.assignedToUserId === user?.id && p.ownerUserId !== user?.id);
 
   return (
@@ -182,6 +186,22 @@ export default function ProgramsPage() {
             ))
           )}
         </section>
+
+        {toClients.length > 0 && (
+          <section className="space-y-2">
+            <SectionHeading>{t("assignedToClients")}</SectionHeading>
+            {toClients.map((p) => (
+              <DetailRow
+                key={p.id}
+                onClick={() => router.push(`/programs/${p.id}`)}
+                icon={UserCheck}
+                tone="neutral"
+                title={p.name}
+                subtitle={clientName(p.assignedToUserId)}
+              />
+            ))}
+          </section>
+        )}
       </div>
 
       {/* AI generation dialog */}

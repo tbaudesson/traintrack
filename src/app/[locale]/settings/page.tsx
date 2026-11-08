@@ -27,7 +27,7 @@ import {
   Download, Shield, LogOut, Trash2, Loader2, Sparkles, Check, Type, ShieldCheck,
   Palette, LayoutGrid, Monitor, Sun, Moon, Globe, RotateCcw, CheckCircle2, User, Trophy,
   Home, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse,
-  Pencil, X, Bell, BellOff, KeyRound,
+  Pencil, X, Bell, BellOff, KeyRound, Newspaper,
   type LucideIcon,
 } from "lucide-react";
 
@@ -43,7 +43,7 @@ const ACCENT_SWATCH: Record<Accent, string> = {
 };
 
 const NAV_ICONS: Record<string, LucideIcon> = {
-  Home, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse, Trophy,
+  Home, Newspaper, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse, Trophy,
 };
 
 function Section({ icon: Icon, title, action, children }: {

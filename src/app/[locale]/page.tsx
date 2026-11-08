@@ -7,7 +7,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAthleteProfile } from "@/hooks/useAthleteProfile";
 import { useWorkouts } from "@/hooks/useWorkouts";
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
-import { usePrograms } from "@/hooks/usePrograms";
+import { useTrainablePrograms } from "@/hooks/usePrograms";
+import { useUnreadComments } from "@/hooks/useCoachComments";
 import { useExercises } from "@/hooks/useExercises";
 import { useNutritionForDate, sumMacros } from "@/hooks/useNutrition";
 import { useTodayReadiness, readinessScore } from "@/hooks/useReadiness";
@@ -25,7 +26,7 @@ import type { ReactNode } from "react";
 import type { Program } from "@/db";
 import {
   type LucideIcon,
-  ArrowRight, ListChecks, Plus, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
+  ArrowRight, ListChecks, MessageSquare, Plus, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
 } from "lucide-react";
 
 const DAY_MS = 86400000;
@@ -106,7 +107,8 @@ export default function HomePage() {
   const profile = useAthleteProfile();
   const workouts = useWorkouts();
   const sets = useAllWorkoutSets();
-  const programs = usePrograms();
+  const programs = useTrainablePrograms();
+  const comments = useUnreadComments();
   const exercises = useExercises();
   const todayReadiness = useTodayReadiness();
   const { hasFeature } = useFeatureAccess();
@@ -218,7 +220,12 @@ export default function HomePage() {
           <h1 className="truncate text-2xl font-bold tracking-tight">{t("greeting", { name })}</h1>
           <p className="truncate text-sm text-muted-foreground">{t("tagline")}</p>
         </div>
-        {hasTeamInvite && (
+        {comments.length > 0 ? (
+          <Link href={`/log/${comments[0].workoutId}`} aria-label={t("newComments", { count: comments.length })} className="relative flex size-11 items-center justify-center rounded-lg text-foreground">
+            <Bell className="size-6" aria-hidden="true" />
+            <span className="absolute right-2 top-2 size-2.5 rounded-full bg-accent-600 ring-2 ring-background" />
+          </Link>
+        ) : hasTeamInvite && (
           <Link href="/teams" aria-label={t("teamInvite")} className="relative flex size-11 items-center justify-center rounded-lg text-foreground">
             <Bell className="size-6" aria-hidden="true" />
             <span className="absolute right-2 top-2 size-2.5 rounded-full bg-accent-600 ring-2 ring-background" />
@@ -371,6 +378,23 @@ export default function HomePage() {
                 <span className="block text-xs text-muted-foreground">{t("sessions")}</span>
               </p>
             </section>
+          )}
+
+          {comments.length > 0 && (
+            <Link href={`/log/${comments[0].workoutId}`} className="block">
+              <Card className="active:scale-[0.99]">
+                <CardContent className="flex items-center gap-3 py-3">
+                  <MessageSquare className="size-5 shrink-0 text-accent-text" aria-hidden="true" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium">{t("newComments", { count: comments.length })}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {comments[0].authorName ?? "—"}{comments[0].body ? ` : ${comments[0].body}` : ""}
+                    </p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                </CardContent>
+              </Card>
+            </Link>
           )}
 
           {hasTeamInvite && (

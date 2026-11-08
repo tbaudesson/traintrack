@@ -17,6 +17,7 @@ export const NAV_CATALOG: NavItemDef[] = [
   { id: "exercises", href: "/exercises", icon: "ListChecks", key: "exercises" },
   { id: "programs", href: "/programs", icon: "ClipboardList", key: "programs" },
   { id: "teams", href: "/teams", icon: "Users", key: "teams" },
+  { id: "activity", href: "/activity", icon: "Newspaper", key: "activity", feature: "coaching" },
   { id: "challenges", href: "/challenges", icon: "Flag", key: "challenges" },
   { id: "health", href: "/health", icon: "Activity", key: "health" },
   { id: "readiness", href: "/readiness", icon: "HeartPulse", key: "readiness", feature: "readiness" },

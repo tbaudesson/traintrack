@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import { useProgram, updateProgram, deleteProgram } from "@/hooks/usePrograms";
+import { useProgram, updateProgram, deleteProgram, assignProgramToClients } from "@/hooks/usePrograms";
+import { DetailRow } from "@/components/ui/detail-row";
 import { useExercises } from "@/hooks/useExercises";
 import { useClients } from "@/hooks/useClients";
 import type { ProgramDay, ProgramExercise } from "@/db";
@@ -18,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Trash2, Dumbbell, Save, Loader2, UserCheck, X } from "lucide-react";
+import { Plus, Trash2, Dumbbell, Save, Loader2, UserCheck, Users, X } from "lucide-react";
 
 export default function ProgramEditorPage() {
   const t = useTranslations("programs");
@@ -38,6 +39,9 @@ export default function ProgramEditorPage() {
   const [saving, setSaving] = useState(false);
   const [pickerDay, setPickerDay] = useState<number | null>(null);
   const [assignOpen, setAssignOpen] = useState(false);
+  const [teamOpen, setTeamOpen] = useState(false);
+  const [teamResult, setTeamResult] = useState<string | null>(null);
+  const [assigningTeam, setAssigningTeam] = useState(false);
 
   if (program && !loaded) {
     setName(program.name);
@@ -102,6 +106,30 @@ export default function ProgramEditorPage() {
 
   const assignedClient = clients.find((c) => c.userId === assignedTo);
 
+  // Every team the coach has clients in, with those clients.
+  const teams = [...new Map(clients.map((c) => [c.groupId, c.groupName])).entries()].map(([groupId, groupName]) => ({
+    groupId,
+    groupName,
+    members: clients.filter((c) => c.groupId === groupId),
+  }));
+
+  async function assignToTeam(team: (typeof teams)[number]) {
+    setAssigningTeam(true);
+    try {
+      const finalName = name.trim() || t("untitled");
+      // Hand out what is on screen, and keep the model in step with it.
+      await updateProgram(programId, { name: finalName, description: description.trim() || undefined, structure: days });
+      const result = await assignProgramToClients(
+        { name: finalName, description: description.trim() || undefined, structure: days },
+        team.members
+      );
+      setTeamResult(t("teamAssigned", { team: team.groupName, count: result.created + result.updated }));
+      setTeamOpen(false);
+    } finally {
+      setAssigningTeam(false);
+    }
+  }
+
   if (!program) {
     return (
       <div className="flex justify-center p-10">
@@ -127,6 +155,8 @@ export default function ProgramEditorPage() {
           <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("description")} />
         </div>
 
+        {teamResult && <p role="status" className="text-sm font-medium text-success-text">{teamResult}</p>}
+
         {/* Assignment */}
         <Card>
           <CardContent className="flex items-center gap-3 py-3">
@@ -137,9 +167,17 @@ export default function ProgramEditorPage() {
                 {assignedClient ? assignedClient.displayName : t("notAssigned")}
               </p>
             </div>
-            <Button size="sm" variant="outline" onClick={() => setAssignOpen(true)}>
-              {t("assign")}
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button size="sm" variant="outline" onClick={() => setAssignOpen(true)}>
+                {t("assign")}
+              </Button>
+              {!assignedTo && teams.length > 0 && (
+                <Button size="sm" variant="outline" onClick={() => setTeamOpen(true)}>
+                  <Users className="mr-1 h-4 w-4" aria-hidden="true" />
+                  {t("assignTeam")}
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
 
@@ -233,6 +271,27 @@ export default function ProgramEditorPage() {
                 <Dumbbell className="h-4 w-4 text-accent-500" />
                 {e.name}
               </button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={teamOpen} onOpenChange={setTeamOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("assignTeam")}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">{t("assignTeamHint")}</p>
+          <div className="space-y-2">
+            {teams.map((team) => (
+              <DetailRow
+                key={team.groupId}
+                onClick={() => assignToTeam(team)}
+                disabled={assigningTeam}
+                icon={Users}
+                title={team.groupName}
+                subtitle={t("teamMembers", { count: team.members.length })}
+              />
             ))}
           </div>
         </DialogContent>

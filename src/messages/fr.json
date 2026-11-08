@@ -15,7 +15,8 @@
     "programs": "Programmes",
     "readiness": "Forme",
     "profile": "Profil",
-    "more": "Plus"
+    "more": "Plus",
+    "activity": "Activité"
   },
   "sync": {
     "synced": "Synchronisé",
@@ -109,7 +110,8 @@
     "chooseSession": "Choisir une séance",
     "freeSessionHint": "Sans programme, exercices au choix",
     "managePrograms": "Gérer mes programmes",
-    "manageProgramsHint": "Créer, modifier ou générer un programme"
+    "manageProgramsHint": "Créer, modifier ou générer un programme",
+    "newComments": "{count, plural, one {Nouveau commentaire de votre coach} other {# nouveaux commentaires de votre coach}}"
   },
   "onboarding": {
     "title": "Votre profil athlète",
@@ -322,7 +324,12 @@
     "addDay": "Ajouter un jour",
     "deleteProgram": "Supprimer le programme",
     "save": "Enregistrer",
-    "noClients": "Aucun client. Invitez-en depuis Équipes."
+    "noClients": "Aucun client. Invitez-en depuis Équipes.",
+    "assignTeam": "Assigner à une équipe",
+    "assignTeamHint": "Chaque client reçoit sa propre copie. Réassigner met à jour les copies existantes.",
+    "teamMembers": "{count, plural, one {# client} other {# clients}}",
+    "teamAssigned": "Programme assigné à {team} ({count} clients).",
+    "assignedToClients": "Assignés à mes clients"
   },
   "readiness": {
     "title": "Forme du jour",
@@ -425,7 +432,8 @@
     "profile": "Profil",
     "challenges": "Défis",
     "messages": "Messages",
-    "health": "Santé et objets connectés"
+    "health": "Santé et objets connectés",
+    "activity": "Activité"
   },
   "health": {
     "title": "Santé et objets connectés",
@@ -508,7 +516,10 @@
     "playVoice": "Écouter la note vocale",
     "micDenied": "Accès au microphone refusé.",
     "voiceUnsupported": "Les notes vocales ne sont pas prises en charge sur cet appareil.",
-    "voiceError": "Échec de l'envoi de la note vocale."
+    "voiceError": "Échec de l'envoi de la note vocale.",
+    "scopeSet": "Série {set}",
+    "scopeSetLabel": "{name} · série {set}",
+    "scopeLabel": "Sujet du commentaire"
   },
   "ai": {
     "section": "Générateur IA de programmes",
@@ -642,5 +653,17 @@
     "acc_slate_d": "Calme & minimal",
     "acc_violet": "Violet",
     "acc_violet_d": "Le nouveau look"
+  },
+  "activity": {
+    "title": "Activité",
+    "toFollowUp": "À relancer",
+    "recent": "Récemment",
+    "noClients": "Invitez des clients dans une équipe pour suivre leur activité.",
+    "noEvents": "Aucune séance ces 30 derniers jours.",
+    "neverTrained": "N'a encore fait aucune séance",
+    "inactiveDays": "Pas de séance depuis {days} jours",
+    "recordBy": "{name} a battu un record",
+    "sessionBy": "{name} a fait une séance",
+    "sessionDetail": "{sets} séries · {volume} kg"
   }
 }

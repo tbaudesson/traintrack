@@ -15,7 +15,8 @@
     "programs": "Programs",
     "readiness": "Readiness",
     "profile": "Profile",
-    "more": "More"
+    "more": "More",
+    "activity": "Activity"
   },
   "sync": {
     "synced": "Synced",
@@ -109,7 +110,8 @@
     "chooseSession": "Choose a session",
     "freeSessionHint": "No program, pick your exercises",
     "managePrograms": "Manage my programs",
-    "manageProgramsHint": "Create, edit or generate a program"
+    "manageProgramsHint": "Create, edit or generate a program",
+    "newComments": "{count, plural, one {New comment from your coach} other {# new comments from your coach}}"
   },
   "onboarding": {
     "title": "Your athlete profile",
@@ -322,7 +324,12 @@
     "addDay": "Add day",
     "deleteProgram": "Delete program",
     "save": "Save",
-    "noClients": "No clients yet. Invite some from Teams."
+    "noClients": "No clients yet. Invite some from Teams.",
+    "assignTeam": "Assign to a team",
+    "assignTeamHint": "Each client gets their own copy. Assigning again updates existing copies.",
+    "teamMembers": "{count, plural, one {# client} other {# clients}}",
+    "teamAssigned": "Program assigned to {team} ({count} clients).",
+    "assignedToClients": "Assigned to my clients"
   },
   "readiness": {
     "title": "Daily readiness",
@@ -425,7 +432,8 @@
     "profile": "Profile",
     "challenges": "Challenges",
     "messages": "Messages",
-    "health": "Health & wearables"
+    "health": "Health & wearables",
+    "activity": "Activity"
   },
   "health": {
     "title": "Health & wearables",
@@ -508,7 +516,10 @@
     "playVoice": "Play voice note",
     "micDenied": "Microphone access was denied.",
     "voiceUnsupported": "Voice notes aren't supported on this device.",
-    "voiceError": "Couldn't upload the voice note."
+    "voiceError": "Couldn't upload the voice note.",
+    "scopeSet": "Set {set}",
+    "scopeSetLabel": "{name} · set {set}",
+    "scopeLabel": "What this comment is about"
   },
   "ai": {
     "section": "AI program builder",
@@ -642,5 +653,17 @@
     "acc_slate_d": "Calm & minimal",
     "acc_violet": "Violet",
     "acc_violet_d": "The new look"
+  },
+  "activity": {
+    "title": "Activity",
+    "toFollowUp": "To follow up",
+    "recent": "Recently",
+    "noClients": "Invite clients to a team to follow their activity.",
+    "noEvents": "No sessions in the last 30 days.",
+    "neverTrained": "Hasn't done a session yet",
+    "inactiveDays": "No session for {days} days",
+    "recordBy": "{name} set a record",
+    "sessionBy": "{name} did a session",
+    "sessionDetail": "{sets} sets · {volume} kg"
   }
 }

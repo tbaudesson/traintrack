@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkoutNotes, addWorkoutNote, deleteWorkoutNote } from "@/hooks/useWorkoutNotes";
 import { useWorkoutSets } from "@/hooks/useWorkoutSets";
 import { useExercises } from "@/hooks/useExercises";
+import { markCommentsSeen } from "@/hooks/useCoachComments";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { uploadVoiceNote, getVoiceNoteUrl, deleteVoiceNote } from "@/lib/voiceNoteService";
 import { Button } from "@/components/ui/button";
@@ -22,22 +23,33 @@ export function WorkoutNotes({ workoutId }: { workoutId: number }) {
   const recorder = useAudioRecorder();
 
   const [body, setBody] = useState("");
-  const [scopeUuid, setScopeUuid] = useState<string>(""); // "" = whole workout
+  // "" = whole workout, "uuid" = an exercise, "uuid|3" = its third set
+  const [scope, setScope] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Distinct exercises in this workout, for anchoring a note.
   const workoutExercises = useMemo(() => {
     const exMap = new Map(exercises.map((e) => [e.id, e]));
-    const seen = new Map<string, string>(); // uuid -> name
+    const seen = new Map<string, { name: string; setNumbers: number[] }>();
     for (const s of sets) {
       const e = exMap.get(s.exerciseId);
-      if (e?.uuid && !seen.has(e.uuid)) seen.set(e.uuid, e.name);
+      if (!e?.uuid) continue;
+      if (!seen.has(e.uuid)) seen.set(e.uuid, { name: e.name, setNumbers: [] });
+      seen.get(e.uuid)!.setNumbers.push(s.setNumber);
     }
-    return [...seen.entries()].map(([uuid, name]) => ({ uuid, name }));
+    return [...seen.entries()].map(([uuid, value]) => ({ uuid, ...value }));
   }, [sets, exercises]);
 
-  const scopeName = workoutExercises.find((e) => e.uuid === scopeUuid)?.name;
+  const [scopeUuid, scopeSet] = scope.split("|");
+  const scopedExercise = workoutExercises.find((e) => e.uuid === scopeUuid)?.name;
+  const scopeName = scopedExercise && scopeSet ? t("scopeSetLabel", { name: scopedExercise, set: scopeSet }) : scopedExercise;
+
+  // Reading a thread clears its "new comment" reminder.
+  const latestNote = notes.at(-1)?.createdAt;
+  useEffect(() => {
+    if (latestNote) markCommentsSeen(workoutId, latestNote);
+  }, [workoutId, latestNote]);
   const authorName = profile?.display_name ?? user?.email?.split("@")[0] ?? undefined;
 
   async function submitText() {
@@ -111,13 +123,19 @@ export function WorkoutNotes({ workoutId }: { workoutId: number }) {
       <div className="space-y-2 rounded-lg border border-border p-2">
         {workoutExercises.length > 0 && (
           <select
-            value={scopeUuid}
-            onChange={(e) => setScopeUuid(e.target.value)}
-            className="w-full rounded-md border border-border bg-transparent px-2 py-1.5 text-xs"
+            aria-label={t("scopeLabel")}
+            value={scope}
+            onChange={(e) => setScope(e.target.value)}
+            className="h-10 w-full rounded-md border border-border bg-transparent px-2 text-sm"
           >
             <option value="">{t("scopeWorkout")}</option>
             {workoutExercises.map((e) => (
-              <option key={e.uuid} value={e.uuid}>{t("scopeExercise", { name: e.name })}</option>
+              <optgroup key={e.uuid} label={e.name}>
+                <option value={e.uuid}>{t("scopeExercise", { name: e.name })}</option>
+                {e.setNumbers.map((n) => (
+                  <option key={n} value={`${e.uuid}|${n}`}>{t("scopeSet", { set: n })}</option>
+                ))}
+              </optgroup>
             ))}
           </select>
         )}
