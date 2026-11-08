@@ -149,6 +149,8 @@ export interface Workout extends SyncFields {
   id?: number;
   date: string;
   programId?: number | null;
+  /** Which day of the program this workout was started from. */
+  programDayIndex?: number | null;
   title?: string;
   notes?: string;
   durationMin?: number;

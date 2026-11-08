@@ -6,7 +6,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useWorkouts, createWorkout } from "@/hooks/useWorkouts";
 import { usePrograms } from "@/hooks/usePrograms";
 import { useExercises } from "@/hooks/useExercises";
-import type { ProgramDay } from "@/db";
+import type { Program } from "@/db";
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -32,9 +32,9 @@ export default function LogPage() {
     router.push(`/log/${id}`);
   }
 
-  async function startFromProgramDay(programName: string, day: ProgramDay) {
+  async function startFromProgramDay(program: Program, dayIndex: number) {
     setBusy(true);
-    const id = await startWorkoutFromDay(programName, day, exercises, today);
+    const id = await startWorkoutFromDay(program, dayIndex, exercises, today);
     router.push(`/log/${id}`);
   }
 
@@ -64,7 +64,7 @@ export default function LogPage() {
               (p.structure ?? []).map((day, di) => (
                 <DetailRow
                   key={`${p.id}-${di}`}
-                  onClick={() => startFromProgramDay(p.name, day)}
+                  onClick={() => startFromProgramDay(p, di)}
                   disabled={busy}
                   icon={Dumbbell}
                   title={`${p.name} — ${day.name}`}

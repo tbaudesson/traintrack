@@ -13,12 +13,11 @@ import { useNutritionForDate, sumMacros } from "@/hooks/useNutrition";
 import { useTodayReadiness, readinessScore } from "@/hooks/useReadiness";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useTeams } from "@/hooks/useTeams";
-import { programDayTitle, startWorkoutFromDay } from "@/lib/startWorkout";
+import { findWorkoutProgramDay, startWorkoutFromDay } from "@/lib/startWorkout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Recommendations } from "@/components/domain/Recommendations";
 import type { ComponentType, ReactNode } from "react";
-import type { ProgramDay } from "@/db";
 import {
   ArrowRight, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
 } from "lucide-react";
@@ -106,23 +105,16 @@ export default function HomePage() {
   // The program most recently trained, otherwise the first one with days.
   const session = useMemo(() => {
     const usable = programs.filter((p) => (p.structure ?? []).length > 0);
-    const dayOf = (title?: string) => {
-      for (const program of usable) {
-        const index = program.structure.findIndex((d) => programDayTitle(program.name, d.name) === title);
-        if (index !== -1) return { program, index };
-      }
-      return null;
-    };
-    const lastDone = workouts.map((w) => ({ w, at: dayOf(w.title) })).find((x) => x.at && x.w.date < today);
-    const todays = workouts.map((w) => ({ w, at: dayOf(w.title) })).find((x) => x.at && x.w.date === today);
+    const linked = workouts.map((w) => ({ w, at: findWorkoutProgramDay(usable, w) }));
+    const lastDone = linked.find((x) => x.at && x.w.date < today);
+    const todays = linked.find((x) => x.at && x.w.date === today);
     if (todays?.at) {
-      const day: ProgramDay = todays.at.program.structure[todays.at.index];
-      return { program: todays.at.program, day, workoutId: todays.w.id };
+      return { program: todays.at.program, index: todays.at.index, day: todays.at.program.structure[todays.at.index], workoutId: todays.w.id };
     }
     const program = lastDone?.at?.program ?? usable[0];
     if (!program) return null;
     const next = lastDone?.at ? (lastDone.at.index + 1) % program.structure.length : 0;
-    return { program, day: program.structure[next], workoutId: undefined };
+    return { program, index: next, day: program.structure[next], workoutId: undefined };
   }, [programs, workouts, today]);
 
   const percent = useMemo(() => {
@@ -162,7 +154,7 @@ export default function HomePage() {
     }
     setStarting(true);
     try {
-      const id = await startWorkoutFromDay(session.program.name, session.day, exercises, today);
+      const id = await startWorkoutFromDay(session.program, session.index, exercises, today);
       router.push(`/log/${id}`);
     } finally {
       setStarting(false);

@@ -8,7 +8,7 @@ import { useWorkout, updateWorkout, deleteWorkout } from "@/hooks/useWorkouts";
 import { useWorkoutSets, addWorkoutSet, updateWorkoutSet, deleteWorkoutSet } from "@/hooks/useWorkoutSets";
 import { useExercises } from "@/hooks/useExercises";
 import { usePrograms } from "@/hooks/usePrograms";
-import { findProgramDay } from "@/lib/startWorkout";
+import { findWorkoutProgramDay } from "@/lib/startWorkout";
 import { VideoEmbed } from "@/components/domain/VideoEmbed";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -105,7 +105,10 @@ export default function SessionLoggerPage() {
   const exMap = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises]);
 
   // What the program asks for, when this session was started from one.
-  const programDay = useMemo(() => findProgramDay(programs, workout?.title), [programs, workout?.title]);
+  const programDay = useMemo(() => {
+    const found = findWorkoutProgramDay(programs, workout);
+    return found ? found.program.structure[found.index] : null;
+  }, [programs, workout]);
 
   // Group sets by exercise, preserving insertion order
   const groups = useMemo(() => {

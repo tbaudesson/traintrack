@@ -21,6 +21,7 @@ export async function createWorkout(data: {
   date: string;
   title?: string;
   programId?: number | null;
+  programDayIndex?: number | null;
   notes?: string;
 }): Promise<number> {
   const now = new Date().toISOString();
@@ -28,6 +29,7 @@ export async function createWorkout(data: {
     date: data.date,
     title: data.title,
     programId: data.programId ?? null,
+    programDayIndex: data.programDayIndex ?? null,
     notes: data.notes,
     uuid: crypto.randomUUID(),
     userId: getCurrentUserIdSync(),

@@ -98,16 +98,23 @@ describe("adoptLocalData", () => {
   });
 });
 
-describe("findProgramDay", async () => {
-  const { findProgramDay, programDayTitle } = await import("./startWorkout");
-  const day = { name: "Day A", exercises: [] };
-  const program = { name: "Full Body", structure: [day] } as unknown as import("@/db").Program;
+describe("findWorkoutProgramDay", async () => {
+  const { findWorkoutProgramDay, programDayTitle } = await import("./startWorkout");
+  const program = {
+    id: 7,
+    name: "Full Body",
+    structure: [{ name: "Day A", exercises: [] }, { name: "Day B", exercises: [] }],
+  } as unknown as import("@/db").Program;
 
-  it("finds the day a session was started from", () => {
-    expect(findProgramDay([program], programDayTitle("Full Body", "Day A"))).toBe(day);
+  it("follows the stored link even after the session is renamed", () => {
+    expect(findWorkoutProgramDay([program], { title: "Renamed", programId: 7, programDayIndex: 1 })).toEqual({ program, index: 1 });
+  });
+
+  it("still recognises older sessions by their title", () => {
+    expect(findWorkoutProgramDay([program], { title: programDayTitle("Full Body", "Day B") })).toEqual({ program, index: 1 });
   });
 
   it("finds nothing for a free session", () => {
-    expect(findProgramDay([program], "Nouvelle séance")).toBeNull();
+    expect(findWorkoutProgramDay([program], { title: "Nouvelle séance" })).toBeNull();
   });
 });

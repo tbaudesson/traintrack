@@ -1,4 +1,4 @@
-import type { Exercise, Program, ProgramDay } from "@/db";
+import type { Exercise, Program, Workout } from "@/db";
 import { createWorkout } from "@/hooks/useWorkouts";
 import { addWorkoutSet } from "@/hooks/useWorkoutSets";
 import { createCustomExercise } from "@/hooks/useExercises";
@@ -8,23 +8,40 @@ export function programDayTitle(programName: string, dayName: string): string {
   return `${programName} — ${dayName}`;
 }
 
-/** The program day a workout was started from, recognised by its title. */
-export function findProgramDay(programs: Program[], title?: string): ProgramDay | null {
+/**
+ * The program day a workout was started from. The stored link survives any
+ * renaming; workouts from before it existed are recognised by their title.
+ */
+export function findWorkoutProgramDay(
+  programs: Program[],
+  workout: Pick<Workout, "title" | "programId" | "programDayIndex"> | undefined
+): { program: Program; index: number } | null {
+  if (!workout) return null;
+  if (workout.programId != null && workout.programDayIndex != null) {
+    const program = programs.find((p) => p.id === workout.programId);
+    if (program?.structure?.[workout.programDayIndex]) return { program, index: workout.programDayIndex };
+  }
   for (const program of programs) {
-    const day = (program.structure ?? []).find((d) => programDayTitle(program.name, d.name) === title);
-    if (day) return day;
+    const index = (program.structure ?? []).findIndex((d) => programDayTitle(program.name, d.name) === workout.title);
+    if (index !== -1) return { program, index };
   }
   return null;
 }
 
 /** Create today's workout with its sets pre-filled from a program day. */
 export async function startWorkoutFromDay(
-  programName: string,
-  day: ProgramDay,
+  program: Program,
+  dayIndex: number,
   exercises: Exercise[],
   date: string
 ): Promise<number> {
-  const id = await createWorkout({ date, title: programDayTitle(programName, day.name) });
+  const day = program.structure[dayIndex];
+  const id = await createWorkout({
+    date,
+    title: programDayTitle(program.name, day.name),
+    programId: program.id,
+    programDayIndex: dayIndex,
+  });
   for (const pe of day.exercises) {
     // Resolve the exercise by uuid or name; create a custom one if missing
     const ex = exercises.find(
