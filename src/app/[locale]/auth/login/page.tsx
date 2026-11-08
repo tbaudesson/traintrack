@@ -5,7 +5,8 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Mail, Lock, Loader2, Dumbbell } from "lucide-react";
+import { Mail, Lock, Loader2 } from "lucide-react";
+import { BrandMark } from "@/components/layout/BrandMark";
 
 function mapError(code: string, t: (k: string) => string): string {
   switch (code) {
@@ -53,9 +54,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen flex-col items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-100 dark:bg-accent-900/30">
-            <Dumbbell className="h-9 w-9 text-accent-text" />
-          </div>
+          <BrandMark />
           <h1 className="mt-4 text-2xl font-bold text-foreground">
             TrainTrack
           </h1>

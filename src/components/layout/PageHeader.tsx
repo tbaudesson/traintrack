@@ -17,7 +17,7 @@ export function PageHeader({ title, showBack = false, actions }: PageHeaderProps
   const tc = useTranslations("common");
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-card/95 px-4 py-3 backdrop-blur-sm">
+    <header className="sticky top-0 z-40 border-b border-border bg-card/85 shadow-[0_6px_16px_-10px_oklch(0.3_0.1_285/0.3)] px-4 py-3 backdrop-blur-sm">
       <div className="mx-auto flex max-w-lg flex-wrap items-center gap-x-3 gap-y-2">
         {showBack && (
           <Button

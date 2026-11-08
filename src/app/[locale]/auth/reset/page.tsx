@@ -6,7 +6,8 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { Mail, Lock, Loader2, Dumbbell } from "lucide-react";
+import { Mail, Lock, Loader2 } from "lucide-react";
+import { BrandMark } from "@/components/layout/BrandMark";
 
 const FIELD =
   "w-full rounded-lg border border-input bg-card h-11 pl-10 pr-3 text-base outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-200";
@@ -55,9 +56,7 @@ export default function ResetPasswordPage() {
     <div className="flex min-h-screen flex-col items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-100 dark:bg-accent-900/30">
-            <Dumbbell className="h-9 w-9 text-accent-text" aria-hidden="true" />
-          </div>
+          <BrandMark />
           <h1 className="mt-4 text-2xl font-bold text-foreground">
             {recovery ? t("newPasswordTitle") : t("resetTitle")}
           </h1>

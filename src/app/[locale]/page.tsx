@@ -42,15 +42,15 @@ function ProgressRing({ percent }: { percent: number }) {
   return (
     <div className="relative size-24 shrink-0">
       <svg viewBox="0 0 100 100" className="size-full -rotate-90" aria-hidden="true">
-        <circle cx="50" cy="50" r={r} fill="none" strokeWidth="9" className="stroke-muted" />
+        <circle cx="50" cy="50" r={r} fill="none" strokeWidth="9" className="stroke-white/20" />
         <circle
           cx="50" cy="50" r={r} fill="none" strokeWidth="9" strokeLinecap="round"
-          className="stroke-accent-600 transition-[stroke-dashoffset] duration-500 motion-reduce:transition-none"
+          className="stroke-white transition-[stroke-dashoffset] duration-500 motion-reduce:transition-none"
           strokeDasharray={circumference}
           strokeDashoffset={circumference * (1 - percent / 100)}
         />
       </svg>
-      <span className="absolute inset-0 flex items-center justify-center text-lg font-semibold tabular-nums">{percent}%</span>
+      <span className="absolute inset-0 flex items-center justify-center text-lg font-semibold text-white tabular-nums">{percent}%</span>
     </div>
   );
 }
@@ -69,7 +69,7 @@ function OverviewTile({
   highlight?: boolean;
 }) {
   return (
-    <div className="min-w-0 rounded-2xl bg-card p-3 shadow-sm ring-1 ring-foreground/5">
+    <div className="t-surface min-w-0 rounded-2xl p-3 ring-1 ring-foreground/5">
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Icon className="size-4 shrink-0 text-accent-text" aria-hidden={true} />
         <span className="truncate">{label}</span>
@@ -175,7 +175,7 @@ export default function HomePage() {
         <Link
           href="/profile"
           aria-label={tm("profile")}
-          className="flex size-14 shrink-0 items-center justify-center rounded-full bg-accent-100 text-accent-text ring-1 ring-foreground/5 dark:bg-accent-900/30"
+          className="t-well flex size-14 shrink-0 items-center justify-center rounded-full bg-linear-to-b from-accent-50 to-accent-200 text-accent-text dark:from-accent-800/50 dark:to-accent-900/40"
         >
           <Trophy className="size-6" aria-hidden="true" />
         </Link>
@@ -212,12 +212,12 @@ export default function HomePage() {
         </Card>
       ) : (
         <>
-          <section className="rounded-3xl bg-card p-5 shadow-md ring-1 ring-foreground/5">
+          <section className="t-hero rounded-3xl p-5 text-white">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-xs font-semibold tracking-widest text-accent-text uppercase">{t("todaySession")}</p>
+                <p className="text-xs font-semibold tracking-widest text-white/90 uppercase">{t("todaySession")}</p>
                 <h2 className="mt-1 truncate text-3xl font-bold tracking-tight">{session?.day.name ?? t("freeSession")}</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="mt-1 text-sm text-white/90">
                   {session
                     ? `${session.program.name} · ${t("exerciseCount", { count: session.day.exercises.length })}`
                     : t("freeSessionDesc")}
@@ -226,7 +226,7 @@ export default function HomePage() {
               <ProgressRing percent={percent} />
             </div>
             <div className="mt-4 flex items-center justify-between gap-2">
-              <Button onClick={start} disabled={starting} className="rounded-full px-6">
+              <Button onClick={start} disabled={starting} variant="ghost" className="t-surface rounded-full px-5 text-accent-800 hover:bg-transparent hover:text-accent-800 dark:text-accent-800 [--card:oklch(1_0_0)] [--card-tint:oklch(0.95_0.02_290)]">
                 {starting ? (
                   <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                 ) : (
@@ -239,7 +239,7 @@ export default function HomePage() {
               {session?.program.id !== undefined && (
                 <Link
                   href={`/programs/${session.program.id}`}
-                  className="flex h-11 items-center gap-2 rounded-xl bg-card px-3 text-sm font-medium whitespace-nowrap shadow-sm ring-1 ring-foreground/10"
+                  className="flex h-11 items-center gap-1.5 rounded-xl bg-white/12 px-2.5 text-sm font-medium whitespace-nowrap ring-1 ring-white/25 shadow-[inset_0_1px_0_oklch(1_0_0/0.2)]"
                 >
                   <ClipboardList className="size-4" aria-hidden="true" />
                   {t("details")}
@@ -274,12 +274,12 @@ export default function HomePage() {
           </section>
 
           {goal > 0 && (
-            <section className="flex items-center gap-3 rounded-2xl bg-card p-4 shadow-sm ring-1 ring-foreground/5">
+            <section className="t-surface flex items-center gap-3 rounded-2xl p-4 ring-1 ring-foreground/5">
               <Target className="size-8 shrink-0 text-accent-text" aria-hidden="true" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">{t("weeklyGoal")}</p>
-                <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={Math.min(week.workouts, goal)} aria-valuemin={0} aria-valuemax={goal} aria-label={t("weeklyGoal")}>
-                  <div className="h-full rounded-full bg-accent-600" style={{ width: `${Math.min(100, (week.workouts / goal) * 100)}%` }} />
+                <div className="t-sunken mt-2 h-2.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={Math.min(week.workouts, goal)} aria-valuemin={0} aria-valuemax={goal} aria-label={t("weeklyGoal")}>
+                  <div className="h-full rounded-full bg-linear-to-r from-accent-700 to-accent-400 shadow-[inset_0_1px_0_oklch(1_0_0/0.4)]" style={{ width: `${Math.min(100, (week.workouts / goal) * 100)}%` }} />
                 </div>
               </div>
               <p className="shrink-0 text-right">
@@ -308,7 +308,7 @@ export default function HomePage() {
             <Link href="/readiness" className="block">
               <Card className="active:scale-[0.99]">
                 <CardContent className="flex items-center gap-3 py-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-100 dark:bg-accent-900/30">
+                  <div className="t-well flex h-11 w-11 items-center justify-center rounded-xl bg-linear-to-b from-accent-50 to-accent-200 dark:from-accent-800/50 dark:to-accent-900/40">
                     <HeartPulse className="h-5 w-5 text-accent-text" aria-hidden="true" />
                   </div>
                   <div className="flex-1">
@@ -318,7 +318,7 @@ export default function HomePage() {
                     </p>
                   </div>
                   {readyScore == null && (
-                    <span className="rounded-full bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground">
+                    <span className="rounded-full bg-linear-to-b from-[color-mix(in_oklab,var(--primary)_86%,white)] to-primary px-2.5 py-1 text-xs font-medium text-primary-foreground shadow-[inset_0_1px_0_oklch(1_0_0/0.3)]">
                       {tr("checkIn")}
                     </span>
                   )}

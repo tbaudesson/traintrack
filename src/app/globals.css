@@ -52,6 +52,8 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --shadow-lift: var(--lift);
+  --shadow-lift-lg: var(--lift-lg);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -111,27 +113,39 @@
   --accent-900: #4c1d95;
   --accent-950: #2e1065;
 
+  /* Relief: a lit top edge, a contact shadow and a soft tinted ambient one. */
+  --card-tint: oklch(0.975 0.008 290);
+  --lift: inset 0 1px 0 oklch(1 0 0), 0 1px 2px oklch(0.3 0.08 285 / 0.1), 0 8px 20px -6px oklch(0.35 0.1 285 / 0.16);
+  --lift-lg: inset 0 1px 0 oklch(1 0 0), 0 2px 4px oklch(0.3 0.08 285 / 0.1), 0 20px 40px -12px oklch(0.35 0.12 285 / 0.28);
+  --well: inset 0 1px 0 oklch(1 0 0 / 0.9), inset 0 -1px 2px oklch(0.4 0.1 285 / 0.1), 0 1px 3px oklch(0.3 0.08 285 / 0.14);
+  --sunken: inset 0 1px 3px oklch(0.3 0.06 285 / 0.13), inset 0 0 0 1px oklch(0.3 0.06 285 / 0.06);
+
   /* The wheel menu */
   --arc-rim: color-mix(in oklab, var(--accent-500) 45%, transparent);
   --arc-hub-bg: linear-gradient(160deg, var(--accent-800), var(--accent-950));
   --arc-hub-fg: oklch(1 0 0);
-  --arc-hub-ring: 0 0 0 2.5px oklch(1 0 0 / 0.9), 0 8px 22px color-mix(in oklab, var(--accent-900) 35%, transparent);
-  --arc-bubble-bg: oklch(1 0 0);
+  --arc-hub-ring: inset 0 1.5px 1px oklch(1 0 0 / 0.35), inset 0 -3px 6px oklch(0 0 0 / 0.3), 0 0 0 3px oklch(1 0 0 / 0.9), 0 10px 24px color-mix(in oklab, var(--accent-900) 35%, transparent);
+  --arc-bubble-bg: linear-gradient(180deg, oklch(1 0 0), var(--card-tint));
   --arc-bubble-fg: var(--foreground);
-  --arc-bubble-ring: 0 0 0 1px oklch(0.5 0.05 285 / 0.1), 0 6px 16px oklch(0.4 0.05 285 / 0.14);
+  --arc-bubble-ring: inset 0 1px 0 oklch(1 0 0), 0 0 0 1px oklch(0.5 0.05 285 / 0.08), 0 2px 3px oklch(0.3 0.08 285 / 0.12), 0 10px 20px -4px oklch(0.35 0.1 285 / 0.28);
   --arc-active-bg: linear-gradient(170deg, var(--accent-500), var(--accent-700));
   --arc-active-fg: oklch(1 0 0);
-  --arc-active-ring: inset 0 1px 0 oklch(1 0 0 / 0.35), 0 8px 0 var(--accent-800), 0 18px 36px color-mix(in oklab, var(--accent-600) 45%, transparent);
+  --arc-active-ring: inset 0 1.5px 1px oklch(1 0 0 / 0.45), inset 0 -4px 10px oklch(0.2 0.15 290 / 0.3), 0 8px 0 var(--accent-800), 0 18px 36px color-mix(in oklab, var(--accent-600) 45%, transparent);
   --arc-label: var(--foreground);
   --arc-label-active: var(--accent-text);
 }
 
 .dark {
+  --card-tint: oklch(0.18 0.016 275);
+  --lift: inset 0 1px 0 oklch(1 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.5), 0 10px 22px -6px oklch(0 0 0 / 0.6);
+  --lift-lg: inset 0 1px 0 oklch(1 0 0 / 0.1), 0 2px 4px oklch(0 0 0 / 0.5), 0 22px 44px -12px oklch(0 0 0 / 0.75);
+  --well: inset 0 1px 0 oklch(1 0 0 / 0.14), 0 1px 3px oklch(0 0 0 / 0.5);
+  --sunken: inset 0 1px 3px oklch(0 0 0 / 0.5), inset 0 0 0 1px oklch(1 0 0 / 0.06);
   --arc-rim: color-mix(in oklab, var(--accent-300) 45%, transparent);
   --arc-hub-bg: linear-gradient(160deg, var(--accent-300), var(--accent-500));
   --arc-hub-fg: var(--accent-950);
   --arc-hub-ring: 0 0 0 2.5px oklch(1 0 0 / 0.15), 0 8px 22px oklch(0 0 0 / 0.4);
-  --arc-bubble-bg: oklch(0.28 0.02 285);
+  --arc-bubble-bg: linear-gradient(180deg, oklch(0.31 0.025 285), oklch(0.25 0.02 285));
   --arc-bubble-ring: 0 0 0 1px oklch(1 0 0 / 0.1), 0 4px 12px oklch(0 0 0 / 0.3);
   --arc-active-bg: linear-gradient(170deg, var(--accent-300), var(--accent-500));
   --arc-active-fg: var(--accent-950);
@@ -176,6 +190,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-image: radial-gradient(120% 340px at 50% -60px, color-mix(in oklab, var(--accent-300) 26%, transparent), transparent);
+    background-repeat: no-repeat;
   }
   html {
     @apply font-sans;
@@ -183,6 +199,23 @@
 }
 
 @layer utilities {
+  /* A raised panel: every card, row and tile. */
+  .t-surface {
+    background-image: linear-gradient(180deg, var(--card), var(--card-tint));
+    background-color: var(--card);
+    box-shadow: var(--lift);
+  }
+  /* A recessed one: fields and progress tracks. */
+  .t-sunken { box-shadow: var(--sunken); }
+  /* The tinted well an icon sits in. */
+  .t-well { box-shadow: var(--well); }
+  /* The session card, in the colours of the logo. */
+  .t-hero {
+    background-image:
+      radial-gradient(90% 80% at 100% 100%, color-mix(in oklab, var(--accent-500) 55%, transparent), transparent),
+      linear-gradient(150deg, var(--accent-950), var(--accent-800) 60%, var(--accent-700));
+    box-shadow: inset 0 1.5px 1px oklch(1 0 0 / 0.28), inset 0 -2px 6px oklch(0 0 0 / 0.25), 0 3px 6px oklch(0.25 0.12 285 / 0.25), 0 24px 44px -14px color-mix(in oklab, var(--accent-800) 65%, transparent);
+  }
   /* Hides the page behind the wheel and fades out above it. */
   .t-arc-scrim {
     background: linear-gradient(to top, var(--background) 0, var(--background) 380px, transparent 500px);

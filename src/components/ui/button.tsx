@@ -8,9 +8,11 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 [a]:hover:bg-primary/90",
+        // Lit from above, with a darker lip underneath, so it reads as a key.
+        default:
+          "bg-linear-to-b from-[color-mix(in_oklab,var(--primary)_86%,white)] to-primary text-primary-foreground shadow-[inset_0_1px_0_oklch(1_0_0/0.3),0_2px_0_color-mix(in_oklab,var(--primary)_70%,black),0_8px_16px_-4px_color-mix(in_oklab,var(--primary)_55%,transparent)] hover:brightness-105 active:translate-y-px active:shadow-[inset_0_1px_0_oklch(1_0_0/0.3),0_1px_0_color-mix(in_oklab,var(--primary)_70%,black)]",
         outline:
-          "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+          "t-surface border-border hover:text-foreground active:translate-y-px aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         ghost:
