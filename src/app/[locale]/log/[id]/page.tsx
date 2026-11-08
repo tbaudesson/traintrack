@@ -16,7 +16,7 @@ import { formatDistance, formatDuration, formatPace, isCardio, isCardioDone, new
 import { SessionSummary, type SessionSummaryData } from "@/components/domain/SessionSummary";
 import db from "@/db";
 import {
-  beatsRecord, bestLifts, elapsedMinutes, lastPerformance, recordHistory, suggestWeight, topWeight, totalVolume,
+  beatsRecord, bestLifts, elapsedMinutes, timestampIn, valuesForTick, lastPerformance, recordHistory, suggestWeight, topWeight, totalVolume,
 } from "@/lib/performance";
 import Image from "next/image";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -58,6 +58,7 @@ export default function SessionLoggerPage() {
   const [titleDraft, setTitleDraft] = useState("");
   const [dateDraft, setDateDraft] = useState("");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const restEndsAt = useRef(0);
 
   // Web Bluetooth heart rate
   const [hr, setHr] = useState<number | null>(null);
@@ -216,9 +217,9 @@ export default function SessionLoggerPage() {
     if (timerRef.current) clearInterval(timerRef.current);
     setRest(seconds);
     // Against the clock rather than counting ticks: a locked phone skips ticks.
-    const endsAt = Date.now() + seconds * 1000;
+    restEndsAt.current = timestampIn(seconds);
     timerRef.current = setInterval(() => {
-      const left = Math.ceil((endsAt - Date.now()) / 1000);
+      const left = Math.ceil((restEndsAt.current - Date.now()) / 1000);
       if (left > 0) {
         setRest(left);
         return;
@@ -227,6 +228,17 @@ export default function SessionLoggerPage() {
       setRest(null);
       navigator.vibrate?.([300, 120, 300]);
     }, 500);
+  }
+
+  // The countdown has to stop too, or its next tick brings the bar back.
+  function stopRest() {
+    if (timerRef.current) clearInterval(timerRef.current);
+    setRest(null);
+  }
+
+  function extendRest(seconds: number) {
+    restEndsAt.current += seconds * 1000;
+    setRest((r) => (r === null ? r : r + seconds));
   }
 
   function nextWeightFor(exerciseId: number) {
@@ -242,8 +254,15 @@ export default function SessionLoggerPage() {
     await addWorkoutSet({ workoutId, exerciseId, setNumber: lastSetNumber + 1, weightKg, completed: false });
   }
 
-  async function toggleDone(setId: number, completed: boolean, restSec?: number) {
-    await updateWorkoutSet(setId, { completed: !completed });
+  async function toggleDone(
+    setId: number,
+    completed: boolean,
+    restSec?: number,
+    hint?: { weightKg?: number | null; targetReps?: string }
+  ) {
+    const current = await db.workoutSets.get(setId);
+    const filled = !completed && current && hint ? valuesForTick(current, hint) : {};
+    await updateWorkoutSet(setId, { ...filled, completed: !completed });
     if (completed) return;
     startRest(restSec && restSec > 0 ? restSec : 90);
 
@@ -453,18 +472,18 @@ export default function SessionLoggerPage() {
                   <span>{t("weight")}</span>
                   <span aria-hidden="true">{t("repsShort")}</span>
                   <span>{t("rpe")}</span>
-                  <span></span>
+                  <span>{t("doneShort")}</span>
                   <span></span>
                 </div>
 
                 {exSets.map((s) => (
                   <div key={s.id} className="grid grid-cols-[2rem_1fr_1fr_1fr_2.5rem_2.5rem] items-center gap-1.5">
                     <span className="t-well flex size-8 items-center justify-center rounded-lg bg-accent-100 text-sm font-bold text-accent-text dark:bg-accent-900/40">{s.setNumber}</span>
-                    <NumCell label={t("weight")} placeholder={previousTop !== null ? String(suggestion ?? previousTop) : undefined} value={s.weightKg} onChange={(v) => s.id && updateWorkoutSet(s.id, { weightKg: v })} />
-                    <NumCell label={t("reps")} placeholder={target?.targetReps} value={s.reps} onChange={(v) => s.id && updateWorkoutSet(s.id, { reps: v })} />
+                    <NumCell key={`w${s.weightKg ?? ""}`} label={t("weight")} placeholder={previousTop !== null ? String(suggestion ?? previousTop) : undefined} value={s.weightKg} onChange={(v) => s.id && updateWorkoutSet(s.id, { weightKg: v })} />
+                    <NumCell key={`r${s.reps ?? ""}`} label={t("reps")} placeholder={target?.targetReps} value={s.reps} onChange={(v) => s.id && updateWorkoutSet(s.id, { reps: v })} />
                     <NumCell label={t("rpe")} value={s.rpe} onChange={(v) => s.id && updateWorkoutSet(s.id, { rpe: v })} />
                     <button
-                      onClick={() => s.id && toggleDone(s.id, s.completed, s.restSec)}
+                      onClick={() => s.id && toggleDone(s.id, s.completed, s.restSec, { weightKg: suggestion ?? previousTop, targetReps: target?.targetReps })}
                       aria-label={tc("markDone")}
                       aria-pressed={!!s.completed}
                       className={cn(
@@ -538,13 +557,17 @@ export default function SessionLoggerPage() {
 
       {/* Rest timer */}
       {rest !== null && (
-        <div className="fixed bottom-24 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-full bg-accent-600 px-5 py-2.5 text-white shadow-lg">
-          <Timer className="h-4 w-4" />
+        <div role="timer" aria-label={t("restLabel")} className="fixed bottom-24 left-1/2 z-[55] flex -translate-x-1/2 items-center gap-2 rounded-full bg-primary py-1 pr-1 pl-4 text-primary-foreground shadow-lg">
+          <Timer className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span className="text-sm font-medium">{t("restLabel")}</span>
           <span className="font-mono text-lg font-semibold tabular-nums">
             {Math.floor(rest / 60)}:{String(rest % 60).padStart(2, "0")}
           </span>
-          <button onClick={() => setRest(null)} aria-label={tc("close")} className="flex size-10 items-center justify-center opacity-80 hover:opacity-100">
-            <X className="h-4 w-4" />
+          <button onClick={() => extendRest(30)} className="flex h-10 items-center rounded-full px-2 text-sm font-semibold">
+            +30 s
+          </button>
+          <button onClick={stopRest} aria-label={tc("close")} className="flex size-10 items-center justify-center opacity-80 hover:opacity-100">
+            <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
       )}

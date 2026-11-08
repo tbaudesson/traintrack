@@ -205,7 +205,9 @@
     "summaryVolume": "Volume",
     "summaryRecords": "Records",
     "summaryChange": "{percent}% volume compared with last time",
-    "summaryDone": "Done"
+    "summaryDone": "Done",
+    "restLabel": "Rest",
+    "doneShort": "Done"
   },
   "progress": {
     "title": "Progress",

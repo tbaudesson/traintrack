@@ -47,6 +47,30 @@ export function topOfRepRange(target: string | undefined): number | null {
   return numbers?.length ? Math.max(...numbers) : null;
 }
 
+/** The bottom of a rep target: "8-10" → 8, "12" → 12. Timed targets have none. */
+export function bottomOfRepRange(target: string | undefined): number | null {
+  if (!target || /s\s*$/i.test(target.trim())) return null;
+  const numbers = target.match(/\d+/g)?.map(Number);
+  return numbers?.length ? Math.min(...numbers) : null;
+}
+
+/**
+ * What to record when a set is ticked with empty boxes. Greyed-out hints look
+ * like entered values, so a tick must not leave them unsaved. Reps take the
+ * bottom of the range: claiming the top would trigger a weight increase the
+ * athlete never earned.
+ */
+export function valuesForTick(
+  set: Pick<WorkoutSet, "weightKg" | "reps">,
+  hint: { weightKg?: number | null; targetReps?: string }
+): Partial<Pick<WorkoutSet, "weightKg" | "reps">> {
+  const filled: Partial<Pick<WorkoutSet, "weightKg" | "reps">> = {};
+  if (!set.weightKg && hint.weightKg) filled.weightKg = hint.weightKg;
+  const reps = bottomOfRepRange(hint.targetReps);
+  if (!set.reps && reps !== null) filled.reps = reps;
+  return filled;
+}
+
 /** The heavier weight to try, once every target set reached the top of the range. */
 export function suggestWeight(last: SetLike[], targetSets: number, targetReps: string | undefined): number | null {
   const top = topOfRepRange(targetReps);
@@ -125,6 +149,10 @@ export function beatsRecord(
 
 export function totalVolume(sets: SetLike[]): number {
   return sets.reduce((sum, s) => (isLogged(s) && s.weightKg ? sum + s.weightKg * s.reps! : sum), 0);
+}
+
+export function timestampIn(seconds: number): number {
+  return Date.now() + seconds * 1000;
 }
 
 /** How long a session took; null when it was clearly not run in one go. */

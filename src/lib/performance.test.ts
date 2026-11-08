@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  beatsRecord, bestLifts, estimateOneRepMax, lastPerformance, platesPerSide, recordHistory, suggestWeight, topOfRepRange,
+  beatsRecord, bestLifts, valuesForTick, estimateOneRepMax, lastPerformance, platesPerSide, recordHistory, suggestWeight, topOfRepRange,
 } from "./performance";
 
 const workouts = [
@@ -84,5 +84,20 @@ describe("platesPerSide", () => {
 
   it("needs nothing at or below the bar", () => {
     expect(platesPerSide(20, 20).plates).toEqual([]);
+  });
+});
+
+describe("valuesForTick", () => {
+  it("saves the hints a set was ticked with", () => {
+    expect(valuesForTick({}, { weightKg: 60, targetReps: "8-10" })).toEqual({ weightKg: 60, reps: 8 });
+  });
+
+  it("never overwrites what was typed", () => {
+    expect(valuesForTick({ weightKg: 70, reps: 12 }, { weightKg: 60, targetReps: "8-10" })).toEqual({});
+  });
+
+  it("adds no reps for a timed target or a free exercise", () => {
+    expect(valuesForTick({}, { targetReps: "30-45s" })).toEqual({});
+    expect(valuesForTick({}, {})).toEqual({});
   });
 });
