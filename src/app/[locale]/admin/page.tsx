@@ -103,6 +103,7 @@ export default function AdminPage() {
 
 function UsersTab() {
   const t = useTranslations("admin");
+  const tc = useTranslations("common");
   const [users, setUsers] = useState<AdminUserProfile[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -142,14 +143,15 @@ function UsersTab() {
               <div className="flex-1 min-w-0">
                 {editId === u.user_id ? (
                   <div className="flex items-center gap-1">
-                    <Input value={draft} onChange={(e) => setDraft(e.target.value)} className="h-8" />
+                    <Input value={draft} onChange={(e) => setDraft(e.target.value)} aria-label={t("editName")} />
                     <Button
-                      size="xs"
+                      size="icon-sm"
+                      aria-label={tc("save")}
                       onClick={async () => { await adminUpdateDisplayName(u.user_id, draft.trim()); setEditId(null); refresh(); }}
                     >
                       <Check className="h-3.5 w-3.5" />
                     </Button>
-                    <Button size="xs" variant="ghost" onClick={() => setEditId(null)}>
+                    <Button size="icon-sm" variant="ghost" aria-label={tc("cancel")} onClick={() => setEditId(null)}>
                       <X className="h-3.5 w-3.5" />
                     </Button>
                   </div>
@@ -158,20 +160,20 @@ function UsersTab() {
                     {u.display_name ?? u.email}
                     <button
                       onClick={() => { setEditId(u.user_id); setDraft(u.display_name ?? ""); }}
-                      className="text-muted-foreground hover:text-foreground"
+                      className="-my-2 inline-flex size-10 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground"
                       aria-label={t("editName")}
                     >
-                      <Pencil className="h-3 w-3" />
+                      <Pencil className="h-4 w-4" aria-hidden="true" />
                     </button>
                   </p>
                 )}
                 <p className="truncate text-xs text-muted-foreground">{u.email}</p>
               </div>
-              <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium", statusColor[u.status])}>
+              <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", statusColor[u.status])}>
                 {t(u.status)}
               </span>
               {u.role === "admin" && (
-                <span className="rounded-full bg-accent-100 px-2 py-0.5 text-[10px] font-medium text-accent-700 dark:bg-accent-900/40 dark:text-accent-300">
+                <span className="rounded-full bg-accent-100 px-2 py-0.5 text-xs font-medium text-accent-700 dark:bg-accent-900/40 dark:text-accent-300">
                   {t("role_admin")}
                 </span>
               )}
@@ -179,22 +181,22 @@ function UsersTab() {
 
             <div className="flex flex-wrap items-center gap-2">
               {u.status === "pending" && (
-                <Button size="xs" onClick={async () => { await adminUpdateUserStatus(u.user_id, "active"); refresh(); }}>
+                <Button size="sm" onClick={async () => { await adminUpdateUserStatus(u.user_id, "active"); refresh(); }}>
                   <Check className="mr-1 h-3 w-3" />{t("approve")}
                 </Button>
               )}
               {u.status === "active" && (
-                <Button size="xs" variant="outline" onClick={async () => { await adminUpdateUserStatus(u.user_id, "deactivated"); refresh(); }}>
+                <Button size="sm" variant="outline" onClick={async () => { await adminUpdateUserStatus(u.user_id, "deactivated"); refresh(); }}>
                   {t("deactivate")}
                 </Button>
               )}
               {u.status === "deactivated" && (
-                <Button size="xs" variant="outline" onClick={async () => { await adminUpdateUserStatus(u.user_id, "active"); refresh(); }}>
+                <Button size="sm" variant="outline" onClick={async () => { await adminUpdateUserStatus(u.user_id, "active"); refresh(); }}>
                   {t("reactivate")}
                 </Button>
               )}
               <Button
-                size="xs"
+                size="sm"
                 variant="ghost"
                 onClick={async () => { await adminSetRole(u.user_id, u.role === "admin" ? "user" : "admin"); refresh(); }}
               >
@@ -204,7 +206,8 @@ function UsersTab() {
               <select
                 value={u.plan_id ?? ""}
                 onChange={async (e) => { await adminSetUserPlan(u.user_id, e.target.value); refresh(); }}
-                className="ml-auto rounded-md border border-border bg-transparent px-2 py-1 text-xs"
+                aria-label={tc("plan")}
+                className="ml-auto h-10 rounded-md border border-border bg-transparent px-2 text-sm"
               >
                 {plans.map((p) => (
                   <option key={p.id} value={p.id}>{p.name}</option>
@@ -284,11 +287,11 @@ function InvitationsTab() {
             <CardContent className="flex items-center gap-2 py-3">
               <Mail className="h-4 w-4 text-muted-foreground" />
               <span className="flex-1 truncate text-sm">{inv.email}</span>
-              <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium", statusColor[inv.status])}>
+              <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", statusColor[inv.status])}>
                 {t(`inv_${inv.status}`)}
               </span>
               {inv.status === "pending" && (
-                <Button size="xs" variant="ghost" className="text-destructive" onClick={async () => { await adminRevokeInvitation(inv.id); refresh(); }}>
+                <Button size="sm" variant="ghost" className="text-destructive" onClick={async () => { await adminRevokeInvitation(inv.id); refresh(); }}>
                   {t("revoke")}
                 </Button>
               )}
@@ -360,7 +363,7 @@ function PlanCard({ plan, onChanged }: { plan: Plan; onChanged: () => void }) {
         <div className="flex items-center gap-2">
           <Input value={name} onChange={(e) => setName(e.target.value)} className="font-semibold" />
           {plan.is_default && (
-            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">{t("default")}</span>
+            <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{t("default")}</span>
           )}
         </div>
         <Input value={desc} onChange={(e) => setDesc(e.target.value)} placeholder={t("planDesc")} />

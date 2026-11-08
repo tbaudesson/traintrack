@@ -18,6 +18,8 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
+import { DetailRow } from "@/components/ui/detail-row";
 import {
   Plus,
   Users,
@@ -90,11 +92,13 @@ export default function TeamsPage() {
           <Card>
             <CardContent className="space-y-3 py-4">
               <Input
+                aria-label={t("teamName")}
                 placeholder={t("teamName")}
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
               />
               <Input
+                aria-label={t("teamDescription")}
                 placeholder={t("teamDescription")}
                 value={newDesc}
                 onChange={(e) => setNewDesc(e.target.value)}
@@ -109,7 +113,7 @@ export default function TeamsPage() {
         {/* Pending invitations */}
         {pendingInvites.length > 0 && (
           <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-muted-foreground">{t("pendingInvites")}</h2>
+            <SectionHeading>{t("pendingInvites")}</SectionHeading>
             {pendingInvites.map((inv) => (
               <Card key={inv.member_id} className="border-accent-200 dark:border-accent-900">
                 <CardContent className="flex items-center gap-3 py-3">
@@ -151,11 +155,9 @@ export default function TeamsPage() {
           <>
             {/* Teams I coach */}
             <section className="space-y-2">
-              <h2 className="text-sm font-semibold text-muted-foreground">{t("myTeams")}</h2>
+              <SectionHeading>{t("myTeams")}</SectionHeading>
               {myGroups.length === 0 ? (
-                <p className="rounded-lg bg-card/60 py-6 text-center text-sm text-muted-foreground">
-                  {t("noTeams")}
-                </p>
+                <EmptyState icon={Users} title={t("noTeams")} />
               ) : (
                 myGroups.map((g) => (
                   <TeamCard
@@ -174,26 +176,14 @@ export default function TeamsPage() {
 
             {/* Teams I'm in */}
             <section className="space-y-2">
-              <h2 className="text-sm font-semibold text-muted-foreground">{t("myMemberships")}</h2>
+              <SectionHeading>{t("myMemberships")}</SectionHeading>
               {memberships.filter((m) => m.status === "active").length === 0 ? (
-                <p className="rounded-lg bg-card/60 py-6 text-center text-sm text-muted-foreground">
-                  {t("noMemberships")}
-                </p>
+                <EmptyState icon={Users} title={t("noMemberships")} />
               ) : (
                 memberships
                   .filter((m) => m.status === "active")
                   .map((m) => (
-                    <Card key={m.member_id}>
-                      <CardContent className="flex items-center gap-3 py-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-100 dark:bg-accent-900/30">
-                          <Users className="h-5 w-5 text-accent-text" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-medium">{m.group_name}</p>
-                          <p className="text-xs text-muted-foreground">{m.owner_name}</p>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <DetailRow key={m.member_id} icon={Users} title={m.group_name} subtitle={m.owner_name} />
                   ))
               )}
             </section>
@@ -213,7 +203,7 @@ function ComplianceFlag({ userId }: { userId: string }) {
   if (days !== null && days < 3) return null; // training recently — no flag
   return (
     <span
-      className="flex items-center gap-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+      className="flex items-center gap-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
       title={t("complianceTip")}
     >
       <AlertTriangle className="h-3 w-3" />
@@ -302,11 +292,12 @@ function TeamCard({
             <div className="flex gap-2">
               <Input
                 type="email"
+                aria-label={t("inviteEmail")}
                 placeholder={t("inviteEmail")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-              <Button onClick={handleInvite} disabled={busy || !email.trim()}>
+              <Button onClick={handleInvite} disabled={busy || !email.trim()} aria-label={t("invite")}>
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
               </Button>
             </div>
@@ -326,7 +317,7 @@ function TeamCard({
                       <span className="flex-1 truncate">{m.display_name}</span>
                     )}
                     {m.status === "active" && m.user_id && <ComplianceFlag userId={m.user_id} />}
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                       {m.status === "pending" ? t("status_pending") : t(`role_${m.role}`)}
                     </span>
                     <button

@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Loader2, Dumbbell, ChevronDown, ChevronUp, Pencil, Trash2, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SectionHeading } from "@/components/ui/page-parts";
 
 const MUSCLE_GROUPS: MuscleGroup[] = ["chest", "back", "legs", "shoulders", "arms", "core", "full_body", "other"];
 const EQUIPMENT: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "bodyweight", "kettlebell", "bands", "other"];
@@ -59,7 +60,7 @@ export default function ExercisesPage() {
 
         {MUSCLE_GROUPS.filter((g) => grouped.has(g)).map((g) => (
           <section key={g} className="space-y-1.5">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t(`mg_${g}`)}</h2>
+            <SectionHeading>{t(`mg_${g}`)}</SectionHeading>
             {grouped.get(g)!.map((e) => (
               <ExerciseRow key={e.id} ex={e} />
             ))}
@@ -175,7 +176,7 @@ function ExerciseRow({ ex }: { ex: Exercise }) {
           <Dumbbell className="h-4 w-4 text-accent-500" />
           <span className="flex-1 text-sm font-medium">{ex.name}</span>
           {ex.isCustom && (
-            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">{t("custom")}</span>
+            <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{t("custom")}</span>
           )}
           {(hasDetail || canEdit) && (open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />)}
         </button>
@@ -187,7 +188,7 @@ function ExerciseRow({ ex }: { ex: Exercise }) {
                 {ex.isCustom && <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("name")} />}
                 <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("descPlaceholder")} />
                 <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder={t("videoPlaceholder")} />
-                <p className="text-[11px] text-muted-foreground">{t("videoEmbedHint")}</p>
+                <p className="text-xs text-muted-foreground">{t("videoEmbedHint")}</p>
                 <div className="flex gap-2">
                   <Button size="sm" onClick={save} disabled={busy} className="flex-1">
                     {busy ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Check className="mr-1 h-4 w-4" />}{t("save")}

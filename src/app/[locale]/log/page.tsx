@@ -11,8 +11,9 @@ import type { ProgramDay } from "@/db";
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Dumbbell, Calendar, ChevronRight, Loader2, ClipboardList } from "lucide-react";
+import { Plus, Dumbbell, Calendar, Loader2, ClipboardList } from "lucide-react";
+import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
+import { DetailRow } from "@/components/ui/detail-row";
 
 export default function LogPage() {
   const t = useTranslations("log");
@@ -79,29 +80,17 @@ export default function LogPage() {
         {/* Start from a program */}
         {programs.length > 0 && (
           <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-muted-foreground">{t("selectExercise")}</h2>
+            <SectionHeading>{t("selectExercise")}</SectionHeading>
             {programs.map((p) =>
               (p.structure ?? []).map((day, di) => (
-                <Card key={`${p.id}-${di}`} className="active:scale-[0.99]">
-                  <CardContent className="py-0">
-                    <button
-                      onClick={() => startFromProgramDay(p.name, day)}
-                      disabled={busy}
-                      className="flex w-full items-center gap-3 py-3 text-left"
-                    >
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-100 dark:bg-accent-900/30">
-                        <Dumbbell className="h-5 w-5 text-accent-text" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium">{p.name} — {day.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {day.exercises.length} · {t("addExercise")}
-                        </p>
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground/40" />
-                    </button>
-                  </CardContent>
-                </Card>
+                <DetailRow
+                  key={`${p.id}-${di}`}
+                  onClick={() => startFromProgramDay(p.name, day)}
+                  disabled={busy}
+                  icon={Dumbbell}
+                  title={`${p.name} — ${day.name}`}
+                  subtitle={`${day.exercises.length} · ${t("addExercise")}`}
+                />
               ))
             )}
           </section>
@@ -109,28 +98,19 @@ export default function LogPage() {
 
         {/* History */}
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-muted-foreground">{t("history")}</h2>
+          <SectionHeading>{t("history")}</SectionHeading>
           {workouts.length === 0 ? (
-            <p className="rounded-lg bg-card/60 py-6 text-center text-sm text-muted-foreground">{t("noWorkouts")}</p>
+            <EmptyState icon={Calendar} title={t("noWorkouts")} />
           ) : (
             workouts.map((w) => (
-              <Card key={w.id}>
-                <CardContent className="py-0">
-                  <button
-                    onClick={() => router.push(`/log/${w.id}`)}
-                    className="flex w-full items-center gap-3 py-3 text-left"
-                  >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                      <Calendar className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium">{w.title || t("title")}</p>
-                      <p className="text-xs text-muted-foreground">{w.date}</p>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground/40" />
-                  </button>
-                </CardContent>
-              </Card>
+              <DetailRow
+                key={w.id}
+                onClick={() => router.push(`/log/${w.id}`)}
+                icon={Calendar}
+                tone="neutral"
+                title={w.title || t("title")}
+                subtitle={w.date}
+              />
             ))
           )}
         </section>

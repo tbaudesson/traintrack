@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Plus, Trash2, Settings2, Loader2, Pencil, Search, ScanLine, Droplet, Minus, Clock } from "lucide-react";
+import { SectionHeading } from "@/components/ui/page-parts";
 
 const MEALS: Meal[] = ["breakfast", "lunch", "dinner", "snack"];
 
@@ -42,8 +43,8 @@ function MacroRing({ label, value, target, unit }: { label: string; value: numbe
         </svg>
         <span className="absolute text-xs font-bold">{Math.round(value)}</span>
       </div>
-      <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</span>
-      {target ? <span className="text-[10px] text-muted-foreground">/ {target}{unit}</span> : null}
+      <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
+      {target ? <span className="text-xs text-muted-foreground">/ {target}{unit}</span> : null}
     </div>
   );
 }
@@ -225,7 +226,7 @@ export default function NutritionPage() {
                 <Plus className="mr-1 h-3.5 w-3.5" />500 ml
               </Button>
               <Button
-                size="sm"
+                size="icon-sm"
                 variant="ghost"
                 onClick={() => addWater(-250)}
                 disabled={(hydration?.ml ?? 0) <= 0}
@@ -234,7 +235,7 @@ export default function NutritionPage() {
                 <Minus className="h-3.5 w-3.5" />
               </Button>
               {(hydration?.ml ?? 0) > 0 && (
-                <button onClick={() => setWater(0)} className="ml-auto text-xs text-muted-foreground hover:text-foreground">
+                <button onClick={() => setWater(0)} className="ml-auto min-h-10 px-2 text-xs text-muted-foreground hover:text-foreground">
                   {t("reset")}
                 </button>
               )}
@@ -319,7 +320,7 @@ export default function NutritionPage() {
                     inputMode="decimal"
                     value={grams}
                     onChange={(e) => changeGrams(e.target.value)}
-                    className="h-8 w-24"
+                    className="h-10 w-24"
                   />
                   <button onClick={clearFood} className="ml-auto text-xs text-muted-foreground hover:text-foreground">
                     {t("clear")}
@@ -363,7 +364,7 @@ export default function NutritionPage() {
         ) : (
           MEALS.filter((m) => entries.some((e) => e.meal === m)).map((m) => (
             <section key={m} className="space-y-1.5">
-              <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t(`meal_${m}`)}</h2>
+              <SectionHeading>{t(`meal_${m}`)}</SectionHeading>
               {entries.filter((e) => e.meal === m).map((e) => (
                 <NutritionRow key={e.id} entry={e} />
               ))}
@@ -439,7 +440,7 @@ function NutritionRow({ entry }: { entry: NutritionEntry }) {
 
 function LabeledInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
-    <label className="text-[10px] text-muted-foreground">
+    <label className="text-xs text-muted-foreground">
       {label}
       <Input type="number" inputMode="decimal" value={value} onChange={(e) => onChange(e.target.value)} className="mt-0.5 h-9" />
     </label>

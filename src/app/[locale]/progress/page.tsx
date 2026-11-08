@@ -12,7 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Dumbbell, Layers, Flame, Trophy } from "lucide-react";
+import { Dumbbell, Layers, Flame, Trophy, TrendingUp } from "lucide-react";
+import { EmptyState } from "@/components/ui/page-parts";
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell,
 } from "recharts";
@@ -159,18 +160,22 @@ export default function ProgressPage() {
 
         {/* Log bodyweight */}
         <Card>
-          <CardContent className="flex items-center gap-2 py-3">
-            <Input
-              type="number" inputMode="decimal"
-              placeholder={t("bodyweight") + " (kg)"}
-              value={bw} onChange={(e) => setBw(e.target.value)}
-            />
+          <CardContent className="flex items-end gap-2 py-3">
+            <label className="min-w-0 flex-1 text-sm font-medium">
+              {t("bodyweight")}
+              <Input
+                type="number" inputMode="decimal"
+                placeholder="kg"
+                value={bw} onChange={(e) => setBw(e.target.value)}
+                className="mt-1"
+              />
+            </label>
             <Button onClick={logBodyweight} disabled={!bw}>{t("addBodyMetric")}</Button>
           </CardContent>
         </Card>
 
         {!hasData && (
-          <p className="rounded-lg bg-card/60 py-8 text-center text-sm text-muted-foreground">{t("noData")}</p>
+          <EmptyState icon={TrendingUp} title={t("noData")} />
         )}
 
         {/* Bodyweight logged but no workout sets yet → explain the empty analytics. */}
@@ -271,7 +276,7 @@ export default function ProgressPage() {
                   </div>
                 ))}
               </div>
-              <p className="mt-1.5 text-[11px] text-muted-foreground">{t("prsHint")}</p>
+              <p className="mt-1.5 text-xs text-muted-foreground">{t("prsHint")}</p>
             </CardContent>
           </Card>
         )}
@@ -299,7 +304,7 @@ function StatCard({ icon: Icon, value, label }: { icon: React.ComponentType<{ cl
       <CardContent className="flex flex-col items-center gap-1 py-4">
         <Icon className="h-5 w-5 text-accent-500" />
         <p className="text-xl font-bold tabular-nums">{value}</p>
-        <p className="text-center text-[11px] text-muted-foreground">{label}</p>
+        <p className="text-center text-xs text-muted-foreground">{label}</p>
       </CardContent>
     </Card>
   );

@@ -15,6 +15,7 @@ import { Calendar, TrendingUp, CheckCircle, HeartPulse, Apple, ChevronDown, Chev
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
+import { SectionHeading } from "@/components/ui/page-parts";
 
 function scoreColor(s: number) {
   if (s >= 75) return "text-green-600";
@@ -70,21 +71,21 @@ export default function ClientDetailPage() {
             <CardContent className="flex flex-col items-center gap-1 py-4 text-center">
               <CheckCircle className="h-5 w-5 text-green-500" />
               <p className="text-lg font-bold">{compliance}/7</p>
-              <p className="text-[10px] text-muted-foreground">{t("compliance")}</p>
+              <p className="text-xs text-muted-foreground">{t("compliance")}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="flex flex-col items-center gap-1 py-4 text-center">
               <TrendingUp className="h-5 w-5 text-accent-500" />
               <p className="text-lg font-bold">{totalVolume.toLocaleString()}</p>
-              <p className="text-[10px] text-muted-foreground">{tp("volume")}</p>
+              <p className="text-xs text-muted-foreground">{tp("volume")}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="flex flex-col items-center gap-1 py-4 text-center">
               <Calendar className="h-5 w-5 text-muted-foreground" />
               <p className="text-xs font-bold">{lastActivity ?? t("never")}</p>
-              <p className="text-[10px] text-muted-foreground">{t("lastActivity")}</p>
+              <p className="text-xs text-muted-foreground">{t("lastActivity")}</p>
             </CardContent>
           </Card>
         </div>
@@ -141,8 +142,8 @@ export default function ClientDetailPage() {
                 ].map((m) => (
                   <div key={m.label}>
                     <p className="text-sm font-bold">{Math.round(m.val)}</p>
-                    {m.tgt ? <p className="text-[10px] text-muted-foreground">/ {m.tgt}</p> : null}
-                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{m.label}</p>
+                    {m.tgt ? <p className="text-xs text-muted-foreground">/ {m.tgt}</p> : null}
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">{m.label}</p>
                   </div>
                 ))}
               </CardContent>
@@ -151,7 +152,7 @@ export default function ClientDetailPage() {
         )}
 
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-muted-foreground">{tp("title")}</h2>
+          <SectionHeading>{tp("title")}</SectionHeading>
           {workouts.length === 0 ? (
             <p className="rounded-lg bg-card/60 py-6 text-center text-sm text-muted-foreground">{tp("noData")}</p>
           ) : (

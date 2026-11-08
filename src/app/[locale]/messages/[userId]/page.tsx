@@ -74,7 +74,7 @@ export default function ConversationPage() {
                   )}
                 >
                   <p className="whitespace-pre-wrap break-words">{m.body}</p>
-                  <p className={cn("mt-0.5 text-[10px]", mine ? "text-white/70" : "text-muted-foreground")}>
+                  <p className={cn("mt-0.5 text-xs", mine ? "text-white/70" : "text-muted-foreground")}>
                     {new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>

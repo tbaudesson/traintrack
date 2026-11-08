@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MessageCircle, Plus, ChevronRight, User } from "lucide-react";
+import { EmptyState } from "@/components/ui/page-parts";
 
 export default function MessagesPage() {
   const t = useTranslations("messages");
@@ -65,14 +66,7 @@ export default function MessagesPage() {
       />
       <div className="space-y-2 p-4 pb-24">
         {conversations.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-sky-100 dark:bg-sky-900/30">
-                <MessageCircle className="h-7 w-7 text-sky-500" />
-              </div>
-              <p className="text-sm text-muted-foreground">{t("empty")}</p>
-            </CardContent>
-          </Card>
+          <EmptyState icon={MessageCircle} title={t("empty")} />
         ) : (
           conversations.map((c) => (
             <Card key={c.otherId}>
@@ -89,7 +83,7 @@ export default function MessagesPage() {
                     <p className="truncate text-xs text-muted-foreground">{c.last}</p>
                   </div>
                   {c.unread > 0 && (
-                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-sky-500 px-1.5 text-[10px] font-bold text-white">
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-sky-500 px-1.5 text-xs font-bold text-white">
                       {c.unread}
                     </span>
                   )}

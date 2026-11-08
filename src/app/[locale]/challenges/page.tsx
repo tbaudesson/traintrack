@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Flag, Plus, Loader2, Trophy, Trash2, ChevronDown, ChevronUp, Medal } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { EmptyState } from "@/components/ui/page-parts";
 
 const TYPES: ChallengeType[] = ["volume", "sessions", "consistency"];
 
@@ -62,14 +63,7 @@ export default function ChallengesPage() {
         {loading ? (
           <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
         ) : challenges.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30">
-                <Flag className="h-7 w-7 text-orange-500" />
-              </div>
-              <p className="text-sm text-muted-foreground">{t("empty")}</p>
-            </CardContent>
-          </Card>
+          <EmptyState icon={Flag} title={t("empty")} />
         ) : (
           challenges.map((c) => (
             <ChallengeCard key={c.id} challenge={c} currentUserId={user?.id} onDeleted={load} />
@@ -130,7 +124,7 @@ function ChallengeCard({
             </p>
           </div>
           <span className={cn(
-            "rounded-full px-2 py-0.5 text-[10px] font-medium",
+            "rounded-full px-2 py-0.5 text-xs font-medium",
             status === "active" ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
               : status === "upcoming" ? "bg-accent-100 text-accent-700 dark:bg-accent-900/40"
               : "bg-muted text-muted-foreground"
@@ -235,7 +229,7 @@ function CreateChallengeDialog({
             <div>
               <label className="mb-1 block text-xs font-medium text-muted-foreground">{t("newTeamLabel")}</label>
               <Input value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder={tt("teamName")} />
-              <p className="mt-1 text-[11px] text-muted-foreground">{t("newTeamHint")}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{t("newTeamHint")}</p>
             </div>
           ) : groups.length > 1 ? (
             <div>
@@ -266,7 +260,7 @@ function CreateChallengeDialog({
                 </button>
               ))}
             </div>
-            <p className="mt-1 text-[11px] text-muted-foreground">{t(`typeHint_${type}`)}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{t(`typeHint_${type}`)}</p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>

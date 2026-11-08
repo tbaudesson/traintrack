@@ -34,7 +34,12 @@
     "loading": "Lädt…",
     "back": "Zurück",
     "confirm": "Bestätigen",
-    "close": "Schließen"
+    "close": "Schließen",
+    "skipToContent": "Zum Inhalt springen",
+    "mainNav": "Hauptnavigation",
+    "apiKey": "Anthropic-API-Schlüssel",
+    "markDone": "Als erledigt markieren",
+    "plan": "Tarif"
   },
   "auth": {
     "loginTitle": "Anmelden",
@@ -147,7 +152,8 @@
     "hrAvg": "Ø",
     "hrMax": "Max",
     "hrUnsupported": "Herzfrequenz-Sensoren brauchen Chrome auf Android oder Desktop.",
-    "hrError": "Verbindung zum Herzfrequenz-Sensor fehlgeschlagen."
+    "hrError": "Verbindung zum Herzfrequenz-Sensor fehlgeschlagen.",
+    "repsShort": "Wdh."
   },
   "progress": {
     "title": "Fortschritt",

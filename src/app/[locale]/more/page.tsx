@@ -5,10 +5,12 @@ import { Link } from "@/i18n/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { DetailRow } from "@/components/ui/detail-row";
+import { cn } from "@/lib/utils";
 import {
-  ListChecks, ClipboardList, Users, HeartPulse, Settings, ChevronRight,
+  ListChecks, ClipboardList, Users, HeartPulse, Settings,
   User, Shield, Flag, MessageCircle, Activity,
 } from "lucide-react";
 
@@ -23,14 +25,14 @@ export default function MorePage() {
   // Functional destinations (profile/settings/admin live in the header).
   const items = [
     ...(hasFeature("readiness")
-      ? [{ href: "/readiness", icon: HeartPulse, label: t("readiness"), color: "text-rose-500" }]
+      ? [{ href: "/readiness", icon: HeartPulse, label: t("readiness") }]
       : []),
-    { href: "/exercises", icon: ListChecks, label: t("exercises"), color: "text-accent-500" },
-    { href: "/programs", icon: ClipboardList, label: t("programs"), color: "text-violet-500" },
-    { href: "/teams", icon: Users, label: t("teams"), color: "text-emerald-500" },
-    { href: "/challenges", icon: Flag, label: t("challenges"), color: "text-orange-500" },
-    { href: "/messages", icon: MessageCircle, label: t("messages"), color: "text-sky-500" },
-    { href: "/health", icon: Activity, label: t("health"), color: "text-rose-500" },
+    { href: "/exercises", icon: ListChecks, label: t("exercises") },
+    { href: "/programs", icon: ClipboardList, label: t("programs") },
+    { href: "/teams", icon: Users, label: t("teams") },
+    { href: "/challenges", icon: Flag, label: t("challenges") },
+    { href: "/messages", icon: MessageCircle, label: t("messages") },
+    { href: "/health", icon: Activity, label: t("health") },
   ];
 
   return (
@@ -47,23 +49,21 @@ export default function MorePage() {
               <p className="truncate font-semibold">{name}</p>
               <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
               {profile?.plan_name && (
-                <span className="mt-1 inline-block rounded-full bg-accent-100 px-2 py-0.5 text-[10px] font-medium text-accent-700 dark:bg-accent-900/40 dark:text-accent-300">
+                <span className="mt-1 inline-block rounded-full bg-accent-100 px-2 py-0.5 text-xs font-medium text-accent-700 dark:bg-accent-900/40 dark:text-accent-300">
                   {profile.plan_name}
                 </span>
               )}
             </div>
             <div className="flex gap-1">
-              <Link href="/profile">
-                <Button variant="ghost" size="sm" aria-label={t("profile")}><User className="h-5 w-5" /></Button>
-              </Link>
-              <Link href="/settings">
-                <Button variant="ghost" size="sm" aria-label={t("settings")}><Settings className="h-5 w-5" /></Button>
-              </Link>
+              <Link href="/profile" aria-label={t("profile")} className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }))}>
+                  <User className="h-5 w-5" aria-hidden="true" />
+                </Link>
+              <Link href="/settings" aria-label={t("settings")} className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }))}>
+                  <Settings className="h-5 w-5" aria-hidden="true" />
+                </Link>
               {isAdmin && (
-                <Link href="/admin">
-                  <Button variant="ghost" size="sm" className="text-accent-text" aria-label={t("admin")}>
-                    <Shield className="h-5 w-5" />
-                  </Button>
+                <Link href="/admin" aria-label={t("admin")} className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "text-accent-text")}>
+                  <Shield className="h-5 w-5" aria-hidden="true" />
                 </Link>
               )}
             </div>
@@ -72,15 +72,7 @@ export default function MorePage() {
 
         <div className="space-y-2">
           {items.map((it) => (
-            <Card key={it.href}>
-              <CardContent className="py-0">
-                <Link href={it.href} className="flex items-center gap-3 py-3.5">
-                  <it.icon className={`h-5 w-5 ${it.color}`} />
-                  <span className="flex-1 font-medium">{it.label}</span>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground/40" />
-                </Link>
-              </CardContent>
-            </Card>
+            <DetailRow key={it.href} href={it.href} icon={it.icon} title={it.label} />
           ))}
         </div>
       </div>

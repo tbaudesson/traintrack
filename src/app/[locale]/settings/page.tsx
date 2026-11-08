@@ -8,7 +8,7 @@ import { deleteMyAccount, updateMyDisplayName } from "@/lib/adminService";
 import { downloadJSONBackup } from "@/lib/exportService";
 import db from "@/db";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -70,6 +70,8 @@ export default function SettingsPage() {
   const ta = useTranslations("appearance");
   const tnav = useTranslations("nav");
   const tn = useTranslations("notifications");
+  const tc = useTranslations("common");
+  const tm = useTranslations("more");
   const { user, profile, signOut, isAdmin, refreshProfile } = useAuth();
   const { hasFeature } = useFeatureAccess();
   const locale = useLocale();
@@ -212,18 +214,19 @@ export default function SettingsPage() {
                     value={nameDraft}
                     onChange={(e) => setNameDraft(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && saveName()}
-                    className="h-8"
+                    aria-label={tc("edit")}
                   />
-                  <Button size="sm" className="h-8 px-2" onClick={saveName} disabled={savingName}>
+                  <Button size="icon-sm" aria-label={tc("save")} onClick={saveName} disabled={savingName}>
                     {savingName ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                   </Button>
-                  <Button size="sm" variant="ghost" className="h-8 px-2" onClick={() => setEditName(false)}>
+                  <Button size="icon-sm" variant="ghost" aria-label={tc("cancel")} onClick={() => setEditName(false)}>
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
               ) : (
                 <button
-                  className="flex items-center gap-1.5 text-left"
+                  className="flex min-h-10 max-w-full items-center gap-1.5 text-left"
+                  aria-label={`${tc("edit")} : ${name}`}
                   onClick={() => { setNameDraft(profile?.display_name ?? ""); setEditName(true); }}
                 >
                   <span className="truncate font-semibold">{name}</span>
@@ -232,18 +235,18 @@ export default function SettingsPage() {
               )}
               <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
               {profile?.plan_name && (
-                <span className="mt-1 inline-block rounded-full bg-accent-100 px-2 py-0.5 text-[10px] font-medium text-accent-700 dark:bg-accent-900/40 dark:text-accent-300">
+                <span className="mt-1 inline-block rounded-full bg-accent-100 px-2 py-0.5 text-xs font-medium text-accent-700 dark:bg-accent-900/40 dark:text-accent-300">
                   {profile.plan_name}
                 </span>
               )}
             </div>
             <div className="flex gap-1">
-              <Link href="/profile">
-                <Button variant="ghost" size="sm" aria-label="profile"><Trophy className="h-5 w-5" /></Button>
-              </Link>
+              <Link href="/profile" aria-label={tm("profile")} className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }))}>
+                  <Trophy className="h-5 w-5" aria-hidden="true" />
+                </Link>
               {isAdmin && (
-                <Link href="/admin">
-                  <Button variant="ghost" size="sm" className="text-accent-text" aria-label="admin"><Shield className="h-5 w-5" /></Button>
+                <Link href="/admin" aria-label={tm("admin")} className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "text-accent-text")}>
+                  <Shield className="h-5 w-5" aria-hidden="true" />
                 </Link>
               )}
             </div>
@@ -292,7 +295,7 @@ export default function SettingsPage() {
                 <span className="mt-0.5 h-5 w-5 shrink-0 rounded-full" style={{ backgroundColor: ACCENT_SWATCH[a] }} />
                 <div>
                   <p className="text-sm font-medium">{ta(`acc_${a}`)}</p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">{ta(`acc_${a}_d`)}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{ta(`acc_${a}_d`)}</p>
                 </div>
               </button>
             ))}
@@ -396,6 +399,7 @@ export default function SettingsPage() {
           )}
           <Input
             type="password"
+            aria-label={tc("apiKey")}
             value={apiKeyInput}
             onChange={(e) => setApiKeyInput(e.target.value)}
             placeholder={tai("keyPlaceholder")}

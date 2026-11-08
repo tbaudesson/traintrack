@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { BottomNav } from "./BottomNav";
@@ -18,6 +19,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { user, loading, isOffline, accountStatus } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
+  const tc = useTranslations("common");
 
   const isAuthPage = pathname.startsWith("/auth");
   const isAuthenticated = !!user || isOffline;
@@ -53,7 +55,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-10 w-10 animate-spin text-accent-500" />
-          <span className="text-sm text-muted-foreground">Loading…</span>
+          <span className="text-sm text-muted-foreground">{tc("loading")}</span>
         </div>
       </div>
     );

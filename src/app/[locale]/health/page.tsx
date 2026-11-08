@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Activity, Footprints, HeartPulse, Moon, Upload, Heart, Loader2, Check } from "lucide-react";
+import { SectionHeading } from "@/components/ui/page-parts";
 
 function today() {
   return new Date().toISOString().split("T")[0];
@@ -105,14 +106,14 @@ export default function HealthPage() {
             <Button onClick={save} className="w-full">
               {saved ? <><Check className="mr-1 h-4 w-4" />{t("saved")}</> : t("save")}
             </Button>
-            <p className="text-[11px] text-muted-foreground">{t("importHint")}</p>
+            <p className="text-xs text-muted-foreground">{t("importHint")}</p>
           </CardContent>
         </Card>
 
         {/* Recent workout heart rate */}
         {recentHrWorkouts.length > 0 && (
           <section className="space-y-1.5">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("workoutHr")}</h2>
+            <SectionHeading>{t("workoutHr")}</SectionHeading>
             {recentHrWorkouts.map((w) => (
               <Card key={w.id}>
                 <CardContent className="flex items-center gap-3 py-2.5">
@@ -131,7 +132,7 @@ export default function HealthPage() {
         {/* History */}
         {history.length > 0 && (
           <section className="space-y-1.5">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("history")}</h2>
+            <SectionHeading>{t("history")}</SectionHeading>
             {history.map((h) => (
               <Card key={h.id}>
                 <CardContent className="flex items-center gap-2 py-2.5 text-xs">

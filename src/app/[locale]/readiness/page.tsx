@@ -16,6 +16,7 @@ import { Loader2, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { UpgradeNotice } from "@/components/domain/UpgradeNotice";
+import { SectionHeading } from "@/components/ui/page-parts";
 
 function Scale({
   label,
@@ -120,7 +121,7 @@ export default function ReadinessPage() {
             <CardContent className="flex items-center gap-4 py-4">
               <div className="flex flex-col items-center">
                 <span className={cn("text-3xl font-bold", scoreColor(liveScore))}>{liveScore}</span>
-                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{t("score")}</span>
+                <span className="text-xs uppercase tracking-wide text-muted-foreground">{t("score")}</span>
               </div>
               <p className="flex-1 text-sm text-muted-foreground">{rec}</p>
             </CardContent>
@@ -152,7 +153,7 @@ export default function ReadinessPage() {
 
         {history.length > 0 && (
           <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-muted-foreground">{t("history")}</h2>
+            <SectionHeading>{t("history")}</SectionHeading>
             {history.map((r) => {
               const s = readinessScore(r);
               return (

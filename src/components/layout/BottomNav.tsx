@@ -17,6 +17,7 @@ const ICONS: Record<string, LucideIcon> = {
 
 export function BottomNav() {
   const t = useTranslations("nav");
+  const tc = useTranslations("common");
   const pathname = usePathname();
   const { hasFeature } = useFeatureAccess();
   const [ids, setIds] = useState<string[]>(() => getNavItemIds());
@@ -35,7 +36,7 @@ export function BottomNav() {
   return (
     <nav
       role="navigation"
-      aria-label="Main navigation"
+      aria-label={tc("mainNav")}
       className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-sm safe-area-pb"
     >
       <div className="mx-auto flex max-w-lg items-center justify-around">

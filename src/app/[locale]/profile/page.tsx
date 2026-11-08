@@ -53,7 +53,7 @@ export default function ProfilePage() {
                     style={{ width: `${g.progressPct}%` }}
                   />
                 </div>
-                <p className="mt-1 text-[10px] text-muted-foreground">
+                <p className="mt-1 text-xs text-muted-foreground">
                   {t("toNext", { n: (g.xpForNextLevel - g.xpIntoLevel).toLocaleString() })}
                 </p>
               </div>
@@ -96,7 +96,7 @@ export default function ProfilePage() {
                       <Lock className="h-4 w-4 text-muted-foreground" />
                     )}
                   </div>
-                  <span className="text-[10px] font-medium leading-tight">{t(`b_${b.key}`)}</span>
+                  <span className="text-xs font-medium leading-tight">{t(`b_${b.key}`)}</span>
                 </CardContent>
               </Card>
             ))}
@@ -113,7 +113,7 @@ function Stat({ icon, value, label }: { icon: React.ReactNode; value: string | n
       <CardContent className="flex flex-col items-center gap-1 py-4 text-center">
         {icon}
         <p className="text-lg font-bold">{value}</p>
-        <p className="text-[10px] text-muted-foreground">{label}</p>
+        <p className="text-xs text-muted-foreground">{label}</p>
       </CardContent>
     </Card>
   );

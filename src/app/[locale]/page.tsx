@@ -14,10 +14,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Recommendations } from "@/components/domain/Recommendations";
 import { Dumbbell, Plus, Settings, TrendingUp, Flame, HeartPulse, ChevronRight, Trophy } from "lucide-react";
+import { StatTile } from "@/components/ui/detail-row";
 
 export default function HomePage() {
   const t = useTranslations("home");
   const tr = useTranslations("readiness");
+  const tm = useTranslations("more");
   const { user, profile: account } = useAuth();
   const profile = useAthleteProfile();
   const workouts = useWorkouts();
@@ -65,15 +67,11 @@ export default function HomePage() {
         <div className="relative flex items-center justify-between">
           <h1 className="text-2xl font-bold tracking-tight">{t("greeting", { name })}</h1>
           <div className="flex items-center gap-1">
-            <Link href="/profile">
-              <button className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground">
-                <Trophy className="h-5 w-5" />
-              </button>
+            <Link href="/profile" aria-label={tm("profile")} className="flex size-11 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground">
+              <Trophy className="h-5 w-5" aria-hidden="true" />
             </Link>
-            <Link href="/settings">
-              <button className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground">
-                <Settings className="h-5 w-5" />
-              </button>
+            <Link href="/settings" aria-label={tm("settings")} className="flex size-11 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground">
+              <Settings className="h-5 w-5" aria-hidden="true" />
             </Link>
           </div>
         </div>
@@ -94,20 +92,8 @@ export default function HomePage() {
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3">
-            <Card>
-              <CardContent className="flex flex-col items-center gap-1 py-4">
-                <TrendingUp className="h-5 w-5 text-accent-500" />
-                <p className="text-xl font-bold">{weeklyVolume.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">{t("weeklyVolume")}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="flex flex-col items-center gap-1 py-4">
-                <Flame className="h-5 w-5 text-orange-500" />
-                <p className="text-xl font-bold">{streak}</p>
-                <p className="text-xs text-muted-foreground">{t("streak")} · {t("days")}</p>
-              </CardContent>
-            </Card>
+            <StatTile icon={TrendingUp} iconClassName="text-accent-500" value={weeklyVolume.toLocaleString()} label={t("weeklyVolume")} />
+            <StatTile icon={Flame} iconClassName="text-orange-500" value={streak} label={`${t("streak")} · ${t("days")}`} />
           </div>
 
           {hasTeamInvite && (

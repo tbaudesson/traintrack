@@ -21,9 +21,11 @@ import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse } fr
 import { cn } from "@/lib/utils";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { connectHeartRate, isBluetoothSupported, type HeartRateMonitor } from "@/lib/bleHeartRate";
+import { EmptyState } from "@/components/ui/page-parts";
 
 export default function SessionLoggerPage() {
   const t = useTranslations("log");
+  const tc = useTranslations("common");
   const params = useParams();
   const router = useRouter();
   const workoutId = Number(params.id);
@@ -151,7 +153,7 @@ export default function SessionLoggerPage() {
         actions={
           <div className="flex items-center gap-1">
             <Button
-              size="sm"
+              size="icon-sm"
               variant="ghost"
               aria-label={t("editWorkout")}
               onClick={() => {
@@ -187,11 +189,11 @@ export default function SessionLoggerPage() {
                   <p className="text-sm font-medium">{t("heartRate")}</p>
                 )}
                 {hrStats && (
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {t("hrAvg")} {hrStats.avg} · {t("hrMax")} {hrStats.max}
                   </p>
                 )}
-                {hrError && <p className="text-[11px] text-destructive">{hrError}</p>}
+                {hrError && <p className="text-xs text-destructive">{hrError}</p>}
               </div>
               {hrConnected ? (
                 <Button size="sm" variant="outline" onClick={disconnectHr}>{t("hrDisconnect")}</Button>
@@ -243,9 +245,7 @@ export default function SessionLoggerPage() {
         )}
 
         {groups.length === 0 && (
-          <p className="rounded-lg bg-card/60 py-8 text-center text-sm text-muted-foreground">
-            {t("noExercises")}
-          </p>
+          <EmptyState icon={Dumbbell} title={t("noExercises")} />
         )}
 
         {groups.map(([exerciseId, exSets]) => {
@@ -260,25 +260,27 @@ export default function SessionLoggerPage() {
                 </div>
 
                 {/* Column headers */}
-                <div className="grid grid-cols-[2rem_1fr_1fr_1fr_2rem_2rem] items-center gap-2 px-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+                <div className="grid grid-cols-[2rem_1fr_1fr_1fr_2.5rem_2.5rem] items-center gap-1.5 px-1 text-center text-xs leading-tight text-muted-foreground">
                   <span>{t("set")}</span>
                   <span>{t("weight")}</span>
-                  <span>{t("reps")}</span>
+                  <span aria-hidden="true">{t("repsShort")}</span>
                   <span>{t("rpe")}</span>
                   <span></span>
                   <span></span>
                 </div>
 
                 {exSets.map((s) => (
-                  <div key={s.id} className="grid grid-cols-[2rem_1fr_1fr_1fr_2rem_2rem] items-center gap-2">
+                  <div key={s.id} className="grid grid-cols-[2rem_1fr_1fr_1fr_2.5rem_2.5rem] items-center gap-1.5">
                     <span className="text-center text-sm font-medium text-muted-foreground">{s.setNumber}</span>
-                    <NumCell value={s.weightKg} onChange={(v) => s.id && updateWorkoutSet(s.id, { weightKg: v })} />
-                    <NumCell value={s.reps} onChange={(v) => s.id && updateWorkoutSet(s.id, { reps: v })} />
-                    <NumCell value={s.rpe} onChange={(v) => s.id && updateWorkoutSet(s.id, { rpe: v })} />
+                    <NumCell label={t("weight")} value={s.weightKg} onChange={(v) => s.id && updateWorkoutSet(s.id, { weightKg: v })} />
+                    <NumCell label={t("reps")} value={s.reps} onChange={(v) => s.id && updateWorkoutSet(s.id, { reps: v })} />
+                    <NumCell label={t("rpe")} value={s.rpe} onChange={(v) => s.id && updateWorkoutSet(s.id, { rpe: v })} />
                     <button
                       onClick={() => s.id && toggleDone(s.id, s.completed, s.restSec)}
+                      aria-label={tc("markDone")}
+                      aria-pressed={!!s.completed}
                       className={cn(
-                        "flex h-8 w-8 items-center justify-center rounded-md border",
+                        "flex size-10 items-center justify-center rounded-md border",
                         s.completed
                           ? "border-green-500 bg-green-500 text-white"
                           : "border-border text-muted-foreground"
@@ -288,7 +290,8 @@ export default function SessionLoggerPage() {
                     </button>
                     <button
                       onClick={() => s.id && deleteWorkoutSet(s.id)}
-                      className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-destructive"
+                      aria-label={tc("delete")}
+                      className="flex size-10 items-center justify-center rounded-md text-muted-foreground hover:text-destructive"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -356,7 +359,7 @@ export default function SessionLoggerPage() {
   );
 }
 
-function NumCell({ value, onChange }: { value?: number; onChange: (v: number | undefined) => void }) {
+function NumCell({ label, value, onChange }: { label: string; value?: number; onChange: (v: number | undefined) => void }) {
   return (
     <input
       type="number"
@@ -366,7 +369,8 @@ function NumCell({ value, onChange }: { value?: number; onChange: (v: number | u
         const v = e.target.value === "" ? undefined : Number(e.target.value);
         onChange(v);
       }}
-      className="w-full rounded-md border border-border bg-transparent px-2 py-1.5 text-center text-sm outline-none focus:border-accent-500"
+      aria-label={label}
+      className="h-11 w-full rounded-md border border-border bg-transparent px-1 text-center text-base outline-none focus:border-accent-500"
     />
   );
 }

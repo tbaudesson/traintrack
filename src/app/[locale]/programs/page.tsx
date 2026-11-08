@@ -19,8 +19,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, ClipboardList, ChevronRight, Loader2, UserCheck, Sparkles, LayoutTemplate, Dumbbell, Home } from "lucide-react";
+import { Plus, ClipboardList, Loader2, UserCheck, Sparkles, LayoutTemplate, Dumbbell, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
+import { DetailRow } from "@/components/ui/detail-row";
 
 export default function ProgramsPage() {
   const t = useTranslations("programs");
@@ -151,46 +153,32 @@ export default function ProgramsPage() {
       <div className="space-y-6 p-4 pb-24">
         {assignedToMe.length > 0 && (
           <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-muted-foreground">{t("assignedToMe")}</h2>
+            <SectionHeading>{t("assignedToMe")}</SectionHeading>
             {assignedToMe.map((p) => (
-              <Card key={p.id}>
-                <CardContent className="flex items-center gap-3 py-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30">
-                    <UserCheck className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium">{p.name}</p>
-                    <p className="text-xs text-muted-foreground">{(p.structure ?? []).length} {t("days")}</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <DetailRow
+                key={p.id}
+                icon={UserCheck}
+                tone="success"
+                title={p.name}
+                subtitle={`${(p.structure ?? []).length} ${t("days")}`}
+              />
             ))}
           </section>
         )}
 
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-muted-foreground">{t("myPrograms")}</h2>
+          <SectionHeading>{t("myPrograms")}</SectionHeading>
           {mine.length === 0 ? (
-            <p className="rounded-lg bg-card/60 py-6 text-center text-sm text-muted-foreground">{t("noPrograms")}</p>
+            <EmptyState icon={ClipboardList} title={t("noPrograms")} />
           ) : (
             mine.map((p) => (
-              <Card key={p.id}>
-                <CardContent className="py-0">
-                  <button onClick={() => router.push(`/programs/${p.id}`)} className="flex w-full items-center gap-3 py-3 text-left">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-100 dark:bg-accent-900/30">
-                      <ClipboardList className="h-5 w-5 text-accent-text" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium">{p.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {(p.structure ?? []).length} {t("days")}
-                        {p.assignedToUserId ? ` · ${t("assigned")}` : ""}
-                      </p>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground/40" />
-                  </button>
-                </CardContent>
-              </Card>
+              <DetailRow
+                key={p.id}
+                onClick={() => router.push(`/programs/${p.id}`)}
+                icon={ClipboardList}
+                title={p.name}
+                subtitle={`${(p.structure ?? []).length} ${t("days")}${p.assignedToUserId ? ` · ${t("assigned")}` : ""}`}
+              />
             ))
           )}
         </section>
@@ -323,5 +311,5 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
 }
 
 function Tag({ children }: { children: React.ReactNode }) {
-  return <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">{children}</span>;
+  return <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{children}</span>;
 }

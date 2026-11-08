@@ -168,30 +168,30 @@ export default function ProgramEditorPage() {
                     </button>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
-                    <label className="text-[10px] text-muted-foreground">
+                    <label className="text-xs text-muted-foreground">
                       {t("sets")}
                       <Input
                         type="number"
                         value={ex.targetSets}
                         onChange={(e) => updateExercise(di, ei, { targetSets: Number(e.target.value) })}
-                        className="mt-0.5 h-8"
+                        className="mt-0.5 h-10"
                       />
                     </label>
-                    <label className="text-[10px] text-muted-foreground">
+                    <label className="text-xs text-muted-foreground">
                       {t("reps")}
                       <Input
                         value={ex.targetReps}
                         onChange={(e) => updateExercise(di, ei, { targetReps: e.target.value })}
-                        className="mt-0.5 h-8"
+                        className="mt-0.5 h-10"
                       />
                     </label>
-                    <label className="text-[10px] text-muted-foreground">
+                    <label className="text-xs text-muted-foreground">
                       {t("rest")}
                       <Input
                         type="number"
                         value={ex.restSec ?? ""}
                         onChange={(e) => updateExercise(di, ei, { restSec: Number(e.target.value) })}
-                        className="mt-0.5 h-8"
+                        className="mt-0.5 h-10"
                       />
                     </label>
                   </div>

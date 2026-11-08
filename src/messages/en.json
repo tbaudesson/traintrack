@@ -34,7 +34,12 @@
     "loading": "Loading…",
     "back": "Back",
     "confirm": "Confirm",
-    "close": "Close"
+    "close": "Close",
+    "skipToContent": "Skip to content",
+    "mainNav": "Main navigation",
+    "apiKey": "Anthropic API key",
+    "markDone": "Mark as done",
+    "plan": "Plan"
   },
   "auth": {
     "loginTitle": "Sign in",
@@ -147,7 +152,8 @@
     "hrAvg": "Avg",
     "hrMax": "Max",
     "hrUnsupported": "Heart-rate monitors need Chrome on Android or desktop.",
-    "hrError": "Couldn't connect to the heart-rate monitor."
+    "hrError": "Couldn't connect to the heart-rate monitor.",
+    "repsShort": "Reps"
   },
   "progress": {
     "title": "Progress",

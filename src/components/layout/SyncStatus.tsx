@@ -57,7 +57,7 @@ export function SyncStatus() {
       <button
         type="button"
         onClick={handleTap}
-        className="flex items-center gap-1.5 rounded-full px-2 py-1 text-xs transition-colors hover:bg-muted"
+        className="flex min-h-10 items-center gap-1.5 rounded-full px-2 text-xs transition-colors hover:bg-muted"
         aria-label={label}
       >
         {icon}

@@ -86,7 +86,7 @@ export function WorkoutNotes({ workoutId }: { workoutId: number }) {
           <div key={n.id} className="rounded-lg bg-muted/50 px-3 py-2 text-sm">
             <div className="mb-0.5 flex items-center gap-2">
               <span className="text-xs font-medium text-accent-text">{n.authorName ?? "—"}</span>
-              <span className="text-[10px] text-muted-foreground">{n.createdAt.split("T")[0]}</span>
+              <span className="text-xs text-muted-foreground">{n.createdAt.split("T")[0]}</span>
               {mine && n.id && (
                 <button
                   onClick={() => { if (n.audioPath) deleteVoiceNote(n.audioPath); deleteWorkoutNote(n.id!); }}
@@ -97,7 +97,7 @@ export function WorkoutNotes({ workoutId }: { workoutId: number }) {
               )}
             </div>
             {n.exerciseName && (
-              <span className="mb-1 inline-flex items-center gap-1 rounded-full bg-accent-100 px-2 py-0.5 text-[10px] font-medium text-accent-700 dark:bg-accent-900/40 dark:text-accent-300">
+              <span className="mb-1 inline-flex items-center gap-1 rounded-full bg-accent-100 px-2 py-0.5 text-xs font-medium text-accent-700 dark:bg-accent-900/40 dark:text-accent-300">
                 <Dumbbell className="h-2.5 w-2.5" /> {n.exerciseName}
               </span>
             )}
@@ -144,11 +144,11 @@ export function WorkoutNotes({ workoutId }: { workoutId: number }) {
               onKeyDown={(e) => e.key === "Enter" && submitText()}
             />
             {recorder.supported && (
-              <Button size="sm" variant="outline" onClick={recorder.start} aria-label={t("recordVoice")}>
+              <Button size="icon-sm" variant="outline" onClick={recorder.start} aria-label={t("recordVoice")}>
                 <Mic className="h-4 w-4" />
               </Button>
             )}
-            <Button size="sm" onClick={submitText} disabled={busy || !body.trim()}>
+            <Button size="icon-sm" onClick={submitText} disabled={busy || !body.trim()} aria-label={t("add")}>
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </div>
