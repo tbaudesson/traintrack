@@ -10,6 +10,7 @@ import { useExercises } from "@/hooks/useExercises";
 import { usePrograms } from "@/hooks/usePrograms";
 import { findWorkoutProgramDay } from "@/lib/startWorkout";
 import { VideoEmbed } from "@/components/domain/VideoEmbed";
+import Image from "next/image";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -267,8 +268,16 @@ export default function SessionLoggerPage() {
           );
           const guideOpen = openGuide === exerciseId;
           return (
-            <Card key={exerciseId}>
-              <CardContent className="space-y-2 py-3">
+            <Card key={exerciseId} className="relative">
+              <Image
+                src="/images/dumbbell.webp"
+                alt=""
+                width={78}
+                height={60}
+                unoptimized
+                className="pointer-events-none absolute top-1 right-11 opacity-90 dark:opacity-70"
+              />
+              <CardContent className="relative space-y-2 py-3">
                 <h3>
                   <button
                     type="button"
@@ -313,7 +322,7 @@ export default function SessionLoggerPage() {
 
                 {exSets.map((s) => (
                   <div key={s.id} className="grid grid-cols-[2rem_1fr_1fr_1fr_2.5rem_2.5rem] items-center gap-1.5">
-                    <span className="text-center text-sm font-medium text-muted-foreground">{s.setNumber}</span>
+                    <span className="t-well flex size-8 items-center justify-center rounded-lg bg-accent-100 text-sm font-bold text-accent-text dark:bg-accent-900/40">{s.setNumber}</span>
                     <NumCell label={t("weight")} value={s.weightKg} onChange={(v) => s.id && updateWorkoutSet(s.id, { weightKg: v })} />
                     <NumCell label={t("reps")} placeholder={target?.targetReps} value={s.reps} onChange={(v) => s.id && updateWorkoutSet(s.id, { reps: v })} />
                     <NumCell label={t("rpe")} value={s.rpe} onChange={(v) => s.id && updateWorkoutSet(s.id, { rpe: v })} />
@@ -325,7 +334,7 @@ export default function SessionLoggerPage() {
                         "flex size-10 items-center justify-center rounded-md border",
                         s.completed
                           ? "border-green-500 bg-green-500 text-white"
-                          : "border-border text-muted-foreground"
+                          : "t-well border-transparent bg-accent-100 text-accent-text dark:bg-accent-900/40"
                       )}
                     >
                       <Check className="h-4 w-4" />
@@ -341,9 +350,9 @@ export default function SessionLoggerPage() {
                 ))}
 
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  className="w-full"
+                  className="w-full rounded-full text-accent-text"
                   onClick={() => addSet(exerciseId, last?.setNumber ?? 0)}
                 >
                   <Plus className="mr-1 h-4 w-4" />

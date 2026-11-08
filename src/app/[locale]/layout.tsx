@@ -6,6 +6,7 @@ import { ThemeInit } from "@/components/layout/ThemeInit";
 import { ServiceWorkerRegistration } from "@/components/layout/ServiceWorkerRegistration";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AppShell } from "@/components/layout/AppShell";
+import { PageBackdrop } from "@/components/layout/PageBackdrop";
 
 const geist = Geist({
   variable: "--font-geist",
@@ -45,6 +46,7 @@ export default async function LocaleLayout({
           >
             {messages.common.skipToContent}
           </a>
+          <PageBackdrop />
           <AuthProvider>
             <div className="relative z-10 flex min-h-full flex-col">
               <AppShell>{children}</AppShell>

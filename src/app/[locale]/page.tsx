@@ -16,9 +16,11 @@ import { useTeams } from "@/hooks/useTeams";
 import { findWorkoutProgramDay, startWorkoutFromDay } from "@/lib/startWorkout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
 import { Recommendations } from "@/components/domain/Recommendations";
-import type { ComponentType, ReactNode } from "react";
+import type { ReactNode } from "react";
 import {
+  type LucideIcon,
   ArrowRight, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
 } from "lucide-react";
 
@@ -40,16 +42,25 @@ function ProgressRing({ percent }: { percent: number }) {
   const circumference = 2 * Math.PI * r;
   return (
     <div className="relative size-24 shrink-0">
-      <svg viewBox="0 0 100 100" className="size-full -rotate-90" aria-hidden="true">
-        <circle cx="50" cy="50" r={r} fill="none" strokeWidth="9" className="stroke-white/20" />
+      <svg viewBox="0 0 100 100" className="size-full -rotate-90 overflow-visible" aria-hidden="true">
+        <defs>
+          <linearGradient id="ring-progress" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="var(--accent-300)" />
+            <stop offset="1" stopColor="var(--accent-600)" />
+          </linearGradient>
+        </defs>
+        <circle cx="50" cy="50" r={r} fill="none" strokeWidth="9" className="stroke-foreground/25" />
+        <circle cx="50" cy="50" r="34" className="fill-background/85" />
         <circle
           cx="50" cy="50" r={r} fill="none" strokeWidth="9" strokeLinecap="round"
-          className="stroke-white transition-[stroke-dashoffset] duration-500 motion-reduce:transition-none"
+          stroke="url(#ring-progress)"
+          style={{ filter: "drop-shadow(0 0 4px var(--accent-500))" }}
+          className="transition-[stroke-dashoffset] duration-500 motion-reduce:transition-none"
           strokeDasharray={circumference}
           strokeDashoffset={circumference * (1 - percent / 100)}
         />
       </svg>
-      <span className="absolute inset-0 flex items-center justify-center text-lg font-semibold text-white tabular-nums">{percent}%</span>
+      <span className="absolute inset-0 flex items-center justify-center text-lg font-bold tabular-nums">{percent}%</span>
     </div>
   );
 }
@@ -60,17 +71,19 @@ function OverviewTile({
   value,
   hint,
   highlight,
+  tile,
 }: {
-  icon: ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
+  icon: LucideIcon;
   label: string;
   value: ReactNode;
   hint: string;
   highlight?: boolean;
+  tile: string;
 }) {
   return (
-    <div className="t-surface min-w-0 rounded-2xl p-3 ring-1 ring-foreground/5">
+    <div className="t-tile min-w-0 rounded-2xl p-3" style={{ "--tile": tile } as React.CSSProperties}>
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Icon className="size-4 shrink-0 text-accent-text" aria-hidden={true} />
+        <Icon className="size-4 shrink-0" style={{ color: tile }} aria-hidden={true} />
         <span className="truncate">{label}</span>
       </p>
       <p className={`mt-1 truncate text-2xl font-bold tabular-nums ${highlight ? "text-accent-text" : ""}`}>{value}</p>
@@ -163,7 +176,15 @@ export default function HomePage() {
 
   return (
     <div className="space-y-5 p-4 pb-28">
-      <header className="flex items-center gap-3 pt-2">
+      <header className="relative flex items-center gap-3 pt-2">
+        <Image
+          src="/images/dumbbell.webp"
+          alt=""
+          width={128}
+          height={99}
+          unoptimized
+          className="pointer-events-none absolute -top-8 -right-9 -z-10 opacity-40 dark:opacity-40"
+        />
         <Link
           href="/profile"
           aria-label={tm("profile")}
@@ -184,7 +205,7 @@ export default function HomePage() {
         <Link
           href="/settings"
           aria-label={tm("settings")}
-          className="flex size-11 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground"
+          className="t-surface flex size-11 items-center justify-center rounded-xl text-foreground"
         >
           <Settings className="size-5" aria-hidden="true" />
         </Link>
@@ -204,12 +225,20 @@ export default function HomePage() {
         </Card>
       ) : (
         <>
-          <section className="t-hero rounded-3xl p-5 text-white">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-xs font-semibold tracking-widest text-white/90 uppercase">{t("todaySession")}</p>
+          <section className="t-hero relative overflow-hidden rounded-3xl p-5">
+            <Image
+              src="/images/athlete.webp"
+              alt=""
+              width={176}
+              height={209}
+              unoptimized
+              className="pointer-events-none absolute top-2 left-[33%] opacity-55 [mask-image:linear-gradient(to_right,transparent_8%,black_45%)] dark:opacity-50"
+            />
+            <div className="relative flex items-start justify-between gap-3">
+              <div className="max-w-[60%] min-w-0">
+                <p className="text-xs font-semibold tracking-widest text-accent-text uppercase">{t("todaySession")}</p>
                 <h2 className="mt-1 truncate text-3xl font-bold tracking-tight">{session?.day.name ?? t("freeSession")}</h2>
-                <p className="mt-1 text-sm text-white/90">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {session
                     ? `${session.program.name} · ${t("exerciseCount", { count: session.day.exercises.length })}`
                     : t("freeSessionDesc")}
@@ -217,8 +246,8 @@ export default function HomePage() {
               </div>
               <ProgressRing percent={percent} />
             </div>
-            <div className="mt-4 flex items-center justify-between gap-2">
-              <Button onClick={start} disabled={starting} variant="ghost" className="t-surface rounded-full px-5 text-accent-800 hover:bg-transparent hover:text-accent-800 dark:text-accent-800 [--card:oklch(1_0_0)] [--card-tint:oklch(0.95_0.02_290)]">
+            <div className="relative mt-4 flex items-center justify-between gap-2">
+              <Button onClick={start} disabled={starting} className="rounded-full px-5">
                 {starting ? (
                   <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                 ) : (
@@ -231,7 +260,7 @@ export default function HomePage() {
               {session?.program.id !== undefined && (
                 <Link
                   href={`/programs/${session.program.id}`}
-                  className="flex h-11 items-center gap-1.5 rounded-xl bg-white/12 px-2.5 text-sm font-medium whitespace-nowrap ring-1 ring-white/25 shadow-[inset_0_1px_0_oklch(1_0_0/0.2)]"
+                  className="t-surface flex h-11 items-center gap-1.5 rounded-full px-3 text-sm font-medium whitespace-nowrap"
                 >
                   <ClipboardList className="size-4" aria-hidden="true" />
                   {t("details")}
@@ -250,17 +279,18 @@ export default function HomePage() {
             </div>
             <div className="grid grid-cols-3 gap-2">
               {hasFeature("nutrition") ? (
-                <OverviewTile icon={Flame} label={t("calories")} value={Math.round(sumMacros(nutritionToday).calories).toLocaleString()} hint={t("kcalToday")} />
+                <OverviewTile icon={Flame} label={t("calories")} value={Math.round(sumMacros(nutritionToday).calories).toLocaleString()} hint={t("kcalToday")} tile="oklch(0.74 0.17 55)" />
               ) : (
-                <OverviewTile icon={Flame} label={t("weeklyVolume")} value={week.volume.toLocaleString()} hint="kg" />
+                <OverviewTile icon={Flame} label={t("weeklyVolume")} value={week.volume.toLocaleString()} hint="kg" tile="oklch(0.74 0.17 55)" />
               )}
-              <OverviewTile icon={Dumbbell} label={t("workouts")} value={week.workouts} hint={t("thisWeek")} />
+              <OverviewTile icon={Dumbbell} label={t("workouts")} value={week.workouts} hint={t("thisWeek")} tile="var(--accent-400)" />
               <OverviewTile
                 icon={TrendingUp}
                 label={t("progression")}
                 value={week.change === null ? "—" : `${week.change > 0 ? "+" : ""}${week.change}%`}
                 hint={t("vsLastWeek")}
                 highlight
+                tile="oklch(0.74 0.12 200)"
               />
             </div>
           </section>

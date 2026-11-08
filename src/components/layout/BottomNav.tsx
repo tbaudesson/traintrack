@@ -398,10 +398,8 @@ function WheelBackdrop({
           cy={box / 2}
           r={radius}
           fill="none"
-          strokeWidth="2.4"
-          strokeLinecap="round"
-          strokeDasharray="0.1 8.5"
-          style={{ stroke: "var(--arc-rim)" }}
+          strokeWidth="2"
+          style={{ stroke: "var(--arc-rim)", filter: "drop-shadow(0 0 5px var(--arc-rim))" }}
         />
       </svg>
       <svg
@@ -421,9 +419,7 @@ function WheelBackdrop({
           d="M 10 56 Q 210 -36 410 56"
           fill="none"
           stroke="url(#arc-line)"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          strokeDasharray="0.1 8.5"
+          strokeWidth="1.8"
         />
       </svg>
     </>
