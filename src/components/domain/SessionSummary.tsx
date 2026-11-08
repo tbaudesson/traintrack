@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Clock, Dumbbell, Layers, Trophy, type LucideIcon } from "lucide-react";
+import { Clock, Dumbbell, Gauge, Layers, Route, Trophy, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -12,6 +12,7 @@ export interface SessionSummaryData {
   /** Percent against the previous comparable session; null if there is none. */
   change: number | null;
   records: { exercise: string; weightKg: number; reps: number }[];
+  cardio?: { distance: string | null; duration: string | null; pace: string | null; records: ("distance" | "pace")[] };
 }
 
 function Tile({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
@@ -28,6 +29,7 @@ function Tile({ icon: Icon, label, value }: { icon: LucideIcon; label: string; v
 
 export function SessionSummary({ data, onClose }: { data: SessionSummaryData | null; onClose: () => void }) {
   const t = useTranslations("log");
+  const tc = useTranslations("cardio");
   if (!data) return null;
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -35,6 +37,22 @@ export function SessionSummary({ data, onClose }: { data: SessionSummaryData | n
         <DialogHeader>
           <DialogTitle>{t("summaryTitle")}</DialogTitle>
         </DialogHeader>
+        {data.cardio ? (
+          <>
+            <div className="grid grid-cols-2 gap-2">
+              <Tile icon={Route} label={tc("distance")} value={data.cardio.distance ?? "—"} />
+              <Tile icon={Clock} label={t("summaryDuration")} value={data.cardio.duration ?? "—"} />
+              {data.cardio.pace && <Tile icon={Gauge} label={tc("paceLabel")} value={data.cardio.pace} />}
+            </div>
+            {data.cardio.records.map((kind) => (
+              <p key={kind} className="flex items-center gap-2 text-sm font-medium">
+                <Trophy className="size-4 shrink-0 text-accent-text" aria-hidden="true" />
+                {tc(kind === "distance" ? "recordDistance" : "recordPace")}
+              </p>
+            ))}
+          </>
+        ) : (
+        <>
         <div className="grid grid-cols-2 gap-2">
           <Tile icon={Clock} label={t("summaryDuration")} value={data.durationMin !== null ? `${data.durationMin} min` : "—"} />
           <Tile icon={Layers} label={t("summarySets")} value={String(data.sets)} />
@@ -55,6 +73,8 @@ export function SessionSummary({ data, onClose }: { data: SessionSummaryData | n
               </li>
             ))}
           </ul>
+        )}
+        </>
         )}
         <Button onClick={onClose} className="w-full">{t("summaryDone")}</Button>
       </DialogContent>

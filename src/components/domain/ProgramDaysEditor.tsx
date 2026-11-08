@@ -3,7 +3,8 @@
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { useTranslations } from "next-intl";
 import { useExercises } from "@/hooks/useExercises";
-import type { ProgramDay, ProgramExercise } from "@/db";
+import type { CardioTarget, ProgramDay, ProgramExercise, Sport } from "@/db";
+import { SPORTS } from "@/lib/cardio";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ export function ProgramDaysEditor({
   setDays: Dispatch<SetStateAction<ProgramDay[]>>;
 }) {
   const t = useTranslations("programs");
+  const tc = useTranslations("cardio");
   const exercises = useExercises();
   const [pickerDay, setPickerDay] = useState<number | null>(null);
 
@@ -64,7 +66,23 @@ export function ProgramDaysEditor({
                 </button>
               </div>
 
-              {day.exercises.map((ex, ei) => (
+              <label className="block text-sm font-medium">
+                {tc("dayType")}
+                <select
+                  value={day.cardio ? "cardio" : "strength"}
+                  onChange={(e) =>
+                    updateDay(di, { ...day, cardio: e.target.value === "cardio" ? { sport: "run" } : undefined })
+                  }
+                  className="mt-1 h-11 w-full rounded-lg border border-input bg-card px-3 text-base"
+                >
+                  <option value="strength">{tc("dayStrength")}</option>
+                  <option value="cardio">{tc("dayCardio")}</option>
+                </select>
+              </label>
+
+              {day.cardio && <CardioDayFields value={day.cardio} onChange={(cardio) => updateDay(di, { ...day, cardio })} />}
+
+              {!day.cardio && day.exercises.map((ex, ei) => (
                 <div key={ei} className="rounded-lg border border-border p-2">
                   <div className="mb-2 flex items-center gap-2">
                     <Dumbbell className="h-4 w-4 text-accent-500" />
@@ -104,10 +122,12 @@ export function ProgramDaysEditor({
                 </div>
               ))}
 
-              <Button variant="ghost" size="sm" className="w-full" onClick={() => setPickerDay(di)}>
-                <Plus className="mr-1 h-4 w-4" />
-                {t("addExercise")}
-              </Button>
+              {!day.cardio && (
+                <Button variant="ghost" size="sm" className="w-full" onClick={() => setPickerDay(di)}>
+                  <Plus className="mr-1 h-4 w-4" />
+                  {t("addExercise")}
+                </Button>
+              )}
             </CardContent>
           </Card>
         ))}
@@ -138,5 +158,42 @@ export function ProgramDaysEditor({
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+function CardioDayFields({ value, onChange }: { value: CardioTarget; onChange: (next: CardioTarget) => void }) {
+  const t = useTranslations("cardio");
+  const number = (raw: string) => (raw === "" ? undefined : Number(raw));
+  return (
+    <div className="space-y-2">
+      <label className="block text-sm font-medium">
+        {t("sport")}
+        <select
+          value={value.sport}
+          onChange={(e) => onChange({ ...value, sport: e.target.value as Sport })}
+          className="mt-1 h-11 w-full rounded-lg border border-input bg-card px-3 text-base"
+        >
+          {SPORTS.map((s) => <option key={s} value={s}>{t(`sport_${s}`)}</option>)}
+        </select>
+      </label>
+      <div className="grid grid-cols-2 gap-2">
+        <label className="block text-sm font-medium">
+          {t("distanceKm")}
+          <Input type="number" inputMode="decimal" value={value.distanceKm ?? ""} onChange={(e) => onChange({ ...value, distanceKm: number(e.target.value) })} className="mt-1" />
+        </label>
+        <label className="block text-sm font-medium">
+          {t("minutes")}
+          <Input type="number" inputMode="numeric" value={value.durationMin ?? ""} onChange={(e) => onChange({ ...value, durationMin: number(e.target.value) })} className="mt-1" />
+        </label>
+      </div>
+      <label className="block text-sm font-medium">
+        {t("intensity")}
+        <Input value={value.intensity ?? ""} onChange={(e) => onChange({ ...value, intensity: e.target.value || undefined })} className="mt-1" />
+      </label>
+      <label className="block text-sm font-medium">
+        {t("instructions")}
+        <Input value={value.notes ?? ""} onChange={(e) => onChange({ ...value, notes: e.target.value || undefined })} className="mt-1" />
+      </label>
+    </div>
   );
 }

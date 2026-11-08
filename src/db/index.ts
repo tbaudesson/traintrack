@@ -125,9 +125,23 @@ export interface ProgramExercise {
   restSec?: number;
 }
 
+export type Sport = "run" | "swim" | "bike" | "row" | "other";
+
+/** What an endurance day asks for, instead of a list of exercises. */
+export interface CardioTarget {
+  sport: Sport;
+  distanceKm?: number;
+  durationMin?: number;
+  intensity?: string;
+  notes?: string;
+}
+
 export interface ProgramDay {
   name: string; // e.g. "Push", "Pull", "Legs"
   exercises: ProgramExercise[];
+  /** Set on plans whose days follow each other week after week. */
+  week?: number;
+  cardio?: CardioTarget;
 }
 
 export interface Program extends SyncFields {
@@ -151,6 +165,11 @@ export interface Workout extends SyncFields {
   programId?: number | null;
   /** Which day of the program this workout was started from. */
   programDayIndex?: number | null;
+  /** Absent on older workouts, which are all strength sessions. */
+  kind?: "strength" | "cardio";
+  sport?: Sport | null;
+  distanceM?: number | null;
+  durationSec?: number | null;
   title?: string;
   notes?: string;
   durationMin?: number;

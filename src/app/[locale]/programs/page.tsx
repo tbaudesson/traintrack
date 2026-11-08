@@ -261,7 +261,7 @@ export default function ProgramsPage() {
 
           <div className="space-y-3 py-1">
             <FilterRow label={tt("goal")}>
-              {(["strength", "hypertrophy", "fat_loss", "general"] as ProgramGoal[]).map((g) => (
+              {(["strength", "hypertrophy", "endurance", "fat_loss", "general"] as ProgramGoal[]).map((g) => (
                 <Chip key={g} active={tGoal === g} onClick={() => setTGoal(tGoal === g ? undefined : g)}>{tt(`goal_${g}`)}</Chip>
               ))}
             </FilterRow>

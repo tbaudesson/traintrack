@@ -16,7 +16,9 @@ import { useNutritionForDate, sumMacros } from "@/hooks/useNutrition";
 import { useTodayReadiness, readinessScore } from "@/hooks/useReadiness";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useTeams } from "@/hooks/useTeams";
-import { findWorkoutProgramDay, startWorkoutFromDay } from "@/lib/startWorkout";
+import { daysToOffer, findWorkoutProgramDay, startWorkoutFromDay } from "@/lib/startWorkout";
+import { describeTarget, isCardio, isCardioDone, weeklyGoal } from "@/lib/cardio";
+import { SportPicker } from "@/components/domain/SportPicker";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -25,10 +27,10 @@ import { createWorkout } from "@/hooks/useWorkouts";
 import Image from "next/image";
 import { Recommendations } from "@/components/domain/Recommendations";
 import type { ReactNode } from "react";
-import type { Program } from "@/db";
+import type { Program, ProgramDay, Sport } from "@/db";
 import {
   type LucideIcon,
-  ArrowRight, ListChecks, MessageSquare, Plus, Sparkles, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
+  Activity, ArrowRight, ListChecks, MessageSquare, Plus, Sparkles, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
 } from "lucide-react";
 
 const DAY_MS = 86400000;
@@ -105,6 +107,7 @@ export default function HomePage() {
   const tm = useTranslations("more");
   const tl = useTranslations("log");
   const tp = useTranslations("programs");
+  const tc = useTranslations("cardio");
   const router = useRouter();
   const { user, profile: account } = useAuth();
   const profile = useAthleteProfile();
@@ -120,6 +123,7 @@ export default function HomePage() {
   const [now] = useState(() => Date.now());
   const [starting, setStarting] = useState(false);
   const [choosing, setChoosing] = useState(false);
+  const [sportOpen, setSportOpen] = useState(false);
   const pickerTop = useRef<HTMLDivElement>(null);
 
   const today = isoDate(now);
@@ -145,9 +149,11 @@ export default function HomePage() {
 
   const percent = useMemo(() => {
     if (!session?.workoutId) return 0;
+    const running = workouts.find((w) => w.id === session.workoutId);
+    if (running && isCardio(running)) return isCardioDone(running) ? 100 : 0;
     const own = sets.filter((s) => s.workoutId === session.workoutId);
     return own.length ? Math.round((own.filter((s) => s.completed).length / own.length) * 100) : 0;
-  }, [sets, session]);
+  }, [sets, session, workouts]);
 
   const week = useMemo(() => {
     const monday = isoDate(mondayOf(now));
@@ -169,7 +175,7 @@ export default function HomePage() {
   // Ready-made programs the user has not added yet.
   const templates = catalogue.filter((tpl) => !programs.some((p) => p.name === tpl.name));
 
-  const goal = session ? session.program.structure.length : 0;
+  const goal = session ? weeklyGoal(session.program, session.day) : 0;
   const needsOnboarding = profile !== undefined && !profile;
 
   async function start() {
@@ -194,6 +200,15 @@ export default function HomePage() {
       setStarting(false);
     }
   }
+
+  async function startCardio(sport: Sport) {
+    setSportOpen(false);
+    const id = await createWorkout({ date: today, title: tc(`sport_${sport}`), kind: "cardio", sport });
+    router.push(`/log/${id}`);
+  }
+
+  const dayDetail = (day: ProgramDay) =>
+    day.cardio ? describeTarget(day.cardio) : t("exerciseCount", { count: day.exercises.length });
 
   async function buildProgram() {
     setChoosing(false);
@@ -289,7 +304,7 @@ export default function HomePage() {
                 <h2 className="mt-1 truncate text-3xl font-bold tracking-tight">{session?.day.name ?? t("freeSession")}</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {session
-                    ? `${session.program.name} · ${t("exerciseCount", { count: session.day.exercises.length })}`
+                    ? `${session.program.name} · ${dayDetail(session.day)}`
                     : t("freeSessionDesc")}
                 </p>
               </div>
@@ -326,6 +341,8 @@ export default function HomePage() {
             </button>
           </section>
 
+          <SportPicker open={sportOpen} onOpenChange={setSportOpen} onPick={startCardio} />
+
           <Dialog open={choosing} onOpenChange={setChoosing}>
             <DialogContent className="max-h-[80vh] overflow-y-auto">
               <DialogHeader>
@@ -337,20 +354,21 @@ export default function HomePage() {
                   .map((p) => (
                     <section key={p.id} className="space-y-2">
                       <h3 className="text-sm font-semibold text-muted-foreground">{p.name}</h3>
-                      {p.structure.map((day, index) => (
+                      {daysToOffer(p, workouts).map(({ day, index }) => (
                         <DetailRow
                           key={`${p.id}-${index}`}
                           onClick={() => startDay(p, index)}
                           disabled={starting}
-                          icon={Dumbbell}
+                          icon={day.cardio ? Activity : Dumbbell}
                           title={day.name}
-                          subtitle={t("exerciseCount", { count: day.exercises.length })}
+                          subtitle={dayDetail(day)}
                         />
                       ))}
                     </section>
                   ))}
                 <section className="space-y-2">
                   <DetailRow onClick={startFree} disabled={starting} icon={Plus} tone="neutral" title={t("freeSession")} subtitle={t("freeSessionHint")} />
+                  <DetailRow onClick={() => { setChoosing(false); setSportOpen(true); }} disabled={starting} icon={Activity} tone="neutral" title={tc("newSession")} subtitle={tc("newSessionHint")} />
                 </section>
 
                 <section className="space-y-2">
@@ -368,7 +386,11 @@ export default function HomePage() {
                         onClick={() => addTemplate(template)}
                         icon={Sparkles}
                         title={template.name}
-                        subtitle={t("readyMadeDays", { count: template.structure.length })}
+                        subtitle={
+                          template.structure.some((d) => d.week !== undefined)
+                            ? t("readyMadeWeeks", { count: new Set(template.structure.map((d) => d.week)).size })
+                            : t("readyMadeDays", { count: template.structure.length })
+                        }
                       />
                     ))}
                   </section>

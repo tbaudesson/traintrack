@@ -1,4 +1,4 @@
-import type { Exercise, Program, Workout } from "@/db";
+import type { Exercise, Program, ProgramDay, Workout } from "@/db";
 import db, { getCurrentUserIdSync } from "@/db";
 import { lastPerformance, suggestWeight, topWeight } from "@/lib/performance";
 import { createWorkout } from "@/hooks/useWorkouts";
@@ -30,6 +30,23 @@ export function findWorkoutProgramDay(
   return null;
 }
 
+/**
+ * The days to offer for a program: all of them, or only the current week of a
+ * plan, which can hold more than sixty sessions.
+ */
+export function daysToOffer(
+  program: Program,
+  workouts: Pick<Workout, "title" | "programId" | "programDayIndex">[]
+): { day: ProgramDay; index: number }[] {
+  const all = (program.structure ?? []).map((day, index) => ({ day, index }));
+  if (!all.some((d) => d.day.week !== undefined)) return all;
+  const done = workouts
+    .map((w) => findWorkoutProgramDay([program], w)?.index ?? -1)
+    .reduce((highest, index) => Math.max(highest, index), -1);
+  const week = all[Math.min(done + 1, all.length - 1)].day.week;
+  return all.filter((d) => d.day.week === week);
+}
+
 /** Create today's workout with its sets pre-filled from a program day. */
 export async function startWorkoutFromDay(
   program: Program,
@@ -46,7 +63,10 @@ export async function startWorkoutFromDay(
     title: programDayTitle(program.name, day.name),
     programId: program.id,
     programDayIndex: dayIndex,
+    kind: day.cardio ? "cardio" : "strength",
+    sport: day.cardio?.sport ?? null,
   });
+  if (day.cardio) return id;
   for (const pe of day.exercises) {
     // Resolve the exercise by uuid or name; create a custom one if missing
     const ex = exercises.find(

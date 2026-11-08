@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { SectionHeading } from "@/components/ui/page-parts";
+import { formatDistance, formatDuration, isCardio } from "@/lib/cardio";
 
 function scoreColor(s: number) {
   if (s >= 75) return "text-green-600";
@@ -162,6 +163,7 @@ export default function ClientDetailPage() {
                 workoutId={w.id!}
                 title={w.title || tp("title")}
                 date={w.date}
+                cardio={isCardio(w) ? [w.distanceM ? formatDistance(w.distanceM, w.sport) : null, w.durationSec ? formatDuration(w.durationSec) : null].filter(Boolean).join(" · ") : undefined}
                 setCount={sets.filter((s) => s.workoutId === w.id).length}
                 volume={Math.round(
                   sets
@@ -183,12 +185,14 @@ function ClientWorkoutCard({
   date,
   setCount,
   volume,
+  cardio,
 }: {
   workoutId: number;
   title: string;
   date: string;
   setCount: number;
   volume: number;
+  cardio?: string;
 }) {
   const t = useTranslations("teams");
   const [open, setOpen] = useState(false);
@@ -202,10 +206,10 @@ function ClientWorkoutCard({
           <div className="flex-1">
             <p className="font-medium">{title}</p>
             <p className="text-xs text-muted-foreground">
-              {date} · {setCount} {t("roster")}
+              {date} · {cardio ?? `${setCount} ${t("roster")}`}
             </p>
           </div>
-          <span className="text-sm font-semibold text-accent-text">{volume}</span>
+          {!cardio && <span className="text-sm font-semibold text-accent-text">{volume}</span>}
           {open ? (
             <ChevronUp className="h-4 w-4 text-muted-foreground" />
           ) : (

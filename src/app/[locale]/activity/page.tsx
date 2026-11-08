@@ -87,7 +87,7 @@ export default function ActivityPage() {
                       icon={Dumbbell}
                       tone="neutral"
                       title={t("sessionBy", { name: e.name })}
-                      subtitle={`${e.date} · ${t("sessionDetail", { sets: e.sets, volume: e.volume.toLocaleString() })}`}
+                      subtitle={`${e.date} · ${e.cardio ?? t("sessionDetail", { sets: e.sets, volume: e.volume.toLocaleString() })}`}
                     />
                   )
                 )

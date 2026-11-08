@@ -1,4 +1,5 @@
 import type { ProgramDay } from "@/db";
+import { ENDURANCE_TEMPLATES } from "./enduranceTemplates";
 
 /**
  * Ready-made program templates so a user can SELECT a proven program instead of
@@ -6,7 +7,7 @@ import type { ProgramDay } from "@/db";
  * library (006_seed_exercises) so the logger can resolve them.
  */
 
-export type ProgramGoal = "strength" | "hypertrophy" | "fat_loss" | "general";
+export type ProgramGoal = "strength" | "hypertrophy" | "fat_loss" | "general" | "endurance";
 export type ProgramLevel = "beginner" | "intermediate" | "advanced";
 
 export interface ProgramTemplate {
@@ -215,6 +216,7 @@ export const PROGRAM_TEMPLATES: ProgramTemplate[] = [
       { name: "Circuit bas", exercises: [ex("Leg Press", 4, "15-20", 45), ex("Leg Curl", 3, "15-20", 45), ex("Hip Thrust", 3, "12-15", 45), ex("Plank", 3, "45-60s", 30)] },
     ],
   },
+  ...ENDURANCE_TEMPLATES,
 ];
 
 /** Rank templates by closeness to the user's goal / level / days-per-week. */

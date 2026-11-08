@@ -116,7 +116,8 @@
     "buildProgram": "Eigenes Programm erstellen",
     "buildProgramHint": "Wähle deine Tage und Übungen",
     "readyMade": "Fertige Programme",
-    "readyMadeDays": "{count, plural, one {# Tag} other {# Tage}} · zum Hinzufügen tippen"
+    "readyMadeDays": "{count, plural, one {# Tag} other {# Tage}} · zum Hinzufügen tippen",
+    "readyMadeWeeks": "{count}-Wochen-Plan · zum Hinzufügen tippen"
   },
   "onboarding": {
     "title": "Dein Athletenprofil",
@@ -413,7 +414,8 @@
     "goal_general": "Allgemein",
     "level_beginner": "Anfänger",
     "level_intermediate": "Fortgeschritten",
-    "level_advanced": "Profi"
+    "level_advanced": "Profi",
+    "goal_endurance": "Ausdauer"
   },
   "recommend": {
     "title": "Für dich empfohlen",
@@ -690,5 +692,37 @@
     "homeFriendly": "Zu Hause machbar",
     "published": "Nutzern angeboten",
     "loadError": "Vorlagen konnten nicht geladen werden. Wurde Migration 023 angewendet?"
+  },
+  "cardio": {
+    "sport": "Sportart",
+    "sport_run": "Laufen",
+    "sport_swim": "Schwimmen",
+    "sport_bike": "Radfahren",
+    "sport_row": "Rudern",
+    "sport_other": "Andere Ausdauer",
+    "pickSport": "Welche Sportart?",
+    "newSession": "Ausdauereinheit",
+    "newSessionHint": "Laufen, Schwimmen, Radfahren…",
+    "planned": "Ziel: {target}",
+    "distanceKm": "Distanz (km)",
+    "distanceM": "Distanz (m)",
+    "distance": "Distanz",
+    "minutes": "Minuten",
+    "seconds": "Sekunden",
+    "pace": "Tempo: {pace}",
+    "paceLabel": "Tempo",
+    "recordDistance": "Neuer Distanzrekord!",
+    "recordPace": "Neuer Temporekord!",
+    "endurance": "Ausdauer",
+    "sessions": "{count, plural, one {# Einheit} other {# Einheiten}}",
+    "last7Days": "Letzte 7 Tage",
+    "last28Days": "Letzte 28 Tage",
+    "longest": "Längste Distanz",
+    "bestPace": "Bestes Tempo",
+    "dayType": "Art der Einheit",
+    "dayStrength": "Kraft",
+    "dayCardio": "Ausdauer",
+    "intensity": "Intensität",
+    "instructions": "Anweisungen"
   }
 }

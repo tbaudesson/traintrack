@@ -1,4 +1,5 @@
 import type { Workout, WorkoutSet } from "@/db";
+import { formatDistance, formatDuration, isCardio, isCardioDone } from "@/lib/cardio";
 import { recordHistory, totalVolume } from "@/lib/performance";
 
 /** No session for this long and a client counts as dropping off. */
@@ -7,7 +8,7 @@ const FEED_WINDOW_DAYS = 30;
 const FEED_LIMIT = 60;
 
 export type ActivityEvent =
-  | { kind: "session"; key: string; userId: string; name: string; date: string; title?: string; sets: number; volume: number }
+  | { kind: "session"; key: string; userId: string; name: string; date: string; title?: string; sets: number; volume: number; cardio?: string }
   | { kind: "record"; key: string; userId: string; name: string; date: string; exercise: string; weightKg: number; reps: number };
 
 export interface InactiveClient {
@@ -15,6 +16,12 @@ export interface InactiveClient {
   name: string;
   /** Null when the client has never logged a session. */
   days: number | null;
+}
+
+function cardioSummary(w: Workout) {
+  return [w.distanceM ? formatDistance(w.distanceM, w.sport) : null, w.durationSec ? formatDuration(w.durationSec) : null]
+    .filter(Boolean)
+    .join(" · ");
 }
 
 function daysBetween(from: string, to: string) {
@@ -38,7 +45,7 @@ export function buildActivity(input: {
     const name = client.displayName;
     const workouts = input.workouts.filter((w) => w.userId === client.userId && !w.deletedAt);
     const sets = input.sets.filter((s) => s.userId === client.userId && !s.deletedAt);
-    const trained = workouts.filter((w) => sets.some((s) => s.workoutId === w.id && s.completed));
+    const trained = workouts.filter((w) => isCardioDone(w) || sets.some((s) => s.workoutId === w.id && s.completed));
 
     for (const w of trained) {
       if (daysBetween(w.date, input.today) > FEED_WINDOW_DAYS) continue;
@@ -46,6 +53,7 @@ export function buildActivity(input: {
       events.push({
         kind: "session", key: `s-${w.id}`, userId: client.userId, name, date: w.date, title: w.title,
         sets: done.length, volume: Math.round(totalVolume(done)),
+        cardio: isCardio(w) ? cardioSummary(w) : undefined,
       });
     }
 

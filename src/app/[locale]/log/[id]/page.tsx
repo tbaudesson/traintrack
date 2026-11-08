@@ -11,6 +11,8 @@ import { usePrograms } from "@/hooks/usePrograms";
 import { findWorkoutProgramDay } from "@/lib/startWorkout";
 import { VideoEmbed } from "@/components/domain/VideoEmbed";
 import { PlateCalculator } from "@/components/domain/PlateCalculator";
+import { CardioLogger } from "@/components/domain/CardioLogger";
+import { formatDistance, formatDuration, formatPace, isCardio, isCardioDone, newCardioRecords } from "@/lib/cardio";
 import { SessionSummary, type SessionSummaryData } from "@/components/domain/SessionSummary";
 import db from "@/db";
 import {
@@ -114,6 +116,28 @@ export default function SessionLoggerPage() {
     hrMonitorRef.current = null;
     await persistHr();
     if (!workout) return router.push("/log");
+
+    if (isCardio(workout)) {
+      // Read back: the distance typed just before this tap may not be in `workout` yet.
+      const saved = await db.workouts.get(workoutId);
+      if (!saved || !isCardioDone(saved)) return router.push("/log");
+      const others = allWorkouts.filter((w) => w.date <= saved.date);
+      const beaten = newCardioRecords(saved, others);
+      setSummary({
+        durationMin: null,
+        sets: 0,
+        volume: 0,
+        change: null,
+        records: [],
+        cardio: {
+          distance: saved.distanceM ? formatDistance(saved.distanceM, saved.sport) : null,
+          duration: saved.durationSec ? formatDuration(saved.durationSec) : null,
+          pace: formatPace(saved.sport, saved.distanceM ?? undefined, saved.durationSec ?? undefined),
+          records: beaten,
+        },
+      });
+      return;
+    }
 
     const done = sets.filter((s) => s.completed);
     if (done.length === 0) return router.push("/log");
@@ -333,7 +357,11 @@ export default function SessionLoggerPage() {
           </Card>
         )}
 
-        {groups.length === 0 && (
+        {workout && isCardio(workout) && (
+          <CardioLogger key={workout.id} workout={workout} target={programDay?.cardio} />
+        )}
+
+        {workout && !isCardio(workout) && groups.length === 0 && (
           <EmptyState icon={Dumbbell} title={t("noExercises")} />
         )}
 
@@ -480,10 +508,12 @@ export default function SessionLoggerPage() {
           );
         })}
 
-        <Button variant="outline" className="w-full" onClick={() => setPickerOpen(true)}>
+        {!isCardio(workout) && (
+          <Button variant="outline" className="w-full" onClick={() => setPickerOpen(true)}>
           <Plus className="mr-1 h-4 w-4" />
           {t("addExercise")}
         </Button>
+        )}
 
         <div className="pt-2">
           <WorkoutNotes workoutId={workoutId} />

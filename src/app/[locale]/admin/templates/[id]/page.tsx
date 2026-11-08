@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import type { ProgramGoal, ProgramLevel } from "@/lib/programTemplates";
 import { getTemplate, updateTemplate, type AdminTemplate } from "@/lib/templateService";
 
-const GOALS: ProgramGoal[] = ["strength", "hypertrophy", "fat_loss", "general"];
+const GOALS: ProgramGoal[] = ["strength", "hypertrophy", "endurance", "fat_loss", "general"];
 const LEVELS: ProgramLevel[] = ["beginner", "intermediate", "advanced"];
 const SELECT = "mt-1 h-11 w-full rounded-lg border border-input bg-card px-3 text-base";
 

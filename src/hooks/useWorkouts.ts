@@ -1,5 +1,5 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import db, { type Workout } from "@/db";
+import db, { type Sport, type Workout } from "@/db";
 import { getCurrentUserIdSync } from "@/db";
 import { schedulePush } from "@/lib/syncEngine";
 
@@ -22,6 +22,8 @@ export async function createWorkout(data: {
   title?: string;
   programId?: number | null;
   programDayIndex?: number | null;
+  kind?: "strength" | "cardio";
+  sport?: Sport | null;
   notes?: string;
 }): Promise<number> {
   const now = new Date().toISOString();
@@ -30,6 +32,8 @@ export async function createWorkout(data: {
     title: data.title,
     programId: data.programId ?? null,
     programDayIndex: data.programDayIndex ?? null,
+    kind: data.kind ?? "strength",
+    sport: data.sport ?? null,
     notes: data.notes,
     uuid: crypto.randomUUID(),
     userId: getCurrentUserIdSync(),

@@ -10,10 +10,13 @@ import type { Program } from "@/db";
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Plus, Dumbbell, Calendar, Loader2, ClipboardList } from "lucide-react";
+import { Activity, Plus, Dumbbell, Calendar, Loader2, ClipboardList } from "lucide-react";
 import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
 import { DetailRow } from "@/components/ui/detail-row";
-import { startWorkoutFromDay } from "@/lib/startWorkout";
+import { daysToOffer, startWorkoutFromDay } from "@/lib/startWorkout";
+import { describeTarget, formatDistance, isCardio } from "@/lib/cardio";
+import { SportPicker } from "@/components/domain/SportPicker";
+import type { Sport } from "@/db";
 
 export default function LogPage() {
   const t = useTranslations("log");
@@ -23,8 +26,17 @@ export default function LogPage() {
   const programs = useTrainablePrograms();
   const exercises = useExercises();
   const [busy, setBusy] = useState(false);
+  const [sportOpen, setSportOpen] = useState(false);
+  const tc = useTranslations("cardio");
 
   const today = new Date().toISOString().split("T")[0];
+
+  async function startCardio(sport: Sport) {
+    setSportOpen(false);
+    setBusy(true);
+    const id = await createWorkout({ date: today, title: tc(`sport_${sport}`), kind: "cardio", sport });
+    router.push(`/log/${id}`);
+  }
 
   async function startEmpty() {
     setBusy(true);
@@ -56,19 +68,25 @@ export default function LogPage() {
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="mr-1 h-4 w-4" />{t("newWorkout")}</>}
         </Button>
 
+        <Button variant="outline" className="w-full" onClick={() => setSportOpen(true)} disabled={busy}>
+          <Activity className="mr-1 h-4 w-4" aria-hidden="true" />
+          {tc("newSession")}
+        </Button>
+        <SportPicker open={sportOpen} onOpenChange={setSportOpen} onPick={startCardio} />
+
         {/* Start from a program */}
         {programs.length > 0 && (
           <section className="space-y-2">
             <SectionHeading>{t("selectExercise")}</SectionHeading>
             {programs.map((p) =>
-              (p.structure ?? []).map((day, di) => (
+              daysToOffer(p, workouts).map(({ day, index: di }) => (
                 <DetailRow
                   key={`${p.id}-${di}`}
                   onClick={() => startFromProgramDay(p, di)}
                   disabled={busy}
                   icon={Dumbbell}
                   title={`${p.name} — ${day.name}`}
-                  subtitle={`${day.exercises.length} · ${t("addExercise")}`}
+                  subtitle={day.cardio ? describeTarget(day.cardio) : `${day.exercises.length} · ${t("addExercise")}`}
                 />
               ))
             )}
@@ -88,7 +106,7 @@ export default function LogPage() {
                 icon={Calendar}
                 tone="neutral"
                 title={w.title || t("title")}
-                subtitle={w.date}
+                subtitle={isCardio(w) && w.distanceM ? `${w.date} · ${formatDistance(w.distanceM, w.sport)}` : w.date}
               />
             ))
           )}

@@ -4,7 +4,9 @@ import { PROGRAM_TEMPLATES } from "./programTemplates";
 
 // A name missing from the library would create a stray custom exercise for
 // every user who starts the program.
-const library = readFileSync("supabase/migrations/006_seed_exercises.sql", "utf8");
+const library =
+  readFileSync("supabase/migrations/006_seed_exercises.sql", "utf8") +
+  readFileSync("supabase/migrations/024_endurance.sql", "utf8");
 
 describe("built-in programs", () => {
   it("only use exercises from the seeded library", () => {

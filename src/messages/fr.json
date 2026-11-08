@@ -116,7 +116,8 @@
     "buildProgram": "Construire mon programme",
     "buildProgramHint": "Choisissez vos jours et vos exercices",
     "readyMade": "Programmes tout faits",
-    "readyMadeDays": "{count, plural, one {# jour} other {# jours}} · toucher pour l'ajouter"
+    "readyMadeDays": "{count, plural, one {# jour} other {# jours}} · toucher pour l'ajouter",
+    "readyMadeWeeks": "Plan de {count} semaines · toucher pour l'ajouter"
   },
   "onboarding": {
     "title": "Votre profil athlète",
@@ -413,7 +414,8 @@
     "goal_general": "Général",
     "level_beginner": "Débutant",
     "level_intermediate": "Intermédiaire",
-    "level_advanced": "Avancé"
+    "level_advanced": "Avancé",
+    "goal_endurance": "Endurance"
   },
   "recommend": {
     "title": "Recommandé pour vous",
@@ -690,5 +692,37 @@
     "homeFriendly": "Faisable à la maison",
     "published": "Proposé aux utilisateurs",
     "loadError": "Impossible de charger les programmes types. La migration 023 est-elle appliquée ?"
+  },
+  "cardio": {
+    "sport": "Sport",
+    "sport_run": "Course à pied",
+    "sport_swim": "Natation",
+    "sport_bike": "Vélo",
+    "sport_row": "Rameur",
+    "sport_other": "Autre endurance",
+    "pickSport": "Quel sport ?",
+    "newSession": "Séance d'endurance",
+    "newSessionHint": "Course, natation, vélo…",
+    "planned": "Objectif : {target}",
+    "distanceKm": "Distance (km)",
+    "distanceM": "Distance (m)",
+    "distance": "Distance",
+    "minutes": "Minutes",
+    "seconds": "Secondes",
+    "pace": "Allure : {pace}",
+    "paceLabel": "Allure",
+    "recordDistance": "Nouveau record de distance !",
+    "recordPace": "Nouveau record d'allure !",
+    "endurance": "Endurance",
+    "sessions": "{count, plural, one {# séance} other {# séances}}",
+    "last7Days": "7 derniers jours",
+    "last28Days": "28 derniers jours",
+    "longest": "Plus longue distance",
+    "bestPace": "Meilleure allure",
+    "dayType": "Type de séance",
+    "dayStrength": "Musculation",
+    "dayCardio": "Endurance",
+    "intensity": "Intensité",
+    "instructions": "Consignes"
   }
 }

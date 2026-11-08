@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Dumbbell, Layers, Flame, Trophy, TrendingUp } from "lucide-react";
 import { EmptyState } from "@/components/ui/page-parts";
+import { CardioProgress } from "@/components/domain/CardioProgress";
+import { isCardioDone } from "@/lib/cardio";
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell,
 } from "recharts";
@@ -174,7 +176,9 @@ export default function ProgressPage() {
           </CardContent>
         </Card>
 
-        {!hasData && (
+        <CardioProgress workouts={workouts} />
+
+        {!hasData && !workouts.some(isCardioDone) && (
           <EmptyState icon={TrendingUp} title={t("noData")} />
         )}
 

@@ -116,7 +116,8 @@
     "buildProgram": "Build my program",
     "buildProgramHint": "Choose your days and exercises",
     "readyMade": "Ready-made programs",
-    "readyMadeDays": "{count, plural, one {# day} other {# days}} · tap to add"
+    "readyMadeDays": "{count, plural, one {# day} other {# days}} · tap to add",
+    "readyMadeWeeks": "{count}-week plan · tap to add"
   },
   "onboarding": {
     "title": "Your athlete profile",
@@ -413,7 +414,8 @@
     "goal_general": "General",
     "level_beginner": "Beginner",
     "level_intermediate": "Intermediate",
-    "level_advanced": "Advanced"
+    "level_advanced": "Advanced",
+    "goal_endurance": "Endurance"
   },
   "recommend": {
     "title": "Recommended for you",
@@ -690,5 +692,37 @@
     "homeFriendly": "Can be done at home",
     "published": "Offered to users",
     "loadError": "Could not load templates. Has migration 023 been applied?"
+  },
+  "cardio": {
+    "sport": "Sport",
+    "sport_run": "Running",
+    "sport_swim": "Swimming",
+    "sport_bike": "Cycling",
+    "sport_row": "Rowing",
+    "sport_other": "Other endurance",
+    "pickSport": "Which sport?",
+    "newSession": "Endurance session",
+    "newSessionHint": "Running, swimming, cycling…",
+    "planned": "Target: {target}",
+    "distanceKm": "Distance (km)",
+    "distanceM": "Distance (m)",
+    "distance": "Distance",
+    "minutes": "Minutes",
+    "seconds": "Seconds",
+    "pace": "Pace: {pace}",
+    "paceLabel": "Pace",
+    "recordDistance": "New distance record!",
+    "recordPace": "New pace record!",
+    "endurance": "Endurance",
+    "sessions": "{count, plural, one {# session} other {# sessions}}",
+    "last7Days": "Last 7 days",
+    "last28Days": "Last 28 days",
+    "longest": "Longest distance",
+    "bestPace": "Best pace",
+    "dayType": "Session type",
+    "dayStrength": "Strength",
+    "dayCardio": "Endurance",
+    "intensity": "Intensity",
+    "instructions": "Instructions"
   }
 }

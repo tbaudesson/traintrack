@@ -1,0 +1,73 @@
+import { describe, it, expect } from "vitest";
+import type { Workout } from "@/db";
+import { cardioBests, describeTarget, formatDistance, formatDuration, formatPace, isCardioDone, newCardioRecords } from "./cardio";
+import { ENDURANCE_TEMPLATES } from "./enduranceTemplates";
+
+const run = (id: number, distanceM?: number, durationSec?: number) =>
+  ({ id, kind: "cardio", sport: "run", distanceM, durationSec }) as Workout;
+
+describe("formatting", () => {
+  it("gives each sport its own pace", () => {
+    expect(formatPace("run", 10000, 3000)).toBe("5:00 /km");
+    expect(formatPace("swim", 1000, 1200)).toBe("2:00 /100 m");
+    expect(formatPace("bike", 30000, 3600)).toBe("30.0 km/h");
+    expect(formatPace("row", 2000, 480)).toBe("2:00 /500 m");
+  });
+
+  it("has no pace without both numbers", () => {
+    expect(formatPace("run", 10000, undefined)).toBeNull();
+  });
+
+  it("formats distances and durations", () => {
+    expect(formatDistance(10000, "run")).toBe("10 km");
+    expect(formatDistance(1500, "swim")).toBe("1500 m");
+    expect(formatDuration(3900)).toBe("1 h 05");
+    expect(formatDuration(2700)).toBe("45 min");
+  });
+
+  it("describes a target", () => {
+    expect(describeTarget({ sport: "run", distanceKm: 10, intensity: "Zone 2" })).toBe("10 km · Zone 2");
+  });
+});
+
+describe("done and records", () => {
+  it("needs a distance or a duration to count as done", () => {
+    expect(isCardioDone(run(1))).toBe(false);
+    expect(isCardioDone(run(1, 5000))).toBe(true);
+  });
+
+  it("ignores very short efforts for the best pace", () => {
+    expect(cardioBests([run(1, 400, 60), run(2, 5000, 1500)], "run").bestSpeed).toBeCloseTo(5000 / 1500);
+  });
+
+  it("detects longer and faster", () => {
+    expect(newCardioRecords(run(2, 12000, 3000), [run(1, 10000, 3000)])).toEqual(["distance", "pace"]);
+  });
+
+  it("does not celebrate a first outing or a slower one", () => {
+    expect(newCardioRecords(run(1, 10000, 3000), [])).toEqual([]);
+    expect(newCardioRecords(run(2, 5000, 3000), [run(1, 10000, 3000)])).toEqual([]);
+  });
+});
+
+describe("endurance plans", () => {
+  const marathon = ENDURANCE_TEMPLATES.find((t) => t.id === "plan-marathon-16")!;
+
+  it("build a marathon over 16 weeks and end on the race", () => {
+    expect(new Set(marathon.structure.map((d) => d.week)).size).toBe(16);
+    expect(marathon.structure.at(-1)?.cardio?.distanceKm).toBe(42.2);
+  });
+
+  it("taper before the race", () => {
+    const longest = (week: number) =>
+      Math.max(...marathon.structure.filter((d) => d.week === week).map((d) => d.cardio?.distanceKm ?? 0));
+    expect(longest(13)).toBeGreaterThan(longest(14));
+    expect(longest(14)).toBeGreaterThan(longest(15));
+  });
+
+  it("give every session a distance or a duration", () => {
+    const empty = ENDURANCE_TEMPLATES.flatMap((t) => t.structure)
+      .filter((d) => d.cardio && !d.cardio.distanceKm && !d.cardio.durationMin);
+    expect(empty).toEqual([]);
+  });
+});
