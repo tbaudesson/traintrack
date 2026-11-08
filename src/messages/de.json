@@ -172,7 +172,10 @@
     "hrMax": "Max",
     "hrUnsupported": "Herzfrequenz-Sensoren brauchen Chrome auf Android oder Desktop.",
     "hrError": "Verbindung zum Herzfrequenz-Sensor fehlgeschlagen.",
-    "repsShort": "Wdh."
+    "repsShort": "Wdh.",
+    "target": "Ziel: {sets} × {reps}",
+    "targetRest": "Pause {sec} s",
+    "noGuide": "Noch keine Anleitung für diese Übung."
   },
   "progress": {
     "title": "Fortschritt",

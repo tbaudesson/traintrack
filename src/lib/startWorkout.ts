@@ -1,4 +1,4 @@
-import type { Exercise, ProgramDay } from "@/db";
+import type { Exercise, Program, ProgramDay } from "@/db";
 import { createWorkout } from "@/hooks/useWorkouts";
 import { addWorkoutSet } from "@/hooks/useWorkoutSets";
 import { createCustomExercise } from "@/hooks/useExercises";
@@ -6,6 +6,15 @@ import { createCustomExercise } from "@/hooks/useExercises";
 /** The title a workout started from a program day carries. */
 export function programDayTitle(programName: string, dayName: string): string {
   return `${programName} — ${dayName}`;
+}
+
+/** The program day a workout was started from, recognised by its title. */
+export function findProgramDay(programs: Program[], title?: string): ProgramDay | null {
+  for (const program of programs) {
+    const day = (program.structure ?? []).find((d) => programDayTitle(program.name, d.name) === title);
+    if (day) return day;
+  }
+  return null;
 }
 
 /** Create today's workout with its sets pre-filled from a program day. */

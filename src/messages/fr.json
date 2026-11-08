@@ -172,7 +172,10 @@
     "hrMax": "Max",
     "hrUnsupported": "Les capteurs de FC nécessitent Chrome sur Android ou ordinateur.",
     "hrError": "Connexion au capteur de fréquence cardiaque impossible.",
-    "repsShort": "Rép."
+    "repsShort": "Rép.",
+    "target": "Objectif : {sets} × {reps}",
+    "targetRest": "repos {sec} s",
+    "noGuide": "Pas encore de fiche pour cet exercice."
   },
   "progress": {
     "title": "Progrès",

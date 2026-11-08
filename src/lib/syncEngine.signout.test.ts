@@ -97,3 +97,17 @@ describe("adoptLocalData", () => {
     expect((await db.table("bodyMetrics").get({ uuid: U2 })).userId).toBe("u1");
   });
 });
+
+describe("findProgramDay", async () => {
+  const { findProgramDay, programDayTitle } = await import("./startWorkout");
+  const day = { name: "Day A", exercises: [] };
+  const program = { name: "Full Body", structure: [day] } as unknown as import("@/db").Program;
+
+  it("finds the day a session was started from", () => {
+    expect(findProgramDay([program], programDayTitle("Full Body", "Day A"))).toBe(day);
+  });
+
+  it("finds nothing for a free session", () => {
+    expect(findProgramDay([program], "Nouvelle séance")).toBeNull();
+  });
+});

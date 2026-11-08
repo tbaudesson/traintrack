@@ -172,7 +172,10 @@
     "hrMax": "Max",
     "hrUnsupported": "Heart-rate monitors need Chrome on Android or desktop.",
     "hrError": "Couldn't connect to the heart-rate monitor.",
-    "repsShort": "Reps"
+    "repsShort": "Reps",
+    "target": "Target: {sets} × {reps}",
+    "targetRest": "rest {sec}s",
+    "noGuide": "No guide for this exercise yet."
   },
   "progress": {
     "title": "Progress",

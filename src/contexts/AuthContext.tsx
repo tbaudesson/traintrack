@@ -161,47 +161,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Listen for auth state changes (login, logout, token refresh)
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return;
-
-      if (session?.user) {
-        let profile = null;
-        try {
-          profile = await Promise.race([
-            getUserProfile(),
-            new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
-          ]);
-        } catch {
-          // Profile fetch failed — keep existing profile
-        }
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      // Supabase holds its auth lock while it runs this callback, and every
+      // request needs that lock for its token. Calling it from in here hung the
+      // app on the loading screen whenever a session had expired, so the work
+      // waits until the lock is released.
+      setTimeout(async () => {
         if (!mounted) return;
-        setState((prev) => ({
-          ...prev,
-          user: session.user,
-          session,
-          isOffline: false,
-          // Only update profile if fetch succeeded — keep previous on timeout/failure
-          profile: profile ?? prev.profile,
-          isAdmin: profile ? profile.role === "admin" : prev.isAdmin,
-          accountStatus: profile ? profile.status : prev.accountStatus,
-          planFeatures: profile ? (profile.plan_features ?? []) : prev.planFeatures,
-        }));
-        await cacheUserId(session.user.id, session.user.email ?? undefined);
-        if (event === "SIGNED_IN") {
-          await adoptLocalData(session.user.id);
-          startSync(session.user.id);
+
+        if (session?.user) {
+          let profile = null;
+          try {
+            profile = await Promise.race([
+              getUserProfile(),
+              new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
+            ]);
+          } catch {
+            // Profile fetch failed — keep existing profile
+          }
+          if (!mounted) return;
+          setState((prev) => ({
+            ...prev,
+            user: session.user,
+            session,
+            isOffline: false,
+            // Only update profile if fetch succeeded — keep previous on timeout/failure
+            profile: profile ?? prev.profile,
+            isAdmin: profile ? profile.role === "admin" : prev.isAdmin,
+            accountStatus: profile ? profile.status : prev.accountStatus,
+            planFeatures: profile ? (profile.plan_features ?? []) : prev.planFeatures,
+          }));
+          await cacheUserId(session.user.id, session.user.email ?? undefined);
+          if (event === "SIGNED_IN") {
+            await adoptLocalData(session.user.id);
+            startSync(session.user.id);
+          }
+        } else {
+          setState((prev) => ({
+            ...prev,
+            user: null,
+            session: null,
+            profile: null,
+            isAdmin: false,
+            accountStatus: null,
+            planFeatures: [],
+          }));
         }
-      } else {
-        setState((prev) => ({
-          ...prev,
-          user: null,
-          session: null,
-          profile: null,
-          isAdmin: false,
-          accountStatus: null,
-          planFeatures: [],
-        }));
-      }
+      }, 0);
     });
 
     // Listen for online/offline status changes

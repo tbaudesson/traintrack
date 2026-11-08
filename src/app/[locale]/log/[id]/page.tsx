@@ -7,6 +7,9 @@ import { useRouter } from "@/i18n/navigation";
 import { useWorkout, updateWorkout, deleteWorkout } from "@/hooks/useWorkouts";
 import { useWorkoutSets, addWorkoutSet, updateWorkoutSet, deleteWorkoutSet } from "@/hooks/useWorkoutSets";
 import { useExercises } from "@/hooks/useExercises";
+import { usePrograms } from "@/hooks/usePrograms";
+import { findProgramDay } from "@/lib/startWorkout";
+import { VideoEmbed } from "@/components/domain/VideoEmbed";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,7 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse } from "lucide-react";
+import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse, ChevronDown, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { connectHeartRate, isBluetoothSupported, type HeartRateMonitor } from "@/lib/bleHeartRate";
@@ -32,8 +35,10 @@ export default function SessionLoggerPage() {
   const workout = useWorkout(workoutId);
   const sets = useWorkoutSets(workoutId);
   const exercises = useExercises();
+  const programs = usePrograms();
 
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [openGuide, setOpenGuide] = useState<number | null>(null);
   const [rest, setRest] = useState<number | null>(null);
   const [editMeta, setEditMeta] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
@@ -98,6 +103,9 @@ export default function SessionLoggerPage() {
   }
 
   const exMap = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises]);
+
+  // What the program asks for, when this session was started from one.
+  const programDay = useMemo(() => findProgramDay(programs, workout?.title), [programs, workout?.title]);
 
   // Group sets by exercise, preserving insertion order
   const groups = useMemo(() => {
@@ -251,13 +259,44 @@ export default function SessionLoggerPage() {
         {groups.map(([exerciseId, exSets]) => {
           const ex = exMap.get(exerciseId);
           const last = exSets[exSets.length - 1];
+          const target = programDay?.exercises.find(
+            (pe) => (pe.exerciseUuid && pe.exerciseUuid === ex?.uuid) || pe.exerciseName.toLowerCase() === ex?.name.toLowerCase()
+          );
+          const guideOpen = openGuide === exerciseId;
           return (
             <Card key={exerciseId}>
               <CardContent className="space-y-2 py-3">
-                <div className="flex items-center gap-2">
-                  <Dumbbell className="h-4 w-4 text-accent-500" />
-                  <h3 className="flex-1 font-semibold">{ex?.name ?? "?"}</h3>
-                </div>
+                <h3>
+                  <button
+                    type="button"
+                    onClick={() => setOpenGuide(guideOpen ? null : exerciseId)}
+                    aria-expanded={guideOpen}
+                    className="flex min-h-11 w-full items-center gap-2 text-left font-semibold"
+                  >
+                    <Dumbbell className="h-4 w-4 shrink-0 text-accent-text" aria-hidden="true" />
+                    <span className="min-w-0 flex-1">{ex?.name ?? "?"}</span>
+                    <ChevronDown
+                      className={cn("h-5 w-5 shrink-0 text-muted-foreground transition-transform", guideOpen && "rotate-180")}
+                      aria-hidden="true"
+                    />
+                  </button>
+                </h3>
+
+                {target && (
+                  <p className="flex items-center gap-1.5 text-sm font-medium text-accent-text">
+                    <Target className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    {t("target", { sets: target.targetSets, reps: target.targetReps })}
+                    {target.restSec ? ` · ${t("targetRest", { sec: target.restSec })}` : ""}
+                  </p>
+                )}
+
+                {guideOpen && (
+                  <div className="space-y-2 rounded-xl bg-muted/50 p-3">
+                    {ex?.description && <p className="text-sm text-muted-foreground">{ex.description}</p>}
+                    {ex?.videoUrl && <VideoEmbed url={ex.videoUrl} />}
+                    {!ex?.description && !ex?.videoUrl && <p className="text-sm text-muted-foreground">{t("noGuide")}</p>}
+                  </div>
+                )}
 
                 {/* Column headers */}
                 <div className="grid grid-cols-[2rem_1fr_1fr_1fr_2.5rem_2.5rem] items-center gap-1.5 px-1 text-center text-xs leading-tight text-muted-foreground">
@@ -273,7 +312,7 @@ export default function SessionLoggerPage() {
                   <div key={s.id} className="grid grid-cols-[2rem_1fr_1fr_1fr_2.5rem_2.5rem] items-center gap-1.5">
                     <span className="text-center text-sm font-medium text-muted-foreground">{s.setNumber}</span>
                     <NumCell label={t("weight")} value={s.weightKg} onChange={(v) => s.id && updateWorkoutSet(s.id, { weightKg: v })} />
-                    <NumCell label={t("reps")} value={s.reps} onChange={(v) => s.id && updateWorkoutSet(s.id, { reps: v })} />
+                    <NumCell label={t("reps")} placeholder={target?.targetReps} value={s.reps} onChange={(v) => s.id && updateWorkoutSet(s.id, { reps: v })} />
                     <NumCell label={t("rpe")} value={s.rpe} onChange={(v) => s.id && updateWorkoutSet(s.id, { rpe: v })} />
                     <button
                       onClick={() => s.id && toggleDone(s.id, s.completed, s.restSec)}
@@ -359,12 +398,13 @@ export default function SessionLoggerPage() {
   );
 }
 
-function NumCell({ label, value, onChange }: { label: string; value?: number; onChange: (v: number | undefined) => void }) {
+function NumCell({ label, placeholder, value, onChange }: { label: string; placeholder?: string; value?: number; onChange: (v: number | undefined) => void }) {
   return (
     <input
       type="number"
       inputMode="decimal"
       defaultValue={value ?? ""}
+      placeholder={placeholder}
       onBlur={(e) => {
         const v = e.target.value === "" ? undefined : Number(e.target.value);
         onChange(v);
