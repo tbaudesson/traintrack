@@ -16,7 +16,7 @@ export function PageHeader({ title, showBack = false, actions }: PageHeaderProps
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-card/95 px-4 py-3 backdrop-blur-sm">
-      <div className="mx-auto flex max-w-lg items-center gap-3">
+      <div className="mx-auto flex max-w-lg flex-wrap items-center gap-x-3 gap-y-2">
         {showBack && (
           <Button
             variant="ghost"
@@ -28,9 +28,9 @@ export function PageHeader({ title, showBack = false, actions }: PageHeaderProps
             <ArrowLeft className="h-5 w-5" aria-hidden="true" />
           </Button>
         )}
-        <h1 className="flex-1 truncate text-lg font-semibold">{title}</h1>
+        <h1 className="max-w-full min-w-0 flex-auto truncate text-lg font-semibold">{title}</h1>
         <SyncStatus />
-        {actions && <div className="flex items-center gap-2">{actions}</div>}
+        {actions && <div className="ml-auto flex flex-wrap items-center justify-end gap-2">{actions}</div>}
       </div>
     </header>
   );

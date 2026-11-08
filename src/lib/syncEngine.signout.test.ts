@@ -15,7 +15,7 @@ const net = { onLine: true };
 vi.stubGlobal("navigator", net);
 
 const db = (await import("@/db")).default;
-const { flushAndClearLocalData } = await import("./syncEngine");
+const { flushAndClearLocalData, adoptLocalData } = await import("./syncEngine");
 
 const metric = (dirty: number) => ({
   uuid: "11111111-1111-4111-8111-111111111111",
@@ -58,5 +58,42 @@ describe("flushAndClearLocalData", () => {
     await expect(flushAndClearLocalData(25000)).resolves.toBe(false);
 
     await expect(db.table("bodyMetrics").count()).resolves.toBe(1);
+  });
+});
+
+describe("adoptLocalData", () => {
+  const U1 = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+  const U2 = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+
+  beforeEach(async () => {
+    await Promise.all(db.tables.map((t) => t.clear()));
+  });
+
+  it("leaves the shared exercise library alone", async () => {
+    await db.table("exercises").add({ uuid: U1, name: "Plank", isCustom: false, userId: null, _dirty: 0 });
+
+    await adoptLocalData("u1");
+
+    const ex = await db.table("exercises").get({ uuid: U1 });
+    expect(ex.userId).toBeNull();
+    expect(ex._dirty).toBe(0);
+  });
+
+  it("releases library rows already stuck as dirty, so sign-out can wipe", async () => {
+    await db.table("exercises").add({ uuid: U1, name: "Plank", isCustom: false, userId: "u1", _dirty: 1 });
+
+    await adoptLocalData("u1");
+
+    await expect(flushAndClearLocalData()).resolves.toBe(true);
+  });
+
+  it("still adopts the user's own ownerless rows", async () => {
+    await db.table("exercises").add({ uuid: U1, name: "Mine", isCustom: true, userId: null, _dirty: 0 });
+    await db.table("bodyMetrics").add({ uuid: U2, date: "2026-11-08", userId: null, _dirty: 0 });
+
+    await adoptLocalData("u1");
+
+    expect((await db.table("exercises").get({ uuid: U1 }))._dirty).toBe(1);
+    expect((await db.table("bodyMetrics").get({ uuid: U2 })).userId).toBe("u1");
   });
 });

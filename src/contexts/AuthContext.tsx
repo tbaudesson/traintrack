@@ -10,7 +10,7 @@ import {
 } from "react";
 import { supabase } from "@/lib/supabase";
 import { db, refreshCachedUserId } from "@/db";
-import { startSync, stopSync, flushAndClearLocalData } from "@/lib/syncEngine";
+import { startSync, stopSync, flushAndClearLocalData, adoptLocalData } from "@/lib/syncEngine";
 import { getUserProfile, type UserProfile, type UserStatus } from "@/lib/adminService";
 import { claimPendingInvitations } from "@/lib/groupService";
 import { unsubscribeFromPush } from "@/lib/pushService";
@@ -68,40 +68,6 @@ async function getCachedUserId(): Promise<string | null> {
   return meta?.userId ?? null;
 }
 
-/**
- * On first login, assign userId to all existing records that have userId=null.
- * This migrates local-only data to the authenticated user.
- */
-async function migrateExistingData(userId: string): Promise<void> {
-  const tableNames = [
-    "athleteProfiles",
-    "exercises",
-    "programs",
-    "workouts",
-    "workoutSets",
-    "bodyMetrics",
-    "readinessCheckins",
-    "nutritionEntries",
-    "workoutNotes",
-    "hydrationLogs",
-    "messages",
-    "healthMetrics",
-  ] as const;
-
-  await db.transaction(
-    "rw",
-    tableNames.map((name) => db.table(name)),
-    async () => {
-      for (const name of tableNames) {
-        await db
-          .table(name)
-          .filter((r: Record<string, unknown>) => !r.userId)
-          .modify({ userId, _dirty: 1 });
-      }
-    }
-  );
-}
-
 // ─── Provider ─────────────────────────────────────────────────────────
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -153,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             planFeatures: profile?.plan_features ?? [],
           });
           await cacheUserId(session.user.id, session.user.email ?? undefined);
-          await migrateExistingData(session.user.id);
+          await adoptLocalData(session.user.id);
           // Start sync engine after auth is established
           startSync(session.user.id);
           // Claim any pending group invitations for this email
@@ -222,7 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }));
         await cacheUserId(session.user.id, session.user.email ?? undefined);
         if (event === "SIGNED_IN") {
-          await migrateExistingData(session.user.id);
+          await adoptLocalData(session.user.id);
           startSync(session.user.id);
         }
       } else {

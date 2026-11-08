@@ -131,7 +131,7 @@ export default function ProgramsPage() {
         title={t("title")}
         showBack
         actions={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap justify-end gap-2">
             <Button size="sm" variant="outline" onClick={openTemplates}>
               <LayoutTemplate className="mr-1 h-4 w-4" />
               {tt("choose")}

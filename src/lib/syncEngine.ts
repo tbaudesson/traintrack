@@ -757,6 +757,35 @@ export async function startSync(userId: string): Promise<void> {
 }
 
 /**
+ * Rows created before signing in have no owner yet: give them to this user
+ * and queue them for upload. The shared exercise library also has no owner
+ * but belongs to nobody, and the server rightly refuses it. An earlier version
+ * adopted it anyway, so devices may still hold those rows stuck as dirty.
+ */
+export async function adoptLocalData(userId: string): Promise<void> {
+  await db.transaction(
+    "rw",
+    TABLE_CONFIGS.map((c) => db.table(c.dexieTable)),
+    async () => {
+      await db
+        .table("exercises")
+        .filter((r: Record<string, unknown>) => !r.isCustom && r._dirty === 1)
+        .modify({ userId: null, _dirty: 0 });
+
+      for (const { dexieTable } of TABLE_CONFIGS) {
+        await db
+          .table(dexieTable)
+          .filter(
+            (r: Record<string, unknown>) =>
+              !r.userId && (dexieTable !== "exercises" || !!r.isCustom)
+          )
+          .modify({ userId, _dirty: 1 });
+      }
+    }
+  );
+}
+
+/**
  * Sign-out: push what is pending, then wipe this device so the next person
  * on it finds nothing. Returns false, leaving everything in place, when some
  * rows could not reach the server (offline): those exist nowhere else.
