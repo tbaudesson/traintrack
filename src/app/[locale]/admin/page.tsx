@@ -29,15 +29,17 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Check, Trash2, Loader2, ShieldCheck, Plus, Users2, CreditCard, Mail, Pencil, X, type LucideIcon } from "lucide-react";
+import { Check, Trash2, Loader2, ShieldCheck, Plus, Users2, CreditCard, ClipboardList, Mail, Pencil, X, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TemplatesTab } from "@/components/domain/TemplatesTab";
 
-type Tab = "users" | "invitations" | "plans" | "gdpr";
+type Tab = "users" | "invitations" | "plans" | "templates" | "gdpr";
 
 const TABS: { id: Tab; icon: LucideIcon }[] = [
   { id: "users", icon: Users2 },
   { id: "invitations", icon: Mail },
   { id: "plans", icon: CreditCard },
+  { id: "templates", icon: ClipboardList },
   { id: "gdpr", icon: ShieldCheck },
 ];
 
@@ -67,7 +69,7 @@ export default function AdminPage() {
     <>
       <PageHeader title={t("title")} showBack />
       <div className="space-y-4 p-4 pb-24">
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {TABS.map(({ id, icon: Icon }) => {
             const count =
               id === "users" ? counts.users
@@ -95,6 +97,7 @@ export default function AdminPage() {
         {tab === "users" && <UsersTab />}
         {tab === "invitations" && <InvitationsTab />}
         {tab === "plans" && <PlansTab />}
+        {tab === "templates" && <TemplatesTab />}
         {tab === "gdpr" && <GdprTab />}
       </div>
     </>

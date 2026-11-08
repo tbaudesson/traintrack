@@ -607,7 +607,8 @@
     "inv_accepted": "acceptée",
     "inv_revoked": "révoquée",
     "editName": "Modifier le nom",
-    "nameSaved": "Enregistré"
+    "nameSaved": "Enregistré",
+    "templates": "Programmes types"
   },
   "profile": {
     "title": "Profil",
@@ -670,5 +671,24 @@
     "recordBy": "{name} a battu un record",
     "sessionBy": "{name} a fait une séance",
     "sessionDetail": "{sets} séries · {volume} kg"
+  },
+  "adminTemplates": {
+    "new": "Nouveau programme type",
+    "untitled": "Nouveau programme",
+    "day": "Jour",
+    "copyOf": "{name} (copie)",
+    "hidden": "Masqué",
+    "edit": "Modifier",
+    "copy": "Copier",
+    "hide": "Masquer aux utilisateurs",
+    "show": "Proposer aux utilisateurs",
+    "delete": "Supprimer",
+    "deleteConfirm": "Supprimer définitivement « {name} » ? Les programmes déjà ajoutés par les utilisateurs ne sont pas touchés.",
+    "save": "Enregistrer",
+    "name": "Nom",
+    "description": "Description",
+    "homeFriendly": "Faisable à la maison",
+    "published": "Proposé aux utilisateurs",
+    "loadError": "Impossible de charger les programmes types. La migration 023 est-elle appliquée ?"
   }
 }

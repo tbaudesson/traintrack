@@ -607,7 +607,8 @@
     "inv_accepted": "angenommen",
     "inv_revoked": "widerrufen",
     "editName": "Name bearbeiten",
-    "nameSaved": "Gespeichert"
+    "nameSaved": "Gespeichert",
+    "templates": "Vorlagen"
   },
   "profile": {
     "title": "Profil",
@@ -670,5 +671,24 @@
     "recordBy": "{name} hat einen Rekord aufgestellt",
     "sessionBy": "{name} hat trainiert",
     "sessionDetail": "{sets} Sätze · {volume} kg"
+  },
+  "adminTemplates": {
+    "new": "Neue Vorlage",
+    "untitled": "Neues Programm",
+    "day": "Tag",
+    "copyOf": "{name} (Kopie)",
+    "hidden": "Verborgen",
+    "edit": "Bearbeiten",
+    "copy": "Kopieren",
+    "hide": "Vor Nutzern verbergen",
+    "show": "Nutzern anbieten",
+    "delete": "Löschen",
+    "deleteConfirm": "„{name}“ endgültig löschen? Bereits hinzugefügte Programme bleiben bestehen.",
+    "save": "Speichern",
+    "name": "Name",
+    "description": "Beschreibung",
+    "homeFriendly": "Zu Hause machbar",
+    "published": "Nutzern angeboten",
+    "loadError": "Vorlagen konnten nicht geladen werden. Wurde Migration 023 angewendet?"
   }
 }

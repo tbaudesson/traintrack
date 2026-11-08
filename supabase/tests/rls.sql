@@ -176,5 +176,36 @@ begin
   perform _root();
 end $$;
 
+-- ─── Ready-made programs ─────────────────────────────────────
+update profiles set role = 'admin' where email = 'trainer@x.test';
+insert into program_templates (name, is_published) values ('Hidden one', false);
+do $$
+declare
+  member_id uuid := 'a0000000-0000-4000-8000-000000000007';
+  admin_id uuid := 'a0000000-0000-4000-8000-000000000003';
+  pending uuid := 'a0000000-0000-4000-8000-000000000004';
+begin
+  perform _as(member_id);
+  perform _t('a user sees the published templates', _count('select 1 from program_templates where is_published') >= 14);
+  perform _t('a user cannot see a hidden template', _count('select 1 from program_templates where not is_published') = 0);
+  perform _denied('a user cannot insert a template', 'insert into program_templates (name) values (''x'')');
+  update program_templates set name = 'hacked';
+  perform _t('a user cannot rename a template', not exists (select 1 from program_templates where name = 'hacked'));
+  delete from program_templates;
+  perform _t('a user cannot delete a template', _count('select 1 from program_templates') >= 14);
+  perform _root();
+
+  perform _as(pending);
+  perform _t('a pending account sees no template', _count('select 1 from program_templates') = 0);
+  perform _root();
+
+  perform _as(admin_id);
+  perform _t('an admin sees hidden templates', _count('select 1 from program_templates where not is_published') = 1);
+  perform _allowed('an admin creates a template', 'insert into program_templates (name) values (''New'')');
+  perform _allowed('an admin edits a template', 'update program_templates set is_published = true where name = ''New''');
+  perform _allowed('an admin deletes a template', 'delete from program_templates where name = ''New''');
+  perform _root();
+end $$;
+
 select ' FAIL ' || name from _r where not ok;
 select count(*) filter (where ok) as passed, count(*) filter (where not ok) as failed from _r;

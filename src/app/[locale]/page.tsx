@@ -8,7 +8,8 @@ import { useAthleteProfile } from "@/hooks/useAthleteProfile";
 import { useWorkouts } from "@/hooks/useWorkouts";
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
 import { useTrainablePrograms, createProgram } from "@/hooks/usePrograms";
-import { PROGRAM_TEMPLATES, type ProgramTemplate } from "@/lib/programTemplates";
+import type { ProgramTemplate } from "@/lib/programTemplates";
+import { useProgramTemplates } from "@/lib/templateService";
 import { useUnreadComments } from "@/hooks/useCoachComments";
 import { useExercises } from "@/hooks/useExercises";
 import { useNutritionForDate, sumMacros } from "@/hooks/useNutrition";
@@ -111,6 +112,7 @@ export default function HomePage() {
   const sets = useAllWorkoutSets();
   const programs = useTrainablePrograms();
   const comments = useUnreadComments();
+  const catalogue = useProgramTemplates();
   const exercises = useExercises();
   const todayReadiness = useTodayReadiness();
   const { hasFeature } = useFeatureAccess();
@@ -165,7 +167,7 @@ export default function HomePage() {
   }, [workouts, sets, now]);
 
   // Ready-made programs the user has not added yet.
-  const templates = PROGRAM_TEMPLATES.filter((tpl) => !programs.some((p) => p.name === tpl.name));
+  const templates = catalogue.filter((tpl) => !programs.some((p) => p.name === tpl.name));
 
   const goal = session ? session.program.structure.length : 0;
   const needsOnboarding = profile !== undefined && !profile;

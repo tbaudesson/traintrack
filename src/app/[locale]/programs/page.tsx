@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
 import { DetailRow } from "@/components/ui/detail-row";
 import { useClients } from "@/hooks/useClients";
+import { useProgramTemplates } from "@/lib/templateService";
 
 export default function ProgramsPage() {
   const { clients } = useClients();
@@ -43,7 +44,8 @@ export default function ProgramsPage() {
   const [tLevel, setTLevel] = useState<ProgramLevel | undefined>(undefined);
   const [tDays, setTDays] = useState<number | undefined>(undefined);
 
-  const ranked = rankTemplates({ goal: tGoal, level: tLevel, daysPerWeek: tDays });
+  const catalogue = useProgramTemplates();
+  const ranked = rankTemplates({ goal: tGoal, level: tLevel, daysPerWeek: tDays }, catalogue);
 
   function openTemplates() {
     if (profile?.fitnessLevel) setTLevel(profile.fitnessLevel as ProgramLevel);

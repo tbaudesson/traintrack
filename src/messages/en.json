@@ -607,7 +607,8 @@
     "inv_accepted": "accepted",
     "inv_revoked": "revoked",
     "editName": "Edit name",
-    "nameSaved": "Saved"
+    "nameSaved": "Saved",
+    "templates": "Templates"
   },
   "profile": {
     "title": "Profile",
@@ -670,5 +671,24 @@
     "recordBy": "{name} set a record",
     "sessionBy": "{name} did a session",
     "sessionDetail": "{sets} sets · {volume} kg"
+  },
+  "adminTemplates": {
+    "new": "New template",
+    "untitled": "New program",
+    "day": "Day",
+    "copyOf": "{name} (copy)",
+    "hidden": "Hidden",
+    "edit": "Edit",
+    "copy": "Copy",
+    "hide": "Hide from users",
+    "show": "Offer to users",
+    "delete": "Delete",
+    "deleteConfirm": "Permanently delete \"{name}\"? Programs users have already added are not affected.",
+    "save": "Save",
+    "name": "Name",
+    "description": "Description",
+    "homeFriendly": "Can be done at home",
+    "published": "Offered to users",
+    "loadError": "Could not load templates. Has migration 023 been applied?"
   }
 }
