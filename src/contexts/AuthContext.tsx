@@ -10,9 +10,11 @@ import {
 } from "react";
 import { supabase } from "@/lib/supabase";
 import { db, refreshCachedUserId } from "@/db";
-import { startSync, stopSync } from "@/lib/syncEngine";
+import { startSync, stopSync, flushAndClearLocalData } from "@/lib/syncEngine";
 import { getUserProfile, type UserProfile, type UserStatus } from "@/lib/adminService";
 import { claimPendingInvitations } from "@/lib/groupService";
+import { unsubscribeFromPush } from "@/lib/pushService";
+import { clearApiKey } from "@/lib/aiService";
 import type { User, Session } from "@supabase/supabase-js";
 
 // ─── Types ────────────────────────────────────────────────────────────
@@ -329,6 +331,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     stopSync();
+    // Both need the session, so before auth.signOut. Neither may trap the
+    // user on a hung network or a missing service worker.
+    try { await flushAndClearLocalData(); } catch { /* keep local data */ }
+    try {
+      await Promise.race([
+        unsubscribeFromPush(),
+        new Promise((resolve) => setTimeout(resolve, 3000)),
+      ]);
+    } catch { /* an orphan subscription is cleaned up on its next 410 */ }
+    clearApiKey();
     await supabase.auth.signOut();
     await clearCachedUserId();
     setState({

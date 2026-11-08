@@ -1,6 +1,20 @@
-const CACHE_NAME = "traintrack-v5";
+const CACHE_NAME = "traintrack-v6";
 
-const PRECACHE_URLS = ["/fr", "/en"];
+const PRECACHE_URLS = ["/fr", "/en", "/de"];
+
+// Every deploy adds new chunks, so without a cap the cache only ever grows.
+const MAX_ENTRIES = 300;
+
+// Drop the oldest entries past the cap; locale roots serve offline startup.
+async function trimCache(cache) {
+  const keys = await cache.keys();
+  const excess = keys.length - MAX_ENTRIES;
+  if (excess <= 0) return;
+  const evictable = keys.filter(
+    (req) => !PRECACHE_URLS.includes(new URL(req.url).pathname)
+  );
+  await Promise.all(evictable.slice(0, excess).map((req) => cache.delete(req)));
+}
 
 // --- Scheduled notification timers ---
 // Maps notification tags to their setTimeout IDs so they can be cancelled.
@@ -16,7 +30,10 @@ const scheduledTimers = new Map();
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS))
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => cache.addAll(PRECACHE_URLS))
+      .catch(() => {}) // offline at install time must not block activation
   );
   self.skipWaiting();
 });
@@ -39,27 +56,24 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(event.request.url);
 
-  // Never cache Supabase API / auth / storage requests
-  if (
-    url.hostname.endsWith(".supabase.co") ||
-    url.hostname.endsWith(".supabase.in") ||
-    url.pathname.startsWith("/auth/") ||
-    url.pathname.startsWith("/rest/") ||
-    url.pathname.startsWith("/storage/")
-  ) {
-    return;
-  }
+  // Only our own origin: Supabase data lives in Dexie, and third-party
+  // responses (thumbnails, food lookups) have no business in this cache.
+  if (url.origin !== self.location.origin) return;
 
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, clone);
-        });
+        // A 500 must not replace the last good copy used offline.
+        if (response.ok) {
+          const clone = response.clone();
+          caches
+            .open(CACHE_NAME)
+            .then((cache) => cache.put(event.request, clone).then(() => trimCache(cache)))
+            .catch(() => {});
+        }
         return response;
       })
-      .catch(() => caches.match(event.request))
+      .catch(async () => (await caches.match(event.request)) || Response.error())
   );
 });
 

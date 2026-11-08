@@ -757,6 +757,31 @@ export async function startSync(userId: string): Promise<void> {
 }
 
 /**
+ * Sign-out: push what is pending, then wipe this device so the next person
+ * on it finds nothing. Returns false, leaving everything in place, when some
+ * rows could not reach the server (offline): those exist nowhere else.
+ */
+export async function flushAndClearLocalData(timeoutMs = 10000): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs;
+  while (_syncInProgress && Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  await Promise.race([
+    pushDirty(),
+    new Promise((resolve) => setTimeout(resolve, Math.max(0, deadline - Date.now()))),
+  ]);
+  if (_syncInProgress) return false;
+
+  const dirty = await Promise.all(
+    TABLE_CONFIGS.map((c) => db.table(c.dexieTable).where("_dirty").equals(1).count())
+  );
+  if (dirty.some((n) => n > 0)) return false;
+
+  await Promise.all(db.tables.map((t) => t.clear()));
+  return true;
+}
+
+/**
  * Stop the sync engine: unsubscribe realtime, clear intervals.
  * Call this on sign-out.
  */
