@@ -5,8 +5,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useWorkouts, createWorkout } from "@/hooks/useWorkouts";
 import { usePrograms } from "@/hooks/usePrograms";
-import { useExercises, createCustomExercise } from "@/hooks/useExercises";
-import { addWorkoutSet } from "@/hooks/useWorkoutSets";
+import { useExercises } from "@/hooks/useExercises";
 import type { ProgramDay } from "@/db";
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -14,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Dumbbell, Calendar, Loader2, ClipboardList } from "lucide-react";
 import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
 import { DetailRow } from "@/components/ui/detail-row";
+import { startWorkoutFromDay } from "@/lib/startWorkout";
 
 export default function LogPage() {
   const t = useTranslations("log");
@@ -34,28 +34,7 @@ export default function LogPage() {
 
   async function startFromProgramDay(programName: string, day: ProgramDay) {
     setBusy(true);
-    const id = await createWorkout({ date: today, title: `${programName} — ${day.name}` });
-    // Pre-fill sets from the program day's exercises
-    for (const pe of day.exercises) {
-      // Resolve the exercise by uuid or name; create a custom one if missing
-      const ex = exercises.find(
-        (e) => (pe.exerciseUuid && e.uuid === pe.exerciseUuid) || e.name.toLowerCase() === pe.exerciseName.toLowerCase()
-      );
-      let exerciseId = ex?.id;
-      if (!exerciseId) {
-        exerciseId = await createCustomExercise({ name: pe.exerciseName, muscleGroup: "other" });
-      }
-      const sets = Math.max(1, pe.targetSets || 1);
-      for (let i = 1; i <= sets; i++) {
-        await addWorkoutSet({
-          workoutId: id,
-          exerciseId,
-          setNumber: i,
-          restSec: pe.restSec,
-          completed: false,
-        });
-      }
-    }
+    const id = await startWorkoutFromDay(programName, day, exercises, today);
     router.push(`/log/${id}`);
   }
 

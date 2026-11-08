@@ -62,8 +62,8 @@
 }
 
 :root {
-  --background: oklch(0.984 0.003 265);
-  --foreground: oklch(0.145 0 0);
+  --background: oklch(0.984 0.005 290);
+  --foreground: oklch(0.21 0.05 280);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -98,21 +98,44 @@
   /* Accent used as text: readable on the page background for every accent. */
   --accent-text: var(--accent-700);
 
-  /* Default accent: Indigo */
-  --accent-50: #eef2ff;
-  --accent-100: #e0e7ff;
-  --accent-200: #c7d2fe;
-  --accent-300: #a5b4fc;
-  --accent-400: #818cf8;
-  --accent-500: #6366f1;
-  --accent-600: #4f46e5;
-  --accent-700: #4338ca;
-  --accent-800: #3730a3;
-  --accent-900: #312e81;
-  --accent-950: #1e1b4b;
+  /* Default accent: Violet */
+  --accent-50: #f5f3ff;
+  --accent-100: #ede9fe;
+  --accent-200: #ddd6fe;
+  --accent-300: #c4b5fd;
+  --accent-400: #a78bfa;
+  --accent-500: #8b5cf6;
+  --accent-600: #7c3aed;
+  --accent-700: #6d28d9;
+  --accent-800: #5b21b6;
+  --accent-900: #4c1d95;
+  --accent-950: #2e1065;
+
+  /* The wheel menu */
+  --arc-rim: color-mix(in oklab, var(--accent-500) 45%, transparent);
+  --arc-hub-bg: linear-gradient(160deg, var(--accent-800), var(--accent-950));
+  --arc-hub-fg: oklch(1 0 0);
+  --arc-hub-ring: 0 0 0 2.5px oklch(1 0 0 / 0.9), 0 8px 22px color-mix(in oklab, var(--accent-900) 35%, transparent);
+  --arc-bubble-bg: oklch(1 0 0);
+  --arc-bubble-fg: var(--foreground);
+  --arc-bubble-ring: 0 0 0 1px oklch(0.5 0.05 285 / 0.1), 0 6px 16px oklch(0.4 0.05 285 / 0.14);
+  --arc-active-bg: linear-gradient(170deg, var(--accent-500), var(--accent-700));
+  --arc-active-fg: oklch(1 0 0);
+  --arc-active-ring: inset 0 1px 0 oklch(1 0 0 / 0.35), 0 8px 0 var(--accent-800), 0 18px 36px color-mix(in oklab, var(--accent-600) 45%, transparent);
+  --arc-label: var(--foreground);
+  --arc-label-active: var(--accent-text);
 }
 
 .dark {
+  --arc-rim: color-mix(in oklab, var(--accent-300) 45%, transparent);
+  --arc-hub-bg: linear-gradient(160deg, var(--accent-300), var(--accent-500));
+  --arc-hub-fg: var(--accent-950);
+  --arc-hub-ring: 0 0 0 2.5px oklch(1 0 0 / 0.15), 0 8px 22px oklch(0 0 0 / 0.4);
+  --arc-bubble-bg: oklch(0.28 0.02 285);
+  --arc-bubble-ring: 0 0 0 1px oklch(1 0 0 / 0.1), 0 4px 12px oklch(0 0 0 / 0.3);
+  --arc-active-bg: linear-gradient(170deg, var(--accent-300), var(--accent-500));
+  --arc-active-fg: var(--accent-950);
+  --arc-active-ring: 0 0 0 1px oklch(1 0 0 / 0.2), 0 14px 26px oklch(0 0 0 / 0.4);
   --accent-text: var(--accent-300);
   --background: oklch(0.16 0.012 265);
   --foreground: oklch(0.985 0 0);
@@ -160,6 +183,17 @@
 }
 
 @layer utilities {
+  /* Hides the page behind the wheel and fades out above it. */
+  .t-arc-scrim {
+    background: linear-gradient(to top, var(--background) 0, var(--background) 380px, transparent 500px);
+  }
+  .t-arc-bubble { background: var(--arc-bubble-bg); color: var(--arc-bubble-fg); box-shadow: var(--arc-bubble-ring); }
+  .t-arc-focus { background: var(--arc-active-bg); box-shadow: var(--arc-active-ring); }
+  .t-arc-card-label { color: var(--arc-active-fg); }
+  .t-arc-mark { background: var(--arc-label-active); box-shadow: 0 0 0 2px var(--background); }
+  .t-arc-label { color: var(--arc-label); }
+  [aria-current="page"] .t-arc-label { color: var(--arc-label-active); }
+  .t-arc-hub { background: var(--arc-hub-bg); color: var(--arc-hub-fg); box-shadow: var(--arc-hub-ring); }
   .safe-area-pb {
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
@@ -170,6 +204,12 @@
    A class on <html> overrides the accent-* scale.
    ═══════════════════════════════════════════════════════════════ */
 
+html.accent-indigo {
+  --accent-50: #eef2ff; --accent-100: #e0e7ff; --accent-200: #c7d2fe;
+  --accent-300: #a5b4fc; --accent-400: #818cf8; --accent-500: #6366f1;
+  --accent-600: #4f46e5; --accent-700: #4338ca; --accent-800: #3730a3;
+  --accent-900: #312e81; --accent-950: #1e1b4b;
+}
 html.accent-emerald {
   --accent-50: #ecfdf5; --accent-100: #d1fae5; --accent-200: #a7f3d0;
   --accent-300: #6ee7b7; --accent-400: #34d399; --accent-500: #10b981;

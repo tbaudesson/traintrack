@@ -39,7 +39,8 @@
     "mainNav": "Navigation principale",
     "apiKey": "Clé API Anthropic",
     "markDone": "Marquer comme faite",
-    "plan": "Plan"
+    "plan": "Plan",
+    "openNav": "Ouvrir le menu"
   },
   "auth": {
     "loginTitle": "Connexion",
@@ -75,7 +76,7 @@
     "backToLogin": "Retour à la connexion"
   },
   "home": {
-    "greeting": "Salut, {name}",
+    "greeting": "Bonjour, {name}",
     "todayTitle": "Aujourd'hui",
     "noWorkoutToday": "Aucune séance prévue aujourd'hui.",
     "startWorkout": "Commencer une séance",
@@ -85,7 +86,25 @@
     "completeProfile": "Complétez votre profil athlète pour commencer.",
     "goToOnboarding": "Configurer le profil",
     "teamInvite": "Invitation d'équipe en attente",
-    "teamInviteDesc": "Un coach ne voit vos données qu'après votre accord."
+    "teamInviteDesc": "Un coach ne voit vos données qu'après votre accord.",
+    "tagline": "Prêt pour votre séance ?",
+    "todaySession": "Séance du jour",
+    "freeSession": "Séance libre",
+    "freeSessionDesc": "Créez un programme pour planifier vos séances",
+    "exerciseCount": "{count, plural, one {# exercice} other {# exercices}}",
+    "start": "Commencer",
+    "details": "Voir les détails",
+    "overview": "Vue d'ensemble",
+    "seeAll": "Voir tout",
+    "calories": "Calories",
+    "kcalToday": "kcal ce jour",
+    "workouts": "Séances",
+    "thisWeek": "cette semaine",
+    "progression": "Progrès",
+    "vsLastWeek": "vs sem. préc.",
+    "weeklyGoal": "Objectif hebdomadaire",
+    "sessions": "séances",
+    "continue": "Continuer"
   },
   "onboarding": {
     "title": "Votre profil athlète",
@@ -586,7 +605,7 @@
     "reset": "Réinitialiser",
     "account": "Compte",
     "acc_indigo": "Indigo",
-    "acc_indigo_d": "Le look d'origine",
+    "acc_indigo_d": "L'ancien look",
     "acc_emerald": "Émeraude",
     "acc_emerald_d": "Frais & vert",
     "acc_rose": "Rose",
@@ -594,6 +613,8 @@
     "acc_amber": "Ambre",
     "acc_amber_d": "Chaud & énergique",
     "acc_slate": "Ardoise",
-    "acc_slate_d": "Calme & minimal"
+    "acc_slate_d": "Calme & minimal",
+    "acc_violet": "Violet",
+    "acc_violet_d": "Le nouveau look"
   }
 }

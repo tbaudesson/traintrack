@@ -56,7 +56,7 @@ export function DetailRow({
     </>
   );
   const className = cn(
-    "flex min-h-16 w-full items-center gap-3 rounded-xl bg-card px-4 py-3 text-left text-sm shadow-sm ring-1 ring-foreground/10",
+    "flex min-h-16 w-full items-center gap-3 rounded-2xl bg-card px-4 py-3 text-left text-sm shadow-sm ring-1 ring-foreground/5",
     interactive && "transition-transform active:scale-[0.99]"
   );
 
@@ -77,7 +77,7 @@ export function StatTile({
   value: ReactNode;
 }) {
   return (
-    <div className="flex min-h-24 flex-col items-center justify-center gap-1 rounded-xl bg-card p-4 text-center shadow-sm ring-1 ring-foreground/10">
+    <div className="flex min-h-24 flex-col items-center justify-center gap-1 rounded-2xl bg-card p-4 text-center shadow-sm ring-1 ring-foreground/5">
       <Icon className={cn("size-5", iconClassName)} aria-hidden={true} />
       <p className="text-xl font-bold tabular-nums">{value}</p>
       <p className="text-xs text-muted-foreground">{label}</p>

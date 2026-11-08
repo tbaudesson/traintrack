@@ -20,7 +20,7 @@ export function EmptyState({
   title: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-xl bg-card px-6 py-10 text-center shadow-sm ring-1 ring-foreground/10">
+    <div className="flex flex-col items-center gap-3 rounded-2xl bg-card px-6 py-10 text-center shadow-sm ring-1 ring-foreground/5">
       <span className="flex size-14 items-center justify-center rounded-full bg-accent-100 dark:bg-accent-900/30">
         <Icon className="size-7 text-accent-text" aria-hidden={true} />
       </span>

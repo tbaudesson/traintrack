@@ -38,6 +38,7 @@ const LOCALES = [
 ] as const;
 
 const ACCENT_SWATCH: Record<Accent, string> = {
+  violet: "#8b5cf6",
   indigo: "#6366f1", emerald: "#10b981", rose: "#f43f5e", amber: "#f59e0b", slate: "#64748b",
 };
 

@@ -4,7 +4,7 @@
   "description": "Plan, log and track strength training — for athletes and their coaches.",
   "start_url": "/fr",
   "display": "standalone",
-  "theme_color": "#4F46E5",
+  "theme_color": "#6D28D9",
   "background_color": "#0F172A",
   "icons": [
     { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },

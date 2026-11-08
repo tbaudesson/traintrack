@@ -39,7 +39,8 @@
     "mainNav": "Main navigation",
     "apiKey": "Anthropic API key",
     "markDone": "Mark as done",
-    "plan": "Plan"
+    "plan": "Plan",
+    "openNav": "Open the menu"
   },
   "auth": {
     "loginTitle": "Sign in",
@@ -75,7 +76,7 @@
     "backToLogin": "Back to sign in"
   },
   "home": {
-    "greeting": "Hi, {name}",
+    "greeting": "Hello, {name}",
     "todayTitle": "Today",
     "noWorkoutToday": "No workout planned for today.",
     "startWorkout": "Start a workout",
@@ -85,7 +86,25 @@
     "completeProfile": "Complete your athlete profile to get started.",
     "goToOnboarding": "Set up profile",
     "teamInvite": "Team invitation waiting",
-    "teamInviteDesc": "A coach only sees your data once you agree."
+    "teamInviteDesc": "A coach only sees your data once you agree.",
+    "tagline": "Ready for your session?",
+    "todaySession": "Today's session",
+    "freeSession": "Free session",
+    "freeSessionDesc": "Create a program to plan your sessions",
+    "exerciseCount": "{count, plural, one {# exercise} other {# exercises}}",
+    "start": "Start",
+    "details": "View details",
+    "overview": "Overview",
+    "seeAll": "See all",
+    "calories": "Calories",
+    "kcalToday": "kcal today",
+    "workouts": "Workouts",
+    "thisWeek": "this week",
+    "progression": "Trend",
+    "vsLastWeek": "vs last wk",
+    "weeklyGoal": "Weekly goal",
+    "sessions": "sessions",
+    "continue": "Continue"
   },
   "onboarding": {
     "title": "Your athlete profile",
@@ -586,7 +605,7 @@
     "reset": "Reset",
     "account": "Account",
     "acc_indigo": "Indigo",
-    "acc_indigo_d": "The original look",
+    "acc_indigo_d": "The former look",
     "acc_emerald": "Emerald",
     "acc_emerald_d": "Fresh & green",
     "acc_rose": "Rose",
@@ -594,6 +613,8 @@
     "acc_amber": "Amber",
     "acc_amber_d": "Warm & energetic",
     "acc_slate": "Slate",
-    "acc_slate_d": "Calm & minimal"
+    "acc_slate_d": "Calm & minimal",
+    "acc_violet": "Violet",
+    "acc_violet_d": "The new look"
   }
 }

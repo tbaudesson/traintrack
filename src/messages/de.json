@@ -39,7 +39,8 @@
     "mainNav": "Hauptnavigation",
     "apiKey": "Anthropic-API-Schlüssel",
     "markDone": "Als erledigt markieren",
-    "plan": "Tarif"
+    "plan": "Tarif",
+    "openNav": "Menü öffnen"
   },
   "auth": {
     "loginTitle": "Anmelden",
@@ -85,7 +86,25 @@
     "completeProfile": "Vervollständige dein Athletenprofil, um zu starten.",
     "goToOnboarding": "Profil einrichten",
     "teamInvite": "Team-Einladung wartet",
-    "teamInviteDesc": "Ein Coach sieht deine Daten erst nach deiner Zustimmung."
+    "teamInviteDesc": "Ein Coach sieht deine Daten erst nach deiner Zustimmung.",
+    "tagline": "Bereit fürs Training?",
+    "todaySession": "Heutiges Training",
+    "freeSession": "Freies Training",
+    "freeSessionDesc": "Erstelle ein Programm, um dein Training zu planen",
+    "exerciseCount": "{count, plural, one {# Übung} other {# Übungen}}",
+    "start": "Starten",
+    "details": "Details",
+    "overview": "Überblick",
+    "seeAll": "Alle",
+    "calories": "Kalorien",
+    "kcalToday": "kcal heute",
+    "workouts": "Einheiten",
+    "thisWeek": "diese Woche",
+    "progression": "Trend",
+    "vsLastWeek": "vs. Vorwoche",
+    "weeklyGoal": "Wochenziel",
+    "sessions": "Einheiten",
+    "continue": "Weiter"
   },
   "onboarding": {
     "title": "Dein Athletenprofil",
@@ -586,7 +605,7 @@
     "reset": "Zurücksetzen",
     "account": "Konto",
     "acc_indigo": "Indigo",
-    "acc_indigo_d": "Der Originallook",
+    "acc_indigo_d": "Der bisherige Look",
     "acc_emerald": "Smaragd",
     "acc_emerald_d": "Frisch & grün",
     "acc_rose": "Rosé",
@@ -594,6 +613,8 @@
     "acc_amber": "Bernstein",
     "acc_amber_d": "Warm & energisch",
     "acc_slate": "Schiefer",
-    "acc_slate_d": "Ruhig & minimal"
+    "acc_slate_d": "Ruhig & minimal",
+    "acc_violet": "Violett",
+    "acc_violet_d": "Der neue Look"
   }
 }
