@@ -15,7 +15,7 @@ export function PageHeader({ title, showBack = false, actions }: PageHeaderProps
   const router = useRouter();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-amber-200 bg-white/95 px-4 py-3 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/95">
+    <header className="sticky top-0 z-40 border-b border-border bg-card/95 px-4 py-3 backdrop-blur-sm">
       <div className="mx-auto flex max-w-lg items-center gap-3">
         {showBack && (
           <Button

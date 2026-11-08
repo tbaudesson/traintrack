@@ -24,7 +24,7 @@ const ICONS: Record<RecKind, LucideIcon> = {
 
 const TONE_STYLES: Record<RecTone, string> = {
   good: "bg-green-100 text-green-600 dark:bg-green-900/30",
-  info: "bg-accent-100 text-accent-600 dark:bg-accent-900/30",
+  info: "bg-accent-100 text-accent-text dark:bg-accent-900/30",
   warn: "bg-amber-100 text-amber-600 dark:bg-amber-900/30",
 };
 

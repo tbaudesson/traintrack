@@ -178,7 +178,7 @@ export default function ProgramsPage() {
                 <CardContent className="py-0">
                   <button onClick={() => router.push(`/programs/${p.id}`)} className="flex w-full items-center gap-3 py-3 text-left">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-100 dark:bg-accent-900/30">
-                      <ClipboardList className="h-5 w-5 text-accent-600" />
+                      <ClipboardList className="h-5 w-5 text-accent-text" />
                     </div>
                     <div className="flex-1">
                       <p className="font-medium">{p.name}</p>
@@ -273,7 +273,7 @@ export default function ProgramsPage() {
                 <CardContent className="py-3">
                   <div className="flex items-start gap-2">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-100 dark:bg-accent-900/30">
-                      {tpl.homeFriendly ? <Home className="h-4 w-4 text-accent-600" /> : <Dumbbell className="h-4 w-4 text-accent-600" />}
+                      {tpl.homeFriendly ? <Home className="h-4 w-4 text-accent-text" /> : <Dumbbell className="h-4 w-4 text-accent-text" />}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-medium">{tpl.name}</p>

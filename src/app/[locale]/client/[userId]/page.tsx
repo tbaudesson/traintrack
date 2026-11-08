@@ -204,7 +204,7 @@ function ClientWorkoutCard({
               {date} · {setCount} {t("roster")}
             </p>
           </div>
-          <span className="text-sm font-semibold text-accent-600">{volume}</span>
+          <span className="text-sm font-semibold text-accent-text">{volume}</span>
           {open ? (
             <ChevronUp className="h-4 w-4 text-muted-foreground" />
           ) : (

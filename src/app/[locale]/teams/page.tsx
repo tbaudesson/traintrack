@@ -186,7 +186,7 @@ export default function TeamsPage() {
                     <Card key={m.member_id}>
                       <CardContent className="flex items-center gap-3 py-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-100 dark:bg-accent-900/30">
-                          <Users className="h-5 w-5 text-accent-600" />
+                          <Users className="h-5 w-5 text-accent-text" />
                         </div>
                         <div className="flex-1">
                           <p className="font-medium">{m.group_name}</p>
@@ -282,7 +282,7 @@ function TeamCard({
       <CardContent className="py-3">
         <button onClick={onToggle} className="flex w-full items-center gap-3 text-left">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-100 dark:bg-accent-900/30">
-            <Users className="h-5 w-5 text-accent-600" />
+            <Users className="h-5 w-5 text-accent-text" />
           </div>
           <div className="flex-1">
             <p className="font-medium">{name}</p>

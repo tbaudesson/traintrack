@@ -243,7 +243,7 @@ export default function SettingsPage() {
               </Link>
               {isAdmin && (
                 <Link href="/admin">
-                  <Button variant="ghost" size="sm" className="text-accent-600" aria-label="admin"><Shield className="h-5 w-5" /></Button>
+                  <Button variant="ghost" size="sm" className="text-accent-text" aria-label="admin"><Shield className="h-5 w-5" /></Button>
                 </Link>
               )}
             </div>

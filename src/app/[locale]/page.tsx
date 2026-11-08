@@ -83,7 +83,7 @@ export default function HomePage() {
         <Card>
           <CardContent className="flex flex-col items-center gap-3 py-8 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-accent-100 dark:bg-accent-900/30">
-              <Dumbbell className="h-7 w-7 text-accent-600" />
+              <Dumbbell className="h-7 w-7 text-accent-text" />
             </div>
             <p className="text-sm text-muted-foreground">{t("completeProfile")}</p>
             <Link href="/onboarding">

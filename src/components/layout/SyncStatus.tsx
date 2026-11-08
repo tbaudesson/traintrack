@@ -42,7 +42,7 @@ export function SyncStatus() {
       <RefreshCw className="h-3.5 w-3.5 animate-spin text-amber-500" />
     ),
     error: <AlertCircle className="h-3.5 w-3.5 text-red-500" />,
-    offline: <CloudOff className="h-3.5 w-3.5 text-gray-400" />,
+    offline: <CloudOff className="h-3.5 w-3.5 text-muted-foreground" />,
   }[state];
 
   const label = {
@@ -57,11 +57,11 @@ export function SyncStatus() {
       <button
         type="button"
         onClick={handleTap}
-        className="flex items-center gap-1.5 rounded-full px-2 py-1 text-xs transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+        className="flex items-center gap-1.5 rounded-full px-2 py-1 text-xs transition-colors hover:bg-muted"
         aria-label={label}
       >
         {icon}
-        <Cloud className="h-3.5 w-3.5 text-gray-400" />
+        <Cloud className="h-3.5 w-3.5 text-muted-foreground" />
       </button>
 
       {showTooltip && (
@@ -71,7 +71,7 @@ export function SyncStatus() {
             className="fixed inset-0 z-40"
             onClick={() => setShowTooltip(false)}
           />
-          <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border border-gray-200 bg-white p-2 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+          <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border border-border bg-popover p-2 shadow-lg">
             <div className="flex items-center gap-2">
               {icon}
               <span className="text-xs font-medium">{label}</span>

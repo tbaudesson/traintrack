@@ -49,7 +49,7 @@ export function VideoEmbed({ url }: { url: string }) {
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-accent-600"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-accent-text"
       >
         <ExternalLink className="h-4 w-4" /> {t("watch")}
       </a>

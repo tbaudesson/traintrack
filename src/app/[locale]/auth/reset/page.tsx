@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Mail, Lock, Loader2, Dumbbell } from "lucide-react";
 
 const FIELD =
-  "w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-3 text-sm outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-200 dark:border-gray-700 dark:bg-gray-900";
+  "w-full rounded-lg border border-input bg-card h-11 pl-10 pr-3 text-base outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-200";
 
 /**
  * Both halves of a password reset: asking for the link, and, when arriving
@@ -56,13 +56,13 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-100 dark:bg-accent-900/30">
-            <Dumbbell className="h-9 w-9 text-accent-600" aria-hidden="true" />
+            <Dumbbell className="h-9 w-9 text-accent-text" aria-hidden="true" />
           </div>
-          <h1 className="mt-4 text-2xl font-bold text-gray-900 dark:text-gray-100">
+          <h1 className="mt-4 text-2xl font-bold text-foreground">
             {recovery ? t("newPasswordTitle") : t("resetTitle")}
           </h1>
           {!recovery && (
-            <p className="mt-1 text-center text-sm text-gray-500 dark:text-gray-400">{t("resetDesc")}</p>
+            <p className="mt-1 text-center text-sm text-muted-foreground">{t("resetDesc")}</p>
           )}
         </div>
 
@@ -78,7 +78,7 @@ export default function ResetPasswordPage() {
               </label>
               <div className="relative">
                 <Icon
-                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
                   aria-hidden="true"
                 />
                 <input
@@ -113,7 +113,7 @@ export default function ResetPasswordPage() {
 
         {!recovery && (
           <p className="mt-4 text-center text-sm">
-            <Link href="/auth/login" className="text-accent-600 hover:underline">
+            <Link href="/auth/login" className="text-accent-text hover:underline">
               {t("backToLogin")}
             </Link>
           </p>

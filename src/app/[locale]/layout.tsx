@@ -1,3 +1,4 @@
+import { Geist } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
@@ -5,6 +6,11 @@ import { ThemeInit } from "@/components/layout/ThemeInit";
 import { ServiceWorkerRegistration } from "@/components/layout/ServiceWorkerRegistration";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AppShell } from "@/components/layout/AppShell";
+
+const geist = Geist({
+  variable: "--font-geist",
+  subsets: ["latin"],
+});
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -28,8 +34,8 @@ export default async function LocaleLayout({
   }
 
   return (
-    <html lang={locale} className="h-full" suppressHydrationWarning>
-      <body className="h-full bg-slate-50 text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100">
+    <html lang={locale} className={`h-full ${geist.variable}`} suppressHydrationWarning>
+      <body className="h-full antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeInit />
           <ServiceWorkerRegistration />

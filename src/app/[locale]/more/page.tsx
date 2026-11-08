@@ -61,7 +61,7 @@ export default function MorePage() {
               </Link>
               {isAdmin && (
                 <Link href="/admin">
-                  <Button variant="ghost" size="sm" className="text-accent-600" aria-label={t("admin")}>
+                  <Button variant="ghost" size="sm" className="text-accent-text" aria-label={t("admin")}>
                     <Shield className="h-5 w-5" />
                   </Button>
                 </Link>

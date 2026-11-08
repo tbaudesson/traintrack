@@ -90,7 +90,7 @@ export default function LogPage() {
                       className="flex w-full items-center gap-3 py-3 text-left"
                     >
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-100 dark:bg-accent-900/30">
-                        <Dumbbell className="h-5 w-5 text-accent-600" />
+                        <Dumbbell className="h-5 w-5 text-accent-text" />
                       </div>
                       <div className="flex-1">
                         <p className="font-medium">{p.name} — {day.name}</p>

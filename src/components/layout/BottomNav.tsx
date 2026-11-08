@@ -36,7 +36,7 @@ export function BottomNav() {
     <nav
       role="navigation"
       aria-label="Main navigation"
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur-sm safe-area-pb dark:border-gray-800 dark:bg-gray-900/95"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-sm safe-area-pb"
     >
       <div className="mx-auto flex max-w-lg items-center justify-around">
         {items.map(({ id, href, icon, key }) => {
@@ -50,8 +50,8 @@ export function BottomNav() {
               className={cn(
                 "flex flex-1 flex-col items-center gap-0.5 py-2 text-xs transition-colors",
                 isActive
-                  ? "text-accent-600"
-                  : "text-gray-500 active:text-accent-500 dark:text-gray-400"
+                  ? "text-accent-text"
+                  : "text-muted-foreground active:text-accent-500"
               )}
             >
               <Icon

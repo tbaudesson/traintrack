@@ -45,10 +45,10 @@ export default function SignupPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-100 dark:bg-accent-900/30">
-            <Dumbbell className="h-9 w-9 text-accent-600" />
+            <Dumbbell className="h-9 w-9 text-accent-text" />
           </div>
           <h1 className="mt-4 text-2xl font-bold">TrainTrack</h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t("signupTitle")}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{t("signupTitle")}</p>
         </div>
 
         {done ? (
@@ -60,14 +60,14 @@ export default function SignupPage() {
             <div>
               <label className="mb-1 block text-sm font-medium">{t("email")}</label>
               <div className="relative">
-                <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t("emailPlaceholder")}
                   required
-                  className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-3 text-sm outline-none focus:border-accent-500 dark:border-gray-700 dark:bg-gray-900"
+                  className="w-full rounded-lg border border-input bg-card h-11 pl-10 pr-3 text-base outline-none focus:border-accent-500"
                 />
               </div>
             </div>
@@ -75,14 +75,14 @@ export default function SignupPage() {
             <div>
               <label className="mb-1 block text-sm font-medium">{t("password")}</label>
               <div className="relative">
-                <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={t("passwordPlaceholder")}
                   required
-                  className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-3 text-sm outline-none focus:border-accent-500 dark:border-gray-700 dark:bg-gray-900"
+                  className="w-full rounded-lg border border-input bg-card h-11 pl-10 pr-3 text-base outline-none focus:border-accent-500"
                 />
               </div>
             </div>
@@ -99,7 +99,7 @@ export default function SignupPage() {
 
             <p className="text-center text-sm">
               {t("haveAccount")}{" "}
-              <Link href="/auth/login" className="text-accent-600 hover:underline">
+              <Link href="/auth/login" className="text-accent-text hover:underline">
                 {t("signIn")}
               </Link>
             </p>

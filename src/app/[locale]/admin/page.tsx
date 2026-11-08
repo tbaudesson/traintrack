@@ -374,7 +374,7 @@ function PlanCard({ plan, onChanged }: { plan: Plan; onChanged: () => void }) {
             >
               <span className={cn(
                 "flex h-4 w-4 shrink-0 items-center justify-center rounded border",
-                features.includes(f) ? "border-accent-500 bg-accent-500 text-white" : "border-gray-400"
+                features.includes(f) ? "border-accent-500 bg-accent-500 text-white" : "border-muted-foreground"
               )}>
                 {features.includes(f) && <Check className="h-3 w-3" />}
               </span>

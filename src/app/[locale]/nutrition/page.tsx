@@ -245,7 +245,7 @@ export default function NutritionPage() {
         {/* Meal timing guidance */}
         <Card>
           <CardContent className="flex items-start gap-3 py-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-100 text-accent-600 dark:bg-accent-900/30">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-100 text-accent-text dark:bg-accent-900/30">
               <Clock className="h-4 w-4" />
             </div>
             <div>
@@ -280,7 +280,7 @@ export default function NutritionPage() {
               {/* Search the built-in food database + barcode scan */}
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder={t("searchFood")}
                   value={foodQuery}
