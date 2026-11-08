@@ -180,7 +180,24 @@
     "repsShort": "Rép.",
     "target": "Objectif : {sets} × {reps}",
     "targetRest": "repos {sec} s",
-    "noGuide": "Pas encore de fiche pour cet exercice."
+    "noGuide": "Pas encore de fiche pour cet exercice.",
+    "lastTime": "Dernière fois : {value}",
+    "suggestion": "Conseil : passe à {kg} kg",
+    "bestLifts": "Record {kg} kg · 1RM estimé {max} kg",
+    "newRecord": "Nouveau record !",
+    "plates": "Calculer les disques",
+    "plateTarget": "Poids total (kg)",
+    "plateBar": "Barre (kg)",
+    "platePerSide": "Disques de chaque côté",
+    "plateNone": "Rien à ajouter.",
+    "plateLeft": "Reste {kg} kg impossible à charger.",
+    "summaryTitle": "Séance terminée",
+    "summaryDuration": "Durée",
+    "summarySets": "Séries",
+    "summaryVolume": "Volume",
+    "summaryRecords": "Records",
+    "summaryChange": "{percent} % de volume par rapport à la dernière fois",
+    "summaryDone": "Terminer"
   },
   "progress": {
     "title": "Progrès",
@@ -279,7 +296,8 @@
     "resyncTitle": "Synchronisation",
     "resyncDesc": "Forcer un nouveau téléchargement de toutes vos données depuis le serveur (corrige ce qui n'a pas été synchronisé, ex. nouvelles vidéos d'exercices).",
     "resyncBtn": "Actualiser depuis le serveur",
-    "resyncDone": "À jour"
+    "resyncDone": "À jour",
+    "changePassword": "Changer mon mot de passe"
   },
   "programs": {
     "title": "Programmes",

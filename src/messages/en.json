@@ -180,7 +180,24 @@
     "repsShort": "Reps",
     "target": "Target: {sets} × {reps}",
     "targetRest": "rest {sec}s",
-    "noGuide": "No guide for this exercise yet."
+    "noGuide": "No guide for this exercise yet.",
+    "lastTime": "Last time: {value}",
+    "suggestion": "Tip: go up to {kg} kg",
+    "bestLifts": "Best {kg} kg · est. 1RM {max} kg",
+    "newRecord": "New record!",
+    "plates": "Work out the plates",
+    "plateTarget": "Total weight (kg)",
+    "plateBar": "Bar (kg)",
+    "platePerSide": "Plates on each side",
+    "plateNone": "Nothing to add.",
+    "plateLeft": "{kg} kg left that plates can't make.",
+    "summaryTitle": "Session complete",
+    "summaryDuration": "Duration",
+    "summarySets": "Sets",
+    "summaryVolume": "Volume",
+    "summaryRecords": "Records",
+    "summaryChange": "{percent}% volume compared with last time",
+    "summaryDone": "Done"
   },
   "progress": {
     "title": "Progress",
@@ -279,7 +296,8 @@
     "resyncTitle": "Sync",
     "resyncDesc": "Force a fresh download of all your data from the server (fixes anything that didn't sync, e.g. new exercise videos).",
     "resyncBtn": "Refresh from server",
-    "resyncDone": "Up to date"
+    "resyncDone": "Up to date",
+    "changePassword": "Change my password"
   },
   "programs": {
     "title": "Programs",

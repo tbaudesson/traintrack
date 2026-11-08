@@ -180,7 +180,24 @@
     "repsShort": "Wdh.",
     "target": "Ziel: {sets} × {reps}",
     "targetRest": "Pause {sec} s",
-    "noGuide": "Noch keine Anleitung für diese Übung."
+    "noGuide": "Noch keine Anleitung für diese Übung.",
+    "lastTime": "Letztes Mal: {value}",
+    "suggestion": "Tipp: erhöhe auf {kg} kg",
+    "bestLifts": "Rekord {kg} kg · geschätztes 1RM {max} kg",
+    "newRecord": "Neuer Rekord!",
+    "plates": "Scheiben berechnen",
+    "plateTarget": "Gesamtgewicht (kg)",
+    "plateBar": "Stange (kg)",
+    "platePerSide": "Scheiben pro Seite",
+    "plateNone": "Nichts hinzuzufügen.",
+    "plateLeft": "{kg} kg bleiben, die nicht aufzulegen sind.",
+    "summaryTitle": "Training beendet",
+    "summaryDuration": "Dauer",
+    "summarySets": "Sätze",
+    "summaryVolume": "Volumen",
+    "summaryRecords": "Rekorde",
+    "summaryChange": "{percent} % Volumen im Vergleich zum letzten Mal",
+    "summaryDone": "Fertig"
   },
   "progress": {
     "title": "Fortschritt",
@@ -279,7 +296,8 @@
     "resyncTitle": "Synchronisierung",
     "resyncDesc": "Erzwinge einen frischen Download aller Daten vom Server (behebt nicht Synchronisiertes, z. B. neue Übungsvideos).",
     "resyncBtn": "Vom Server aktualisieren",
-    "resyncDone": "Aktuell"
+    "resyncDone": "Aktuell",
+    "changePassword": "Mein Passwort ändern"
   },
   "programs": {
     "title": "Programme",

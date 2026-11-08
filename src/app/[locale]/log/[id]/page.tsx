@@ -4,12 +4,18 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import { useWorkout, updateWorkout, deleteWorkout } from "@/hooks/useWorkouts";
-import { useWorkoutSets, addWorkoutSet, updateWorkoutSet, deleteWorkoutSet } from "@/hooks/useWorkoutSets";
+import { useWorkout, useWorkouts, updateWorkout, deleteWorkout } from "@/hooks/useWorkouts";
+import { useWorkoutSets, useAllWorkoutSets, addWorkoutSet, updateWorkoutSet, deleteWorkoutSet } from "@/hooks/useWorkoutSets";
 import { useExercises } from "@/hooks/useExercises";
 import { usePrograms } from "@/hooks/usePrograms";
 import { findWorkoutProgramDay } from "@/lib/startWorkout";
 import { VideoEmbed } from "@/components/domain/VideoEmbed";
+import { PlateCalculator } from "@/components/domain/PlateCalculator";
+import { SessionSummary, type SessionSummaryData } from "@/components/domain/SessionSummary";
+import db from "@/db";
+import {
+  beatsRecord, bestLifts, elapsedMinutes, lastPerformance, recordHistory, suggestWeight, topWeight, totalVolume,
+} from "@/lib/performance";
 import Image from "next/image";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -21,7 +27,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse, ChevronDown, Target } from "lucide-react";
+import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse, ChevronDown, Target, History, TrendingUp, Trophy, Disc3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { connectHeartRate, isBluetoothSupported, type HeartRateMonitor } from "@/lib/bleHeartRate";
@@ -37,9 +43,14 @@ export default function SessionLoggerPage() {
   const sets = useWorkoutSets(workoutId);
   const exercises = useExercises();
   const programs = usePrograms();
+  const allWorkouts = useWorkouts();
+  const allSets = useAllWorkoutSets();
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const [openGuide, setOpenGuide] = useState<number | null>(null);
+  const [plateWeight, setPlateWeight] = useState<number | null>(null);
+  const [newRecord, setNewRecord] = useState<{ exercise: string; weightKg: number; reps: number } | null>(null);
+  const [summary, setSummary] = useState<SessionSummaryData | null>(null);
   const [rest, setRest] = useState<number | null>(null);
   const [editMeta, setEditMeta] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
@@ -54,6 +65,8 @@ export default function SessionLoggerPage() {
   const [hrError, setHrError] = useState<string | null>(null);
   const hrMonitorRef = useRef<HeartRateMonitor | null>(null);
   const hrSamplesRef = useRef<number[]>([]);
+
+  const exMap = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises]);
 
   async function persistHr() {
     const s = hrSamplesRef.current;
@@ -100,10 +113,39 @@ export default function SessionLoggerPage() {
     await hrMonitorRef.current?.stop();
     hrMonitorRef.current = null;
     await persistHr();
-    router.push("/log");
-  }
+    if (!workout) return router.push("/log");
 
-  const exMap = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises]);
+    const done = sets.filter((s) => s.completed);
+    if (done.length === 0) return router.push("/log");
+
+    const durationMin = workout.durationMin ?? elapsedMinutes(workout.createdAt);
+    if (durationMin !== null && !workout.durationMin) await updateWorkout(workoutId, { durationMin });
+
+    const volume = totalVolume(done);
+    const earlier = allWorkouts
+      .filter((w) => w.id !== workoutId && w.date <= workout.date)
+      .filter((w) =>
+        workout.programId != null && workout.programDayIndex != null
+          ? w.programId === workout.programId && w.programDayIndex === workout.programDayIndex
+          : !!workout.title && w.title === workout.title
+      )
+      .sort((a, b) => b.date.localeCompare(a.date) || (b.id ?? 0) - (a.id ?? 0))[0];
+    const previous = earlier ? totalVolume(allSets.filter((s) => s.workoutId === earlier.id)) : 0;
+
+    const records = [...new Set(done.map((s) => s.exerciseId))].flatMap((exerciseId) =>
+      recordHistory(exerciseId, allWorkouts, allSets)
+        .filter((r) => r.workoutId === workoutId)
+        .map((r) => ({ exercise: exMap.get(exerciseId)?.name ?? "?", weightKg: r.weightKg, reps: r.reps }))
+    );
+
+    setSummary({
+      durationMin,
+      sets: done.length,
+      volume,
+      change: previous > 0 ? Math.round(((volume - previous) / previous) * 100) : null,
+      records,
+    });
+  }
 
   // What the program asks for, when this session was started from one.
   const programDay = useMemo(() => {
@@ -128,33 +170,68 @@ export default function SessionLoggerPage() {
     };
   }, []);
 
+  // Keep the screen on during a session: the phone is on the bench, untouched.
+  useEffect(() => {
+    let lock: WakeLockSentinel | null = null;
+    const acquire = async () => {
+      try {
+        if (document.visibilityState === "visible") lock = await navigator.wakeLock?.request("screen");
+      } catch {
+        // Refused (low battery, unsupported): the session works without it.
+      }
+    };
+    acquire();
+    document.addEventListener("visibilitychange", acquire);
+    return () => {
+      document.removeEventListener("visibilitychange", acquire);
+      lock?.release().catch(() => {});
+    };
+  }, []);
+
   function startRest(seconds: number) {
     if (timerRef.current) clearInterval(timerRef.current);
     setRest(seconds);
+    // Against the clock rather than counting ticks: a locked phone skips ticks.
+    const endsAt = Date.now() + seconds * 1000;
     timerRef.current = setInterval(() => {
-      setRest((r) => {
-        if (r === null) return null;
-        if (r <= 1) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          return null;
-        }
-        return r - 1;
-      });
-    }, 1000);
+      const left = Math.ceil((endsAt - Date.now()) / 1000);
+      if (left > 0) {
+        setRest(left);
+        return;
+      }
+      if (timerRef.current) clearInterval(timerRef.current);
+      setRest(null);
+      navigator.vibrate?.([300, 120, 300]);
+    }, 500);
+  }
+
+  function nextWeightFor(exerciseId: number) {
+    return topWeight(lastPerformance(exerciseId, workout, allWorkouts, allSets)) ?? undefined;
   }
 
   async function addExercise(exerciseId: number) {
-    await addWorkoutSet({ workoutId, exerciseId, setNumber: 1, completed: false });
+    await addWorkoutSet({ workoutId, exerciseId, setNumber: 1, weightKg: nextWeightFor(exerciseId), completed: false });
     setPickerOpen(false);
   }
 
-  async function addSet(exerciseId: number, lastSetNumber: number) {
-    await addWorkoutSet({ workoutId, exerciseId, setNumber: lastSetNumber + 1, completed: false });
+  async function addSet(exerciseId: number, lastSetNumber: number, weightKg?: number) {
+    await addWorkoutSet({ workoutId, exerciseId, setNumber: lastSetNumber + 1, weightKg, completed: false });
   }
 
   async function toggleDone(setId: number, completed: boolean, restSec?: number) {
     await updateWorkoutSet(setId, { completed: !completed });
-    if (!completed) startRest(restSec && restSec > 0 ? restSec : 90);
+    if (completed) return;
+    startRest(restSec && restSec > 0 ? restSec : 90);
+
+    // Read back: the weight typed just before this tap may not be in `sets` yet.
+    const saved = await db.workoutSets.get(setId);
+    if (!saved || !workout) return;
+    const others = allSets.filter((s) => s.id !== setId);
+    if (beatsRecord(saved, workout, allWorkouts, others)) {
+      setNewRecord({ exercise: exMap.get(saved.exerciseId)?.name ?? "?", weightKg: saved.weightKg!, reps: saved.reps! });
+      navigator.vibrate?.(150);
+      setTimeout(() => setNewRecord(null), 4500);
+    }
   }
 
   return (
@@ -267,6 +344,11 @@ export default function SessionLoggerPage() {
             (pe) => (pe.exerciseUuid && pe.exerciseUuid === ex?.uuid) || pe.exerciseName.toLowerCase() === ex?.name.toLowerCase()
           );
           const guideOpen = openGuide === exerciseId;
+          const previous = lastPerformance(exerciseId, workout, allWorkouts, allSets);
+          const previousTop = topWeight(previous);
+          const suggestion = target ? suggestWeight(previous, target.targetSets, target.targetReps) : null;
+          const best = bestLifts(exerciseId, allSets);
+          const records = recordHistory(exerciseId, allWorkouts, allSets).slice(-5).reverse();
           return (
             <Card key={exerciseId} className="relative">
               <Image
@@ -302,8 +384,35 @@ export default function SessionLoggerPage() {
                   </p>
                 )}
 
+                {previous.length > 0 && (
+                  <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <History className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    {t("lastTime", { value: formatPerformance(previous) })}
+                  </p>
+                )}
+
+                {suggestion !== null && (
+                  <p className="flex items-center gap-1.5 text-sm font-medium text-success-text">
+                    <TrendingUp className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    {t("suggestion", { kg: suggestion })}
+                  </p>
+                )}
+
                 {guideOpen && (
                   <div className="space-y-2 rounded-xl bg-muted/50 p-3">
+                    {best && (
+                      <p className="flex items-center gap-1.5 text-sm font-medium">
+                        <Trophy className="h-4 w-4 shrink-0 text-accent-text" aria-hidden="true" />
+                        {t("bestLifts", { kg: best.weightKg, max: Math.round(best.oneRepMax) })}
+                      </p>
+                    )}
+                    {records.length > 0 && (
+                      <ul className="space-y-0.5 text-xs text-muted-foreground">
+                        {records.map((r, i) => (
+                          <li key={i}>{r.date} · {r.weightKg} kg × {r.reps}</li>
+                        ))}
+                      </ul>
+                    )}
                     {ex?.description && <p className="text-sm text-muted-foreground">{ex.description}</p>}
                     {ex?.videoUrl && <VideoEmbed url={ex.videoUrl} />}
                     {!ex?.description && !ex?.videoUrl && <p className="text-sm text-muted-foreground">{t("noGuide")}</p>}
@@ -323,7 +432,7 @@ export default function SessionLoggerPage() {
                 {exSets.map((s) => (
                   <div key={s.id} className="grid grid-cols-[2rem_1fr_1fr_1fr_2.5rem_2.5rem] items-center gap-1.5">
                     <span className="t-well flex size-8 items-center justify-center rounded-lg bg-accent-100 text-sm font-bold text-accent-text dark:bg-accent-900/40">{s.setNumber}</span>
-                    <NumCell label={t("weight")} value={s.weightKg} onChange={(v) => s.id && updateWorkoutSet(s.id, { weightKg: v })} />
+                    <NumCell label={t("weight")} placeholder={previousTop !== null ? String(suggestion ?? previousTop) : undefined} value={s.weightKg} onChange={(v) => s.id && updateWorkoutSet(s.id, { weightKg: v })} />
                     <NumCell label={t("reps")} placeholder={target?.targetReps} value={s.reps} onChange={(v) => s.id && updateWorkoutSet(s.id, { reps: v })} />
                     <NumCell label={t("rpe")} value={s.rpe} onChange={(v) => s.id && updateWorkoutSet(s.id, { rpe: v })} />
                     <button
@@ -353,11 +462,19 @@ export default function SessionLoggerPage() {
                   variant="outline"
                   size="sm"
                   className="w-full rounded-full text-accent-text"
-                  onClick={() => addSet(exerciseId, last?.setNumber ?? 0)}
+                  onClick={() => addSet(exerciseId, last?.setNumber ?? 0, last?.weightKg)}
                 >
                   <Plus className="mr-1 h-4 w-4" />
                   {t("addSet")}
                 </Button>
+                <button
+                  type="button"
+                  onClick={() => setPlateWeight(last?.weightKg ?? 0)}
+                  className="flex min-h-10 w-full items-center justify-center gap-1.5 text-sm text-muted-foreground"
+                >
+                  <Disc3 className="h-4 w-4" aria-hidden="true" />
+                  {t("plates")}
+                </button>
               </CardContent>
             </Card>
           );
@@ -373,6 +490,22 @@ export default function SessionLoggerPage() {
         </div>
       </div>
 
+      {newRecord && (
+        <div role="status" className="t-hero fixed top-4 left-1/2 z-[60] flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 items-center gap-3 rounded-2xl p-3">
+          <Trophy className="size-7 shrink-0 text-accent-text" aria-hidden="true" />
+          <div className="min-w-0">
+            <p className="font-bold">{t("newRecord")}</p>
+            <p className="truncate text-sm text-muted-foreground">{newRecord.exercise} · {newRecord.weightKg} kg × {newRecord.reps}</p>
+          </div>
+        </div>
+      )}
+
+      {plateWeight !== null && (
+        <PlateCalculator open onOpenChange={() => setPlateWeight(null)} initialWeight={plateWeight || undefined} />
+      )}
+
+      <SessionSummary data={summary} onClose={() => router.push("/log")} />
+
       {/* Rest timer */}
       {rest !== null && (
         <div className="fixed bottom-24 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-full bg-accent-600 px-5 py-2.5 text-white shadow-lg">
@@ -380,7 +513,7 @@ export default function SessionLoggerPage() {
           <span className="font-mono text-lg font-semibold tabular-nums">
             {Math.floor(rest / 60)}:{String(rest % 60).padStart(2, "0")}
           </span>
-          <button onClick={() => setRest(null)} className="opacity-80 hover:opacity-100">
+          <button onClick={() => setRest(null)} aria-label={tc("close")} className="flex size-10 items-center justify-center opacity-80 hover:opacity-100">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -408,6 +541,17 @@ export default function SessionLoggerPage() {
       </Dialog>
     </>
   );
+}
+
+/** "60 kg × 8, 8, 7", or "60×8, 62.5×7 kg" when the weight changed. */
+function formatPerformance(sets: { weightKg?: number; reps?: number }[]) {
+  const weights = new Set(sets.map((s) => s.weightKg ?? 0));
+  const reps = sets.map((s) => s.reps).join(", ");
+  if (weights.size === 1) {
+    const [weight] = weights;
+    return weight > 0 ? `${weight} kg × ${reps}` : reps;
+  }
+  return `${sets.map((s) => `${s.weightKg ?? 0}×${s.reps}`).join(", ")} kg`;
 }
 
 function NumCell({ label, placeholder, value, onChange }: { label: string; placeholder?: string; value?: number; onChange: (v: number | undefined) => void }) {

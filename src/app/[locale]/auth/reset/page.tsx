@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,14 +17,12 @@ const FIELD =
  * Both halves of a password reset: asking for the link, and, when arriving
  * from that link (?recovery=1, already signed in by it), choosing a new one.
  */
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const t = useTranslations("auth");
   const { resetPassword } = useAuth();
   const router = useRouter();
 
-  const [recovery] = useState(
-    () => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("recovery")
-  );
+  const recovery = useSearchParams().has("recovery");
   const [value, setValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -119,5 +118,14 @@ export default function ResetPasswordPage() {
         )}
       </div>
     </div>
+  );
+}
+
+// useSearchParams needs a Suspense boundary on a statically rendered page.
+export default function ResetPasswordPage() {
+  return (
+    <Suspense>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

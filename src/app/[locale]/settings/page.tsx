@@ -27,7 +27,7 @@ import {
   Download, Shield, LogOut, Trash2, Loader2, Sparkles, Check, Type, ShieldCheck,
   Palette, LayoutGrid, Monitor, Sun, Moon, Globe, RotateCcw, CheckCircle2, User, Trophy,
   Home, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse,
-  Pencil, X, Bell, BellOff,
+  Pencil, X, Bell, BellOff, KeyRound,
   type LucideIcon,
 } from "lucide-react";
 
@@ -462,6 +462,11 @@ export default function SettingsPage() {
             </Button>
           </Link>
         </Section>
+
+        <Link href="/auth/reset?recovery=1" className={cn(buttonVariants({ variant: "outline" }), "w-full")}>
+          <KeyRound className="mr-2 h-4 w-4" aria-hidden="true" />
+          {t("changePassword")}
+        </Link>
 
         {/* Sign out */}
         <Button variant="outline" className="w-full" onClick={() => signOut()}>
