@@ -104,7 +104,12 @@
     "vsLastWeek": "vs last wk",
     "weeklyGoal": "Weekly goal",
     "sessions": "sessions",
-    "continue": "Continue"
+    "continue": "Continue",
+    "changeSession": "Change session or program",
+    "chooseSession": "Choose a session",
+    "freeSessionHint": "No program, pick your exercises",
+    "managePrograms": "Manage my programs",
+    "manageProgramsHint": "Create, edit or generate a program"
   },
   "onboarding": {
     "title": "Your athlete profile",

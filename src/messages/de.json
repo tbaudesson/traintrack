@@ -104,7 +104,12 @@
     "vsLastWeek": "vs. Vorwoche",
     "weeklyGoal": "Wochenziel",
     "sessions": "Einheiten",
-    "continue": "Weiter"
+    "continue": "Weiter",
+    "changeSession": "Training oder Programm wechseln",
+    "chooseSession": "Training auswählen",
+    "freeSessionHint": "Ohne Programm, Übungen frei wählen",
+    "managePrograms": "Meine Programme verwalten",
+    "manageProgramsHint": "Programm erstellen, ändern oder generieren"
   },
   "onboarding": {
     "title": "Dein Athletenprofil",

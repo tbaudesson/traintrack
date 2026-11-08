@@ -16,12 +16,16 @@ import { useTeams } from "@/hooks/useTeams";
 import { findWorkoutProgramDay, startWorkoutFromDay } from "@/lib/startWorkout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DetailRow } from "@/components/ui/detail-row";
+import { createWorkout } from "@/hooks/useWorkouts";
 import Image from "next/image";
 import { Recommendations } from "@/components/domain/Recommendations";
 import type { ReactNode } from "react";
+import type { Program } from "@/db";
 import {
   type LucideIcon,
-  ArrowRight, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
+  ArrowRight, ListChecks, Plus, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
 } from "lucide-react";
 
 const DAY_MS = 86400000;
@@ -96,6 +100,7 @@ export default function HomePage() {
   const t = useTranslations("home");
   const tr = useTranslations("readiness");
   const tm = useTranslations("more");
+  const tl = useTranslations("log");
   const router = useRouter();
   const { user, profile: account } = useAuth();
   const profile = useAthleteProfile();
@@ -108,6 +113,7 @@ export default function HomePage() {
   const { memberships } = useTeams();
   const [now] = useState(() => Date.now());
   const [starting, setStarting] = useState(false);
+  const [choosing, setChoosing] = useState(false);
 
   const today = isoDate(now);
   const nutritionToday = useNutritionForDate(today);
@@ -165,9 +171,25 @@ export default function HomePage() {
       router.push("/log");
       return;
     }
+    await startDay(session.program, session.index);
+  }
+
+  async function startDay(program: Program, index: number) {
+    setChoosing(false);
     setStarting(true);
     try {
-      const id = await startWorkoutFromDay(session.program, session.index, exercises, today);
+      const id = await startWorkoutFromDay(program, index, exercises, today);
+      router.push(`/log/${id}`);
+    } finally {
+      setStarting(false);
+    }
+  }
+
+  async function startFree() {
+    setChoosing(false);
+    setStarting(true);
+    try {
+      const id = await createWorkout({ date: today, title: tl("newWorkout") });
       router.push(`/log/${id}`);
     } finally {
       setStarting(false);
@@ -267,7 +289,46 @@ export default function HomePage() {
                 </Link>
               )}
             </div>
+            <button
+              type="button"
+              onClick={() => setChoosing(true)}
+              className="relative mt-2 flex min-h-11 w-full items-center justify-center gap-1.5 text-sm font-semibold text-accent-text"
+            >
+              <ListChecks className="size-4" aria-hidden="true" />
+              {t("changeSession")}
+            </button>
           </section>
+
+          <Dialog open={choosing} onOpenChange={setChoosing}>
+            <DialogContent className="max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>{t("chooseSession")}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                {programs
+                  .filter((p) => (p.structure ?? []).length > 0)
+                  .map((p) => (
+                    <section key={p.id} className="space-y-2">
+                      <h3 className="text-sm font-semibold text-muted-foreground">{p.name}</h3>
+                      {p.structure.map((day, index) => (
+                        <DetailRow
+                          key={`${p.id}-${index}`}
+                          onClick={() => startDay(p, index)}
+                          disabled={starting}
+                          icon={Dumbbell}
+                          title={day.name}
+                          subtitle={t("exerciseCount", { count: day.exercises.length })}
+                        />
+                      ))}
+                    </section>
+                  ))}
+                <section className="space-y-2">
+                  <DetailRow onClick={startFree} disabled={starting} icon={Plus} tone="neutral" title={t("freeSession")} subtitle={t("freeSessionHint")} />
+                  <DetailRow href="/programs" icon={ClipboardList} tone="neutral" title={t("managePrograms")} subtitle={t("manageProgramsHint")} />
+                </section>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           <section className="space-y-2">
             <div className="flex items-center justify-between">

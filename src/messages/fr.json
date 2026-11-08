@@ -104,7 +104,12 @@
     "vsLastWeek": "vs sem. préc.",
     "weeklyGoal": "Objectif hebdomadaire",
     "sessions": "séances",
-    "continue": "Continuer"
+    "continue": "Continuer",
+    "changeSession": "Changer de séance ou de programme",
+    "chooseSession": "Choisir une séance",
+    "freeSessionHint": "Sans programme, exercices au choix",
+    "managePrograms": "Gérer mes programmes",
+    "manageProgramsHint": "Créer, modifier ou générer un programme"
   },
   "onboarding": {
     "title": "Votre profil athlète",
