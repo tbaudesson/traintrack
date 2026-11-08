@@ -1,23 +1,39 @@
 // Scheduled Edge Function: push a compliance alert to each trainer whose
 // clients have stopped training. Deploy with the Supabase CLI and schedule it
-// (see README.md). Runs with the service role; never exposed to clients.
+// (see README.md). Runs with the service role. Deployed without JWT checks so
+// the scheduler can reach it, hence the shared secret below.
 //
 //   supabase functions deploy send-compliance-alerts --no-verify-jwt
 //
 // Required function secrets:
 //   VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT (e.g. mailto:you@app.com)
+//   CRON_SECRET (the scheduler sends it as a bearer token)
 // SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are injected automatically.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import webpush from "npm:web-push@3";
 
+function isAuthorized(req: Request): boolean {
+  const secret = Deno.env.get("CRON_SECRET");
+  if (!secret) return false; // unconfigured means closed, not open
+  const given = new TextEncoder().encode(req.headers.get("Authorization") ?? "");
+  const expected = new TextEncoder().encode(`Bearer ${secret}`);
+  if (given.length !== expected.length) return false;
+  let diff = 0;
+  for (let i = 0; i < given.length; i++) diff |= given[i] ^ expected[i];
+  return diff === 0;
+}
+
 Deno.serve(async (req) => {
+  if (!isAuthorized(req)) return new Response("Unauthorized", { status: 401 });
+
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
   const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const VAPID_PUBLIC = Deno.env.get("VAPID_PUBLIC_KEY")!;
   const VAPID_PRIVATE = Deno.env.get("VAPID_PRIVATE_KEY")!;
   const VAPID_SUBJECT = Deno.env.get("VAPID_SUBJECT") ?? "mailto:admin@traintrack.app";
-  const days = Number(new URL(req.url).searchParams.get("days") ?? "3");
+  const requested = Number(new URL(req.url).searchParams.get("days") ?? "3");
+  const days = Number.isInteger(requested) && requested >= 1 && requested <= 365 ? requested : 3;
 
   webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC, VAPID_PRIVATE);
   const supabase = createClient(SUPABASE_URL, SERVICE_KEY);

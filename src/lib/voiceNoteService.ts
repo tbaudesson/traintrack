@@ -35,3 +35,18 @@ export async function getVoiceNoteUrl(path: string): Promise<string | null> {
 export async function deleteVoiceNote(path: string): Promise<void> {
   await supabase.storage.from(BUCKET).remove([path]);
 }
+
+/** Account deletion: the database may not touch storage rows directly. */
+export async function deleteAllMyVoiceNotes(): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  for (;;) {
+    const { data, error } = await supabase.storage.from(BUCKET).list(user.id, { limit: 100 });
+    if (error) throw new Error(error.message);
+    if (!data?.length) return;
+    const { error: removeError } = await supabase.storage
+      .from(BUCKET)
+      .remove(data.map((f) => `${user.id}/${f.name}`));
+    if (removeError) throw new Error(removeError.message);
+  }
+}

@@ -23,13 +23,15 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isAuthenticated = !!user || isOffline;
   const isPendingPage = pathname === "/auth/pending";
   const isDeactivatedPage = pathname === "/auth/deactivated";
+  // The recovery link signs the user in; they must stay here to set a password.
+  const isResetPage = pathname === "/auth/reset";
 
   useEffect(() => {
     if (loading) return;
 
     if (!isAuthenticated && !isAuthPage) {
       router.replace("/auth/login");
-    } else if (isAuthenticated && isAuthPage && !isPendingPage && !isDeactivatedPage) {
+    } else if (isAuthenticated && isAuthPage && !isPendingPage && !isDeactivatedPage && !isResetPage) {
       if (accountStatus === "pending") {
         router.replace("/auth/pending");
       } else if (accountStatus === "deactivated") {
@@ -44,7 +46,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         router.replace("/auth/deactivated");
       }
     }
-  }, [loading, isAuthenticated, isAuthPage, isPendingPage, isDeactivatedPage, accountStatus, router]);
+  }, [loading, isAuthenticated, isAuthPage, isPendingPage, isDeactivatedPage, isResetPage, accountStatus, router]);
 
   if (loading) {
     return (

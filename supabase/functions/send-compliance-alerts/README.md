@@ -30,7 +30,8 @@ subscription in `push_subscriptions`.
 supabase secrets set \
   VAPID_PUBLIC_KEY=<public key> \
   VAPID_PRIVATE_KEY=<private key> \
-  VAPID_SUBJECT=mailto:you@yourdomain.com
+  VAPID_SUBJECT=mailto:you@yourdomain.com \
+  CRON_SECRET=<long random value, e.g. openssl rand -hex 32>
 
 supabase functions deploy send-compliance-alerts --no-verify-jwt
 ```
@@ -48,11 +49,14 @@ select cron.schedule(
   $$
   select net.http_post(
     url := 'https://<PROJECT_REF>.functions.supabase.co/send-compliance-alerts?days=3',
-    headers := jsonb_build_object('Authorization', 'Bearer ' || '<SERVICE_ROLE_KEY>')
+    headers := jsonb_build_object('Authorization', 'Bearer ' || '<CRON_SECRET>')
   );
   $$
 );
 ```
+
+Use `CRON_SECRET` here, never the service role key: the job's SQL is stored in
+clear in `cron.job`. Without the right secret the function answers 401.
 
 The function reads `get_all_compliance_alerts(days)` (service-role only), groups
 inactive clients by trainer, and sends one push per trainer. Dead subscriptions

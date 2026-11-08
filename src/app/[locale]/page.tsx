@@ -9,6 +9,7 @@ import { useWorkouts } from "@/hooks/useWorkouts";
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
 import { useTodayReadiness, readinessScore } from "@/hooks/useReadiness";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
+import { useTeams } from "@/hooks/useTeams";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Recommendations } from "@/components/domain/Recommendations";
@@ -23,6 +24,8 @@ export default function HomePage() {
   const sets = useAllWorkoutSets();
   const todayReadiness = useTodayReadiness();
   const { hasFeature } = useFeatureAccess();
+  const { memberships } = useTeams();
+  const hasTeamInvite = memberships.some((m) => m.status === "pending");
   const name = account?.display_name ?? user?.email?.split("@")[0] ?? "";
   const readyScore = todayReadiness ? readinessScore(todayReadiness) : null;
 
@@ -104,6 +107,20 @@ export default function HomePage() {
               </CardContent>
             </Card>
           </div>
+
+          {hasTeamInvite && (
+            <Link href="/teams" className="block">
+              <Card className="active:scale-[0.99]">
+                <CardContent className="flex items-center gap-3 py-3">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{t("teamInvite")}</p>
+                    <p className="text-xs text-muted-foreground">{t("teamInviteDesc")}</p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground/40" />
+                </CardContent>
+              </Card>
+            </Link>
+          )}
 
           {/* Readiness prompt / score */}
           {hasFeature("readiness") && (

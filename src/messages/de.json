@@ -59,7 +59,15 @@
     "errorRateLimit": "Zu viele Versuche. Bitte später erneut versuchen.",
     "errorEmailTaken": "Es existiert bereits ein Konto mit dieser E-Mail.",
     "errorWeakPassword": "Das Passwort muss mindestens 6 Zeichen haben.",
-    "errorGeneric": "Etwas ist schiefgelaufen. Bitte erneut versuchen."
+    "errorGeneric": "Etwas ist schiefgelaufen. Bitte erneut versuchen.",
+    "resetTitle": "Passwort vergessen",
+    "resetDesc": "Gib deine E-Mail-Adresse ein, wir senden dir einen Link zum Ändern.",
+    "resetSend": "Link senden",
+    "resetSent": "Falls ein Konto mit dieser E-Mail existiert, ist ein Link unterwegs.",
+    "newPasswordTitle": "Neues Passwort",
+    "newPassword": "Neues Passwort",
+    "newPasswordSave": "Speichern",
+    "backToLogin": "Zurück zur Anmeldung"
   },
   "home": {
     "greeting": "Hallo, {name}",
@@ -70,7 +78,9 @@
     "streak": "Serie",
     "days": "Tage",
     "completeProfile": "Vervollständige dein Athletenprofil, um zu starten.",
-    "goToOnboarding": "Profil einrichten"
+    "goToOnboarding": "Profil einrichten",
+    "teamInvite": "Team-Einladung wartet",
+    "teamInviteDesc": "Ein Coach sieht deine Daten erst nach deiner Zustimmung."
   },
   "onboarding": {
     "title": "Dein Athletenprofil",

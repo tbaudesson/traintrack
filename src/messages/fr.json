@@ -59,7 +59,15 @@
     "errorRateLimit": "Trop de tentatives. Réessayez plus tard.",
     "errorEmailTaken": "Un compte existe déjà avec cet e-mail.",
     "errorWeakPassword": "Le mot de passe doit comporter au moins 6 caractères.",
-    "errorGeneric": "Une erreur est survenue. Réessayez."
+    "errorGeneric": "Une erreur est survenue. Réessayez.",
+    "resetTitle": "Mot de passe oublié",
+    "resetDesc": "Indiquez votre e-mail, nous vous enverrons un lien pour le changer.",
+    "resetSend": "Envoyer le lien",
+    "resetSent": "Si un compte existe avec cet e-mail, un lien vient de lui être envoyé.",
+    "newPasswordTitle": "Nouveau mot de passe",
+    "newPassword": "Nouveau mot de passe",
+    "newPasswordSave": "Enregistrer",
+    "backToLogin": "Retour à la connexion"
   },
   "home": {
     "greeting": "Salut, {name}",
@@ -70,7 +78,9 @@
     "streak": "Série",
     "days": "jours",
     "completeProfile": "Complétez votre profil athlète pour commencer.",
-    "goToOnboarding": "Configurer le profil"
+    "goToOnboarding": "Configurer le profil",
+    "teamInvite": "Invitation d'équipe en attente",
+    "teamInviteDesc": "Un coach ne voit vos données qu'après votre accord."
   },
   "onboarding": {
     "title": "Votre profil athlète",

@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { deleteAllMyVoiceNotes } from "./voiceNoteService";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -154,25 +155,12 @@ export async function setAppSetting(key: string, value: string): Promise<void> {
  * Calls the `delete_my_account` RPC which handles cascading deletion.
  */
 export async function deleteMyAccount(): Promise<void> {
+  await deleteAllMyVoiceNotes();
   const { error } = await supabase.rpc("delete_my_account");
   if (error) throw new Error(error.message);
 }
 
 // ─── Public Functions ─────────────────────────────────────────────────
-
-/**
- * Check if an email has a pending invitation (used during signup).
- */
-export async function checkInvitation(email: string): Promise<boolean> {
-  const { data, error } = await supabase.rpc("check_invitation", {
-    p_email: email,
-  });
-  if (error) {
-    console.error("checkInvitation error:", error);
-    return false;
-  }
-  return data === true;
-}
 
 /**
  * Get the current user's profile (role + status).

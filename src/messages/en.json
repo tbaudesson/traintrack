@@ -59,7 +59,15 @@
     "errorRateLimit": "Too many attempts. Please try again later.",
     "errorEmailTaken": "An account with this email already exists.",
     "errorWeakPassword": "Password must be at least 6 characters.",
-    "errorGeneric": "Something went wrong. Please try again."
+    "errorGeneric": "Something went wrong. Please try again.",
+    "resetTitle": "Forgot password",
+    "resetDesc": "Enter your email and we'll send you a link to change it.",
+    "resetSend": "Send the link",
+    "resetSent": "If an account exists for this email, a link is on its way.",
+    "newPasswordTitle": "New password",
+    "newPassword": "New password",
+    "newPasswordSave": "Save",
+    "backToLogin": "Back to sign in"
   },
   "home": {
     "greeting": "Hi, {name}",
@@ -70,7 +78,9 @@
     "streak": "Streak",
     "days": "days",
     "completeProfile": "Complete your athlete profile to get started.",
-    "goToOnboarding": "Set up profile"
+    "goToOnboarding": "Set up profile",
+    "teamInvite": "Team invitation waiting",
+    "teamInviteDesc": "A coach only sees your data once you agree."
   },
   "onboarding": {
     "title": "Your athlete profile",

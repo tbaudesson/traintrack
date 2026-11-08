@@ -43,6 +43,7 @@ export function VideoEmbed({ url }: { url: string }) {
   const v = parseVideo(url);
 
   if (!v) {
+    if (!/^https?:\/\//i.test(url)) return null;
     return (
       <a
         href={url}

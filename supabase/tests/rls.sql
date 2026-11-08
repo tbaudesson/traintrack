@@ -1,0 +1,180 @@
+-- Acts as each kind of account the way PostgREST does and checks what it can
+-- and cannot do. Run through scripts/test-rls.sh, never against a real database.
+create table public._r (n serial primary key, name text, ok boolean);
+
+create function public._as(u uuid) returns void language plpgsql as $$
+begin
+  perform set_config('request.jwt.claim.sub', u::text, false);
+  perform set_config('role', 'authenticated', false);
+end $$;
+create function public._root() returns void language plpgsql as $$
+begin perform set_config('role', 'none', false); end $$;
+create function public._t(name text, ok boolean) returns void language sql as
+  $$ insert into public._r (name, ok) values (name, coalesce(ok, false)) $$;
+-- Passes when the statement raises (refused by RLS, a trigger or an RPC).
+create function public._denied(name text, stmt text) returns void language plpgsql as $$
+begin
+  begin
+    execute stmt;
+    perform public._t(name, false);
+  exception when others then
+    perform public._t(name, true);
+  end;
+end $$;
+create function public._allowed(name text, stmt text) returns void language plpgsql as $$
+begin
+  begin
+    execute stmt;
+    perform public._t(name, true);
+  exception when others then
+    perform public._t(name || ' -> ' || sqlerrm, false);
+  end;
+end $$;
+create function public._count(stmt text) returns bigint language plpgsql as $$
+declare c bigint;
+begin execute 'select count(*) from (' || stmt || ') q' into c; return c; end $$;
+
+-- ─── Fixtures ────────────────────────────────────────────────
+insert into auth.users (id, email) values
+  ('a0000000-0000-4000-8000-000000000001', 'attacker@x.test'),
+  ('a0000000-0000-4000-8000-000000000002', 'victim@x.test'),
+  ('a0000000-0000-4000-8000-000000000003', 'trainer@x.test'),
+  ('a0000000-0000-4000-8000-000000000004', 'pending@x.test'),
+  ('a0000000-0000-4000-8000-000000000005', 'off@x.test'),
+  ('a0000000-0000-4000-8000-000000000006', 'free@x.test'),
+  ('a0000000-0000-4000-8000-000000000007', 'client@x.test');
+update profiles set status = 'active';
+update profiles set status = 'pending' where email = 'pending@x.test';
+update profiles set status = 'deactivated', role = 'admin' where email = 'off@x.test';
+update profiles set plan_id = (select id from plans where name = 'Pro')
+  where email in ('attacker@x.test', 'trainer@x.test', 'pending@x.test', 'off@x.test');
+update profiles set display_name = 'Secret Name' where email = 'victim@x.test';
+
+insert into workouts (id, user_id, date) values
+  ('b0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000002', '2026-11-01'),
+  ('b0000000-0000-4000-8000-000000000007', 'a0000000-0000-4000-8000-000000000007', '2026-11-01');
+insert into workout_notes (id, user_id, workout_id, body, audio_path) values
+  ('c0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000002',
+   'b0000000-0000-4000-8000-000000000002', 'private',
+   'a0000000-0000-4000-8000-000000000002/n.webm');
+insert into storage.objects (bucket_id, name, owner) values
+  ('voice-notes', 'a0000000-0000-4000-8000-000000000002/n.webm', 'a0000000-0000-4000-8000-000000000002');
+
+-- ─── The invitation attack ───────────────────────────────────
+do $$
+declare
+  atk uuid := 'a0000000-0000-4000-8000-000000000001';
+  vic uuid := 'a0000000-0000-4000-8000-000000000002';
+  g uuid; m uuid;
+begin
+  perform _as(atk);
+  g := create_group('Fake team');
+  m := invite_group_member(g, 'victim@x.test');
+  perform _t('invite does not make an existing account a client',
+    (select status from get_group_members(g) where id = m) = 'pending');
+  perform _t('invitee name stays hidden before accepting',
+    (select display_name from get_group_members(g) where id = m) = 'victim@x.test');
+  perform _t('inviter cannot read invitee workouts',
+    _count('select 1 from workouts where user_id = ''' || vic || '''') = 0);
+  perform _t('inviter cannot read invitee notes', _count('select 1 from workout_notes') = 0);
+  perform _t('inviter is not a messaging contact', not can_message(vic));
+  perform _root();
+
+  perform _as(vic);
+  perform _t('invitee sees the invitation',
+    _count('select 1 from get_my_memberships() where status = ''pending''') = 1);
+  perform respond_to_invitation(m, false);
+  perform _root();
+
+  perform _as(atk);
+  perform _t('declined invitee stays private',
+    _count('select 1 from workouts where user_id = ''' || vic || '''') = 0);
+  perform _root();
+end $$;
+
+-- ─── The legitimate coaching flow ────────────────────────────
+do $$
+declare
+  tr uuid := 'a0000000-0000-4000-8000-000000000003';
+  cl uuid := 'a0000000-0000-4000-8000-000000000007';
+  g uuid; m uuid;
+begin
+  perform _as(tr);
+  g := create_group('Real team');
+  m := invite_group_member(g, 'client@x.test');
+  perform _root();
+  perform _as(cl);
+  perform respond_to_invitation(m, true);
+  perform _root();
+  perform _as(tr);
+  perform _t('accepted client data is readable by the trainer',
+    _count('select 1 from workouts where user_id = ''' || cl || '''') = 1);
+  perform _t('accepted client name is shown',
+    (select status from get_group_members(g) where id = m) = 'active');
+  perform _allowed('trainer notes a client workout',
+    format('insert into workout_notes (user_id, workout_id, body, audio_path) values (%L, ''b0000000-0000-4000-8000-000000000007'', ''hi'', %L)',
+      tr, tr || '/t.webm'));
+  perform _allowed('trainer assigns a program to a client',
+    format('insert into programs (user_id, name, assigned_to_user_id) values (%L, ''P'', %L)', tr, cl));
+  perform _denied('program cannot be assigned to a stranger',
+    format('insert into programs (user_id, name, assigned_to_user_id) values (%L, ''P'', ''a0000000-0000-4000-8000-000000000002'')', tr));
+  perform _denied('note cannot move to a stranger workout',
+    'update workout_notes set workout_id = ''b0000000-0000-4000-8000-000000000002''');
+  perform _allowed('trainer uploads to own folder',
+    format('insert into storage.objects (bucket_id, name, owner) values (''voice-notes'', %L, %L)', tr || '/t.webm', tr));
+  perform _root();
+  perform _as(cl);
+  perform _t('client plays the trainer voice note',
+    _count('select 1 from storage.objects where name like ''a0000000-0000-4000-8000-000000000003/%''') = 1);
+  perform _root();
+end $$;
+
+-- ─── Voice notes ─────────────────────────────────────────────
+do $$
+declare
+  atk uuid := 'a0000000-0000-4000-8000-000000000001';
+  vic uuid := 'a0000000-0000-4000-8000-000000000002';
+begin
+  perform _as(atk);
+  perform _t('a stranger cannot list voice notes', _count('select 1 from storage.objects') = 0);
+  perform _denied('upload into someone else''s folder is refused',
+    format('insert into storage.objects (bucket_id, name, owner) values (''voice-notes'', %L, %L)', vic || '/x.webm', atk));
+  perform _root();
+  perform _as(vic);
+  perform _t('owner still sees their voice note',
+    _count('select 1 from storage.objects where name like ''a0000000-0000-4000-8000-000000000002/%''') = 1);
+  perform _root();
+end $$;
+
+-- ─── Account status and plan ─────────────────────────────────
+do $$
+declare
+  pen uuid := 'a0000000-0000-4000-8000-000000000004';
+  off uuid := 'a0000000-0000-4000-8000-000000000005';
+  fre uuid := 'a0000000-0000-4000-8000-000000000006';
+begin
+  perform _as(pen);
+  perform _denied('pending account cannot create a team', 'select create_group(''x'')');
+  perform _denied('pending account cannot write data',
+    format('insert into workouts (user_id, date) values (%L, ''2026-11-02'')', pen));
+  perform _t('pending account can still read its profile', _count('select 1 from get_user_profile()') = 1);
+  perform _root();
+
+  perform _as(off);
+  perform _denied('deactivated account cannot write data',
+    format('insert into workouts (user_id, date) values (%L, ''2026-11-02'')', off));
+  perform _t('deactivated admin is no longer an admin', not is_app_admin());
+  perform _denied('deactivated admin cannot list users', 'select * from admin_list_users()');
+  perform _root();
+
+  perform _as(fre);
+  perform _denied('Free plan cannot create a team', 'select create_group(''x'')');
+  perform _allowed('Free active account writes its own data',
+    format('insert into workouts (user_id, date) values (%L, ''2026-11-02'')', fre));
+  perform _denied('check_invitation is closed', 'select check_invitation(''x@x.test'')');
+  perform _allowed('account deletion runs', 'select delete_my_account()');
+  perform _root();
+end $$;
+
+select ' FAIL ' || name from _r where not ok;
+select count(*) filter (where ok) as passed, count(*) filter (where not ok) as failed from _r;
