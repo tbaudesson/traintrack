@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   useReadiness,
@@ -77,15 +77,15 @@ export default function ReadinessPage() {
   const [saving, setSaving] = useState(false);
   const [savedFlag, setSavedFlag] = useState(false);
 
-  useEffect(() => {
-    if (today) {
-      setMood(today.mood);
-      setEnergy(today.energy);
-      setSleep(today.sleep);
-      setSoreness(today.soreness);
-      setNote(today.note ?? "");
-    }
-  }, [today]);
+  const [formFrom, setFormFrom] = useState<typeof today>();
+  if (today && today !== formFrom) {
+    setFormFrom(today);
+    setMood(today.mood);
+    setEnergy(today.energy);
+    setSleep(today.sleep);
+    setSoreness(today.soreness);
+    setNote(today.note ?? "");
+  }
 
   async function save() {
     setSaving(true);

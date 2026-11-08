@@ -30,8 +30,7 @@ export default function ChallengesPage() {
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const fetchAll = useCallback(async () => {
     try {
       const [ch, gr] = await Promise.all([getMyChallenges(), getMyGroups().catch(() => [])]);
       setChallenges(ch);
@@ -41,7 +40,12 @@ export default function ChallengesPage() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  const load = useCallback(async () => {
+    setLoading(true);
+    await fetchAll();
+  }, [fetchAll]);
+
+  useEffect(() => { fetchAll(); }, [fetchAll]);
 
   return (
     <>
@@ -188,7 +192,8 @@ function CreateChallengeDialog({
   const t = useTranslations("challenges");
   const tt = useTranslations("teams");
   const noTeam = groups.length === 0;
-  const [groupId, setGroupId] = useState("");
+  const [pickedGroupId, setGroupId] = useState("");
+  const groupId = pickedGroupId || groups[0]?.id || "";
   const [teamName, setTeamName] = useState("");
   const [name, setName] = useState("");
   const [type, setType] = useState<ChallengeType>("volume");
@@ -196,10 +201,6 @@ function CreateChallengeDialog({
   const [end, setEnd] = useState(todayISO(7));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (open && groups.length && !groupId) setGroupId(groups[0].id);
-  }, [open, groups, groupId]);
 
   async function submit() {
     if (!name.trim()) return;

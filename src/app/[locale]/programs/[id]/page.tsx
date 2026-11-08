@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -39,16 +39,14 @@ export default function ProgramEditorPage() {
   const [pickerDay, setPickerDay] = useState<number | null>(null);
   const [assignOpen, setAssignOpen] = useState(false);
 
-  useEffect(() => {
-    if (program && !loaded) {
-      setName(program.name);
-      setDescription(program.description ?? "");
-      setDays(program.structure ?? []);
-      setAssignedTo(program.assignedToUserId ?? null);
-      setGroupId(program.groupId ?? null);
-      setLoaded(true);
-    }
-  }, [program, loaded]);
+  if (program && !loaded) {
+    setName(program.name);
+    setDescription(program.description ?? "");
+    setDays(program.structure ?? []);
+    setAssignedTo(program.assignedToUserId ?? null);
+    setGroupId(program.groupId ?? null);
+    setLoaded(true);
+  }
 
   function updateDay(i: number, day: ProgramDay) {
     setDays((d) => d.map((x, idx) => (idx === i ? day : x)));

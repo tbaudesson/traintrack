@@ -109,15 +109,19 @@ function UsersTab() {
   const [editId, setEditId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
 
+  function load() {
+    return Promise.all([adminListUsers(), listPlans()]).then(([u, p]) => {
+      setUsers(u);
+      setPlans(p);
+      setLoading(false);
+    });
+  }
   async function refresh() {
     setLoading(true);
-    const [u, p] = await Promise.all([adminListUsers(), listPlans()]);
-    setUsers(u);
-    setPlans(p);
-    setLoading(false);
+    await load();
   }
   useEffect(() => {
-    refresh();
+    load();
   }, []);
 
   if (loading) return <Loader2 className="mx-auto my-8 h-6 w-6 animate-spin text-muted-foreground" />;
@@ -222,12 +226,17 @@ function InvitationsTab() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
+  function load() {
+    return adminListInvitations().then((i) => {
+      setInvites(i);
+      setLoading(false);
+    });
+  }
   async function refresh() {
     setLoading(true);
-    setInvites(await adminListInvitations());
-    setLoading(false);
+    await load();
   }
-  useEffect(() => { refresh(); }, []);
+  useEffect(() => { load(); }, []);
 
   async function send() {
     if (!email.trim()) return;
@@ -297,13 +306,18 @@ function PlansTab() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
 
+  function load() {
+    return listPlans().then((p) => {
+      setPlans(p);
+      setLoading(false);
+    });
+  }
   async function refresh() {
     setLoading(true);
-    setPlans(await listPlans());
-    setLoading(false);
+    await load();
   }
   useEffect(() => {
-    refresh();
+    load();
   }, []);
 
   if (loading) return <Loader2 className="mx-auto my-8 h-6 w-6 animate-spin text-muted-foreground" />;

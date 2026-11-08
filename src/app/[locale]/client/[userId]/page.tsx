@@ -44,16 +44,16 @@ export default function ClientDetailPage() {
   );
   const targets = clientProfile?.nutritionTargets;
 
-  const workoutDate = useMemo(() => new Map(workouts.map((w) => [w.id, w.date])), [workouts]);
-
   const lastActivity = workouts[0]?.date ?? null;
+
+  const [now] = useState(() => Date.now());
 
   // 7-day compliance: number of distinct days with a workout in the last 7 days
   const compliance = useMemo(() => {
-    const cutoff = new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0];
+    const cutoff = new Date(now - 7 * 86400000).toISOString().split("T")[0];
     const days = new Set(workouts.filter((w) => w.date >= cutoff).map((w) => w.date));
     return days.size;
-  }, [workouts]);
+  }, [workouts, now]);
 
   const totalVolume = useMemo(() => {
     let v = 0;

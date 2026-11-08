@@ -177,7 +177,6 @@ function VoiceNotePlayer({ path }: { path: string }) {
   }
 
   if (url) {
-    // eslint-disable-next-line jsx-a11y/media-has-caption
     return <audio src={url} controls autoPlay className="mt-1 h-9 w-full" />;
   }
   return (

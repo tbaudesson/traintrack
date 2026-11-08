@@ -26,17 +26,14 @@ export function BarcodeScanner({
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const rafRef = useRef<number | null>(null);
-  const [supported, setSupported] = useState(true);
+  const supported = typeof window === "undefined" || "BarcodeDetector" in window;
   const [error, setError] = useState<string | null>(null);
   const [manual, setManual] = useState("");
 
   useEffect(() => {
     if (!open) return;
     const Ctor = (window as unknown as { BarcodeDetector?: BarcodeDetectorCtor }).BarcodeDetector;
-    if (!Ctor) {
-      setSupported(false);
-      return;
-    }
+    if (!Ctor) return;
     let cancelled = false;
     const detector = new Ctor({ formats: ["ean_13", "ean_8", "upc_a", "upc_e", "code_128"] });
 
@@ -105,7 +102,6 @@ export function BarcodeScanner({
         {supported && !error ? (
           <div className="space-y-3">
             <div className="relative overflow-hidden rounded-lg bg-black">
-              {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
               <video ref={videoRef} className="h-56 w-full object-cover" muted playsInline />
               <div className="pointer-events-none absolute inset-x-6 top-1/2 h-0.5 -translate-y-1/2 bg-accent-400/80" />
             </div>

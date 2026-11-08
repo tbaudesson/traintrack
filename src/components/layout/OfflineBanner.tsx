@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { WifiOff } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -8,24 +8,22 @@ import { useTranslations } from "next-intl";
  * Sticky banner shown when the app is offline.
  * Disappears automatically when the connection is restored.
  */
+function subscribeToConnectivity(onChange: () => void) {
+  window.addEventListener("offline", onChange);
+  window.addEventListener("online", onChange);
+  return () => {
+    window.removeEventListener("offline", onChange);
+    window.removeEventListener("online", onChange);
+  };
+}
+
 export function OfflineBanner() {
   const t = useTranslations("sync");
-  const [isOffline, setIsOffline] = useState(false);
-
-  useEffect(() => {
-    setIsOffline(!navigator.onLine);
-
-    const goOffline = () => setIsOffline(true);
-    const goOnline = () => setIsOffline(false);
-
-    window.addEventListener("offline", goOffline);
-    window.addEventListener("online", goOnline);
-
-    return () => {
-      window.removeEventListener("offline", goOffline);
-      window.removeEventListener("online", goOnline);
-    };
-  }, []);
+  const isOffline = useSyncExternalStore(
+    subscribeToConnectivity,
+    () => !navigator.onLine,
+    () => false
+  );
 
   if (!isOffline) return null;
 

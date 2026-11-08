@@ -37,7 +37,7 @@ export default function LogPage() {
     // Pre-fill sets from the program day's exercises
     for (const pe of day.exercises) {
       // Resolve the exercise by uuid or name; create a custom one if missing
-      let ex = exercises.find(
+      const ex = exercises.find(
         (e) => (pe.exerciseUuid && e.uuid === pe.exerciseUuid) || e.name.toLowerCase() === pe.exerciseName.toLowerCase()
       );
       let exerciseId = ex?.id;

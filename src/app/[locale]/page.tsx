@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,29 +29,31 @@ export default function HomePage() {
   const name = account?.display_name ?? user?.email?.split("@")[0] ?? "";
   const readyScore = todayReadiness ? readinessScore(todayReadiness) : null;
 
+  const [now] = useState(() => Date.now());
+
   const workoutDates = useMemo(() => new Set(workouts.map((w) => w.date)), [workouts]);
 
   // Weekly volume (last 7 days)
   const weeklyVolume = useMemo(() => {
-    const cutoff = new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0];
+    const cutoff = new Date(now - 7 * 86400000).toISOString().split("T")[0];
     const recent = new Set(workouts.filter((w) => w.date >= cutoff).map((w) => w.id));
     let vol = 0;
     for (const s of sets) {
       if (recent.has(s.workoutId) && s.completed && s.weightKg && s.reps) vol += s.weightKg * s.reps;
     }
     return Math.round(vol);
-  }, [workouts, sets]);
+  }, [workouts, sets, now]);
 
   // Simple streak: consecutive days back from today with a workout
   const streak = useMemo(() => {
     let n = 0;
     for (let i = 0; i < 365; i++) {
-      const d = new Date(Date.now() - i * 86400000).toISOString().split("T")[0];
+      const d = new Date(now - i * 86400000).toISOString().split("T")[0];
       if (workoutDates.has(d)) n++;
       else if (i > 0) break;
     }
     return n;
-  }, [workoutDates]);
+  }, [workoutDates, now]);
 
   // profile === undefined while loading; null/empty means not onboarded
   const needsOnboarding = profile !== undefined && !profile;

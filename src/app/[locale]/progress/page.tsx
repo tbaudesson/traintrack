@@ -33,6 +33,7 @@ export default function ProgressPage() {
   const exercises = useExercises();
 
   const [bw, setBw] = useState("");
+  const [now] = useState(() => Date.now());
   const workoutDate = useMemo(() => new Map(workouts.map((w) => [w.id, w.date])), [workouts]);
   // A set counts toward analytics once it has both weight and reps.
   const scored = useMemo(() => sets.filter((s) => s.weightKg && s.reps), [sets]);
@@ -40,7 +41,7 @@ export default function ProgressPage() {
   // ── Summary stats ──────────────────────────────────────────────
   const stats = useMemo(() => {
     const totalVolume = scored.reduce((a, s) => a + s.weightKg! * s.reps!, 0);
-    const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0];
+    const weekAgo = new Date(now - 7 * 86400000).toISOString().split("T")[0];
     const weekVolume = scored.reduce((a, s) => {
       const d = workoutDate.get(s.workoutId);
       return d && d >= weekAgo ? a + s.weightKg! * s.reps! : a;
@@ -51,7 +52,7 @@ export default function ProgressPage() {
       totalVolume: Math.round(totalVolume),
       weekVolume: Math.round(weekVolume),
     };
-  }, [scored, sets, workouts, workoutDate]);
+  }, [scored, sets, workouts, workoutDate, now]);
 
   // ── Volume per date ────────────────────────────────────────────
   const volumeData = useMemo(() => {
@@ -104,7 +105,7 @@ export default function ProgressPage() {
   // ── Volume by muscle group (last 30 days) ──────────────────────
   const muscleData = useMemo(() => {
     const exMg = new Map(exercises.map((e) => [e.id, e.muscleGroup]));
-    const cutoff = new Date(Date.now() - 30 * 86400000).toISOString().split("T")[0];
+    const cutoff = new Date(now - 30 * 86400000).toISOString().split("T")[0];
     const byMg = new Map<string, number>();
     for (const s of scored) {
       const d = workoutDate.get(s.workoutId);
@@ -115,7 +116,7 @@ export default function ProgressPage() {
     return [...byMg.entries()]
       .map(([mg, vol]) => ({ mg, label: tex(`mg_${mg}`), vol: Math.round(vol) }))
       .sort((a, b) => b.vol - a.vol);
-  }, [scored, exercises, workoutDate, tex]);
+  }, [scored, exercises, workoutDate, tex, now]);
 
   // ── Personal records (best estimated 1RM per lift) ─────────────
   const prs = useMemo(() => {

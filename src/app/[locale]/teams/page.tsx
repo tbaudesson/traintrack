@@ -241,18 +241,19 @@ function TeamCard({
 }) {
   const t = useTranslations("teams");
   const [members, setMembers] = useState<GroupMember[]>([]);
-  const [loadingMembers, setLoadingMembers] = useState(false);
+  const [membersLoaded, setMembersLoaded] = useState(false);
+  const loadingMembers = expanded && !membersLoaded;
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
     if (!expanded) return;
-    setLoadingMembers(true);
     getGroupMembers(groupId)
       .then(setMembers)
       .catch(() => setMembers([]))
-      .finally(() => setLoadingMembers(false));
+      .finally(() => setMembersLoaded(true));
+    return () => setMembersLoaded(false);
   }, [expanded, groupId]);
 
   async function reloadMembers() {

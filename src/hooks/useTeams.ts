@@ -18,23 +18,27 @@ export function useTeams() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const load = useCallback(
+    () =>
+      Promise.all([getMyGroups(), getMyMemberships()])
+        .then(([g, m]) => {
+          setMyGroups(g);
+          setMemberships(m);
+          setError(null);
+        })
+        .catch((e) => setError(e instanceof Error ? e.message : String(e)))
+        .finally(() => setLoading(false)),
+    []
+  );
+
   const refresh = useCallback(async () => {
     setLoading(true);
-    setError(null);
-    try {
-      const [g, m] = await Promise.all([getMyGroups(), getMyMemberships()]);
-      setMyGroups(g);
-      setMemberships(m);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    await load();
+  }, [load]);
 
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    load();
+  }, [load]);
 
   return { myGroups, memberships, loading, error, refresh };
 }
