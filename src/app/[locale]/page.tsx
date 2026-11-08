@@ -1,13 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAthleteProfile } from "@/hooks/useAthleteProfile";
 import { useWorkouts } from "@/hooks/useWorkouts";
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
-import { useTrainablePrograms } from "@/hooks/usePrograms";
+import { useTrainablePrograms, createProgram } from "@/hooks/usePrograms";
+import { PROGRAM_TEMPLATES, type ProgramTemplate } from "@/lib/programTemplates";
 import { useUnreadComments } from "@/hooks/useCoachComments";
 import { useExercises } from "@/hooks/useExercises";
 import { useNutritionForDate, sumMacros } from "@/hooks/useNutrition";
@@ -26,7 +27,7 @@ import type { ReactNode } from "react";
 import type { Program } from "@/db";
 import {
   type LucideIcon,
-  ArrowRight, ListChecks, MessageSquare, Plus, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
+  ArrowRight, ListChecks, MessageSquare, Plus, Sparkles, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
 } from "lucide-react";
 
 const DAY_MS = 86400000;
@@ -102,6 +103,7 @@ export default function HomePage() {
   const tr = useTranslations("readiness");
   const tm = useTranslations("more");
   const tl = useTranslations("log");
+  const tp = useTranslations("programs");
   const router = useRouter();
   const { user, profile: account } = useAuth();
   const profile = useAthleteProfile();
@@ -116,6 +118,7 @@ export default function HomePage() {
   const [now] = useState(() => Date.now());
   const [starting, setStarting] = useState(false);
   const [choosing, setChoosing] = useState(false);
+  const pickerTop = useRef<HTMLDivElement>(null);
 
   const today = isoDate(now);
   const nutritionToday = useNutritionForDate(today);
@@ -161,6 +164,9 @@ export default function HomePage() {
     };
   }, [workouts, sets, now]);
 
+  // Ready-made programs the user has not added yet.
+  const templates = PROGRAM_TEMPLATES.filter((tpl) => !programs.some((p) => p.name === tpl.name));
+
   const goal = session ? session.program.structure.length : 0;
   const needsOnboarding = profile !== undefined && !profile;
 
@@ -185,6 +191,18 @@ export default function HomePage() {
     } finally {
       setStarting(false);
     }
+  }
+
+  async function buildProgram() {
+    setChoosing(false);
+    const id = await createProgram({ name: tp("untitled"), structure: [{ name: `${tp("day")} 1`, exercises: [] }] });
+    router.push(`/programs/${id}`);
+  }
+
+  // Stays in the picker: the program joins the list above, ready to start.
+  async function addTemplate(template: ProgramTemplate) {
+    await createProgram({ name: template.name, description: template.description, structure: template.structure });
+    pickerTop.current?.scrollIntoView({ behavior: "smooth" });
   }
 
   async function startFree() {
@@ -311,7 +329,7 @@ export default function HomePage() {
               <DialogHeader>
                 <DialogTitle>{t("chooseSession")}</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4">
+              <div ref={pickerTop} className="space-y-4">
                 {programs
                   .filter((p) => (p.structure ?? []).length > 0)
                   .map((p) => (
@@ -331,8 +349,28 @@ export default function HomePage() {
                   ))}
                 <section className="space-y-2">
                   <DetailRow onClick={startFree} disabled={starting} icon={Plus} tone="neutral" title={t("freeSession")} subtitle={t("freeSessionHint")} />
+                </section>
+
+                <section className="space-y-2">
+                  <h3 className="text-sm font-semibold text-muted-foreground">{t("addProgram")}</h3>
+                  <DetailRow onClick={buildProgram} icon={Plus} title={t("buildProgram")} subtitle={t("buildProgramHint")} />
                   <DetailRow href="/programs" icon={ClipboardList} tone="neutral" title={t("managePrograms")} subtitle={t("manageProgramsHint")} />
                 </section>
+
+                {templates.length > 0 && (
+                  <section className="space-y-2">
+                    <h3 className="text-sm font-semibold text-muted-foreground">{t("readyMade")}</h3>
+                    {templates.map((template) => (
+                      <DetailRow
+                        key={template.id}
+                        onClick={() => addTemplate(template)}
+                        icon={Sparkles}
+                        title={template.name}
+                        subtitle={t("readyMadeDays", { count: template.structure.length })}
+                      />
+                    ))}
+                  </section>
+                )}
               </div>
             </DialogContent>
           </Dialog>

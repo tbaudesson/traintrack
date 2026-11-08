@@ -111,7 +111,12 @@
     "freeSessionHint": "No program, pick your exercises",
     "managePrograms": "Manage my programs",
     "manageProgramsHint": "Create, edit or generate a program",
-    "newComments": "{count, plural, one {New comment from your coach} other {# new comments from your coach}}"
+    "newComments": "{count, plural, one {New comment from your coach} other {# new comments from your coach}}",
+    "addProgram": "Add a program",
+    "buildProgram": "Build my program",
+    "buildProgramHint": "Choose your days and exercises",
+    "readyMade": "Ready-made programs",
+    "readyMadeDays": "{count, plural, one {# day} other {# days}} · tap to add"
   },
   "onboarding": {
     "title": "Your athlete profile",

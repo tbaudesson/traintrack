@@ -111,7 +111,12 @@
     "freeSessionHint": "Sans programme, exercices au choix",
     "managePrograms": "Gérer mes programmes",
     "manageProgramsHint": "Créer, modifier ou générer un programme",
-    "newComments": "{count, plural, one {Nouveau commentaire de votre coach} other {# nouveaux commentaires de votre coach}}"
+    "newComments": "{count, plural, one {Nouveau commentaire de votre coach} other {# nouveaux commentaires de votre coach}}",
+    "addProgram": "Ajouter un programme",
+    "buildProgram": "Construire mon programme",
+    "buildProgramHint": "Choisissez vos jours et vos exercices",
+    "readyMade": "Programmes tout faits",
+    "readyMadeDays": "{count, plural, one {# jour} other {# jours}} · toucher pour l'ajouter"
   },
   "onboarding": {
     "title": "Votre profil athlète",
