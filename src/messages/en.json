@@ -115,7 +115,10 @@
     "addProgram": "Add a program",
     "buildProgram": "Build my program",
     "buildProgramHint": "Choose your days and exercises",
-    "readyMade": "Ready-made programs",
+    "myPrograms": "My programs",
+    "noProgram": "Without a program",
+    "readyMadeStrength": "Ready-made programs · Strength",
+    "readyMadeEndurance": "Ready-made programs · Endurance",
     "readyMadeDays": "{count, plural, one {# day} other {# days}} · tap to add",
     "readyMadeWeeks": "{count}-week plan · tap to add"
   },

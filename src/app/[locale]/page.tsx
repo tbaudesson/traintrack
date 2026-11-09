@@ -201,6 +201,14 @@ export default function HomePage() {
     }
   }
 
+  const trainable = programs.filter((p) => (p.structure ?? []).length > 0);
+  const templateGroups = (
+    [
+      { key: "readyMadeStrength", items: templates.filter((x) => x.goal !== "endurance") },
+      { key: "readyMadeEndurance", items: templates.filter((x) => x.goal === "endurance") },
+    ] as const
+  ).filter((group) => group.items.length > 0);
+
   async function startCardio(sport: Sport) {
     setSportOpen(false);
     const id = await createWorkout({ date: today, title: tc(`sport_${sport}`), kind: "cardio", sport });
@@ -349,42 +357,47 @@ export default function HomePage() {
                 <DialogTitle>{t("chooseSession")}</DialogTitle>
               </DialogHeader>
               <div ref={pickerTop} className="space-y-4">
-                {programs
-                  .filter((p) => (p.structure ?? []).length > 0)
-                  .map((p) => (
-                    <section key={p.id} className="space-y-2">
-                      <h3 className="text-sm font-semibold text-muted-foreground">{p.name}</h3>
-                      {daysToOffer(p, workouts).map(({ day, index }) => (
-                        <DetailRow
-                          key={`${p.id}-${index}`}
-                          onClick={() => startDay(p, index)}
-                          disabled={starting}
-                          icon={day.cardio ? Activity : Dumbbell}
-                          title={day.name}
-                          subtitle={dayDetail(day)}
-                        />
-                      ))}
-                    </section>
-                  ))}
+                {trainable.length > 0 && (
+                  <section className="space-y-3">
+                    <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("myPrograms")}</h3>
+                    {trainable.map((p) => (
+                      <div key={p.id} className="space-y-2">
+                        <h4 className="text-sm font-semibold">{p.name}</h4>
+                        {daysToOffer(p, workouts).map(({ day, index }) => (
+                          <DetailRow
+                            key={`${p.id}-${index}`}
+                            onClick={() => startDay(p, index)}
+                            disabled={starting}
+                            icon={day.cardio ? Activity : Dumbbell}
+                            title={day.name}
+                            subtitle={dayDetail(day)}
+                          />
+                        ))}
+                      </div>
+                    ))}
+                  </section>
+                )}
+
                 <section className="space-y-2">
+                  <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("noProgram")}</h3>
                   <DetailRow onClick={startFree} disabled={starting} icon={Plus} tone="neutral" title={t("freeSession")} subtitle={t("freeSessionHint")} />
                   <DetailRow onClick={() => { setChoosing(false); setSportOpen(true); }} disabled={starting} icon={Activity} tone="neutral" title={tc("newSession")} subtitle={tc("newSessionHint")} />
                 </section>
 
                 <section className="space-y-2">
-                  <h3 className="text-sm font-semibold text-muted-foreground">{t("addProgram")}</h3>
+                  <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("addProgram")}</h3>
                   <DetailRow onClick={buildProgram} icon={Plus} title={t("buildProgram")} subtitle={t("buildProgramHint")} />
                   <DetailRow href="/programs" icon={ClipboardList} tone="neutral" title={t("managePrograms")} subtitle={t("manageProgramsHint")} />
                 </section>
 
-                {templates.length > 0 && (
-                  <section className="space-y-2">
-                    <h3 className="text-sm font-semibold text-muted-foreground">{t("readyMade")}</h3>
-                    {templates.map((template) => (
+                {templateGroups.map(({ key, items }) => (
+                  <section key={key} className="space-y-2">
+                    <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t(key)}</h3>
+                    {items.map((template) => (
                       <DetailRow
                         key={template.id}
                         onClick={() => addTemplate(template)}
-                        icon={Sparkles}
+                        icon={key === "readyMadeEndurance" ? Activity : Sparkles}
                         title={template.name}
                         subtitle={
                           template.structure.some((d) => d.week !== undefined)
@@ -394,7 +407,7 @@ export default function HomePage() {
                       />
                     ))}
                   </section>
-                )}
+                ))}
               </div>
             </DialogContent>
           </Dialog>

@@ -115,7 +115,10 @@
     "addProgram": "Programm hinzufügen",
     "buildProgram": "Eigenes Programm erstellen",
     "buildProgramHint": "Wähle deine Tage und Übungen",
-    "readyMade": "Fertige Programme",
+    "myPrograms": "Meine Programme",
+    "noProgram": "Ohne Programm",
+    "readyMadeStrength": "Fertige Programme · Kraft",
+    "readyMadeEndurance": "Fertige Programme · Ausdauer",
     "readyMadeDays": "{count, plural, one {# Tag} other {# Tage}} · zum Hinzufügen tippen",
     "readyMadeWeeks": "{count}-Wochen-Plan · zum Hinzufügen tippen"
   },
