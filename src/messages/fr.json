@@ -170,6 +170,8 @@
     "saved": "Profil enregistré"
   },
   "log": {
+    "percentPlan": "{percents} % de ton 1RM estimé ({max} kg) : {weights} kg",
+    "percentNoMax": "{percents} % du 1RM : fais une première séance pour l'estimer",
     "repeatLast": "Refaire ma dernière séance",
     "title": "Journal de séance",
     "newWorkout": "Nouvelle séance",
@@ -383,6 +385,8 @@
     "changePassword": "Changer mon mot de passe"
   },
   "programs": {
+    "percents": "% du 1RM (facultatif)",
+    "percentsHint": "75, ou 70/75/80 par série",
     "supersetWithNext": "Enchaîner avec l'exercice suivant (superset)",
     "title": "Programmes",
     "create": "Nouveau programme",

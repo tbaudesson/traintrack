@@ -11,6 +11,9 @@ import { usePrograms } from "@/hooks/usePrograms";
 import { useAthleteProfile } from "@/hooks/useAthleteProfile";
 import { defaultSetValues } from "@/lib/setDefaults";
 import { nextLoad, type Advice } from "@/lib/progression";
+import { oneRepMaxHistory } from "@/lib/goals";
+import { formatPercents, percentWeights, referenceMax } from "@/lib/percent";
+import { localDate } from "@/lib/dates";
 import { warmupSets, type WarmupStep } from "@/lib/warmup";
 import { substitutes } from "@/lib/substitutes";
 import { chainedNext, linkGroup, restsAfter, supersetOf, unlinkAfter } from "@/lib/supersets";
@@ -35,7 +38,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight, TrendingDown, Equal } from "lucide-react";
+import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight, TrendingDown, Equal, Gauge } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { connectHeartRate, isBluetoothSupported, type HeartRateMonitor } from "@/lib/bleHeartRate";
@@ -231,14 +234,26 @@ export default function SessionLoggerPage() {
     });
   }
 
+  /**
+   * For a percentage-of-1RM program: the 1RM the loads come from and the weight
+   * of each working set. `max` is null until a first session gives an estimate.
+   */
+  function percentPlanFor(exerciseId: number, target: ReturnType<typeof targetFor>, setCount: number) {
+    if (!target?.percents?.length) return null;
+    const earlier = allWorkouts.filter((w) => w.id !== workoutId);
+    const max = referenceMax(oneRepMaxHistory(exerciseId, earlier, allSets), workout?.date ?? localDate());
+    return { max, weights: max ? percentWeights(target.percents, setCount, max, exMap.get(exerciseId)?.equipment) : [] };
+  }
+
   /** What one tap on "Prefill" would write into each unfinished set. */
   function prefillFor(exerciseId: number, exSets: typeof sets) {
     const target = targetFor(exerciseId);
     const previous = lastPerformance(exerciseId, workout, allWorkouts, allSets);
     const suggestion = adviceFor(exerciseId, target)?.weightKg ?? null;
     const work = exSets.filter((s) => !s.isWarmup);
+    const plan = percentPlanFor(exerciseId, target, work.length);
     return work
-      .map((s) => ({
+      .map((s, i) => ({
         id: s.id,
         values: defaultSetValues({
           set: s,
@@ -248,6 +263,7 @@ export default function SessionLoggerPage() {
           targetReps: target?.targetReps,
           previous,
           suggestion,
+          plannedKg: plan?.weights[i],
         }),
       }))
       .filter((f): f is { id: number; values: typeof f.values } => f.id !== undefined && Object.keys(f.values).length > 0);
@@ -551,6 +567,7 @@ export default function SessionLoggerPage() {
             !isTimedTarget(target?.targetReps) && warmups.length === 0 && !work.some((s) => s.completed)
               ? warmupSets(workKg, ex?.equipment)
               : [];
+          const plannedFor = (s: (typeof sets)[number]) => (s.isWarmup ? undefined : percentPlan?.weights[work.indexOf(s)]);
           const inSuperset = supersetOf(exerciseId, slots).length > 1;
           const chained = chainedNext(exerciseId, slots);
           const linkedToNext = slots[index].group != null && slots[index].group === slots[index + 1]?.group;
@@ -558,7 +575,9 @@ export default function SessionLoggerPage() {
           const nextSet = exSets.find((s) => !s.completed);
           const previous = lastPerformance(exerciseId, workout, allWorkouts, allSets);
           const previousTop = topWeight(previous);
-          const advice = adviceFor(exerciseId, target);
+          const percentPlan = percentPlanFor(exerciseId, target, work.length);
+          // A percentage program sets the load itself: no RPE advice on top.
+          const advice = percentPlan ? null : adviceFor(exerciseId, target);
           const suggestion = advice?.weightKg ?? null;
           const best = bestLifts(exerciseId, allSets);
           const records = recordHistory(exerciseId, allWorkouts, allSets).slice(-5).reverse();
@@ -619,6 +638,19 @@ export default function SessionLoggerPage() {
 
                 {advice && <AdviceLine advice={advice} />}
 
+                {percentPlan && target?.percents && (
+                  <p className="flex items-start gap-1.5 text-sm font-medium text-accent-text">
+                    <Gauge className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                    {percentPlan.max
+                      ? t("percentPlan", {
+                          percents: formatPercents(target.percents),
+                          max: Math.round(percentPlan.max),
+                          weights: [...new Set(percentPlan.weights)].join(" / "),
+                        })
+                      : t("percentNoMax", { percents: formatPercents(target.percents) })}
+                  </p>
+                )}
+
                 {guideOpen && (
                   <div className="space-y-2 rounded-xl bg-muted/50 p-3">
                     {best && (
@@ -663,13 +695,13 @@ export default function SessionLoggerPage() {
                     >
                       {s.isWarmup ? `${t("warmupShort")}${warmups.indexOf(s) + 1}` : s.setNumber}
                     </span>
-                    <NumCell key={`w${s.weightKg ?? ""}`} label={t("weight")} placeholder={previousTop !== null ? String(suggestion ?? previousTop) : undefined} value={s.weightKg} onChange={(v) => s.id && updateWorkoutSet(s.id, { weightKg: v })} />
+                    <NumCell key={`w${s.weightKg ?? ""}`} label={t("weight")} placeholder={plannedFor(s) !== undefined ? String(plannedFor(s)) : previousTop !== null ? String(suggestion ?? previousTop) : undefined} value={s.weightKg} onChange={(v) => s.id && updateWorkoutSet(s.id, { weightKg: v })} />
                     <NumCell key={`r${s.reps ?? ""}`} label={t("reps")} placeholder={target?.targetReps} value={s.reps} onChange={(v) => s.id && updateWorkoutSet(s.id, { reps: v })} />
                     <NumCell key={`p${s.rpe ?? ""}`} label={t("rpe")} value={s.rpe} onChange={(v) => s.id && updateWorkoutSet(s.id, { rpe: v !== undefined && v >= 1 && v <= 10 ? v : undefined })} />
                     <button
                       onClick={() =>
                         s.id &&
-                        toggleDone(s.id, s.completed, s.restSec, s.isWarmup ? undefined : { weightKg: suggestion ?? previousTop, targetReps: target?.targetReps })
+                        toggleDone(s.id, s.completed, s.restSec, s.isWarmup ? undefined : { weightKg: plannedFor(s) ?? suggestion ?? previousTop, targetReps: target?.targetReps })
                       }
                       aria-label={tc("markDone")}
                       aria-pressed={!!s.completed}
@@ -725,7 +757,7 @@ export default function SessionLoggerPage() {
                         setNumber: nextSet.setNumber,
                         restSec: nextSet.restSec,
                         timed: isTimedTarget(target?.targetReps),
-                        hint: nextSet.isWarmup ? {} : { weightKg: suggestion ?? previousTop, targetReps: target?.targetReps },
+                        hint: nextSet.isWarmup ? {} : { weightKg: plannedFor(nextSet) ?? suggestion ?? previousTop, targetReps: target?.targetReps },
                       })
                     }
                   >

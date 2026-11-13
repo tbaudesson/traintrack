@@ -5,6 +5,8 @@ import { nextLoad } from "@/lib/progression";
 import { createWorkout } from "@/hooks/useWorkouts";
 import { addWorkoutSet } from "@/hooks/useWorkoutSets";
 import { programGroups } from "./supersets";
+import { oneRepMaxHistory } from "./goals";
+import { percentWeights, referenceMax } from "./percent";
 import { createCustomExercise } from "@/hooks/useExercises";
 
 /** The title a workout started from a program day carries. */
@@ -83,13 +85,14 @@ export async function startWorkoutFromDay(
     const sessions = recentPerformances(exerciseId, undefined, pastWorkouts, pastSets, 2);
     const advice = nextLoad({ sessions, targetSets: pe.targetSets, targetReps: pe.targetReps, equipment: ex?.equipment });
     const weightKg = advice?.weightKg ?? topWeight(last) ?? undefined;
+    const max = pe.percents?.length ? referenceMax(oneRepMaxHistory(exerciseId, pastWorkouts, pastSets), date) : null;
     const sets = Math.max(1, pe.targetSets || 1);
     for (let i = 1; i <= sets; i++) {
       await addWorkoutSet({
         workoutId: id,
         exerciseId,
         setNumber: i,
-        weightKg,
+        weightKg: max ? percentWeights(pe.percents!, i, max, ex?.equipment)[i - 1] : weightKg,
         restSec: pe.restSec,
         completed: false,
         supersetGroup: groups[index],

@@ -170,6 +170,8 @@
     "saved": "Profil gespeichert"
   },
   "log": {
+    "percentPlan": "{percents} % deines geschätzten 1RM ({max} kg): {weights} kg",
+    "percentNoMax": "{percents} % vom 1RM: mach zuerst eine Einheit, um es zu schätzen",
     "repeatLast": "Letzte Einheit wiederholen",
     "title": "Trainingsprotokoll",
     "newWorkout": "Neue Einheit",
@@ -383,6 +385,8 @@
     "changePassword": "Mein Passwort ändern"
   },
   "programs": {
+    "percents": "% vom 1RM (optional)",
+    "percentsHint": "75, oder 70/75/80 pro Satz",
     "supersetWithNext": "Mit der nächsten Übung als Supersatz verbinden",
     "title": "Programme",
     "create": "Neues Programm",

@@ -132,6 +132,8 @@ export interface ProgramExercise {
   restSec?: number;
   /** Done straight after this one, without rest: a superset. */
   supersetWithNext?: boolean;
+  /** Load as a share of the estimated 1RM, one per set (the last one repeats). */
+  percents?: number[];
 }
 
 export type Sport = "run" | "swim" | "bike" | "row" | "other";

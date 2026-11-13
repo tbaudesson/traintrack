@@ -6,6 +6,7 @@ import { useExercises } from "@/hooks/useExercises";
 import type { CardioTarget, ProgramDay, ProgramExercise, Sport } from "@/db";
 import { SPORTS } from "@/lib/cardio";
 import { programGroups, supersetLabels } from "@/lib/supersets";
+import { formatPercents, parsePercents } from "@/lib/percent";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -135,6 +136,17 @@ export function ProgramDaysEditor({
                       />
                     </label>
                   </div>
+                  <label className="mt-2 block text-xs text-muted-foreground">
+                    {t("percents")}
+                    <Input
+                      key={formatPercents(ex.percents)}
+                      defaultValue={formatPercents(ex.percents)}
+                      placeholder={t("percentsHint")}
+                      inputMode="decimal"
+                      onBlur={(e) => updateExercise(di, ei, { percents: parsePercents(e.target.value) })}
+                      className="mt-0.5 h-10"
+                    />
+                  </label>
                   {ei < day.exercises.length - 1 && (
                     <label className="mt-2 flex min-h-10 items-center gap-2 text-xs text-muted-foreground">
                       <input

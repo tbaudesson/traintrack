@@ -58,6 +58,8 @@ export function defaultSetValues(input: {
   targetReps?: string;
   previous: Pick<WorkoutSet, "setNumber" | "weightKg" | "reps" | "workoutId" | "exerciseId" | "completed">[];
   suggestion: number | null;
+  /** The weight a percentage-of-1RM program sets for this set. */
+  plannedKg?: number;
 }): Values {
   const { set, totalSets, exercise, targetReps, previous, suggestion } = input;
   const level = LEVEL_INDEX[input.level ?? "beginner"];
@@ -71,7 +73,7 @@ export function defaultSetValues(input: {
     if (reps) filled.reps = reps;
   }
   if (!set.weightKg && !timed) {
-    const weight = suggestion ?? same?.weightKg ?? topWeight(previous) ?? startingLoad(exercise, input.level ?? "beginner");
+    const weight = input.plannedKg ?? suggestion ?? same?.weightKg ?? topWeight(previous) ?? startingLoad(exercise, input.level ?? "beginner");
     if (weight) filled.weightKg = weight;
   }
   if (!set.rpe) filled.rpe = RPE[level] + (set.setNumber >= totalSets ? 1 : 0);

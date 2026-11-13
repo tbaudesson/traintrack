@@ -17,7 +17,7 @@ describe("built-in programs", () => {
 });
 
 describe("strength programs in every language", () => {
-  const strength = PROGRAM_TEMPLATES.filter((t) => t.goal !== "endurance");
+  const strength = PROGRAM_TEMPLATES.filter((t) => t.goal !== "endurance" && !t.id.startsWith("vagues-force"));
   const byLocale = (locale: string) => strength.filter((t) => t.locale === locale);
 
   it("offer all fourteen in French, English and German", () => {
@@ -47,5 +47,14 @@ describe("circuits", () => {
       const linked = t.structure.filter((d) => d.exercises.slice(0, -1).every((e) => e.supersetWithNext) && !d.exercises.at(-1)?.supersetWithNext);
       expect(linked).toHaveLength(2);
     }
+  });
+});
+
+describe("strength waves", () => {
+  it("load the main lifts in percentages, rising then easing off", () => {
+    const waves = PROGRAM_TEMPLATES.filter((t) => t.id.startsWith("vagues-force"));
+    expect(waves.map((t) => t.locale)).toEqual(["fr", "en", "de"]);
+    const squat = waves[0].structure.filter((d) => d.exercises[0].exerciseName === "Back Squat").map((d) => d.exercises[0].percents);
+    expect(squat).toEqual([[70, 75, 80], [75, 80, 85], [80, 85, 90], [60]]);
   });
 });
