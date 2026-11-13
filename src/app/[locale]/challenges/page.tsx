@@ -16,11 +16,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Flag, Plus, Loader2, Trophy, Trash2, ChevronDown, ChevronUp, Medal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/page-parts";
+import { localDateIn } from "@/lib/dates";
 
 const TYPES: ChallengeType[] = ["volume", "sessions", "consistency"];
 
 function todayISO(offset = 0) {
-  return new Date(Date.now() + offset * 86400000).toISOString().split("T")[0];
+  return localDateIn(offset);
 }
 
 export default function ChallengesPage() {

@@ -24,6 +24,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Plus, Trash2, Settings2, Loader2, Pencil, Search, ScanLine, Droplet, Minus, Clock } from "lucide-react";
 import { SectionHeading } from "@/components/ui/page-parts";
+import { localDate } from "@/lib/dates";
 
 const MEALS: Meal[] = ["breakfast", "lunch", "dinner", "snack"];
 
@@ -52,7 +53,7 @@ function MacroRing({ label, value, target, unit }: { label: string; value: numbe
 export default function NutritionPage() {
   const t = useTranslations("nutrition");
   const { hasFeature } = useFeatureAccess();
-  const today = new Date().toISOString().split("T")[0];
+  const today = localDate();
   const entries = useNutritionForDate(today);
   const profile = useAthleteProfile();
   const hydration = useTodayHydration(today);

@@ -17,6 +17,7 @@ import { daysToOffer, startWorkoutFromDay } from "@/lib/startWorkout";
 import { describeTarget, formatDistance, isCardio } from "@/lib/cardio";
 import { SportPicker } from "@/components/domain/SportPicker";
 import type { Sport } from "@/db";
+import { localDate } from "@/lib/dates";
 
 export default function LogPage() {
   const t = useTranslations("log");
@@ -29,7 +30,7 @@ export default function LogPage() {
   const [sportOpen, setSportOpen] = useState(false);
   const tc = useTranslations("cardio");
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = localDate();
 
   async function startCardio(sport: Sport) {
     setSportOpen(false);

@@ -10,6 +10,7 @@ import { useHealthForDate } from "@/hooks/useHealth";
 import { buildRecommendations, type RecKind, type RecTone } from "@/lib/recommendations";
 import { Card, CardContent } from "@/components/ui/card";
 import { HeartPulse, Dumbbell, BedDouble, Beef, Flame, CalendarCheck, Sparkles, Moon, type LucideIcon } from "lucide-react";
+import { localDateIn } from "@/lib/dates";
 
 const ICONS: Record<RecKind, LucideIcon> = {
   recover: HeartPulse,
@@ -29,7 +30,7 @@ const TONE_STYLES: Record<RecTone, string> = {
 };
 
 function dayStr(offsetDays = 0) {
-  return new Date(Date.now() - offsetDays * 86400000).toISOString().split("T")[0];
+  return localDateIn(-offsetDays);
 }
 
 export function Recommendations() {

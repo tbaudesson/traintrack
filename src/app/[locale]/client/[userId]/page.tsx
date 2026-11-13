@@ -17,6 +17,7 @@ import { useState } from "react";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { SectionHeading } from "@/components/ui/page-parts";
 import { formatDistance, formatDuration, isCardio } from "@/lib/cardio";
+import { localDate, localDateIn } from "@/lib/dates";
 
 function scoreColor(s: number) {
   if (s >= 75) return "text-green-600";
@@ -36,7 +37,7 @@ export default function ClientDetailPage() {
   const workouts = useWorkouts(userId);
   const sets = useAllWorkoutSets(userId);
   const readiness = useReadiness(userId);
-  const today = new Date().toISOString().split("T")[0];
+  const today = localDate();
   const nutritionToday = useNutritionForDate(today, userId);
   const macros = sumMacros(nutritionToday);
 
@@ -52,7 +53,7 @@ export default function ClientDetailPage() {
 
   // 7-day compliance: number of distinct days with a workout in the last 7 days
   const compliance = useMemo(() => {
-    const cutoff = new Date(now - 7 * 86400000).toISOString().split("T")[0];
+    const cutoff = localDateIn(-7, now);
     const days = new Set(workouts.filter((w) => w.date >= cutoff).map((w) => w.date));
     return days.size;
   }, [workouts, now]);

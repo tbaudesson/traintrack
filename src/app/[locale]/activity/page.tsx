@@ -12,6 +12,7 @@ import { DetailRow } from "@/components/ui/detail-row";
 import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
 import { BellRing, Dumbbell, Loader2, Newspaper, Trophy } from "lucide-react";
 import type { Workout, WorkoutSet } from "@/db";
+import { localDate } from "@/lib/dates";
 
 const NO_WORKOUTS: Workout[] = [];
 const NO_SETS: WorkoutSet[] = [];
@@ -34,7 +35,7 @@ export default function ActivityPage() {
       workouts,
       sets,
       exerciseName: (id) => names.get(id) ?? "?",
-      today: new Date(now).toISOString().split("T")[0],
+      today: localDate(now),
     });
   }, [clients, workouts, sets, exercises, now]);
 

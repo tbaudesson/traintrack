@@ -34,12 +34,9 @@ import {
   type LucideIcon,
   Activity, ArrowRight, ListChecks, MessageSquare, Plus, Sparkles, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
 } from "lucide-react";
+import { localDate, localDateIn } from "@/lib/dates";
 
 const DAY_MS = 86400000;
-
-function isoDate(ms: number) {
-  return new Date(ms).toISOString().split("T")[0];
-}
 
 /** Monday 00:00 of the week holding this moment. */
 function mondayOf(ms: number) {
@@ -128,7 +125,7 @@ export default function HomePage() {
   const [sportOpen, setSportOpen] = useState(false);
   const pickerTop = useRef<HTMLDivElement>(null);
 
-  const today = isoDate(now);
+  const today = localDate(now);
   const nutritionToday = useNutritionForDate(today);
   const hasTeamInvite = memberships.some((m) => m.status === "pending");
   const name = account?.display_name ?? user?.email?.split("@")[0] ?? "";
@@ -170,8 +167,8 @@ export default function HomePage() {
   }, [sets, session, workouts]);
 
   const week = useMemo(() => {
-    const monday = isoDate(mondayOf(now));
-    const lastMonday = isoDate(mondayOf(now) - 7 * DAY_MS);
+    const monday = localDate(mondayOf(now));
+    const lastMonday = localDateIn(-7, mondayOf(now));
     const volumeOf = (from: string, to: string) => {
       const ids = new Set(workouts.filter((w) => w.date >= from && w.date < to).map((w) => w.id));
       return sets.reduce((a, s) => (ids.has(s.workoutId) && s.completed && s.weightKg && s.reps ? a + s.weightKg * s.reps : a), 0);

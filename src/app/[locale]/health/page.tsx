@@ -12,9 +12,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Activity, Footprints, HeartPulse, Moon, Upload, Heart, Loader2, Check } from "lucide-react";
 import { SectionHeading } from "@/components/ui/page-parts";
+import { localDate } from "@/lib/dates";
 
 function today() {
-  return new Date().toISOString().split("T")[0];
+  return localDate();
 }
 
 export default function HealthPage() {

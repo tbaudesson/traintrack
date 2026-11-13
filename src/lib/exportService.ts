@@ -1,4 +1,5 @@
 import db from "@/db";
+import { localDate } from "@/lib/dates";
 
 /**
  * GDPR data portability (Art. 20): export all of the user's local data as JSON.
@@ -49,6 +50,6 @@ function downloadFile(content: string, filename: string, mime: string): void {
 
 export async function downloadJSONBackup(): Promise<void> {
   const json = await exportJSON();
-  const date = new Date().toISOString().split("T")[0];
+  const date = localDate();
   downloadFile(json, `traintrack-backup-${date}.json`, "application/json");
 }

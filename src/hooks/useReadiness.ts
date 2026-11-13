@@ -2,9 +2,10 @@ import { useLiveQuery } from "dexie-react-hooks";
 import db, { type ReadinessCheckin } from "@/db";
 import { getCurrentUserIdSync } from "@/db";
 import { schedulePush } from "@/lib/syncEngine";
+import { localDate } from "@/lib/dates";
 
 function todayStr() {
-  return new Date().toISOString().split("T")[0];
+  return localDate();
 }
 
 /** Readiness check-ins for a user (defaults to current), newest first. */

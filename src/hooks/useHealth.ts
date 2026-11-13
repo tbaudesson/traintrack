@@ -2,9 +2,10 @@ import { useLiveQuery } from "dexie-react-hooks";
 import db, { type HealthMetric } from "@/db";
 import { getCurrentUserIdSync } from "@/db";
 import { schedulePush } from "@/lib/syncEngine";
+import { localDate } from "@/lib/dates";
 
 function todayStr() {
-  return new Date().toISOString().split("T")[0];
+  return localDate();
 }
 
 type MetricFields = Pick<HealthMetric, "steps" | "restingHr" | "hrv" | "sleepHours" | "vo2max">;

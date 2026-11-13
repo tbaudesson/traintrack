@@ -33,6 +33,7 @@ import {
   Pencil, X, Bell, BellOff, KeyRound, Newspaper, Gauge, CalendarDays, CalendarPlus,
   type LucideIcon,
 } from "lucide-react";
+import { localDate } from "@/lib/dates";
 
 const LOCALES = [
   { id: "fr", label: "Français", flag: "🇫🇷" },
@@ -54,11 +55,6 @@ const WEEKDAYS = [1, 2, 3, 4, 5, 6, 7];
 /** "L", "Lundi"… from 1 = Monday, in the app's language. 1 January 2024 was a Monday. */
 function weekdayName(locale: string, day: number, width: "narrow" | "long") {
   return new Intl.DateTimeFormat(locale, { weekday: width, timeZone: "UTC" }).format(new Date(Date.UTC(2024, 0, day)));
-}
-
-function localDate(date: Date) {
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
 function Section({ icon: Icon, title, action, children }: {

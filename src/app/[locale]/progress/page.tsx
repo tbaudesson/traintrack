@@ -19,6 +19,7 @@ import { isCardioDone } from "@/lib/cardio";
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell,
 } from "recharts";
+import { localDate, localDateIn } from "@/lib/dates";
 
 function epley1rm(weight: number, reps: number): number {
   return Math.round(weight * (1 + reps / 30));
@@ -44,7 +45,7 @@ export default function ProgressPage() {
   // ── Summary stats ──────────────────────────────────────────────
   const stats = useMemo(() => {
     const totalVolume = scored.reduce((a, s) => a + s.weightKg! * s.reps!, 0);
-    const weekAgo = new Date(now - 7 * 86400000).toISOString().split("T")[0];
+    const weekAgo = localDateIn(-7, now);
     const weekVolume = scored.reduce((a, s) => {
       const d = workoutDate.get(s.workoutId);
       return d && d >= weekAgo ? a + s.weightKg! * s.reps! : a;
@@ -108,7 +109,7 @@ export default function ProgressPage() {
   // ── Volume by muscle group (last 30 days) ──────────────────────
   const muscleData = useMemo(() => {
     const exMg = new Map(exercises.map((e) => [e.id, e.muscleGroup]));
-    const cutoff = new Date(now - 30 * 86400000).toISOString().split("T")[0];
+    const cutoff = localDateIn(-30, now);
     const byMg = new Map<string, number>();
     for (const s of scored) {
       const d = workoutDate.get(s.workoutId);
@@ -137,7 +138,7 @@ export default function ProgressPage() {
 
   async function logBodyweight() {
     if (!bw) return;
-    await addBodyMetric({ date: new Date().toISOString().split("T")[0], weightKg: Number(bw) });
+    await addBodyMetric({ date: localDate(), weightKg: Number(bw) });
     setBw("");
   }
 
