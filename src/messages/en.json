@@ -944,5 +944,14 @@
     "records": "{count, plural, one {# record beaten} other {# records beaten}}",
     "cardio": "{count, plural, one {# endurance outing} other {# endurance outings}}",
     "pains": "Pain:"
+  },
+  "myPrograms": {
+    "title": "My programs",
+    "seeAll": "See all",
+    "continue": "Continue",
+    "discover": "Discover",
+    "startsOn": "Starts on {date}",
+    "week": "Week {week}",
+    "sessions": "{count, plural, =0 {Not started yet} one {# session} other {# sessions}}"
   }
 }

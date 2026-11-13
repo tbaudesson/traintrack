@@ -16,6 +16,8 @@ import { useNutritionForDate, sumMacros } from "@/hooks/useNutrition";
 import { useTodayReadiness, useReadiness, readinessScore } from "@/hooks/useReadiness";
 import { DeloadCard } from "@/components/domain/DeloadCard";
 import { WeeklyReportCard } from "@/components/domain/WeeklyReportCard";
+import { MyPrograms } from "@/components/domain/MyPrograms";
+import { PROGRAM_TEMPLATES } from "@/lib/programTemplates";
 import { usePainReports } from "@/hooks/usePain";
 import { deloadAdvice } from "@/lib/deload";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
@@ -448,6 +450,18 @@ export default function HomePage() {
           )}
 
           <WeekStrip plan={plan} planned={(profile?.trainingDays ?? []).length > 0} />
+
+          <MyPrograms
+            programs={programs}
+            workouts={workouts}
+            catalogue={[...catalogue, ...PROGRAM_TEMPLATES]}
+            today={today}
+            onContinue={(program) => {
+              const running = workouts.find((w) => w.date === today && findWorkoutProgramDay([program], w));
+              if (running?.id) router.push(`/log/${running.id}`);
+              else startDay(program, nextDayIndex(program, workouts, today));
+            }}
+          />
 
           <SportPicker open={sportOpen} onOpenChange={setSportOpen} onPick={startCardio} />
 

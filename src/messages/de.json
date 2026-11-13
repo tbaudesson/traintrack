@@ -944,5 +944,14 @@
     "records": "{count, plural, one {# Rekord gebrochen} other {# Rekorde gebrochen}}",
     "cardio": "{count, plural, one {# Ausdauereinheit} other {# Ausdauereinheiten}}",
     "pains": "Beschwerden:"
+  },
+  "myPrograms": {
+    "title": "Meine Programme",
+    "seeAll": "Alle ansehen",
+    "continue": "Weiter",
+    "discover": "Entdecken",
+    "startsOn": "Beginnt am {date}",
+    "week": "Woche {week}",
+    "sessions": "{count, plural, =0 {Noch nicht begonnen} one {# Einheit} other {# Einheiten}}"
   }
 }

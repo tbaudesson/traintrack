@@ -944,5 +944,14 @@
     "records": "{count, plural, one {# record battu} other {# records battus}}",
     "cardio": "{count, plural, one {# sortie d'endurance} other {# sorties d'endurance}}",
     "pains": "Gênes :"
+  },
+  "myPrograms": {
+    "title": "Mes programmes",
+    "seeAll": "Voir tout",
+    "continue": "Continuer",
+    "discover": "Découvrir",
+    "startsOn": "Commence le {date}",
+    "week": "Semaine {week}",
+    "sessions": "{count, plural, =0 {Pas encore commencé} one {# séance} other {# séances}}"
   }
 }
