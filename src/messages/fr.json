@@ -77,6 +77,15 @@
     "backToLogin": "Retour à la connexion"
   },
   "home": {
+    "weekPlan": "Ma semaine",
+    "weekPlanEdit": "Modifier",
+    "weekPlanSetup": "Planifier",
+    "weekPlanHint": "Choisissez vos jours d'entraînement dans Réglages : vos prochaines séances s'y placeront.",
+    "planToday": "Aujourd'hui",
+    "plan_done": "fait",
+    "plan_missed": "manqué",
+    "plan_planned": "prévu",
+    "plan_rest": "repos",
     "greeting": "Bonjour, {name}",
     "todayTitle": "Aujourd'hui",
     "noWorkoutToday": "Aucune séance prévue aujourd'hui.",
@@ -320,6 +329,13 @@
     "daysAgo": "il y a {days}j"
   },
   "settings": {
+    "plan": "Planning de la semaine",
+    "planHint": "Vos jours d'entraînement : l'accueil place vos prochaines séances dessus.",
+    "planTime": "Heure habituelle",
+    "planCalendar": "Ajouter à mon agenda",
+    "planCalendarHint": "Crée un rendez-vous chaque jour d'entraînement, avec un rappel 30 min avant. Si vous changez vos jours, ajoutez-le à nouveau.",
+    "planEventTitle": "Séance TrainTrack",
+    "planEventDescription": "Votre séance du jour vous attend dans TrainTrack.",
     "level": "Niveau d'entraînement",
     "levelHint": "Sert à pré-remplir vos séances et à vous proposer des programmes.",
     "levelSetup": "Compléter mon profil",

@@ -77,6 +77,15 @@
     "backToLogin": "Back to sign in"
   },
   "home": {
+    "weekPlan": "My week",
+    "weekPlanEdit": "Edit",
+    "weekPlanSetup": "Plan",
+    "weekPlanHint": "Pick your training days in Settings: your next sessions will be placed on them.",
+    "planToday": "Today",
+    "plan_done": "done",
+    "plan_missed": "missed",
+    "plan_planned": "planned",
+    "plan_rest": "rest",
     "greeting": "Hello, {name}",
     "todayTitle": "Today",
     "noWorkoutToday": "No workout planned for today.",
@@ -320,6 +329,13 @@
     "daysAgo": "{days}d ago"
   },
   "settings": {
+    "plan": "Week plan",
+    "planHint": "Your training days: the home screen places your next sessions on them.",
+    "planTime": "Usual time",
+    "planCalendar": "Add to my calendar",
+    "planCalendarHint": "Creates an event on each training day, with a reminder 30 min before. If you change your days, add it again.",
+    "planEventTitle": "TrainTrack session",
+    "planEventDescription": "Today's session is waiting for you in TrainTrack.",
     "level": "Training level",
     "levelHint": "Used to prefill your sessions and suggest programs.",
     "levelSetup": "Complete my profile",

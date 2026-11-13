@@ -77,6 +77,15 @@
     "backToLogin": "Zurück zur Anmeldung"
   },
   "home": {
+    "weekPlan": "Meine Woche",
+    "weekPlanEdit": "Ändern",
+    "weekPlanSetup": "Planen",
+    "weekPlanHint": "Wählen Sie Ihre Trainingstage in den Einstellungen: Ihre nächsten Einheiten werden darauf verteilt.",
+    "planToday": "Heute",
+    "plan_done": "erledigt",
+    "plan_missed": "verpasst",
+    "plan_planned": "geplant",
+    "plan_rest": "Ruhetag",
     "greeting": "Hallo, {name}",
     "todayTitle": "Heute",
     "noWorkoutToday": "Heute keine Einheit geplant.",
@@ -320,6 +329,13 @@
     "daysAgo": "vor {days}T"
   },
   "settings": {
+    "plan": "Wochenplan",
+    "planHint": "Ihre Trainingstage: der Startbildschirm verteilt Ihre nächsten Einheiten darauf.",
+    "planTime": "Übliche Uhrzeit",
+    "planCalendar": "Zum Kalender hinzufügen",
+    "planCalendarHint": "Erstellt an jedem Trainingstag einen Termin mit Erinnerung 30 min vorher. Wenn Sie die Tage ändern, fügen Sie ihn erneut hinzu.",
+    "planEventTitle": "TrainTrack-Einheit",
+    "planEventDescription": "Ihre heutige Einheit wartet in TrainTrack auf Sie.",
     "level": "Trainingsniveau",
     "levelHint": "Dient zum Vorausfüllen Ihrer Einheiten und für Programmvorschläge.",
     "levelSetup": "Profil vervollständigen",

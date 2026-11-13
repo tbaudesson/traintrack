@@ -19,7 +19,8 @@ import {
 } from "@/lib/pushService";
 import { getTextSize, applyTextSize, type TextSize } from "@/lib/textSize";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
-import { useAthleteProfile, updateFitnessLevel } from "@/hooks/useAthleteProfile";
+import { useAthleteProfile, updateFitnessLevel, updateTrainingSchedule } from "@/hooks/useAthleteProfile";
+import { trainingCalendar } from "@/lib/ics";
 import type { FitnessLevel } from "@/db";
 import { getMode, applyMode, getAccent, applyAccent, ACCENTS, type ThemeMode, type Accent } from "@/lib/appTheme";
 import {
@@ -29,7 +30,7 @@ import {
   Download, Shield, LogOut, Trash2, Loader2, Sparkles, Check, Type, ShieldCheck,
   Palette, LayoutGrid, Monitor, Sun, Moon, Globe, RotateCcw, CheckCircle2, User, Trophy,
   Home, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse,
-  Pencil, X, Bell, BellOff, KeyRound, Newspaper, Gauge,
+  Pencil, X, Bell, BellOff, KeyRound, Newspaper, Gauge, CalendarDays, CalendarPlus,
   type LucideIcon,
 } from "lucide-react";
 
@@ -47,6 +48,18 @@ const ACCENT_SWATCH: Record<Accent, string> = {
 const NAV_ICONS: Record<string, LucideIcon> = {
   Home, Newspaper, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse, Trophy,
 };
+
+const WEEKDAYS = [1, 2, 3, 4, 5, 6, 7];
+
+/** "L", "Lundi"… from 1 = Monday, in the app's language. 1 January 2024 was a Monday. */
+function weekdayName(locale: string, day: number, width: "narrow" | "long") {
+  return new Intl.DateTimeFormat(locale, { weekday: width, timeZone: "UTC" }).format(new Date(Date.UTC(2024, 0, day)));
+}
+
+function localDate(date: Date) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
 
 function Section({ icon: Icon, title, action, children }: {
   icon: LucideIcon; title: string; action?: React.ReactNode; children: React.ReactNode;
@@ -279,6 +292,83 @@ export default function SettingsPage() {
                 </button>
               ))}
             </div>
+          ) : (
+            <Link href="/onboarding" className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-full")}>
+              {t("levelSetup")}
+            </Link>
+          )}
+        </Section>
+
+        {/* Week plan */}
+        <Section icon={CalendarDays} title={t("plan")}>
+          <p className="mb-2 text-xs text-muted-foreground">{t("planHint")}</p>
+          {athlete ? (
+            <>
+              <div className="grid grid-cols-7 gap-1.5">
+                {WEEKDAYS.map((day) => {
+                  const on = (athlete.trainingDays ?? []).includes(day);
+                  return (
+                    <button
+                      key={day}
+                      onClick={() =>
+                        updateTrainingSchedule({
+                          trainingDays: on
+                            ? (athlete.trainingDays ?? []).filter((d) => d !== day)
+                            : [...(athlete.trainingDays ?? []), day].sort(),
+                        })
+                      }
+                      aria-pressed={on}
+                      aria-label={weekdayName(locale, day, "long")}
+                      className={cn(
+                        "min-h-11 rounded-lg border text-sm font-semibold transition-colors",
+                        on
+                          ? "border-accent-500 bg-accent-500 text-white"
+                          : "border-border text-muted-foreground hover:border-accent-300"
+                      )}
+                    >
+                      {weekdayName(locale, day, "narrow")}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="mt-3 flex items-end gap-2">
+                <label className="flex-1 text-xs text-muted-foreground">
+                  {t("planTime")}
+                  <Input
+                    type="time"
+                    value={athlete.trainingTime ?? "18:00"}
+                    onChange={(e) => /^\d\d:\d\d$/.test(e.target.value) && updateTrainingSchedule({ trainingTime: e.target.value })}
+                    className="mt-1"
+                  />
+                </label>
+                <Button
+                  variant="outline"
+                  className="h-11"
+                  disabled={!(athlete.trainingDays ?? []).length}
+                  onClick={() => {
+                    const ics = trainingCalendar({
+                      days: athlete.trainingDays ?? [],
+                      time: athlete.trainingTime ?? "18:00",
+                      title: t("planEventTitle"),
+                      description: t("planEventDescription"),
+                      from: localDate(new Date()),
+                      uid: `training-${user?.id ?? "me"}@traintrack`,
+                      now: new Date(),
+                    });
+                    const url = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
+                    const link = document.createElement("a");
+                    link.href = url;
+                    link.download = "traintrack-planning.ics";
+                    link.click();
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                  }}
+                >
+                  <CalendarPlus className="mr-1 h-4 w-4" aria-hidden="true" />
+                  {t("planCalendar")}
+                </Button>
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">{t("planCalendarHint")}</p>
+            </>
           ) : (
             <Link href="/onboarding" className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-full")}>
               {t("levelSetup")}

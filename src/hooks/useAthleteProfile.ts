@@ -48,6 +48,17 @@ export async function updateFitnessLevel(fitnessLevel: FitnessLevel): Promise<vo
   schedulePush();
 }
 
+/** Update the week plan: training days and usual time. */
+export async function updateTrainingSchedule(change: { trainingDays?: number[]; trainingTime?: string }): Promise<void> {
+  const uid = getCurrentUserIdSync();
+  const existing = (await db.athleteProfiles.toArray()).find(
+    (p) => !p.deletedAt && (p.userId === uid || p.userId == null)
+  );
+  if (!existing?.id) return;
+  await db.athleteProfiles.update(existing.id, { ...change, updatedAt: new Date().toISOString(), _dirty: 1 });
+  schedulePush();
+}
+
 /** Update just the daily macro targets on the current profile. */
 export async function updateNutritionTargets(
   targets: { calories?: number; protein?: number; carbs?: number; fat?: number; water?: number }

@@ -53,6 +53,10 @@ export interface AthleteProfile extends SyncFields {
   heightCm?: number;
   birthDate?: string;
   equipment: Equipment[];
+  /** Days planned for training, 1 = Monday … 7 = Sunday. */
+  trainingDays?: number[];
+  /** Usual training time, "18:30", for the calendar reminders. */
+  trainingTime?: string;
   /** Optional daily macro targets */
   nutritionTargets?: { calories?: number; protein?: number; carbs?: number; fat?: number; water?: number };
   /** GDPR Art. 9 explicit consent to process health/fitness data */

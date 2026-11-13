@@ -19,6 +19,8 @@ import { useTeams } from "@/hooks/useTeams";
 import { daysToOffer, findWorkoutProgramDay, startWorkoutFromDay } from "@/lib/startWorkout";
 import { describeTarget, isCardio, isCardioDone, weeklyGoal } from "@/lib/cardio";
 import { SportPicker } from "@/components/domain/SportPicker";
+import { WeekStrip } from "@/components/domain/WeekStrip";
+import { mondayOfDate, upcomingSessions, weekPlan } from "@/lib/weekPlan";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -146,6 +148,18 @@ export default function HomePage() {
     const next = lastDone?.at ? (lastDone.at.index + 1) % program.structure.length : 0;
     return { program, index: next, day: program.structure[next], workoutId: undefined };
   }, [programs, workouts, today]);
+
+  // The week: done, missed, and the next sessions placed on the training days ahead.
+  const plan = useMemo(() => {
+    const from = session ? (session.workoutId ? session.index + 1 : session.index) : 0;
+    return weekPlan({
+      monday: mondayOfDate(today),
+      today,
+      trainingDays: profile?.trainingDays ?? [],
+      workouts,
+      upcoming: session ? upcomingSessions(session.program, from, 7) : [],
+    });
+  }, [session, today, profile, workouts]);
 
   const percent = useMemo(() => {
     if (!session?.workoutId) return 0;
@@ -348,6 +362,8 @@ export default function HomePage() {
               {t("changeSession")}
             </button>
           </section>
+
+          <WeekStrip plan={plan} planned={(profile?.trainingDays ?? []).length > 0} />
 
           <SportPicker open={sportOpen} onOpenChange={setSportOpen} onPick={startCardio} />
 
