@@ -917,5 +917,20 @@
     "createdList": "Neu:",
     "confirm": "{count, plural, one {# Einheit} other {# Einheiten}} importieren",
     "done": "{workouts, plural, one {# Einheit importiert} other {# Einheiten importiert}} ({sets} Sätze)."
+  },
+  "report": {
+    "title": "Bilanz · Woche vom {from} bis {to}",
+    "titleCurrent": "Laufende Woche · {from} bis {to}",
+    "previous": "Vorherige Woche",
+    "next": "Nächste Woche",
+    "close": "Bilanz schließen",
+    "empty": "Keine Einheit in dieser Woche.",
+    "days": "Trainingstage",
+    "volume": "Volumen",
+    "rpe": "Durchschnittliche RPE",
+    "time": "Trainingszeit",
+    "records": "{count, plural, one {# Rekord gebrochen} other {# Rekorde gebrochen}}",
+    "cardio": "{count, plural, one {# Ausdauereinheit} other {# Ausdauereinheiten}}",
+    "pains": "Beschwerden:"
   }
 }

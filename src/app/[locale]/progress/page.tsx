@@ -8,6 +8,9 @@ import { useBodyMetrics, addBodyMetric } from "@/hooks/useBodyMetrics";
 import { useExercises } from "@/hooks/useExercises";
 import { useAthleteProfile } from "@/hooks/useAthleteProfile";
 import { GoalsSection } from "@/components/domain/GoalsSection";
+import { WeeklyReportCard } from "@/components/domain/WeeklyReportCard";
+import { usePainReports } from "@/hooks/usePain";
+import { mondayOfDate } from "@/lib/weekPlan";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -38,6 +41,7 @@ export default function ProgressPage() {
   const metrics = useBodyMetrics();
   const exercises = useExercises();
   const athlete = useAthleteProfile();
+  const pains = usePainReports();
 
   const [bw, setBw] = useState("");
   const [now] = useState(() => Date.now());
@@ -163,6 +167,15 @@ export default function ProgressPage() {
             <StatCard icon={Flame} value={stats.weekVolume.toLocaleString()} label={`${t("thisWeek")} (kg)`} />
           </div>
         )}
+
+        <WeeklyReportCard
+          workouts={workouts}
+          sets={sets}
+          exercises={exercises}
+          trainingDays={athlete?.trainingDays}
+          pains={pains}
+          lastMonday={mondayOfDate(localDateIn(-7, now))}
+        />
 
         <GoalsSection profile={athlete} workouts={workouts} sets={sets} exercises={exercises} editable />
 

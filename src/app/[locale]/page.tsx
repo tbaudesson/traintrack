@@ -15,6 +15,8 @@ import { useExercises } from "@/hooks/useExercises";
 import { useNutritionForDate, sumMacros } from "@/hooks/useNutrition";
 import { useTodayReadiness, useReadiness, readinessScore } from "@/hooks/useReadiness";
 import { DeloadCard } from "@/components/domain/DeloadCard";
+import { WeeklyReportCard } from "@/components/domain/WeeklyReportCard";
+import { usePainReports } from "@/hooks/usePain";
 import { deloadAdvice } from "@/lib/deload";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useTeams } from "@/hooks/useTeams";
@@ -114,6 +116,14 @@ export default function HomePage() {
   const { user, profile: account } = useAuth();
   const profile = useAthleteProfile();
   const readiness = useReadiness();
+  const pains = usePainReports();
+  const [reportClosed, setReportClosed] = useState(() => {
+    try {
+      return typeof window === "undefined" ? null : window.localStorage.getItem("traintrack-report-closed");
+    } catch {
+      return null;
+    }
+  });
   const workouts = useWorkouts();
   const sets = useAllWorkoutSets();
   const programs = useTrainablePrograms();
@@ -153,6 +163,12 @@ export default function HomePage() {
   // Deload: running this week, or suggested from the weeks in a row and fatigue.
   const thisMonday = mondayOfDate(today);
   const deloading = profile?.deloadWeek === thisMonday;
+  // Last week's report, from Monday to Wednesday, until closed.
+  const lastMonday = mondayOfDate(localDateIn(-7, now));
+  const showReport =
+    (Date.parse(`${today}T00:00:00Z`) - Date.parse(`${thisMonday}T00:00:00Z`)) / 86400000 < 3 &&
+    reportClosed !== lastMonday &&
+    workouts.some((w) => w.date >= lastMonday && w.date < thisMonday);
   const deload = useMemo(
     () =>
       deloadAdvice({
@@ -393,6 +409,26 @@ export default function HomePage() {
           </section>
 
           <DeloadCard advice={deload} monday={thisMonday} active={deloading} hasProfile={!!profile} />
+
+          {showReport && (
+            <WeeklyReportCard
+              workouts={workouts}
+              sets={sets}
+              exercises={exercises}
+              trainingDays={profile?.trainingDays}
+              pains={pains}
+              lastMonday={lastMonday}
+              navigable={false}
+              onDismiss={() => {
+                try {
+                  window.localStorage.setItem("traintrack-report-closed", lastMonday);
+                } catch {
+                  // Private browsing: it shows again next time.
+                }
+                setReportClosed(lastMonday);
+              }}
+            />
+          )}
 
           <WeekStrip plan={plan} planned={(profile?.trainingDays ?? []).length > 0} />
 

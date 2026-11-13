@@ -25,6 +25,7 @@ import { mondayOfDate } from "@/lib/weekPlan";
 import { useTeamAdherence } from "@/hooks/useClientActivity";
 import { NudgeButton } from "@/components/domain/NudgeButton";
 import { GoalsSection } from "@/components/domain/GoalsSection";
+import { WeeklyReportCard } from "@/components/domain/WeeklyReportCard";
 import { usePainReports } from "@/hooks/usePain";
 import { SEVERE_PAIN } from "@/lib/pain";
 
@@ -62,7 +63,8 @@ export default function ClientDetailPage() {
 
   const adherence = useTeamAdherence([userId])?.get(userId);
   const tpain = useTranslations("pain");
-  const pains = usePainReports(userId).filter((p) => p.date >= localDateIn(-30));
+  const painHistory = usePainReports(userId);
+  const pains = painHistory.filter((p) => p.date >= localDateIn(-30));
   const thisWeek = adherence?.weeks.at(-1);
 
   const totalVolume = useMemo(() => {
@@ -174,6 +176,15 @@ export default function ClientDetailPage() {
             </Card>
           </section>
         )}
+
+        <WeeklyReportCard
+          workouts={workouts}
+          sets={sets}
+          exercises={exercises}
+          trainingDays={clientProfile?.trainingDays}
+          pains={painHistory}
+          lastMonday={mondayOfDate(localDateIn(-7))}
+        />
 
         <GoalsSection profile={clientProfile} workouts={workouts} sets={sets} exercises={exercises} editable={false} />
 

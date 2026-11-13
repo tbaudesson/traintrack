@@ -917,5 +917,20 @@
     "createdList": "Nouveaux :",
     "confirm": "Importer {count, plural, one {# séance} other {# séances}}",
     "done": "{workouts, plural, one {# séance importée} other {# séances importées}} ({sets} séries)."
+  },
+  "report": {
+    "title": "Bilan · semaine du {from} au {to}",
+    "titleCurrent": "Semaine en cours · du {from} au {to}",
+    "previous": "Semaine précédente",
+    "next": "Semaine suivante",
+    "close": "Fermer le bilan",
+    "empty": "Aucune séance cette semaine-là.",
+    "days": "Jours d'entraînement",
+    "volume": "Volume",
+    "rpe": "RPE moyen",
+    "time": "Temps d'entraînement",
+    "records": "{count, plural, one {# record battu} other {# records battus}}",
+    "cardio": "{count, plural, one {# sortie d'endurance} other {# sorties d'endurance}}",
+    "pains": "Gênes :"
   }
 }
