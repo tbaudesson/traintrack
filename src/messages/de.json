@@ -170,6 +170,8 @@
     "saved": "Profil gespeichert"
   },
   "log": {
+    "painRecent": "Beschwerden am {date} gemeldet: {area}, {level}/10. Last reduzieren oder Übung ersetzen.",
+    "painSevere": "Starker Schmerz am {date}: {area}, {level}/10. Übung ersetzen und bei Anhalten ärztlich abklären.",
     "deloadLoad": "Entlastungswoche: {kg} kg (−10 %), locker bleiben",
     "deloadNoLoad": "Entlastungswoche: leicht bleiben",
     "percentPlan": "{percents} % deines geschätzten 1RM ({max} kg): {weights} kg",
@@ -869,5 +871,31 @@
     "activeTitle": "Entlastungswoche läuft",
     "activeText": "Deine Einheiten starten mit weniger Sätzen und 10 % leichteren Lasten. Ab Montag geht die Steigerung weiter.",
     "cancel": "Abbrechen"
+  },
+  "pain": {
+    "report": "Beschwerden oder Schmerz",
+    "title": "Beschwerden bei {name}",
+    "where": "Wo?",
+    "howMuch": "Wie stark?",
+    "mild": "1: leicht",
+    "severe": "10: unerträglich",
+    "severeAdvice": "Starker Schmerz: brich diese Übung ab. Wenn er anhält oder wiederkommt, such eine medizinische Fachkraft auf.",
+    "note": "Details (optional)",
+    "notePlaceholder": "z. B. beim Absenken, rechte Seite",
+    "saveReplace": "Speichern und Übung ersetzen",
+    "save": "Nur speichern",
+    "disclaimer": "Dein Coach sieht diese Meldung. TrainTrack ersetzt keinen ärztlichen Rat.",
+    "badge": "{area}: Schmerz {level}/10",
+    "coachTitle": "Gemeldete Beschwerden (30 Tage)",
+    "area_shoulder": "Schulter",
+    "area_elbow": "Ellbogen",
+    "area_wrist": "Handgelenk",
+    "area_neck": "Nacken",
+    "area_upper_back": "Oberer Rücken",
+    "area_lower_back": "Unterer Rücken",
+    "area_hip": "Hüfte",
+    "area_knee": "Knie",
+    "area_ankle": "Knöchel",
+    "area_other": "Sonstiges"
   }
 }

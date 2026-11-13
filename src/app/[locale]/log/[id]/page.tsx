@@ -16,6 +16,10 @@ import { formatPercents, percentWeights, referenceMax } from "@/lib/percent";
 import { localDate } from "@/lib/dates";
 import { mondayOfDate } from "@/lib/weekPlan";
 import { lighter } from "@/lib/startWorkout";
+import { usePainReports } from "@/hooks/usePain";
+import { recentPainOn, SEVERE_PAIN } from "@/lib/pain";
+import { PainDialog } from "@/components/domain/PainDialog";
+import { useAuth } from "@/contexts/AuthContext";
 import { warmupSets, type WarmupStep } from "@/lib/warmup";
 import { substitutes } from "@/lib/substitutes";
 import { chainedNext, linkGroup, restsAfter, supersetOf, unlinkAfter } from "@/lib/supersets";
@@ -40,7 +44,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight, TrendingDown, Equal, Gauge, BatteryLow } from "lucide-react";
+import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight, TrendingDown, Equal, Gauge, BatteryLow, Bandage } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { connectHeartRate, isBluetoothSupported, type HeartRateMonitor } from "@/lib/bleHeartRate";
@@ -50,6 +54,7 @@ export default function SessionLoggerPage() {
   const t = useTranslations("log");
   const tc = useTranslations("common");
   const to = useTranslations("onboarding");
+  const tpain = useTranslations("pain");
   const params = useParams();
   const router = useRouter();
   const workoutId = Number(params.id);
@@ -63,6 +68,9 @@ export default function SessionLoggerPage() {
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const [swapFor, setSwapFor] = useState<number | null>(null);
+  const [painFor, setPainFor] = useState<number | null>(null);
+  const pains = usePainReports();
+  const { profile: account } = useAuth();
   const [openGuide, setOpenGuide] = useState<number | null>(null);
   const [plateWeight, setPlateWeight] = useState<number | null>(null);
   const [newRecord, setNewRecord] = useState<{ exercise: string; weightKg: number; reps: number } | null>(null);
@@ -581,6 +589,7 @@ export default function SessionLoggerPage() {
               : [];
           const plannedFor = (s: (typeof sets)[number]) => (s.isWarmup ? undefined : percentPlan?.weights[work.indexOf(s)]);
           const inSuperset = supersetOf(exerciseId, slots).length > 1;
+          const pain = workout ? recentPainOn(pains, { uuid: ex?.uuid, name: ex?.name }, workout.date) : undefined;
           const chained = chainedNext(exerciseId, slots);
           const linkedToNext = slots[index].group != null && slots[index].group === slots[index + 1]?.group;
           const guideOpen = openGuide === exerciseId;
@@ -621,6 +630,24 @@ export default function SessionLoggerPage() {
                     />
                   </button>
                 </h3>
+
+                {pain && (
+                  <p
+                    className={cn(
+                      "flex items-start gap-1.5 rounded-lg p-2 text-sm",
+                      pain.level >= SEVERE_PAIN
+                        ? "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300"
+                        : "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
+                    )}
+                  >
+                    <Bandage className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                    {t(pain.level >= SEVERE_PAIN ? "painSevere" : "painRecent", {
+                      area: tpain(`area_${pain.area}`),
+                      level: pain.level,
+                      date: pain.date.split("-").reverse().slice(0, 2).join("/"),
+                    })}
+                  </p>
+                )}
 
                 {inSuperset && (
                   <p className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-accent-text uppercase">
@@ -813,6 +840,14 @@ export default function SessionLoggerPage() {
                     {t("swap")}
                   </button>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setPainFor(exerciseId)}
+                  className="flex min-h-10 w-full items-center justify-center gap-1.5 text-sm text-muted-foreground"
+                >
+                  <Bandage className="h-4 w-4" aria-hidden="true" />
+                  {tpain("report")}
+                </button>
               </CardContent>
             </Card>
 
@@ -898,6 +933,17 @@ export default function SessionLoggerPage() {
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
+      )}
+
+      {painFor !== null && (
+        <PainDialog
+          open
+          onOpenChange={(open) => !open && setPainFor(null)}
+          workoutId={workoutId}
+          exercise={{ name: exMap.get(painFor)?.name ?? "?", uuid: exMap.get(painFor)?.uuid }}
+          authorName={account?.display_name ?? undefined}
+          onReplace={() => setSwapFor(painFor)}
+        />
       )}
 
       {/* Replace an exercise */}

@@ -11,11 +11,12 @@ import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { uploadVoiceNote, getVoiceNoteUrl, deleteVoiceNote } from "@/lib/voiceNoteService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageSquare, Send, Trash2, Loader2, Mic, Square, X, Play, Dumbbell } from "lucide-react";
+import { MessageSquare, Send, Trash2, Loader2, Mic, Square, X, Play, Dumbbell, Bandage } from "lucide-react";
 
 /** Async notes thread on a workout — author is the athlete or their coach. */
 export function WorkoutNotes({ workoutId }: { workoutId: number }) {
   const t = useTranslations("notes");
+  const tpain = useTranslations("pain");
   const { user, profile } = useAuth();
   const notes = useWorkoutNotes(workoutId);
   const sets = useWorkoutSets(workoutId);
@@ -111,6 +112,11 @@ export function WorkoutNotes({ workoutId }: { workoutId: number }) {
             {n.exerciseName && (
               <span className="mb-1 inline-flex items-center gap-1 rounded-full bg-accent-100 px-2 py-0.5 text-xs font-medium text-accent-700 dark:bg-accent-900/40 dark:text-accent-300">
                 <Dumbbell className="h-2.5 w-2.5" /> {n.exerciseName}
+              </span>
+            )}
+            {n.painArea && n.painLevel && (
+              <span className="mb-1 ml-1 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                <Bandage className="h-2.5 w-2.5" aria-hidden="true" /> {tpain(`area_${n.painArea}`)} · {n.painLevel}/10
               </span>
             )}
             {n.body && <p className="whitespace-pre-wrap">{n.body}</p>}

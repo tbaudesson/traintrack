@@ -170,6 +170,8 @@
     "saved": "Profil enregistré"
   },
   "log": {
+    "painRecent": "Gêne signalée le {date} : {area}, {level}/10. Allège la charge ou remplace l'exercice.",
+    "painSevere": "Douleur forte le {date} : {area}, {level}/10. Remplace l'exercice, et consulte si elle persiste.",
     "deloadLoad": "Semaine de décharge : {kg} kg (−10 %), sans forcer",
     "deloadNoLoad": "Semaine de décharge : reste léger, sans forcer",
     "percentPlan": "{percents} % de ton 1RM estimé ({max} kg) : {weights} kg",
@@ -869,5 +871,31 @@
     "activeTitle": "Semaine de décharge en cours",
     "activeText": "Tes séances démarrent avec moins de séries et des charges allégées de 10 %. La progression reprend lundi.",
     "cancel": "Annuler"
+  },
+  "pain": {
+    "report": "Gêne ou douleur",
+    "title": "Gêne sur {name}",
+    "where": "Où ?",
+    "howMuch": "Quelle intensité ?",
+    "mild": "1 : légère",
+    "severe": "10 : insupportable",
+    "severeAdvice": "Douleur forte : arrête cet exercice. Si elle persiste ou revient, consulte un professionnel de santé.",
+    "note": "Précisions (facultatif)",
+    "notePlaceholder": "Ex. : à la descente, côté droit",
+    "saveReplace": "Enregistrer et remplacer l'exercice",
+    "save": "Enregistrer seulement",
+    "disclaimer": "Ton coach verra ce signalement. TrainTrack ne remplace pas un avis médical.",
+    "badge": "{area} : douleur {level}/10",
+    "coachTitle": "Gênes signalées (30 jours)",
+    "area_shoulder": "Épaule",
+    "area_elbow": "Coude",
+    "area_wrist": "Poignet",
+    "area_neck": "Nuque",
+    "area_upper_back": "Haut du dos",
+    "area_lower_back": "Bas du dos",
+    "area_hip": "Hanche",
+    "area_knee": "Genou",
+    "area_ankle": "Cheville",
+    "area_other": "Autre"
   }
 }

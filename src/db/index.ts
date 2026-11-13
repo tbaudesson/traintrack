@@ -93,6 +93,9 @@ export interface WorkoutNote extends SyncFields {
   exerciseName?: string;
   /** Storage path of an attached voice note, if any. */
   audioPath?: string;
+  /** A pain reported on the exercise: where, and how much from 1 to 10. */
+  painArea?: string | null;
+  painLevel?: number | null;
   createdAt: string;
   updatedAt: string;
 }

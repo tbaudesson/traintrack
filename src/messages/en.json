@@ -170,6 +170,8 @@
     "saved": "Profile saved"
   },
   "log": {
+    "painRecent": "Discomfort reported on {date}: {area}, {level}/10. Lighten the load or replace the exercise.",
+    "painSevere": "Severe pain on {date}: {area}, {level}/10. Replace the exercise, and see someone if it lasts.",
     "deloadLoad": "Deload week: {kg} kg (−10%), easy does it",
     "deloadNoLoad": "Deload week: keep it light",
     "percentPlan": "{percents}% of your estimated 1RM ({max} kg): {weights} kg",
@@ -869,5 +871,31 @@
     "activeTitle": "Deload week in progress",
     "activeText": "Your sessions start with fewer sets and loads 10% lighter. Progress resumes on Monday.",
     "cancel": "Cancel"
+  },
+  "pain": {
+    "report": "Discomfort or pain",
+    "title": "Discomfort on {name}",
+    "where": "Where?",
+    "howMuch": "How much?",
+    "mild": "1: mild",
+    "severe": "10: unbearable",
+    "severeAdvice": "Severe pain: stop this exercise. If it lasts or comes back, see a health professional.",
+    "note": "Details (optional)",
+    "notePlaceholder": "E.g. on the way down, right side",
+    "saveReplace": "Save and replace the exercise",
+    "save": "Save only",
+    "disclaimer": "Your coach will see this report. TrainTrack does not replace medical advice.",
+    "badge": "{area}: pain {level}/10",
+    "coachTitle": "Pain reported (30 days)",
+    "area_shoulder": "Shoulder",
+    "area_elbow": "Elbow",
+    "area_wrist": "Wrist",
+    "area_neck": "Neck",
+    "area_upper_back": "Upper back",
+    "area_lower_back": "Lower back",
+    "area_hip": "Hip",
+    "area_knee": "Knee",
+    "area_ankle": "Ankle",
+    "area_other": "Other"
   }
 }

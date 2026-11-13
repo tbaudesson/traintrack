@@ -16,7 +16,7 @@ export async function addWorkoutNote(
   workoutId: number,
   body: string,
   authorName?: string,
-  opts?: { exerciseUuid?: string; exerciseName?: string; audioPath?: string }
+  opts?: { exerciseUuid?: string; exerciseName?: string; audioPath?: string; painArea?: string; painLevel?: number }
 ): Promise<number> {
   const now = new Date().toISOString();
   const id = (await db.workoutNotes.add({
@@ -26,6 +26,8 @@ export async function addWorkoutNote(
     exerciseUuid: opts?.exerciseUuid,
     exerciseName: opts?.exerciseName,
     audioPath: opts?.audioPath,
+    painArea: opts?.painArea,
+    painLevel: opts?.painLevel,
     uuid: crypto.randomUUID(),
     userId: getCurrentUserIdSync(),
     _dirty: 1,

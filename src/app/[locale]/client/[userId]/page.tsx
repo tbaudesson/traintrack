@@ -20,11 +20,13 @@ import { useExercises } from "@/hooks/useExercises";
 import type { Exercise, WorkoutSet } from "@/db";
 import { SectionHeading } from "@/components/ui/page-parts";
 import { formatDistance, formatDuration, isCardio } from "@/lib/cardio";
-import { localDate } from "@/lib/dates";
+import { localDate, localDateIn } from "@/lib/dates";
 import { mondayOfDate } from "@/lib/weekPlan";
 import { useTeamAdherence } from "@/hooks/useClientActivity";
 import { NudgeButton } from "@/components/domain/NudgeButton";
 import { GoalsSection } from "@/components/domain/GoalsSection";
+import { usePainReports } from "@/hooks/usePain";
+import { SEVERE_PAIN } from "@/lib/pain";
 
 function scoreColor(s: number) {
   if (s >= 75) return "text-green-600";
@@ -59,6 +61,8 @@ export default function ClientDetailPage() {
   const lastActivity = workouts[0]?.date ?? null;
 
   const adherence = useTeamAdherence([userId])?.get(userId);
+  const tpain = useTranslations("pain");
+  const pains = usePainReports(userId).filter((p) => p.date >= localDateIn(-30));
   const thisWeek = adherence?.weeks.at(-1);
 
   const totalVolume = useMemo(() => {
@@ -139,6 +143,33 @@ export default function ClientDetailPage() {
                   {adherence.rate !== null ? t("adherenceRate", { percent: Math.round(adherence.rate * 100) }) : t("adherenceNoPlan")}
                   {adherence.recentRpe !== null && ` · ${t("adherenceRpe", { rpe: adherence.recentRpe })}`}
                 </p>
+              </CardContent>
+            </Card>
+          </section>
+        )}
+
+        {pains.length > 0 && (
+          <section className="space-y-2">
+            <h2 className="text-sm font-semibold text-muted-foreground">{tpain("coachTitle")}</h2>
+            <Card>
+              <CardContent className="space-y-2 py-3">
+                {pains.map((p, i) => (
+                  <div key={i} className="text-sm">
+                    <p className="flex items-center gap-2">
+                      <span
+                        className={cn(
+                          "rounded-full px-1.5 py-0.5 text-xs font-semibold tabular-nums",
+                          p.level >= SEVERE_PAIN ? "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300" : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+                        )}
+                      >
+                        {p.level}/10
+                      </span>
+                      <span className="font-medium">{tpain(`area_${p.area}`)}</span>
+                      <span className="text-muted-foreground">· {p.exerciseName ?? "?"} · {p.date.split("-").reverse().join("/")}</span>
+                    </p>
+                    {p.note && <p className="mt-0.5 text-xs text-muted-foreground">{p.note}</p>}
+                  </div>
+                ))}
               </CardContent>
             </Card>
           </section>

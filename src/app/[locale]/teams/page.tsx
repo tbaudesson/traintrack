@@ -16,6 +16,8 @@ import {
 import { useTeamAdherence } from "@/hooks/useClientActivity";
 import { byAttention, type Adherence } from "@/lib/adherence";
 import { NudgeButton } from "@/components/domain/NudgeButton";
+import { useTeamPain } from "@/hooks/usePain";
+import { SEVERE_PAIN } from "@/lib/pain";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -242,6 +244,7 @@ function TeamCard({
   showToast: (m: string) => void;
 }) {
   const t = useTranslations("teams");
+  const tpain = useTranslations("pain");
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [membersLoaded, setMembersLoaded] = useState(false);
   const loadingMembers = expanded && !membersLoaded;
@@ -259,7 +262,11 @@ function TeamCard({
   }, [expanded, groupId]);
 
   const adherenceByUser = useTeamAdherence(members.filter((m) => m.status === "active" && m.user_id).map((m) => m.user_id!));
-  const ordered = byAttention(members, (m) => (m.user_id ? adherenceByUser?.get(m.user_id)?.status : undefined));
+  const painByUser = useTeamPain(members.filter((m) => m.status === "active" && m.user_id).map((m) => m.user_id!));
+  // A recent pain needs the coach's eye first, whatever the attendance.
+  const ordered = byAttention(members, (m) =>
+    m.user_id && painByUser?.has(m.user_id) ? "alert" : m.user_id ? adherenceByUser?.get(m.user_id)?.status : undefined
+  );
 
   async function reloadMembers() {
     setMembers(await getGroupMembers(groupId));
@@ -330,6 +337,18 @@ function TeamCard({
                       </Link>
                     ) : (
                       <span className="flex-1 truncate">{m.display_name}</span>
+                    )}
+                    {m.status === "active" && m.user_id && painByUser?.get(m.user_id) && (
+                      <span
+                        className={cn(
+                          "shrink-0 rounded-full px-1.5 py-0.5 text-xs font-medium",
+                          painByUser.get(m.user_id)!.level >= SEVERE_PAIN
+                            ? "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300"
+                            : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+                        )}
+                      >
+                        {tpain("badge", { area: tpain(`area_${painByUser.get(m.user_id)!.area}`), level: painByUser.get(m.user_id)!.level })}
+                      </span>
                     )}
                     {m.status === "active" && m.user_id && <AdherenceBadge value={adherenceByUser?.get(m.user_id)} />}
                     {m.status === "active" && m.user_id && (
