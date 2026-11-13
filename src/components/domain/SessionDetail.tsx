@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import type { Exercise, WorkoutSet } from "@/db";
 import { supersetLabels } from "@/lib/supersets";
+import { useExerciseLabel } from "@/lib/exerciseNames";
 
 /**
  * A finished session as the coach reads it: each exercise in order, with its
@@ -10,6 +11,7 @@ import { supersetLabels } from "@/lib/supersets";
  */
 export function SessionDetail({ sets, exercises }: { sets: WorkoutSet[]; exercises: Map<number | undefined, Exercise> }) {
   const t = useTranslations("teams");
+  const xl = useExerciseLabel();
   const work = sets
     .filter((s) => !s.isWarmup)
     .sort((a, b) => a.setNumber - b.setNumber || (a.id ?? 0) - (b.id ?? 0));
@@ -29,7 +31,7 @@ export function SessionDetail({ sets, exercises }: { sets: WorkoutSet[]; exercis
           <li key={exerciseId} className={linked ? "border-l-4 border-accent-500/60 pl-2" : "pl-3"}>
             <p className="text-sm font-medium">
               {linked && <span className="mr-1.5 text-xs font-bold text-accent-text">{labels[i]}</span>}
-              {exercises.get(exerciseId)?.name ?? t("customExercise")}
+              {exercises.get(exerciseId) ? xl(exercises.get(exerciseId)!.name) : t("customExercise")}
             </p>
             <p className="text-xs text-muted-foreground tabular-nums">
               {done.length

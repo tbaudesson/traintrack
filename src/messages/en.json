@@ -311,6 +311,7 @@
     "videoEmbedHint": "Paste a YouTube or Vimeo link to play it inside the app. A search link opens YouTube instead."
   },
   "teams": {
+    "dashboard": "Dashboard",
     "clientPrograms": "Assigned programs",
     "deloadActive": "Deload week in progress",
     "nudge": "Check in",
@@ -953,5 +954,45 @@
     "startsOn": "Starts on {date}",
     "week": "Week {week}",
     "sessions": "{count, plural, =0 {Not started yet} one {# session} other {# sessions}}"
+  },
+  "guided": {
+    "start": "Start guided mode",
+    "title": "Guided session",
+    "progress": "{done} / {total} sets",
+    "close": "Leave guided mode",
+    "rest": "Rest",
+    "skipRest": "Skip",
+    "upNext": "Next: {name}, {label}",
+    "lastSet": "Last set of the session",
+    "allDone": "Every set is done!",
+    "finish": "Finish the session",
+    "previous": "Previous",
+    "skip": "Next",
+    "alreadyDone": "Set already done: you can correct it",
+    "weight": "Weight",
+    "reps": "Reps",
+    "seconds": "Seconds",
+    "rpe": "Effort (RPE)",
+    "done": "Set done",
+    "warmupStep": "Warm-up {n}",
+    "setOf": "Set {n} of {total}"
+  },
+  "coach": {
+    "title": "Dashboard",
+    "empty": "No athletes yet: invite some to a team.",
+    "athletes": "Athletes",
+    "trainedThisWeek": "Trained this week",
+    "toWatch": "To watch",
+    "checkIn": "Check in",
+    "checkInEmpty": "Everyone is on track.",
+    "rate": "{percent}% of planned sessions",
+    "hard": "RPE {rpe}: very hard sessions",
+    "pains": "Pain (7 days)",
+    "painsEmpty": "No pain reported.",
+    "records": "This week's records",
+    "recordsEmpty": "No record yet this week.",
+    "goals": "Goals reached (14 days)",
+    "goalsEmpty": "No goal reached lately.",
+    "deload": "On a deload week"
   }
 }

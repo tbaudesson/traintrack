@@ -30,6 +30,7 @@ import { programWeek } from "@/lib/programWeek";
 import { Link } from "@/i18n/navigation";
 import { usePainReports } from "@/hooks/usePain";
 import { SEVERE_PAIN } from "@/lib/pain";
+import { useExerciseLabel } from "@/lib/exerciseNames";
 
 function scoreColor(s: number) {
   if (s >= 75) return "text-green-600";
@@ -61,6 +62,7 @@ export default function ClientDetailPage() {
   );
   const targets = clientProfile?.nutritionTargets;
   const tpr = useTranslations("programs");
+  const xl = useExerciseLabel();
   const assigned = useLiveQuery(
     async () => (await db.programs.toArray()).filter((p) => !p.deletedAt && p.assignedToUserId === userId),
     [userId]
@@ -174,7 +176,7 @@ export default function ClientDetailPage() {
                         {p.level}/10
                       </span>
                       <span className="font-medium">{tpain(`area_${p.area}`)}</span>
-                      <span className="text-muted-foreground">· {p.exerciseName ?? "?"} · {p.date.split("-").reverse().join("/")}</span>
+                      <span className="text-muted-foreground">· {xl(p.exerciseName)} · {p.date.split("-").reverse().join("/")}</span>
                     </p>
                     {p.note && <p className="mt-0.5 text-xs text-muted-foreground">{p.note}</p>}
                   </div>

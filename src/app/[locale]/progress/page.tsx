@@ -25,6 +25,7 @@ import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell,
 } from "recharts";
 import { localDate, localDateIn } from "@/lib/dates";
+import { useExerciseLabel } from "@/lib/exerciseNames";
 
 function epley1rm(weight: number, reps: number): number {
   return Math.round(weight * (1 + reps / 30));
@@ -34,6 +35,7 @@ type ExMetric = "e1rm" | "top" | "reps" | "vol";
 
 export default function ProgressPage() {
   const t = useTranslations("progress");
+  const xl = useExerciseLabel();
   const tex = useTranslations("exercises");
   const { hasFeature } = useFeatureAccess();
   const sets = useAllWorkoutSets();
@@ -136,12 +138,12 @@ export default function ProgressPage() {
       const e = epley1rm(s.weightKg!, s.reps!);
       best.set(s.exerciseId, Math.max(best.get(s.exerciseId) ?? 0, e));
     }
-    const exName = new Map(exercises.map((e) => [e.id, e.name]));
+    const exName = new Map(exercises.map((e) => [e.id, xl(e.name)]));
     return [...best.entries()]
       .map(([id, rm]) => ({ name: exName.get(id) ?? "?", rm }))
       .sort((a, b) => b.rm - a.rm)
       .slice(0, 8);
-  }, [scored, exercises]);
+  }, [scored, exercises, xl]);
 
   async function logBodyweight() {
     if (!bw) return;

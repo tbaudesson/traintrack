@@ -8,6 +8,7 @@ import { formatDistance, formatDuration } from "@/lib/cardio";
 import type { PainReport } from "@/lib/pain";
 import { weeklyReport } from "@/lib/weeklyReport";
 import { cn } from "@/lib/utils";
+import { useExerciseLabel } from "@/lib/exerciseNames";
 
 const addDays = (date: string, days: number) => {
   const [y, m, d] = date.split("-").map(Number);
@@ -42,12 +43,13 @@ export function WeeklyReportCard({
 }) {
   const t = useTranslations("report");
   const tpain = useTranslations("pain");
+  const xl = useExerciseLabel();
   const [monday, setMonday] = useState(lastMonday);
   const report = useMemo(
     () => weeklyReport({ monday, workouts, sets, trainingDays, pains }),
     [monday, workouts, sets, trainingDays, pains]
   );
-  const names = useMemo(() => new Map(exercises.map((e) => [e.id, e.name])), [exercises]);
+  const names = new Map(exercises.map((e) => [e.id, xl(e.name)]));
   const current = monday > lastMonday;
   const empty = report.daysTrained === 0;
 

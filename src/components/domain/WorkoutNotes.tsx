@@ -12,11 +12,13 @@ import { uploadVoiceNote, getVoiceNoteUrl, deleteVoiceNote } from "@/lib/voiceNo
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MessageSquare, Send, Trash2, Loader2, Mic, Square, X, Play, Dumbbell, Bandage } from "lucide-react";
+import { useExerciseLabel } from "@/lib/exerciseNames";
 
 /** Async notes thread on a workout — author is the athlete or their coach. */
 export function WorkoutNotes({ workoutId }: { workoutId: number }) {
   const t = useTranslations("notes");
   const tpain = useTranslations("pain");
+  const xl = useExerciseLabel();
   const { user, profile } = useAuth();
   const notes = useWorkoutNotes(workoutId);
   const sets = useWorkoutSets(workoutId);
@@ -111,7 +113,7 @@ export function WorkoutNotes({ workoutId }: { workoutId: number }) {
             </div>
             {n.exerciseName && (
               <span className="mb-1 inline-flex items-center gap-1 rounded-full bg-accent-100 px-2 py-0.5 text-xs font-medium text-accent-700 dark:bg-accent-900/40 dark:text-accent-300">
-                <Dumbbell className="h-2.5 w-2.5" /> {n.exerciseName}
+                <Dumbbell className="h-2.5 w-2.5" /> {xl(n.exerciseName)}
               </span>
             )}
             {n.painArea && n.painLevel && (
@@ -136,8 +138,8 @@ export function WorkoutNotes({ workoutId }: { workoutId: number }) {
           >
             <option value="">{t("scopeWorkout")}</option>
             {workoutExercises.map((e) => (
-              <optgroup key={e.uuid} label={e.name}>
-                <option value={e.uuid}>{t("scopeExercise", { name: e.name })}</option>
+              <optgroup key={e.uuid} label={xl(e.name)}>
+                <option value={e.uuid}>{t("scopeExercise", { name: xl(e.name) })}</option>
                 {e.setNumbers.map((n) => (
                   <option key={n} value={`${e.uuid}|${n}`}>{t("scopeSet", { set: n })}</option>
                 ))}

@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useWorkout, useWorkouts, updateWorkout, deleteWorkout } from "@/hooks/useWorkouts";
 import { useWorkoutSets, useAllWorkoutSets, addWorkoutSet, updateWorkoutSet, deleteWorkoutSet } from "@/hooks/useWorkoutSets";
@@ -19,6 +19,8 @@ import { lighter } from "@/lib/startWorkout";
 import { usePainReports } from "@/hooks/usePain";
 import { recentPainOn, SEVERE_PAIN } from "@/lib/pain";
 import { PainDialog } from "@/components/domain/PainDialog";
+import { GuidedSession, type GuidedStep } from "@/components/domain/GuidedSession";
+import { guidedOrder } from "@/lib/guided";
 import { useAuth } from "@/contexts/AuthContext";
 import { warmupSets, type WarmupStep } from "@/lib/warmup";
 import { substitutes } from "@/lib/substitutes";
@@ -49,12 +51,15 @@ import { cn } from "@/lib/utils";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { connectHeartRate, isBluetoothSupported, type HeartRateMonitor } from "@/lib/bleHeartRate";
 import { EmptyState } from "@/components/ui/page-parts";
+import { useExerciseLabel, exerciseDescription } from "@/lib/exerciseNames";
 
 export default function SessionLoggerPage() {
   const t = useTranslations("log");
   const tc = useTranslations("common");
   const to = useTranslations("onboarding");
   const tpain = useTranslations("pain");
+  const xl = useExerciseLabel();
+  const locale = useLocale();
   const params = useParams();
   const router = useRouter();
   const workoutId = Number(params.id);
@@ -69,6 +74,8 @@ export default function SessionLoggerPage() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [swapFor, setSwapFor] = useState<number | null>(null);
   const [painFor, setPainFor] = useState<number | null>(null);
+  const [guided, setGuided] = useState(false);
+  const tg = useTranslations("guided");
   const pains = usePainReports();
   const { profile: account } = useAuth();
   const [openGuide, setOpenGuide] = useState<number | null>(null);
@@ -192,7 +199,7 @@ export default function SessionLoggerPage() {
     const records = [...new Set(done.map((s) => s.exerciseId))].flatMap((exerciseId) =>
       recordHistory(exerciseId, allWorkouts, allSets)
         .filter((r) => r.workoutId === workoutId)
-        .map((r) => ({ exercise: exMap.get(exerciseId)?.name ?? "?", weightKg: r.weightKg, reps: r.reps }))
+        .map((r) => ({ exercise: xl(exMap.get(exerciseId)?.name), weightKg: r.weightKg, reps: r.reps }))
     );
 
     setSummary({
@@ -290,6 +297,45 @@ export default function SessionLoggerPage() {
   }
 
   const prefillAll = groups.flatMap(([exerciseId, exSets]) => prefillFor(exerciseId, exSets));
+
+  /** The session as the guided mode walks it: one step per set, in order, with what to show. */
+  function guidedSteps(): GuidedStep[] {
+    const byId = new Map(sets.map((s) => [s.id, s]));
+    const order = guidedOrder(
+      groups.map(([exerciseId, exSets]) => [exerciseId, exSets.filter((s) => s.id !== undefined).map((s) => ({ ...s, id: s.id! }))]),
+      (exerciseId) => slots.find((x) => x.exerciseId === exerciseId)?.group ?? null
+    );
+    const fills = new Map(groups.flatMap(([exerciseId, exSets]) => prefillFor(exerciseId, exSets)).map((f) => [f.id, f.values]));
+    return order.map((id) => {
+      const s = byId.get(id)!;
+      const own = sets.filter((x) => x.exerciseId === s.exerciseId);
+      const work = own.filter((x) => !x.isWarmup);
+      const warmups = own.filter((x) => x.isWarmup);
+      const ex = exMap.get(s.exerciseId);
+      const target = targetFor(s.exerciseId);
+      const fill = fills.get(id);
+      return {
+        id,
+        completed: s.completed,
+        exerciseName: xl(ex?.name),
+        label: s.isWarmup
+          ? tg("warmupStep", { n: warmups.indexOf(s) + 1 })
+          : tg("setOf", { n: work.indexOf(s) + 1, total: work.length }),
+        target: target ? t("target", { sets: target.targetSets, reps: target.targetReps }) : undefined,
+        timed: isTimedTarget(target?.targetReps),
+        weightKg: s.weightKg ?? fill?.weightKg,
+        reps: s.reps ?? fill?.reps,
+        rpe: s.rpe ?? (s.isWarmup ? undefined : fill?.rpe),
+        step: ex?.equipment === "dumbbell" || ex?.equipment === "kettlebell" ? 2 : 2.5,
+      };
+    });
+  }
+
+  async function guidedDone(id: number, values: { weightKg?: number; reps?: number; rpe?: number }) {
+    const s = sets.find((x) => x.id === id);
+    await updateWorkoutSet(id, values);
+    if (s && !s.completed) await toggleDone(id, false, s.restSec, undefined);
+  }
 
   async function applyPrefill(fills: { id: number; values: Partial<Pick<(typeof sets)[number], "weightKg" | "reps" | "rpe">> }[]) {
     await Promise.all(fills.map((f) => updateWorkoutSet(f.id, f.values)));
@@ -455,7 +501,7 @@ export default function SessionLoggerPage() {
     if (!saved || !workout) return;
     const others = allSets.filter((s) => s.id !== setId);
     if (beatsRecord(saved, workout, allWorkouts, others)) {
-      setNewRecord({ exercise: exMap.get(saved.exerciseId)?.name ?? "?", weightKg: saved.weightKg!, reps: saved.reps! });
+      setNewRecord({ exercise: xl(exMap.get(saved.exerciseId)?.name), weightKg: saved.weightKg!, reps: saved.reps! });
       navigator.vibrate?.(150);
       setTimeout(() => setNewRecord(null), 4500);
     }
@@ -568,6 +614,13 @@ export default function SessionLoggerPage() {
           <EmptyState icon={Dumbbell} title={t("noExercises")} />
         )}
 
+        {workout && !isCardio(workout) && groups.length > 0 && (
+          <Button className="h-12 w-full rounded-full" onClick={() => setGuided(true)}>
+            <Play className="mr-1 h-5 w-5" aria-hidden="true" />
+            {tg("start")}
+          </Button>
+        )}
+
         {prefillAll.length > 0 && groups.length > 1 && (
           <Button variant="outline" className="w-full rounded-full text-accent-text" onClick={() => applyPrefill(prefillAll)}>
             <Wand2 className="mr-1 h-4 w-4" aria-hidden="true" />
@@ -623,7 +676,7 @@ export default function SessionLoggerPage() {
                     className="flex min-h-11 w-full items-center gap-2 text-left font-semibold"
                   >
                     <Dumbbell className="h-4 w-4 shrink-0 text-accent-text" aria-hidden="true" />
-                    <span className="min-w-0 flex-1">{ex?.name ?? "?"}</span>
+                    <span className="min-w-0 flex-1">{xl(ex?.name)}</span>
                     <ChevronDown
                       className={cn("h-5 w-5 shrink-0 text-muted-foreground transition-transform", guideOpen && "rotate-180")}
                       aria-hidden="true"
@@ -655,7 +708,7 @@ export default function SessionLoggerPage() {
                     {t("superset")}
                     {chained !== null && (
                       <span className="font-normal tracking-normal text-muted-foreground normal-case">
-                        · {t("chainWith", { name: exMap.get(chained)?.name ?? "?" })}
+                        · {t("chainWith", { name: xl(exMap.get(chained)?.name) })}
                       </span>
                     )}
                   </p>
@@ -713,9 +766,9 @@ export default function SessionLoggerPage() {
                         ))}
                       </ul>
                     )}
-                    {ex?.description && <p className="text-sm text-muted-foreground">{ex.description}</p>}
+                    {exerciseDescription(ex?.name, ex?.description, locale) && <p className="text-sm text-muted-foreground">{exerciseDescription(ex?.name, ex?.description, locale)}</p>}
                     {ex?.videoUrl && <VideoEmbed url={ex.videoUrl} />}
-                    {!ex?.description && !ex?.videoUrl && <p className="text-sm text-muted-foreground">{t("noGuide")}</p>}
+                    {!exerciseDescription(ex?.name, ex?.description, locale) && !ex?.videoUrl && <p className="text-sm text-muted-foreground">{t("noGuide")}</p>}
                   </div>
                 )}
 
@@ -935,12 +988,27 @@ export default function SessionLoggerPage() {
         </div>
       )}
 
+      {guided && (
+        <GuidedSession
+          steps={guidedSteps()}
+          rest={rest}
+          onDone={guidedDone}
+          onExtendRest={() => extendRest(30)}
+          onSkipRest={stopRest}
+          onFinish={() => {
+            setGuided(false);
+            finishWorkout();
+          }}
+          onClose={() => setGuided(false)}
+        />
+      )}
+
       {painFor !== null && (
         <PainDialog
           open
           onOpenChange={(open) => !open && setPainFor(null)}
           workoutId={workoutId}
-          exercise={{ name: exMap.get(painFor)?.name ?? "?", uuid: exMap.get(painFor)?.uuid }}
+          exercise={{ name: exMap.get(painFor)?.name ?? "?", label: xl(exMap.get(painFor)?.name), uuid: exMap.get(painFor)?.uuid }}
           authorName={account?.display_name ?? undefined}
           onReplace={() => setSwapFor(painFor)}
         />
@@ -950,7 +1018,7 @@ export default function SessionLoggerPage() {
       <Dialog open={swapFor !== null} onOpenChange={(open) => !open && setSwapFor(null)}>
         <DialogContent className="max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{t("swapTitle", { name: swapFor !== null ? (exMap.get(swapFor)?.name ?? "") : "" })}</DialogTitle>
+            <DialogTitle>{t("swapTitle", { name: swapFor !== null ? xl(exMap.get(swapFor)?.name) : "" })}</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">{t("swapHint")}</p>
           {swapOptions.length === 0 ? (
@@ -964,7 +1032,7 @@ export default function SessionLoggerPage() {
                   className="flex min-h-11 w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent"
                 >
                   <Dumbbell className="h-4 w-4 shrink-0 text-accent-500" aria-hidden="true" />
-                  <span className="min-w-0 flex-1">{e.name}</span>
+                  <span className="min-w-0 flex-1">{xl(e.name)}</span>
                   {e.equipment && <span className="shrink-0 text-xs text-muted-foreground">{to(`equip_${e.equipment}`)}</span>}
                 </button>
               ))}
@@ -987,7 +1055,7 @@ export default function SessionLoggerPage() {
                 className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent"
               >
                 <Dumbbell className="h-4 w-4 text-accent-500" />
-                {e.name}
+                {xl(e.name)}
               </button>
             ))}
           </div>

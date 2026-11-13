@@ -311,6 +311,7 @@
     "videoEmbedHint": "Füge einen YouTube- oder Vimeo-Link ein, um ihn in der App abzuspielen. Ein Suchlink öffnet YouTube."
   },
   "teams": {
+    "dashboard": "Übersicht",
     "clientPrograms": "Zugewiesene Programme",
     "deloadActive": "Entlastungswoche läuft",
     "nudge": "Nachfragen",
@@ -953,5 +954,45 @@
     "startsOn": "Beginnt am {date}",
     "week": "Woche {week}",
     "sessions": "{count, plural, =0 {Noch nicht begonnen} one {# Einheit} other {# Einheiten}}"
+  },
+  "guided": {
+    "start": "Geführten Modus starten",
+    "title": "Geführte Einheit",
+    "progress": "{done} / {total} Sätze",
+    "close": "Geführten Modus verlassen",
+    "rest": "Pause",
+    "skipRest": "Überspringen",
+    "upNext": "Danach: {name}, {label}",
+    "lastSet": "Letzter Satz der Einheit",
+    "allDone": "Alle Sätze sind erledigt!",
+    "finish": "Einheit beenden",
+    "previous": "Vorheriger",
+    "skip": "Nächster",
+    "alreadyDone": "Satz bereits erledigt: du kannst ihn korrigieren",
+    "weight": "Gewicht",
+    "reps": "Wiederholungen",
+    "seconds": "Sekunden",
+    "rpe": "Anstrengung (RPE)",
+    "done": "Satz erledigt",
+    "warmupStep": "Aufwärmen {n}",
+    "setOf": "Satz {n} von {total}"
+  },
+  "coach": {
+    "title": "Übersicht",
+    "empty": "Noch keine Athleten: lade welche in ein Team ein.",
+    "athletes": "Athleten",
+    "trainedThisWeek": "Diese Woche trainiert",
+    "toWatch": "Im Blick behalten",
+    "checkIn": "Nachfragen",
+    "checkInEmpty": "Alle sind auf Kurs.",
+    "rate": "{percent} % der geplanten Einheiten",
+    "hard": "RPE {rpe}: sehr harte Einheiten",
+    "pains": "Schmerzen (7 Tage)",
+    "painsEmpty": "Keine Schmerzen gemeldet.",
+    "records": "Rekorde der Woche",
+    "recordsEmpty": "Diese Woche noch kein Rekord.",
+    "goals": "Erreichte Ziele (14 Tage)",
+    "goalsEmpty": "Zuletzt kein Ziel erreicht.",
+    "deload": "In Entlastungswoche"
   }
 }

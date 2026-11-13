@@ -311,6 +311,7 @@
     "videoEmbedHint": "Collez un lien YouTube ou Vimeo pour le lire dans l'application. Un lien de recherche ouvre YouTube."
   },
   "teams": {
+    "dashboard": "Tableau de bord",
     "clientPrograms": "Programmes assignés",
     "deloadActive": "Semaine de décharge en cours",
     "nudge": "Relancer",
@@ -953,5 +954,45 @@
     "startsOn": "Commence le {date}",
     "week": "Semaine {week}",
     "sessions": "{count, plural, =0 {Pas encore commencé} one {# séance} other {# séances}}"
+  },
+  "guided": {
+    "start": "Lancer le mode guidé",
+    "title": "Séance guidée",
+    "progress": "{done} / {total} séries",
+    "close": "Quitter le mode guidé",
+    "rest": "Repos",
+    "skipRest": "Passer",
+    "upNext": "Ensuite : {name}, {label}",
+    "lastSet": "Dernière série de la séance",
+    "allDone": "Toutes les séries sont faites !",
+    "finish": "Terminer la séance",
+    "previous": "Précédente",
+    "skip": "Suivante",
+    "alreadyDone": "Série déjà faite : vous pouvez la corriger",
+    "weight": "Poids",
+    "reps": "Répétitions",
+    "seconds": "Secondes",
+    "rpe": "Difficulté (RPE)",
+    "done": "Série terminée",
+    "warmupStep": "Échauffement {n}",
+    "setOf": "Série {n} sur {total}"
+  },
+  "coach": {
+    "title": "Tableau de bord",
+    "empty": "Aucun athlète pour l'instant : invitez-en dans une équipe.",
+    "athletes": "Athlètes",
+    "trainedThisWeek": "Entraînés cette semaine",
+    "toWatch": "À surveiller",
+    "checkIn": "À relancer",
+    "checkInEmpty": "Tout le monde est régulier.",
+    "rate": "{percent} % des séances prévues",
+    "hard": "RPE {rpe} : séances très dures",
+    "pains": "Douleurs (7 jours)",
+    "painsEmpty": "Aucune douleur signalée.",
+    "records": "Records de la semaine",
+    "recordsEmpty": "Pas encore de record cette semaine.",
+    "goals": "Objectifs atteints (14 jours)",
+    "goalsEmpty": "Aucun objectif atteint récemment.",
+    "deload": "En semaine de décharge"
   }
 }

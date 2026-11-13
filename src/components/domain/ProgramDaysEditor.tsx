@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Trash2, Dumbbell, X } from "lucide-react";
+import { useExerciseLabel } from "@/lib/exerciseNames";
 
 /** The days and exercises of a program, for users' programs and admin templates alike. */
 export function ProgramDaysEditor({
@@ -25,6 +26,7 @@ export function ProgramDaysEditor({
 }) {
   const t = useTranslations("programs");
   const tc = useTranslations("cardio");
+  const xl = useExerciseLabel();
   const exercises = useExercises();
   const [pickerDay, setPickerDay] = useState<number | null>(null);
 
@@ -103,7 +105,7 @@ export function ProgramDaysEditor({
                     ) : (
                       <Dumbbell className="h-4 w-4 text-accent-500" />
                     )}
-                    <span className="flex-1 text-sm font-medium">{ex.exerciseName}</span>
+                    <span className="flex-1 text-sm font-medium">{xl(ex.exerciseName)}</span>
                     <button onClick={() => removeExercise(di, ei)} className="text-muted-foreground hover:text-destructive">
                       <X className="h-4 w-4" />
                     </button>
@@ -191,7 +193,7 @@ export function ProgramDaysEditor({
                 className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent"
               >
                 <Dumbbell className="h-4 w-4 text-accent-500" />
-                {e.name}
+                {xl(e.name)}
               </button>
             ))}
           </div>

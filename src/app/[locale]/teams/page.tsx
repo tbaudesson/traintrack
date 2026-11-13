@@ -20,7 +20,7 @@ import { useTeamPain } from "@/hooks/usePain";
 import { SEVERE_PAIN } from "@/lib/pain";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
@@ -36,6 +36,7 @@ import {
   ChevronDown,
   ChevronUp,
   AlertTriangle,
+  LayoutDashboard,
 } from "lucide-react";
 
 export default function TeamsPage() {
@@ -78,10 +79,16 @@ export default function TeamsPage() {
         title={t("title")}
         actions={
           hasFeature("coaching") ? (
+            <div className="flex gap-1.5">
+            <Link href="/coach" className={buttonVariants({ size: "sm", variant: "outline" })}>
+              <LayoutDashboard className="mr-1 h-4 w-4" aria-hidden="true" />
+              {t("dashboard")}
+            </Link>
             <Button size="sm" onClick={() => setCreating((v) => !v)}>
               <Plus className="mr-1 h-4 w-4" />
               {t("createTeam")}
             </Button>
+            </div>
           ) : undefined
         }
       />

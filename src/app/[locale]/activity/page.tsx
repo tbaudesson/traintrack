@@ -13,6 +13,7 @@ import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
 import { BellRing, Dumbbell, Loader2, Newspaper, Trophy } from "lucide-react";
 import type { Workout, WorkoutSet } from "@/db";
 import { localDate } from "@/lib/dates";
+import { useExerciseLabel } from "@/lib/exerciseNames";
 
 const NO_WORKOUTS: Workout[] = [];
 const NO_SETS: WorkoutSet[] = [];
@@ -20,6 +21,7 @@ const NO_SETS: WorkoutSet[] = [];
 /** What the coach's clients have been up to. */
 export default function ActivityPage() {
   const t = useTranslations("activity");
+  const xl = useExerciseLabel();
   const { clients, loading } = useClients();
   const exercises = useExercises();
   const [now] = useState(() => Date.now());
@@ -29,7 +31,7 @@ export default function ActivityPage() {
   const sets = useLiveQuery(() => db.workoutSets.filter((s) => !!s.userId && ids.has(s.userId) && !s.isWarmup).toArray(), [ids]) ?? NO_SETS;
 
   const { events, inactive } = useMemo(() => {
-    const names = new Map(exercises.map((e) => [e.id, e.name]));
+    const names = new Map(exercises.map((e) => [e.id, xl(e.name)]));
     return buildActivity({
       clients,
       workouts,
@@ -37,7 +39,7 @@ export default function ActivityPage() {
       exerciseName: (id) => names.get(id) ?? "?",
       today: localDate(now),
     });
-  }, [clients, workouts, sets, exercises, now]);
+  }, [clients, workouts, sets, exercises, now, xl]);
 
   return (
     <>

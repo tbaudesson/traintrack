@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useExercises, createCustomExercise, updateExercise, deleteExercise, patchExerciseLocal } from "@/hooks/useExercises";
 import { useAuth } from "@/contexts/AuthContext";
 import { adminUpdateExerciseContent } from "@/lib/adminService";
@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Plus, Search, Loader2, Dumbbell, ChevronDown, ChevronUp, Pencil, Trash2, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SectionHeading } from "@/components/ui/page-parts";
+import { useExerciseLabel, exerciseDescription } from "@/lib/exerciseNames";
 
 const MUSCLE_GROUPS: MuscleGroup[] = ["chest", "back", "legs", "shoulders", "arms", "core", "full_body", "other"];
 const EQUIPMENT: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "bodyweight", "kettlebell", "bands", "other"];
@@ -133,6 +134,8 @@ function AddExerciseForm({ onDone }: { onDone: () => void }) {
 
 function ExerciseRow({ ex }: { ex: Exercise }) {
   const t = useTranslations("exercises");
+  const xl = useExerciseLabel();
+  const locale = useLocale();
   const { isAdmin } = useAuth();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -174,7 +177,7 @@ function ExerciseRow({ ex }: { ex: Exercise }) {
       <CardContent className="py-2.5">
         <button onClick={() => setOpen((v) => !v)} className="flex w-full items-center gap-3 text-left">
           <Dumbbell className="h-4 w-4 text-accent-500" />
-          <span className="flex-1 text-sm font-medium">{ex.name}</span>
+          <span className="flex-1 text-sm font-medium">{ex.isCustom ? ex.name : xl(ex.name)}</span>
           {ex.isCustom && (
             <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{t("custom")}</span>
           )}
@@ -198,7 +201,7 @@ function ExerciseRow({ ex }: { ex: Exercise }) {
               </>
             ) : (
               <>
-                {ex.description && <p className="text-sm text-muted-foreground">{ex.description}</p>}
+                {ex.description && <p className="text-sm text-muted-foreground">{exerciseDescription(ex.name, ex.description, locale)}</p>}
                 {ex.videoUrl && <VideoEmbed url={ex.videoUrl} />}
                 {!hasDetail && !ex.isCustom && (
                   <p className="text-xs text-muted-foreground">{ex.equipment ?? ""}</p>

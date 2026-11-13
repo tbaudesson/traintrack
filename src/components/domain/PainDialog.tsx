@@ -25,7 +25,7 @@ export function PainDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   workoutId: number;
-  exercise: { name: string; uuid?: string };
+  exercise: { name: string; label?: string; uuid?: string };
   authorName?: string;
   onReplace: () => void;
 }) {
@@ -61,7 +61,7 @@ export function PainDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Bandage className="h-5 w-5 text-amber-600 dark:text-amber-400" aria-hidden="true" />
-            {t("title", { name: exercise.name })}
+            {t("title", { name: exercise.label ?? exercise.name })}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">

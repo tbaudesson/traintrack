@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { useExerciseLabel } from "@/lib/exerciseNames";
 
 const SELECT = "mt-1 h-11 w-full rounded-lg border border-input bg-card px-3 text-base";
 const frDate = (date: string) => date.split("-").reverse().join("/");
@@ -36,6 +37,7 @@ export function GoalsSection({
   editable: boolean;
 }) {
   const t = useTranslations("goals");
+  const xl = useExerciseLabel();
   const [adding, setAdding] = useState(false);
   const [exerciseId, setExerciseId] = useState<number | "">("");
   const [target, setTarget] = useState("");
@@ -49,7 +51,7 @@ export function GoalsSection({
 
   // Exercises already trained come first in the picker.
   const trained = new Set(sets.filter((s) => s.completed).map((s) => s.exerciseId));
-  const choices = [...exercises].sort((a, b) => Number(trained.has(b.id!)) - Number(trained.has(a.id!)) || a.name.localeCompare(b.name));
+  const choices = [...exercises].sort((a, b) => Number(trained.has(b.id!)) - Number(trained.has(a.id!)) || xl(a.name).localeCompare(xl(b.name)));
 
   async function add() {
     const exercise = exercises.find((e) => e.id === exerciseId);
@@ -104,7 +106,7 @@ export function GoalsSection({
             <CardContent className="space-y-2 py-3">
               <div className="flex items-start gap-2">
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium">{resolve(goal)?.name ?? goal.exerciseName}</p>
+                  <p className="font-medium">{xl(resolve(goal)?.name ?? goal.exerciseName)}</p>
                   <p className="text-xs text-muted-foreground">
                     {t("target", { kg: goal.targetKg })}
                     {goal.deadline && ` · ${t("deadline", { date: frDate(goal.deadline) })}`}
@@ -162,7 +164,7 @@ export function GoalsSection({
               {t("exercise")}
               <select value={exerciseId} onChange={(e) => setExerciseId(e.target.value ? Number(e.target.value) : "")} className={SELECT}>
                 <option value="">—</option>
-                {choices.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
+                {choices.map((e) => <option key={e.id} value={e.id}>{xl(e.name)}</option>)}
               </select>
             </label>
             <label className="block text-sm font-medium">
