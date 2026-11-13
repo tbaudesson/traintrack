@@ -38,3 +38,14 @@ describe("strength programs in every language", () => {
     }
   });
 });
+
+describe("circuits", () => {
+  it("chain every exercise of a circuit day, in every language", () => {
+    const circuits = PROGRAM_TEMPLATES.filter((t) => t.id.startsWith("fatloss-fullbody-3") || t.id.startsWith("seche-4"));
+    expect(circuits).toHaveLength(6);
+    for (const t of circuits) {
+      const linked = t.structure.filter((d) => d.exercises.slice(0, -1).every((e) => e.supersetWithNext) && !d.exercises.at(-1)?.supersetWithNext);
+      expect(linked).toHaveLength(2);
+    }
+  });
+});

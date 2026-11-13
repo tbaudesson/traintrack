@@ -33,6 +33,12 @@ const ex = (exerciseName: string, targetSets: number, targetReps: string, restSe
   restSec,
 });
 
+/** A circuit: every exercise leads straight into the next, the rest comes after the last. */
+const circuit = (day: ProgramDay): ProgramDay => ({
+  ...day,
+  exercises: day.exercises.map((e, i, all) => (i < all.length - 1 ? { ...e, supersetWithNext: true } : e)),
+});
+
 /** The strength programs as first written, each in its own language. */
 const STRENGTH_ORIGINALS: ProgramTemplate[] = [
   {
@@ -95,8 +101,8 @@ const STRENGTH_ORIGINALS: ProgramTemplate[] = [
     level: "intermediate",
     daysPerWeek: 3,
     structure: [
-      { name: "Circuit A", exercises: [ex("Back Squat", 3, "12-15", 45), ex("Push-up", 3, "AMRAP", 45), ex("Seated Cable Row", 3, "12-15", 45), ex("Walking Lunge", 3, "20", 45), ex("Plank", 3, "45s", 45)] },
-      { name: "Circuit B", exercises: [ex("Romanian Deadlift", 3, "12-15", 45), ex("Overhead Press", 3, "12-15", 45), ex("Lat Pulldown", 3, "12-15", 45), ex("Hip Thrust", 3, "15-20", 45), ex("Russian Twist", 3, "20", 45)] },
+      circuit({ name: "Circuit A", exercises: [ex("Back Squat", 3, "12-15", 45), ex("Push-up", 3, "AMRAP", 45), ex("Seated Cable Row", 3, "12-15", 45), ex("Walking Lunge", 3, "20", 45), ex("Plank", 3, "45s", 45)] }),
+      circuit({ name: "Circuit B", exercises: [ex("Romanian Deadlift", 3, "12-15", 45), ex("Overhead Press", 3, "12-15", 45), ex("Lat Pulldown", 3, "12-15", 45), ex("Hip Thrust", 3, "15-20", 45), ex("Russian Twist", 3, "20", 45)] }),
     ],
   },
   {
@@ -217,8 +223,8 @@ const STRENGTH_ORIGINALS: ProgramTemplate[] = [
     structure: [
       { name: "Haut dense", exercises: [ex("Barbell Bench Press", 4, "10-12", 60), ex("Barbell Row", 4, "10-12", 60), ex("Seated Dumbbell Press", 3, "12-15", 45), ex("Triceps Pushdown", 3, "12-15", 45)] },
       { name: "Bas dense", exercises: [ex("Back Squat", 4, "10-12", 75), ex("Romanian Deadlift", 3, "12-15", 60), ex("Walking Lunge", 3, "12-16", 45), ex("Cable Crunch", 3, "15-20", 45)] },
-      { name: "Circuit haut", exercises: [ex("Push-up", 4, "12-20", 30), ex("Lat Pulldown", 4, "12-15", 45), ex("Lateral Raise", 3, "15-20", 30), ex("Face Pull", 3, "15-20", 30)] },
-      { name: "Circuit bas", exercises: [ex("Leg Press", 4, "15-20", 45), ex("Leg Curl", 3, "15-20", 45), ex("Hip Thrust", 3, "12-15", 45), ex("Plank", 3, "45-60s", 30)] },
+      circuit({ name: "Circuit haut", exercises: [ex("Push-up", 4, "12-20", 30), ex("Lat Pulldown", 4, "12-15", 45), ex("Lateral Raise", 3, "15-20", 30), ex("Face Pull", 3, "15-20", 30)] }),
+      circuit({ name: "Circuit bas", exercises: [ex("Leg Press", 4, "15-20", 45), ex("Leg Curl", 3, "15-20", 45), ex("Hip Thrust", 3, "12-15", 45), ex("Plank", 3, "45-60s", 30)] }),
     ],
   },
 ];
