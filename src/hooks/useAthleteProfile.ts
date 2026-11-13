@@ -1,5 +1,5 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import db, { type AthleteProfile } from "@/db";
+import db, { type AthleteProfile, type FitnessLevel } from "@/db";
 import { getCurrentUserIdSync } from "@/db";
 import { schedulePush } from "@/lib/syncEngine";
 
@@ -35,6 +35,17 @@ export async function saveAthleteProfile(
   })) as number;
   schedulePush();
   return id;
+}
+
+/** Update just the training level on the current profile. */
+export async function updateFitnessLevel(fitnessLevel: FitnessLevel): Promise<void> {
+  const uid = getCurrentUserIdSync();
+  const existing = (await db.athleteProfiles.toArray()).find(
+    (p) => !p.deletedAt && (p.userId === uid || p.userId == null)
+  );
+  if (!existing?.id) return;
+  await db.athleteProfiles.update(existing.id, { fitnessLevel, updatedAt: new Date().toISOString(), _dirty: 1 });
+  schedulePush();
 }
 
 /** Update just the daily macro targets on the current profile. */

@@ -162,6 +162,11 @@
   "log": {
     "title": "Workout log",
     "newWorkout": "New workout",
+    "prefill": "Prefill sets ({level} level)",
+    "prefillAll": "Prefill the whole session",
+    "level_beginner": "beginner",
+    "level_intermediate": "intermediate",
+    "level_advanced": "advanced",
     "addSet": "Add set",
     "addExercise": "Add exercise",
     "reps": "Reps",
@@ -297,6 +302,9 @@
     "daysAgo": "{days}d ago"
   },
   "settings": {
+    "level": "Training level",
+    "levelHint": "Used to prefill your sessions and suggest programs.",
+    "levelSetup": "Complete my profile",
     "title": "Settings",
     "account": "Account",
     "language": "Language",

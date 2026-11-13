@@ -162,6 +162,11 @@
   "log": {
     "title": "Trainingsprotokoll",
     "newWorkout": "Neue Einheit",
+    "prefill": "Sätze vorausfüllen (Niveau {level})",
+    "prefillAll": "Ganze Einheit vorausfüllen",
+    "level_beginner": "Anfänger",
+    "level_intermediate": "Fortgeschritten",
+    "level_advanced": "Profi",
     "addSet": "Satz hinzufügen",
     "addExercise": "Übung hinzufügen",
     "reps": "Wiederholungen",
@@ -297,6 +302,9 @@
     "daysAgo": "vor {days}T"
   },
   "settings": {
+    "level": "Trainingsniveau",
+    "levelHint": "Dient zum Vorausfüllen Ihrer Einheiten und für Programmvorschläge.",
+    "levelSetup": "Profil vervollständigen",
     "title": "Einstellungen",
     "account": "Konto",
     "language": "Sprache",

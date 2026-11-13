@@ -8,6 +8,8 @@ import { useWorkout, useWorkouts, updateWorkout, deleteWorkout } from "@/hooks/u
 import { useWorkoutSets, useAllWorkoutSets, addWorkoutSet, updateWorkoutSet, deleteWorkoutSet } from "@/hooks/useWorkoutSets";
 import { useExercises } from "@/hooks/useExercises";
 import { usePrograms } from "@/hooks/usePrograms";
+import { useAthleteProfile } from "@/hooks/useAthleteProfile";
+import { defaultSetValues } from "@/lib/setDefaults";
 import { findWorkoutProgramDay } from "@/lib/startWorkout";
 import { VideoEmbed } from "@/components/domain/VideoEmbed";
 import { PlateCalculator } from "@/components/domain/PlateCalculator";
@@ -29,7 +31,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3 } from "lucide-react";
+import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { connectHeartRate, isBluetoothSupported, type HeartRateMonitor } from "@/lib/bleHeartRate";
@@ -47,6 +49,7 @@ export default function SessionLoggerPage() {
   const programs = usePrograms();
   const allWorkouts = useWorkouts();
   const allSets = useAllWorkoutSets();
+  const profile = useAthleteProfile();
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const [openGuide, setOpenGuide] = useState<number | null>(null);
@@ -197,6 +200,41 @@ export default function SessionLoggerPage() {
     }
     return [...m.entries()];
   }, [sets]);
+
+  /** The program's line for an exercise of this session, if it follows one. */
+  function targetFor(exerciseId: number) {
+    const ex = exMap.get(exerciseId);
+    return programDay?.exercises.find(
+      (pe) => (pe.exerciseUuid && pe.exerciseUuid === ex?.uuid) || pe.exerciseName.toLowerCase() === ex?.name.toLowerCase()
+    );
+  }
+
+  /** What one tap on "Prefill" would write into each unfinished set. */
+  function prefillFor(exerciseId: number, exSets: typeof sets) {
+    const target = targetFor(exerciseId);
+    const previous = lastPerformance(exerciseId, workout, allWorkouts, allSets);
+    const suggestion = target ? suggestWeight(previous, target.targetSets, target.targetReps) : null;
+    return exSets
+      .map((s) => ({
+        id: s.id,
+        values: defaultSetValues({
+          set: s,
+          totalSets: exSets.length,
+          level: profile?.fitnessLevel,
+          exercise: exMap.get(exerciseId),
+          targetReps: target?.targetReps,
+          previous,
+          suggestion,
+        }),
+      }))
+      .filter((f): f is { id: number; values: typeof f.values } => f.id !== undefined && Object.keys(f.values).length > 0);
+  }
+
+  const prefillAll = groups.flatMap(([exerciseId, exSets]) => prefillFor(exerciseId, exSets));
+
+  async function applyPrefill(fills: { id: number; values: Partial<Pick<(typeof sets)[number], "weightKg" | "reps" | "rpe">> }[]) {
+    await Promise.all(fills.map((f) => updateWorkoutSet(f.id, f.values)));
+  }
 
   useEffect(() => {
     return () => {
@@ -419,12 +457,18 @@ export default function SessionLoggerPage() {
           <EmptyState icon={Dumbbell} title={t("noExercises")} />
         )}
 
+        {prefillAll.length > 0 && groups.length > 1 && (
+          <Button variant="outline" className="w-full rounded-full text-accent-text" onClick={() => applyPrefill(prefillAll)}>
+            <Wand2 className="mr-1 h-4 w-4" aria-hidden="true" />
+            {t("prefillAll")}
+          </Button>
+        )}
+
         {groups.map(([exerciseId, exSets]) => {
           const ex = exMap.get(exerciseId);
           const last = exSets[exSets.length - 1];
-          const target = programDay?.exercises.find(
-            (pe) => (pe.exerciseUuid && pe.exerciseUuid === ex?.uuid) || pe.exerciseName.toLowerCase() === ex?.name.toLowerCase()
-          );
+          const target = targetFor(exerciseId);
+          const fills = prefillFor(exerciseId, exSets);
           const guideOpen = openGuide === exerciseId;
           const nextSet = exSets.find((s) => !s.completed);
           const previous = lastPerformance(exerciseId, workout, allWorkouts, allSets);
@@ -540,6 +584,17 @@ export default function SessionLoggerPage() {
                     </button>
                   </div>
                 ))}
+
+                {fills.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => applyPrefill(fills)}
+                    className="flex min-h-10 w-full items-center justify-center gap-1.5 text-sm font-medium text-accent-text"
+                  >
+                    <Wand2 className="h-4 w-4" aria-hidden="true" />
+                    {t("prefill", { level: t(`level_${profile?.fitnessLevel ?? "beginner"}`) })}
+                  </button>
+                )}
 
                 {nextSet && effort?.setId !== nextSet.id && (
                   <Button

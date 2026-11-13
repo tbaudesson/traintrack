@@ -19,6 +19,8 @@ import {
 } from "@/lib/pushService";
 import { getTextSize, applyTextSize, type TextSize } from "@/lib/textSize";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
+import { useAthleteProfile, updateFitnessLevel } from "@/hooks/useAthleteProfile";
+import type { FitnessLevel } from "@/db";
 import { getMode, applyMode, getAccent, applyAccent, ACCENTS, type ThemeMode, type Accent } from "@/lib/appTheme";
 import {
   NAV_CATALOG, getNavItemIds, setNavItemIds, resetNavItemIds, MAX_NAV_ITEMS, LOCKED_NAV_ID,
@@ -27,7 +29,7 @@ import {
   Download, Shield, LogOut, Trash2, Loader2, Sparkles, Check, Type, ShieldCheck,
   Palette, LayoutGrid, Monitor, Sun, Moon, Globe, RotateCcw, CheckCircle2, User, Trophy,
   Home, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse,
-  Pencil, X, Bell, BellOff, KeyRound, Newspaper,
+  Pencil, X, Bell, BellOff, KeyRound, Newspaper, Gauge,
   type LucideIcon,
 } from "lucide-react";
 
@@ -73,6 +75,8 @@ export default function SettingsPage() {
   const tn = useTranslations("notifications");
   const tc = useTranslations("common");
   const tm = useTranslations("more");
+  const to = useTranslations("onboarding");
+  const athlete = useAthleteProfile();
   const { user, profile, signOut, isAdmin, refreshProfile } = useAuth();
   const { hasFeature } = useFeatureAccess();
   const locale = useLocale();
@@ -253,6 +257,34 @@ export default function SettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Training level */}
+        <Section icon={Gauge} title={t("level")}>
+          <p className="mb-2 text-xs text-muted-foreground">{t("levelHint")}</p>
+          {athlete ? (
+            <div className="grid grid-cols-3 gap-2">
+              {(["beginner", "intermediate", "advanced"] as FitnessLevel[]).map((level) => (
+                <button
+                  key={level}
+                  onClick={() => updateFitnessLevel(level)}
+                  aria-pressed={athlete.fitnessLevel === level}
+                  className={cn(
+                    "min-h-11 rounded-lg border p-2 text-xs transition-colors",
+                    athlete.fitnessLevel === level
+                      ? "border-accent-500 bg-accent-50 font-semibold text-accent-700 dark:bg-accent-900/20"
+                      : "border-border text-muted-foreground hover:border-accent-300"
+                  )}
+                >
+                  {to(`level_${level}`)}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <Link href="/onboarding" className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-full")}>
+              {t("levelSetup")}
+            </Link>
+          )}
+        </Section>
 
         {/* Theme mode */}
         <Section icon={Palette} title={ta("section")}>

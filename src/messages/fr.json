@@ -162,6 +162,11 @@
   "log": {
     "title": "Journal de séance",
     "newWorkout": "Nouvelle séance",
+    "prefill": "Pré-remplir les séries (niveau {level})",
+    "prefillAll": "Pré-remplir toute la séance",
+    "level_beginner": "débutant",
+    "level_intermediate": "intermédiaire",
+    "level_advanced": "avancé",
     "addSet": "Ajouter une série",
     "addExercise": "Ajouter un exercice",
     "reps": "Répétitions",
@@ -297,6 +302,9 @@
     "daysAgo": "il y a {days}j"
   },
   "settings": {
+    "level": "Niveau d'entraînement",
+    "levelHint": "Sert à pré-remplir vos séances et à vous proposer des programmes.",
+    "levelSetup": "Compléter mon profil",
     "title": "Réglages",
     "account": "Compte",
     "language": "Langue",
