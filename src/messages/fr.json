@@ -300,6 +300,13 @@
     "videoEmbedHint": "Collez un lien YouTube ou Vimeo pour le lire dans l'application. Un lien de recherche ouvre YouTube."
   },
   "teams": {
+    "adherenceWeek": "{done}/{planned} cette sem.",
+    "adherenceSessions": "{count, plural, =0 {Aucune séance cette sem.} one {# séance cette sem.} other {# séances cette sem.}}",
+    "adherenceThisWeek": "Cette semaine",
+    "adherenceTitle": "Assiduité sur 4 semaines",
+    "adherenceRate": "{percent} % des séances prévues faites",
+    "adherenceNoPlan": "Pas de jours d'entraînement choisis : séances comptées seulement",
+    "adherenceRpe": "RPE moyen sur 7 jours : {rpe}",
     "setsCount": "{count, plural, one {# série} other {# séries}}",
     "customExercise": "Exercice personnalisé",
     "notDone": "Pas fait",

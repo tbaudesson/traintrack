@@ -26,6 +26,10 @@ describe("next load from the RPE", () => {
     expect(nextLoad({ ...plan, sessions: [hard, hard] })).toMatchObject({ kind: "deload", weightKg: 52.5 });
   });
 
+  it("ignore an RPE typed off the 1-10 scale", () => {
+    expect(nextLoad({ ...plan, sessions: [[set(60, 10, 66), set(60, 10, 66), set(60, 10, 66)]] })).toMatchObject({ kind: "up", rpe: undefined });
+  });
+
   it("keep the old rule when no RPE was noted", () => {
     expect(nextLoad({ ...plan, sessions: [[set(60, 10), set(60, 10), set(60, 10)]] })).toMatchObject({ kind: "up", weightKg: 62.5 });
     expect(nextLoad({ ...plan, sessions: [[set(60, 9), set(60, 10), set(60, 10)]] })).toBeNull();

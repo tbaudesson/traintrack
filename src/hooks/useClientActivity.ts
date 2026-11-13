@@ -1,25 +1,34 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import db from "@/db";
+import { adherence, type Adherence } from "@/lib/adherence";
+import { localDate } from "@/lib/dates";
 
 /**
- * The most recent workout date for a client, read from locally-synced data
- * (a trainer pulls clients' workouts via RLS). Returns:
- *   undefined → still loading
- *   null      → no workouts ever
- *   string    → ISO date of the last workout
+ * How regularly each athlete trains (see lib/adherence), from the data a coach
+ * has synced: their sessions, sets and training days.
  */
-export function useClientLastWorkout(userId?: string | null) {
+export function useTeamAdherence(userIds: string[]): Map<string, Adherence> | undefined {
+  const key = [...userIds].sort().join(",");
   return useLiveQuery(async () => {
-    if (!userId) return undefined;
-    const all = await db.workouts.filter((w) => !w.deletedAt && w.userId === userId).toArray();
-    if (all.length === 0) return null;
-    return all.map((w) => w.date).sort().pop() ?? null;
-  }, [userId]);
-}
-
-/** Whole days since `date` (ISO yyyy-mm-dd). */
-export function daysSince(date: string): number {
-  const d = Date.parse(date);
-  if (Number.isNaN(d)) return 0;
-  return Math.floor((Date.now() - d) / 86400000);
+    const ids = new Set(key ? key.split(",") : []);
+    const mine = <T extends { userId?: string | null; deletedAt?: string | null }>(rows: T[]) =>
+      rows.filter((r) => !r.deletedAt && !!r.userId && ids.has(r.userId));
+    const [workouts, sets, profiles] = await Promise.all([
+      db.workouts.toArray().then(mine),
+      db.workoutSets.toArray().then(mine),
+      db.athleteProfiles.toArray().then(mine),
+    ]);
+    const today = localDate();
+    return new Map(
+      [...ids].map((id) => [
+        id,
+        adherence({
+          today,
+          workouts: workouts.filter((w) => w.userId === id),
+          sets: sets.filter((s) => s.userId === id),
+          trainingDays: profiles.find((p) => p.userId === id)?.trainingDays,
+        }),
+      ])
+    );
+  }, [key]);
 }

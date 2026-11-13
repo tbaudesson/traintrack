@@ -16,7 +16,7 @@ export interface Advice {
 }
 
 const hardest = (sets: Logged[]) => {
-  const noted = sets.map((s) => s.rpe ?? 0).filter((r) => r > 0);
+  const noted = sets.map((s) => s.rpe ?? 0).filter((r) => r >= 1 && r <= 10);
   return noted.length ? Math.max(...noted) : undefined;
 };
 

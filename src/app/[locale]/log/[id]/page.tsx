@@ -665,7 +665,7 @@ export default function SessionLoggerPage() {
                     </span>
                     <NumCell key={`w${s.weightKg ?? ""}`} label={t("weight")} placeholder={previousTop !== null ? String(suggestion ?? previousTop) : undefined} value={s.weightKg} onChange={(v) => s.id && updateWorkoutSet(s.id, { weightKg: v })} />
                     <NumCell key={`r${s.reps ?? ""}`} label={t("reps")} placeholder={target?.targetReps} value={s.reps} onChange={(v) => s.id && updateWorkoutSet(s.id, { reps: v })} />
-                    <NumCell key={`p${s.rpe ?? ""}`} label={t("rpe")} value={s.rpe} onChange={(v) => s.id && updateWorkoutSet(s.id, { rpe: v })} />
+                    <NumCell key={`p${s.rpe ?? ""}`} label={t("rpe")} value={s.rpe} onChange={(v) => s.id && updateWorkoutSet(s.id, { rpe: v !== undefined && v >= 1 && v <= 10 ? v : undefined })} />
                     <button
                       onClick={() =>
                         s.id &&

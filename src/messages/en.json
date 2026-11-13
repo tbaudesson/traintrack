@@ -300,6 +300,13 @@
     "videoEmbedHint": "Paste a YouTube or Vimeo link to play it inside the app. A search link opens YouTube instead."
   },
   "teams": {
+    "adherenceWeek": "{done}/{planned} this week",
+    "adherenceSessions": "{count, plural, =0 {No session this week} one {# session this week} other {# sessions this week}}",
+    "adherenceThisWeek": "This week",
+    "adherenceTitle": "Adherence over 4 weeks",
+    "adherenceRate": "{percent}% of planned sessions done",
+    "adherenceNoPlan": "No training days chosen: sessions counted only",
+    "adherenceRpe": "Average RPE over 7 days: {rpe}",
     "setsCount": "{count, plural, one {# set} other {# sets}}",
     "customExercise": "Custom exercise",
     "notDone": "Not done",

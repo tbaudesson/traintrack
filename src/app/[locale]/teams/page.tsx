@@ -13,7 +13,9 @@ import {
   respondToInvitation,
   type GroupMember,
 } from "@/lib/groupService";
-import { useClientLastWorkout, daysSince } from "@/hooks/useClientActivity";
+import { useTeamAdherence } from "@/hooks/useClientActivity";
+import { byAttention, type Adherence } from "@/lib/adherence";
+import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -194,20 +196,29 @@ export default function TeamsPage() {
   );
 }
 
-/** Amber warning chip when a client hasn't trained recently (compliance). */
-function ComplianceFlag({ userId }: { userId: string }) {
+/** How regularly an athlete trains: green, amber or red, with the reason. */
+function AdherenceBadge({ value }: { value: Adherence | undefined }) {
   const t = useTranslations("teams");
-  const last = useClientLastWorkout(userId);
-  if (last === undefined) return null; // loading
-  const days = last === null ? null : daysSince(last);
-  if (days !== null && days < 3) return null; // training recently — no flag
+  if (!value) return null;
+  const week = value.weeks.at(-1)!;
+  const text =
+    value.daysSinceLast === null ? t("noActivity")
+    : value.daysSinceLast >= 4 ? t("daysAgo", { days: value.daysSinceLast })
+    : week.planned !== null ? t("adherenceWeek", { done: week.done, planned: week.planned })
+    : t("adherenceSessions", { count: week.done });
   return (
     <span
-      className="flex items-center gap-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
       title={t("complianceTip")}
+      className={cn(
+        "flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-xs font-medium",
+        value.status === "good" && "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
+        value.status === "watch" && "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
+        value.status === "alert" && "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300"
+      )}
     >
-      <AlertTriangle className="h-3 w-3" />
-      {days === null ? t("noActivity") : t("daysAgo", { days })}
+      {value.status !== "good" && <AlertTriangle className="h-3 w-3" aria-hidden="true" />}
+      {text}
+      {value.recentRpe !== null && value.recentRpe >= 9 && <span>· RPE {value.recentRpe}</span>}
     </span>
   );
 }
@@ -245,6 +256,9 @@ function TeamCard({
       .finally(() => setMembersLoaded(true));
     return () => setMembersLoaded(false);
   }, [expanded, groupId]);
+
+  const adherenceByUser = useTeamAdherence(members.filter((m) => m.status === "active" && m.user_id).map((m) => m.user_id!));
+  const ordered = byAttention(members, (m) => (m.user_id ? adherenceByUser?.get(m.user_id)?.status : undefined));
 
   async function reloadMembers() {
     setMembers(await getGroupMembers(groupId));
@@ -307,7 +321,7 @@ function TeamCard({
               <Loader2 className="mx-auto my-3 h-4 w-4 animate-spin text-muted-foreground" />
             ) : (
               <div className="space-y-1">
-                {members.map((m) => (
+                {ordered.map((m) => (
                   <div key={m.id} className="flex items-center gap-2 rounded-md px-1 py-1.5 text-sm">
                     {m.status === "active" && m.user_id ? (
                       <Link href={`/client/${m.user_id}`} className="flex-1 truncate hover:underline">
@@ -316,7 +330,7 @@ function TeamCard({
                     ) : (
                       <span className="flex-1 truncate">{m.display_name}</span>
                     )}
-                    {m.status === "active" && m.user_id && <ComplianceFlag userId={m.user_id} />}
+                    {m.status === "active" && m.user_id && <AdherenceBadge value={adherenceByUser?.get(m.user_id)} />}
                     <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                       {m.status === "pending" ? t("status_pending") : t(`role_${m.role}`)}
                     </span>

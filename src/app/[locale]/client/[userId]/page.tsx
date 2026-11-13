@@ -20,7 +20,8 @@ import { useExercises } from "@/hooks/useExercises";
 import type { Exercise, WorkoutSet } from "@/db";
 import { SectionHeading } from "@/components/ui/page-parts";
 import { formatDistance, formatDuration, isCardio } from "@/lib/cardio";
-import { localDate, localDateIn } from "@/lib/dates";
+import { localDate } from "@/lib/dates";
+import { useTeamAdherence } from "@/hooks/useClientActivity";
 
 function scoreColor(s: number) {
   if (s >= 75) return "text-green-600";
@@ -54,14 +55,8 @@ export default function ClientDetailPage() {
 
   const lastActivity = workouts[0]?.date ?? null;
 
-  const [now] = useState(() => Date.now());
-
-  // 7-day compliance: number of distinct days with a workout in the last 7 days
-  const compliance = useMemo(() => {
-    const cutoff = localDateIn(-7, now);
-    const days = new Set(workouts.filter((w) => w.date >= cutoff).map((w) => w.date));
-    return days.size;
-  }, [workouts, now]);
+  const adherence = useTeamAdherence([userId])?.get(userId);
+  const thisWeek = adherence?.weeks.at(-1);
 
   const totalVolume = useMemo(() => {
     let v = 0;
@@ -77,8 +72,10 @@ export default function ClientDetailPage() {
           <Card>
             <CardContent className="flex flex-col items-center gap-1 py-4 text-center">
               <CheckCircle className="h-5 w-5 text-green-500" />
-              <p className="text-lg font-bold">{compliance}/7</p>
-              <p className="text-xs text-muted-foreground">{t("compliance")}</p>
+              <p className="text-lg font-bold">
+                {thisWeek ? (thisWeek.planned !== null ? `${thisWeek.done}/${thisWeek.planned}` : thisWeek.done) : "–"}
+              </p>
+              <p className="text-xs text-muted-foreground">{t("adherenceThisWeek")}</p>
             </CardContent>
           </Card>
           <Card>
@@ -96,6 +93,49 @@ export default function ClientDetailPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Adherence over four weeks */}
+        {adherence && (
+          <section className="space-y-2">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+              <CheckCircle className="h-4 w-4 text-green-500" /> {t("adherenceTitle")}
+            </h2>
+            <Card>
+              <CardContent className="space-y-3 py-3">
+                <div className="flex items-end gap-3">
+                  {adherence.weeks.map((week, _, all) => {
+                    // One scale for the four weeks, so a busier week shows taller.
+                    const target = Math.max(1, ...all.map((w) => Math.max(w.planned ?? 0, w.done)));
+                    return (
+                      <div key={week.monday} className="flex flex-1 flex-col items-center gap-1">
+                        <div className="flex h-20 w-full items-end gap-1" title={`${week.done}${week.planned !== null ? ` / ${week.planned}` : ""}`}>
+                          {week.planned !== null && (
+                            <div className="w-1/2 rounded-sm bg-muted" style={{ height: `${(week.planned / target) * 100}%` }} />
+                          )}
+                          <div
+                            className={cn(
+                              "flex-1 rounded-sm",
+                              week.planned === null || week.done >= week.planned ? "bg-green-500" : "bg-amber-500"
+                            )}
+                            style={{ height: `${Math.max(4, (week.done / target) * 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-muted-foreground tabular-nums">
+                          {week.done}{week.planned !== null ? `/${week.planned}` : ""}
+                        </span>
+                        <span className="text-xs text-muted-foreground">{week.monday.slice(8)}/{week.monday.slice(5, 7)}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-sm">
+                  {adherence.rate !== null ? t("adherenceRate", { percent: Math.round(adherence.rate * 100) }) : t("adherenceNoPlan")}
+                  {adherence.recentRpe !== null && ` · ${t("adherenceRpe", { rpe: adherence.recentRpe })}`}
+                </p>
+              </CardContent>
+            </Card>
+          </section>
+        )}
 
         {/* Readiness */}
         {readiness.length > 0 && (
