@@ -25,6 +25,7 @@ export async function createProgram(data: {
   structure?: ProgramDay[];
   assignedToUserId?: string | null;
   groupId?: string | null;
+  startDate?: string | null;
 }): Promise<number> {
   const now = new Date().toISOString();
   const uid = getCurrentUserIdSync();
@@ -35,6 +36,7 @@ export async function createProgram(data: {
     ownerUserId: uid,
     assignedToUserId: data.assignedToUserId ?? null,
     groupId: data.groupId ?? null,
+    startDate: data.startDate ?? null,
     uuid: crypto.randomUUID(),
     userId: uid,
     _dirty: 1,
@@ -58,7 +60,8 @@ export function useTrainablePrograms() {
  */
 export async function assignProgramToClients(
   model: Pick<Program, "name" | "description" | "structure">,
-  members: { userId: string; groupId: string }[]
+  members: { userId: string; groupId: string }[],
+  startDate?: string | null
 ): Promise<{ created: number; updated: number }> {
   const uid = getCurrentUserIdSync();
   let created = 0;
@@ -68,10 +71,10 @@ export async function assignProgramToClients(
       .filter((p) => !p.deletedAt && p.ownerUserId === uid && p.assignedToUserId === member.userId && p.name === model.name)
       .first();
     if (existing?.id) {
-      await updateProgram(existing.id, { description: model.description, structure: model.structure });
+      await updateProgram(existing.id, { description: model.description, structure: model.structure, startDate: startDate ?? existing.startDate ?? null });
       updated++;
     } else {
-      await createProgram({ ...model, assignedToUserId: member.userId, groupId: member.groupId });
+      await createProgram({ ...model, assignedToUserId: member.userId, groupId: member.groupId, startDate: startDate ?? null });
       created++;
     }
   }

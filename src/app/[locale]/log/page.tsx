@@ -115,7 +115,7 @@ export default function LogPage() {
           <section className="space-y-2">
             <SectionHeading>{t("selectExercise")}</SectionHeading>
             {programs.map((p) =>
-              daysToOffer(p, workouts).map(({ day, index: di }) => (
+              daysToOffer(p, workouts, today).map(({ day, index: di }) => (
                 <DetailRow
                   key={`${p.id}-${di}`}
                   onClick={() => startFromProgramDay(p, di)}

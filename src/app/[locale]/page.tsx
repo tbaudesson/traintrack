@@ -20,7 +20,8 @@ import { usePainReports } from "@/hooks/usePain";
 import { deloadAdvice } from "@/lib/deload";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useTeams } from "@/hooks/useTeams";
-import { daysToOffer, findWorkoutProgramDay, lastRepeatable, repeatWorkout, startWorkoutFromDay } from "@/lib/startWorkout";
+import { daysToOffer, findWorkoutProgramDay, lastRepeatable, nextDayIndex, repeatWorkout, startWorkoutFromDay } from "@/lib/startWorkout";
+import { programWeek } from "@/lib/programWeek";
 import { describeTarget, isCardio, isCardioDone, weeklyGoal } from "@/lib/cardio";
 import { SportPicker } from "@/components/domain/SportPicker";
 import { WeekStrip } from "@/components/domain/WeekStrip";
@@ -145,7 +146,8 @@ export default function HomePage() {
   const name = account?.display_name ?? user?.email?.split("@")[0] ?? "";
   const readyScore = todayReadiness ? readinessScore(todayReadiness) : null;
 
-  // The program most recently trained, otherwise the first one with days.
+  // The program most recently trained, otherwise the first one with days. A
+  // program started since (a coach's new plan) takes over from the old one.
   const session = useMemo(() => {
     const usable = programs.filter((p) => (p.structure ?? []).length > 0);
     const linked = workouts.map((w) => ({ w, at: findWorkoutProgramDay(usable, w) }));
@@ -154,9 +156,13 @@ export default function HomePage() {
     if (todays?.at) {
       return { program: todays.at.program, index: todays.at.index, day: todays.at.program.structure[todays.at.index], workoutId: todays.w.id };
     }
-    const program = lastDone?.at?.program ?? usable[0];
+    const newest = usable
+      .filter((p) => p.startDate && p.startDate <= today && !programWeek(p, today)?.finished)
+      .sort((a, b) => b.startDate!.localeCompare(a.startDate!))[0];
+    const program =
+      newest && (!lastDone || newest.startDate! > lastDone.w.date) ? newest : (lastDone?.at?.program ?? usable[0]);
     if (!program) return null;
-    const next = lastDone?.at ? (lastDone.at.index + 1) % program.structure.length : 0;
+    const next = nextDayIndex(program, workouts, today);
     return { program, index: next, day: program.structure[next], workoutId: undefined };
   }, [programs, workouts, today]);
 
@@ -192,6 +198,8 @@ export default function HomePage() {
       upcoming: session ? upcomingSessions(session.program, from, 7) : [],
     });
   }, [session, today, profile, workouts]);
+
+  const sessionWeek = session ? programWeek(session.program, today) : null;
 
   const percent = useMemo(() => {
     if (!session?.workoutId) return 0;
@@ -373,6 +381,15 @@ export default function HomePage() {
                   {session
                     ? `${session.program.name} · ${dayDetail(session.day)}`
                     : t("freeSessionDesc")}
+                  {sessionWeek && (
+                    <span className="mt-0.5 block text-xs font-semibold text-accent-text">
+                      {!sessionWeek.started
+                        ? t("programStarts", { date: session!.program.startDate!.split("-").reverse().slice(0, 2).join("/") })
+                        : sessionWeek.total
+                          ? t("programWeekOf", { week: sessionWeek.week, total: sessionWeek.total })
+                          : t("programWeek", { week: sessionWeek.week })}
+                    </span>
+                  )}
                 </p>
               </div>
               <ProgressRing percent={percent} />
@@ -446,7 +463,7 @@ export default function HomePage() {
                     {trainable.map((p) => (
                       <div key={p.id} className="space-y-2">
                         <h4 className="text-sm font-semibold">{p.name}</h4>
-                        {daysToOffer(p, workouts).map(({ day, index }) => (
+                        {daysToOffer(p, workouts, today).map(({ day, index }) => (
                           <DetailRow
                             key={`${p.id}-${index}`}
                             onClick={() => startDay(p, index)}

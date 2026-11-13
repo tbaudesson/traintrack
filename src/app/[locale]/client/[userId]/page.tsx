@@ -26,6 +26,8 @@ import { useTeamAdherence } from "@/hooks/useClientActivity";
 import { NudgeButton } from "@/components/domain/NudgeButton";
 import { GoalsSection } from "@/components/domain/GoalsSection";
 import { WeeklyReportCard } from "@/components/domain/WeeklyReportCard";
+import { programWeek } from "@/lib/programWeek";
+import { Link } from "@/i18n/navigation";
 import { usePainReports } from "@/hooks/usePain";
 import { SEVERE_PAIN } from "@/lib/pain";
 
@@ -58,6 +60,11 @@ export default function ClientDetailPage() {
     [userId]
   );
   const targets = clientProfile?.nutritionTargets;
+  const tpr = useTranslations("programs");
+  const assigned = useLiveQuery(
+    async () => (await db.programs.toArray()).filter((p) => !p.deletedAt && p.assignedToUserId === userId),
+    [userId]
+  ) ?? [];
 
   const lastActivity = workouts[0]?.date ?? null;
 
@@ -174,6 +181,31 @@ export default function ClientDetailPage() {
                 ))}
               </CardContent>
             </Card>
+          </section>
+        )}
+
+        {assigned.length > 0 && (
+          <section className="space-y-2">
+            <h2 className="text-sm font-semibold text-muted-foreground">{t("clientPrograms")}</h2>
+            {assigned.map((p) => {
+              const w = programWeek(p, today);
+              return (
+                <Link key={p.id} href={`/programs/${p.id}`} className="t-surface flex items-center gap-3 rounded-2xl p-3 ring-1 ring-foreground/5">
+                  <span className="min-w-0 flex-1 truncate font-medium">{p.name}</span>
+                  <span className="shrink-0 text-xs font-semibold text-accent-text">
+                    {!w
+                      ? tpr("startNone")
+                      : !w.started
+                        ? tpr("startsOn", { date: p.startDate!.split("-").reverse().join("/") })
+                        : w.finished
+                          ? tpr("finished")
+                          : w.total
+                            ? tpr("weekOf", { week: w.week, total: w.total })
+                            : tpr("weekSince", { week: w.week })}
+                  </span>
+                </Link>
+              );
+            })}
           </section>
         )}
 

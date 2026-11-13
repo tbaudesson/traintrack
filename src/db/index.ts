@@ -174,6 +174,8 @@ export interface Program extends SyncFields {
   assignedToUserId?: string | null;
   /** Team/group UUID this program belongs to (optional, plain uuid string). */
   groupId?: string | null;
+  /** First day of the program (YYYY-MM-DD): a plan in weeks follows the calendar from it. */
+  startDate?: string | null;
   structure: ProgramDay[];
   createdAt: string;
   updatedAt: string;

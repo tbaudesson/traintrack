@@ -77,6 +77,9 @@
     "backToLogin": "Zurück zur Anmeldung"
   },
   "home": {
+    "programStarts": "Das Programm beginnt am {date}",
+    "programWeekOf": "Woche {week} von {total}",
+    "programWeek": "Woche {week}",
     "repeatLast": "Letzte Einheit wiederholen",
     "weekPlan": "Meine Woche",
     "weekPlanEdit": "Ändern",
@@ -308,6 +311,7 @@
     "videoEmbedHint": "Füge einen YouTube- oder Vimeo-Link ein, um ihn in der App abzuspielen. Ein Suchlink öffnet YouTube."
   },
   "teams": {
+    "clientPrograms": "Zugewiesene Programme",
     "deloadActive": "Entlastungswoche läuft",
     "nudge": "Nachfragen",
     "nudgeNamed": "Bei {name} nachfragen",
@@ -392,6 +396,14 @@
     "changePassword": "Mein Passwort ändern"
   },
   "programs": {
+    "startDate": "Startdatum",
+    "startNextMonday": "Nächster Montag",
+    "startNone": "Ohne Startdatum",
+    "startHint": "Mit Startdatum folgt ein Wochenplan dem Kalender: der Athlet erhält die Einheiten der richtigen Woche, auch wenn er im Rückstand ist.",
+    "startsOn": "Beginnt am {date}",
+    "weekOf": "Woche {week} von {total}",
+    "weekSince": "Woche {week} seit dem Start",
+    "finished": "Plan abgeschlossen",
     "percents": "% vom 1RM (optional)",
     "percentsHint": "75, oder 70/75/80 pro Satz",
     "supersetWithNext": "Mit der nächsten Übung als Supersatz verbinden",

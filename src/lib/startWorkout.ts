@@ -8,6 +8,7 @@ import { programGroups } from "./supersets";
 import { oneRepMaxHistory } from "./goals";
 import { percentWeights, referenceMax } from "./percent";
 import { DELOAD_LOAD, deloadSets } from "./deload";
+import { programWeek } from "./programWeek";
 import { createCustomExercise } from "@/hooks/useExercises";
 
 /** A deload load: a tenth lighter, to the plate step below. */
@@ -43,14 +44,19 @@ export function findWorkoutProgramDay(
 
 /**
  * The days to offer for a program: all of them, or only the current week of a
- * plan, which can hold more than sixty sessions.
+ * plan, which can hold more than sixty sessions. With a start date, the week
+ * is the calendar's, so a late athlete is offered this week's sessions rather
+ * than stuck on an old one.
  */
 export function daysToOffer(
   program: Program,
-  workouts: Pick<Workout, "title" | "programId" | "programDayIndex">[]
+  workouts: Pick<Workout, "title" | "programId" | "programDayIndex">[],
+  today?: string
 ): { day: ProgramDay; index: number }[] {
   const all = (program.structure ?? []).map((day, index) => ({ day, index }));
   if (!all.some((d) => d.day.week !== undefined)) return all;
+  const calendar = today ? programWeek(program, today) : null;
+  if (calendar) return all.filter((d) => d.day.week === calendar.week);
   const done = workouts
     .map((w) => findWorkoutProgramDay([program], w)?.index ?? -1)
     .reduce((highest, index) => Math.max(highest, index), -1);
@@ -163,4 +169,28 @@ export async function repeatWorkout(source: Workout, date: string, options: { de
     }
   }
   return id;
+}
+
+/**
+ * The next day of a program to train. A plan with a start date takes the
+ * first session of the calendar week not done yet, then the next week's; any
+ * other program goes on from the last session done, round and round.
+ */
+export function nextDayIndex(
+  program: Program,
+  workouts: Pick<Workout, "date" | "title" | "programId" | "programDayIndex">[],
+  today: string
+): number {
+  const days = program.structure ?? [];
+  const done = workouts
+    .map((w) => ({ date: w.date, index: findWorkoutProgramDay([program], w)?.index }))
+    .filter((x): x is { date: string; index: number } => x.index !== undefined);
+  const calendar = programWeek(program, today);
+  if (calendar && days.some((d) => d.week !== undefined)) {
+    const doneIndexes = new Set(done.map((x) => x.index));
+    const ahead = days.map((d, index) => ({ d, index })).filter(({ d }) => (d.week ?? 0) >= calendar.week);
+    return (ahead.find(({ index }) => !doneIndexes.has(index)) ?? ahead.at(-1) ?? { index: 0 }).index;
+  }
+  const last = [...done].sort((a, b) => a.date.localeCompare(b.date)).at(-1);
+  return last ? (last.index + 1) % Math.max(1, days.length) : 0;
 }

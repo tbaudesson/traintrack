@@ -19,7 +19,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Trash2, Save, Loader2, UserCheck, Users } from "lucide-react";
+import { Trash2, Save, Loader2, UserCheck, Users, CalendarDays } from "lucide-react";
+import { nextMonday, programWeek } from "@/lib/programWeek";
+import { localDate } from "@/lib/dates";
 
 export default function ProgramEditorPage() {
   const t = useTranslations("programs");
@@ -34,6 +36,7 @@ export default function ProgramEditorPage() {
   const [days, setDays] = useState<ProgramDay[]>([]);
   const [assignedTo, setAssignedTo] = useState<string | null>(null);
   const [groupId, setGroupId] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState("");
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
@@ -47,6 +50,7 @@ export default function ProgramEditorPage() {
     setDays(program.structure ?? []);
     setAssignedTo(program.assignedToUserId ?? null);
     setGroupId(program.groupId ?? null);
+    setStartDate(program.startDate ?? "");
     setLoaded(true);
   }
 
@@ -59,6 +63,7 @@ export default function ProgramEditorPage() {
         structure: days,
         assignedToUserId: assignedTo,
         groupId,
+        startDate: startDate || null,
       });
       router.push("/programs");
     } finally {
@@ -78,6 +83,7 @@ export default function ProgramEditorPage() {
   }
 
   const assignedClient = clients.find((c) => c.userId === assignedTo);
+  const weekInfo = startDate ? programWeek({ startDate, structure: days }, localDate()) : null;
 
   // Every team the coach has clients in, with those clients.
   const teams = [...new Map(clients.map((c) => [c.groupId, c.groupName])).entries()].map(([groupId, groupName]) => ({
@@ -94,7 +100,8 @@ export default function ProgramEditorPage() {
       await updateProgram(programId, { name: finalName, description: description.trim() || undefined, structure: days });
       const result = await assignProgramToClients(
         { name: finalName, description: description.trim() || undefined, structure: days },
-        team.members
+        team.members,
+        startDate || null
       );
       setTeamResult(t("teamAssigned", { team: team.groupName, count: result.created + result.updated }));
       setTeamOpen(false);
@@ -151,6 +158,42 @@ export default function ProgramEditorPage() {
                 </Button>
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Start date */}
+        <Card>
+          <CardContent className="space-y-2 py-3">
+            <div className="flex items-center gap-3">
+              <CalendarDays className="h-5 w-5 text-accent-text" aria-hidden="true" />
+              <label htmlFor="program-start" className="flex-1 text-sm font-medium">{t("startDate")}</label>
+              <Input
+                id="program-start"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-auto"
+              />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="outline" onClick={() => setStartDate(nextMonday(localDate()))}>
+                {t("startNextMonday")}
+              </Button>
+              {startDate && (
+                <Button size="sm" variant="ghost" onClick={() => setStartDate("")}>
+                  {t("startNone")}
+                </Button>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {startDate && weekInfo
+                ? weekInfo.started
+                  ? weekInfo.total
+                    ? t("weekOf", { week: weekInfo.week, total: weekInfo.total })
+                    : t("weekSince", { week: weekInfo.week })
+                  : t("startsOn", { date: startDate.split("-").reverse().join("/") })
+                : t("startHint")}
+            </p>
           </CardContent>
         </Card>
 

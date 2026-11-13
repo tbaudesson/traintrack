@@ -77,6 +77,9 @@
     "backToLogin": "Retour à la connexion"
   },
   "home": {
+    "programStarts": "Le programme commence le {date}",
+    "programWeekOf": "Semaine {week} sur {total}",
+    "programWeek": "Semaine {week}",
     "repeatLast": "Refaire ma dernière séance",
     "weekPlan": "Ma semaine",
     "weekPlanEdit": "Modifier",
@@ -308,6 +311,7 @@
     "videoEmbedHint": "Collez un lien YouTube ou Vimeo pour le lire dans l'application. Un lien de recherche ouvre YouTube."
   },
   "teams": {
+    "clientPrograms": "Programmes assignés",
     "deloadActive": "Semaine de décharge en cours",
     "nudge": "Relancer",
     "nudgeNamed": "Relancer {name}",
@@ -392,6 +396,14 @@
     "changePassword": "Changer mon mot de passe"
   },
   "programs": {
+    "startDate": "Date de début",
+    "startNextMonday": "Lundi prochain",
+    "startNone": "Sans date de début",
+    "startHint": "Avec une date de début, un plan en semaines suit le calendrier : l'athlète retrouve les séances de la bonne semaine, même s'il a pris du retard.",
+    "startsOn": "Commence le {date}",
+    "weekOf": "Semaine {week} sur {total}",
+    "weekSince": "Semaine {week} depuis le début",
+    "finished": "Plan terminé",
     "percents": "% du 1RM (facultatif)",
     "percentsHint": "75, ou 70/75/80 par série",
     "supersetWithNext": "Enchaîner avec l'exercice suivant (superset)",

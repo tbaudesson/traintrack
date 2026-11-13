@@ -77,6 +77,9 @@
     "backToLogin": "Back to sign in"
   },
   "home": {
+    "programStarts": "The program starts on {date}",
+    "programWeekOf": "Week {week} of {total}",
+    "programWeek": "Week {week}",
     "repeatLast": "Repeat my last session",
     "weekPlan": "My week",
     "weekPlanEdit": "Edit",
@@ -308,6 +311,7 @@
     "videoEmbedHint": "Paste a YouTube or Vimeo link to play it inside the app. A search link opens YouTube instead."
   },
   "teams": {
+    "clientPrograms": "Assigned programs",
     "deloadActive": "Deload week in progress",
     "nudge": "Check in",
     "nudgeNamed": "Check in with {name}",
@@ -392,6 +396,14 @@
     "changePassword": "Change my password"
   },
   "programs": {
+    "startDate": "Start date",
+    "startNextMonday": "Next Monday",
+    "startNone": "No start date",
+    "startHint": "With a start date, a plan in weeks follows the calendar: the athlete gets the right week's sessions, even when behind.",
+    "startsOn": "Starts on {date}",
+    "weekOf": "Week {week} of {total}",
+    "weekSince": "Week {week} since the start",
+    "finished": "Plan finished",
     "percents": "% of 1RM (optional)",
     "percentsHint": "75, or 70/75/80 per set",
     "supersetWithNext": "Superset with the next exercise",
