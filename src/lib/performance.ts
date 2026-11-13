@@ -1,7 +1,8 @@
 import type { Workout, WorkoutSet } from "@/db";
 
 type Session = Pick<Workout, "id" | "date">;
-type SetLike = Pick<WorkoutSet, "workoutId" | "exerciseId" | "setNumber" | "weightKg" | "reps" | "completed">;
+type SetLike = Pick<WorkoutSet, "workoutId" | "exerciseId" | "setNumber" | "weightKg" | "reps" | "completed"> &
+  Partial<Pick<WorkoutSet, "isWarmup">>;
 
 const WEIGHT_STEP_KG = 2.5;
 
@@ -12,7 +13,7 @@ function ranks(workouts: Session[]): Map<number, number> {
 }
 
 function isLogged(s: SetLike) {
-  return s.completed && !!s.reps && s.reps > 0;
+  return s.completed && !s.isWarmup && !!s.reps && s.reps > 0;
 }
 
 /** Estimated one-rep max (Epley). A single rep is simply its own weight. */

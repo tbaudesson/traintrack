@@ -123,6 +123,8 @@ export interface ProgramExercise {
   targetSets: number;
   targetReps: string; // e.g. "8-12"
   restSec?: number;
+  /** Done straight after this one, without rest: a superset. */
+  supersetWithNext?: boolean;
 }
 
 export type Sport = "run" | "swim" | "bike" | "row" | "other";
@@ -194,6 +196,10 @@ export interface WorkoutSet extends SyncFields {
   rpe?: number;
   restSec?: number;
   completed: boolean;
+  /** A ramp-up set: never counted in volume, records or last performance. */
+  isWarmup?: boolean;
+  /** Exercises of a session sharing this number are done in a row. */
+  supersetGroup?: number | null;
   createdAt: string;
   updatedAt: string;
 }

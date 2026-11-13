@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -10,6 +10,9 @@ import { useExercises } from "@/hooks/useExercises";
 import { usePrograms } from "@/hooks/usePrograms";
 import { useAthleteProfile } from "@/hooks/useAthleteProfile";
 import { defaultSetValues } from "@/lib/setDefaults";
+import { warmupSets, type WarmupStep } from "@/lib/warmup";
+import { substitutes } from "@/lib/substitutes";
+import { chainedNext, linkGroup, restsAfter, supersetOf, unlinkAfter } from "@/lib/supersets";
 import { findWorkoutProgramDay } from "@/lib/startWorkout";
 import { VideoEmbed } from "@/components/domain/VideoEmbed";
 import { PlateCalculator } from "@/components/domain/PlateCalculator";
@@ -31,7 +34,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2 } from "lucide-react";
+import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { connectHeartRate, isBluetoothSupported, type HeartRateMonitor } from "@/lib/bleHeartRate";
@@ -40,6 +43,7 @@ import { EmptyState } from "@/components/ui/page-parts";
 export default function SessionLoggerPage() {
   const t = useTranslations("log");
   const tc = useTranslations("common");
+  const to = useTranslations("onboarding");
   const params = useParams();
   const router = useRouter();
   const workoutId = Number(params.id);
@@ -52,6 +56,7 @@ export default function SessionLoggerPage() {
   const profile = useAthleteProfile();
 
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [swapFor, setSwapFor] = useState<number | null>(null);
   const [openGuide, setOpenGuide] = useState<number | null>(null);
   const [plateWeight, setPlateWeight] = useState<number | null>(null);
   const [newRecord, setNewRecord] = useState<{ exercise: string; weightKg: number; reps: number } | null>(null);
@@ -153,7 +158,7 @@ export default function SessionLoggerPage() {
       return;
     }
 
-    const done = sets.filter((s) => s.completed);
+    const done = sets.filter((s) => s.completed && !s.isWarmup);
     if (done.length === 0) return router.push("/log");
 
     const durationMin = workout.durationMin ?? elapsedMinutes(workout.createdAt);
@@ -201,6 +206,12 @@ export default function SessionLoggerPage() {
     return [...m.entries()];
   }, [sets]);
 
+  /** Each exercise in display order, with its superset (read from its working sets). */
+  const slots = groups.map(([exerciseId, exSets]) => ({
+    exerciseId,
+    group: exSets.find((s) => !s.isWarmup)?.supersetGroup ?? null,
+  }));
+
   /** The program's line for an exercise of this session, if it follows one. */
   function targetFor(exerciseId: number) {
     const ex = exMap.get(exerciseId);
@@ -214,12 +225,13 @@ export default function SessionLoggerPage() {
     const target = targetFor(exerciseId);
     const previous = lastPerformance(exerciseId, workout, allWorkouts, allSets);
     const suggestion = target ? suggestWeight(previous, target.targetSets, target.targetReps) : null;
-    return exSets
+    const work = exSets.filter((s) => !s.isWarmup);
+    return work
       .map((s) => ({
         id: s.id,
         values: defaultSetValues({
           set: s,
-          totalSets: exSets.length,
+          totalSets: work.length,
           level: profile?.fitnessLevel,
           exercise: exMap.get(exerciseId),
           targetReps: target?.targetReps,
@@ -323,9 +335,55 @@ export default function SessionLoggerPage() {
     setPickerOpen(false);
   }
 
-  async function addSet(exerciseId: number, lastSetNumber: number, weightKg?: number) {
-    await addWorkoutSet({ workoutId, exerciseId, setNumber: lastSetNumber + 1, weightKg, completed: false });
+  async function addSet(exerciseId: number, lastSetNumber: number, weightKg?: number, supersetGroup?: number | null) {
+    await addWorkoutSet({ workoutId, exerciseId, setNumber: lastSetNumber + 1, weightKg, supersetGroup, completed: false });
   }
+
+  async function addWarmup(exerciseId: number, steps: WarmupStep[]) {
+    await Promise.all(
+      steps.map((step, i) =>
+        addWorkoutSet({ workoutId, exerciseId, setNumber: i + 1, ...step, restSec: 60, isWarmup: true, completed: false })
+      )
+    );
+  }
+
+  /** Put every working set of an exercise in a superset, or take it out (null). */
+  async function setGroup(exerciseId: number, group: number | null) {
+    await Promise.all(
+      sets.filter((s) => s.exerciseId === exerciseId && !s.isWarmup && s.id).map((s) => updateWorkoutSet(s.id!, { supersetGroup: group }))
+    );
+  }
+
+  async function linkWithNext(index: number) {
+    const [a, b] = [slots[index], slots[index + 1]];
+    const group = linkGroup(a, b, slots);
+    const joining = new Set([...supersetOf(a.exerciseId, slots), ...supersetOf(b.exerciseId, slots)]);
+    await Promise.all([...joining].map((id) => setGroup(id, group)));
+  }
+
+  async function unlink(exerciseId: number) {
+    await Promise.all([...unlinkAfter(exerciseId, slots)].map(([id, group]) => setGroup(id, group)));
+  }
+
+  /** Move what is left of an exercise to another; sets already done stay as they were. */
+  async function swapExercise(oldId: number, newId: number) {
+    const left = sets.filter((s) => s.exerciseId === oldId && !s.completed && s.id);
+    await Promise.all(
+      left.map((s) =>
+        s.isWarmup ? deleteWorkoutSet(s.id!) : updateWorkoutSet(s.id!, { exerciseId: newId, weightKg: undefined, rpe: undefined })
+      )
+    );
+    setSwapFor(null);
+  }
+
+  const swapOptions =
+    swapFor === null
+      ? []
+      : substitutes(
+          exMap.get(swapFor),
+          exercises.filter((e) => !groups.some(([id]) => id === e.id)),
+          profile?.equipment
+        );
 
   async function toggleDone(
     setId: number,
@@ -337,7 +395,13 @@ export default function SessionLoggerPage() {
     const filled = !completed && current && hint ? valuesForTick(current, hint) : {};
     await updateWorkoutSet(setId, { ...filled, completed: !completed });
     if (completed) return;
-    startRest(restSec && restSec > 0 ? restSec : 90);
+    if (current?.isWarmup) {
+      startRest(60);
+      return;
+    }
+    // In a superset, go straight to the next exercise: the rest comes after the last one.
+    if (!current || restsAfter(current.exerciseId, slots)) startRest(restSec && restSec > 0 ? restSec : 90);
+    else navigator.vibrate?.(60);
 
     // Read back: the weight typed just before this tap may not be in `sets` yet.
     const saved = await db.workoutSets.get(setId);
@@ -464,11 +528,21 @@ export default function SessionLoggerPage() {
           </Button>
         )}
 
-        {groups.map(([exerciseId, exSets]) => {
+        {groups.map(([exerciseId, exSets], index) => {
           const ex = exMap.get(exerciseId);
-          const last = exSets[exSets.length - 1];
+          const work = exSets.filter((s) => !s.isWarmup);
+          const warmups = exSets.filter((s) => s.isWarmup);
+          const last = work[work.length - 1];
           const target = targetFor(exerciseId);
           const fills = prefillFor(exerciseId, exSets);
+          const workKg = work.find((s) => s.weightKg)?.weightKg ?? fills.find((f) => f.id === work[0]?.id)?.values.weightKg;
+          const warmupPlan =
+            !isTimedTarget(target?.targetReps) && warmups.length === 0 && !work.some((s) => s.completed)
+              ? warmupSets(workKg, ex?.equipment)
+              : [];
+          const inSuperset = supersetOf(exerciseId, slots).length > 1;
+          const chained = chainedNext(exerciseId, slots);
+          const linkedToNext = slots[index].group != null && slots[index].group === slots[index + 1]?.group;
           const guideOpen = openGuide === exerciseId;
           const nextSet = exSets.find((s) => !s.completed);
           const previous = lastPerformance(exerciseId, workout, allWorkouts, allSets);
@@ -477,7 +551,8 @@ export default function SessionLoggerPage() {
           const best = bestLifts(exerciseId, allSets);
           const records = recordHistory(exerciseId, allWorkouts, allSets).slice(-5).reverse();
           return (
-            <Card key={exerciseId} className="relative">
+            <Fragment key={exerciseId}>
+            <Card className={cn("relative", inSuperset && "ring-2 ring-accent-500/40")}>
               <Image
                 src="/images/dumbbell.webp"
                 alt=""
@@ -502,6 +577,18 @@ export default function SessionLoggerPage() {
                     />
                   </button>
                 </h3>
+
+                {inSuperset && (
+                  <p className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-accent-text uppercase">
+                    <Link2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    {t("superset")}
+                    {chained !== null && (
+                      <span className="font-normal tracking-normal text-muted-foreground normal-case">
+                        · {t("chainWith", { name: exMap.get(chained)?.name ?? "?" })}
+                      </span>
+                    )}
+                  </p>
+                )}
 
                 {target && (
                   <p className="flex items-center gap-1.5 text-sm font-medium text-accent-text">
@@ -558,12 +645,25 @@ export default function SessionLoggerPage() {
 
                 {exSets.map((s) => (
                   <div key={s.id} className="grid grid-cols-[2rem_1fr_1fr_1fr_2.5rem_2.5rem] items-center gap-1.5">
-                    <span className="t-well flex size-8 items-center justify-center rounded-lg bg-accent-100 text-sm font-bold text-accent-text dark:bg-accent-900/40">{s.setNumber}</span>
+                    <span
+                      className={cn(
+                        "flex size-8 items-center justify-center rounded-lg text-sm font-bold",
+                        s.isWarmup
+                          ? "border border-dashed border-border text-xs text-muted-foreground"
+                          : "t-well bg-accent-100 text-accent-text dark:bg-accent-900/40"
+                      )}
+                      title={s.isWarmup ? t("warmup") : undefined}
+                    >
+                      {s.isWarmup ? `${t("warmupShort")}${warmups.indexOf(s) + 1}` : s.setNumber}
+                    </span>
                     <NumCell key={`w${s.weightKg ?? ""}`} label={t("weight")} placeholder={previousTop !== null ? String(suggestion ?? previousTop) : undefined} value={s.weightKg} onChange={(v) => s.id && updateWorkoutSet(s.id, { weightKg: v })} />
                     <NumCell key={`r${s.reps ?? ""}`} label={t("reps")} placeholder={target?.targetReps} value={s.reps} onChange={(v) => s.id && updateWorkoutSet(s.id, { reps: v })} />
-                    <NumCell label={t("rpe")} value={s.rpe} onChange={(v) => s.id && updateWorkoutSet(s.id, { rpe: v })} />
+                    <NumCell key={`p${s.rpe ?? ""}`} label={t("rpe")} value={s.rpe} onChange={(v) => s.id && updateWorkoutSet(s.id, { rpe: v })} />
                     <button
-                      onClick={() => s.id && toggleDone(s.id, s.completed, s.restSec, { weightKg: suggestion ?? previousTop, targetReps: target?.targetReps })}
+                      onClick={() =>
+                        s.id &&
+                        toggleDone(s.id, s.completed, s.restSec, s.isWarmup ? undefined : { weightKg: suggestion ?? previousTop, targetReps: target?.targetReps })
+                      }
                       aria-label={tc("markDone")}
                       aria-pressed={!!s.completed}
                       className={cn(
@@ -596,6 +696,17 @@ export default function SessionLoggerPage() {
                   </button>
                 )}
 
+                {warmupPlan.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => addWarmup(exerciseId, warmupPlan)}
+                    className="flex min-h-10 w-full items-center justify-center gap-1.5 text-sm font-medium text-accent-text"
+                  >
+                    <Flame className="h-4 w-4" aria-hidden="true" />
+                    {t("addWarmup", { steps: warmupPlan.map((w) => w.weightKg).join(" · ") })}
+                  </button>
+                )}
+
                 {nextSet && effort?.setId !== nextSet.id && (
                   <Button
                     size="sm"
@@ -607,12 +718,12 @@ export default function SessionLoggerPage() {
                         setNumber: nextSet.setNumber,
                         restSec: nextSet.restSec,
                         timed: isTimedTarget(target?.targetReps),
-                        hint: { weightKg: suggestion ?? previousTop, targetReps: target?.targetReps },
+                        hint: nextSet.isWarmup ? {} : { weightKg: suggestion ?? previousTop, targetReps: target?.targetReps },
                       })
                     }
                   >
                     <Play className="mr-1 h-4 w-4" aria-hidden="true" />
-                    {t("startSet", { set: nextSet.setNumber })}
+                    {nextSet.isWarmup ? t("startWarmup") : t("startSet", { set: nextSet.setNumber })}
                   </Button>
                 )}
 
@@ -620,21 +731,52 @@ export default function SessionLoggerPage() {
                   variant="outline"
                   size="sm"
                   className="w-full rounded-full text-accent-text"
-                  onClick={() => addSet(exerciseId, last?.setNumber ?? 0, last?.weightKg)}
+                  onClick={() => addSet(exerciseId, last?.setNumber ?? 0, last?.weightKg, slots[index].group)}
                 >
                   <Plus className="mr-1 h-4 w-4" />
                   {t("addSet")}
                 </Button>
-                <button
-                  type="button"
-                  onClick={() => setPlateWeight(last?.weightKg ?? 0)}
-                  className="flex min-h-10 w-full items-center justify-center gap-1.5 text-sm text-muted-foreground"
-                >
-                  <Disc3 className="h-4 w-4" aria-hidden="true" />
-                  {t("plates")}
-                </button>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPlateWeight(last?.weightKg ?? 0)}
+                    className="flex min-h-10 items-center justify-center gap-1.5 text-sm text-muted-foreground"
+                  >
+                    <Disc3 className="h-4 w-4" aria-hidden="true" />
+                    {t("plates")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSwapFor(exerciseId)}
+                    className="flex min-h-10 items-center justify-center gap-1.5 text-sm text-muted-foreground"
+                  >
+                    <ArrowLeftRight className="h-4 w-4" aria-hidden="true" />
+                    {t("swap")}
+                  </button>
+                </div>
               </CardContent>
             </Card>
+
+            {index < groups.length - 1 &&
+              (linkedToNext ? (
+                <div className="flex items-center justify-center gap-2 text-xs font-medium text-accent-text">
+                  <Link2 className="h-4 w-4" aria-hidden="true" />
+                  {t("chained")}
+                  <button type="button" onClick={() => unlink(exerciseId)} className="min-h-10 px-2 text-muted-foreground underline">
+                    {t("unlink")}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => linkWithNext(index)}
+                  className="flex min-h-10 w-full items-center justify-center gap-1.5 text-xs text-muted-foreground"
+                >
+                  <Link2 className="h-4 w-4" aria-hidden="true" />
+                  {t("linkNext")}
+                </button>
+              ))}
+            </Fragment>
           );
         })}
 
@@ -698,6 +840,33 @@ export default function SessionLoggerPage() {
           </button>
         </div>
       )}
+
+      {/* Replace an exercise */}
+      <Dialog open={swapFor !== null} onOpenChange={(open) => !open && setSwapFor(null)}>
+        <DialogContent className="max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t("swapTitle", { name: swapFor !== null ? (exMap.get(swapFor)?.name ?? "") : "" })}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">{t("swapHint")}</p>
+          {swapOptions.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t("swapNone")}</p>
+          ) : (
+            <div className="space-y-1">
+              {swapOptions.map((e) => (
+                <button
+                  key={e.id}
+                  onClick={() => swapFor !== null && e.id && swapExercise(swapFor, e.id)}
+                  className="flex min-h-11 w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent"
+                >
+                  <Dumbbell className="h-4 w-4 shrink-0 text-accent-500" aria-hidden="true" />
+                  <span className="min-w-0 flex-1">{e.name}</span>
+                  {e.equipment && <span className="shrink-0 text-xs text-muted-foreground">{to(`equip_${e.equipment}`)}</span>}
+                </button>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Exercise picker */}
       <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>

@@ -25,7 +25,7 @@ export default function ActivityPage() {
 
   const ids = useMemo(() => new Set(clients.map((c) => c.userId)), [clients]);
   const workouts = useLiveQuery(() => db.workouts.filter((w) => !!w.userId && ids.has(w.userId)).toArray(), [ids]) ?? NO_WORKOUTS;
-  const sets = useLiveQuery(() => db.workoutSets.filter((s) => !!s.userId && ids.has(s.userId)).toArray(), [ids]) ?? NO_SETS;
+  const sets = useLiveQuery(() => db.workoutSets.filter((s) => !!s.userId && ids.has(s.userId) && !s.isWarmup).toArray(), [ids]) ?? NO_SETS;
 
   const { events, inactive } = useMemo(() => {
     const names = new Map(exercises.map((e) => [e.id, e.name]));

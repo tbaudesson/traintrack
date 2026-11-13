@@ -3,6 +3,7 @@ import db, { getCurrentUserIdSync } from "@/db";
 import { lastPerformance, suggestWeight, topWeight } from "@/lib/performance";
 import { createWorkout } from "@/hooks/useWorkouts";
 import { addWorkoutSet } from "@/hooks/useWorkoutSets";
+import { programGroups } from "./supersets";
 import { createCustomExercise } from "@/hooks/useExercises";
 
 /** The title a workout started from a program day carries. */
@@ -56,7 +57,7 @@ export async function startWorkoutFromDay(
 ): Promise<number> {
   const uid = getCurrentUserIdSync();
   const pastWorkouts = await db.workouts.filter((w) => !w.deletedAt && (!uid || w.userId === uid)).toArray();
-  const pastSets = await db.workoutSets.filter((s) => !s.deletedAt && (!uid || s.userId === uid)).toArray();
+  const pastSets = await db.workoutSets.filter((s) => !s.deletedAt && !s.isWarmup && (!uid || s.userId === uid)).toArray();
   const day = program.structure[dayIndex];
   const id = await createWorkout({
     date,
@@ -67,7 +68,8 @@ export async function startWorkoutFromDay(
     sport: day.cardio?.sport ?? null,
   });
   if (day.cardio) return id;
-  for (const pe of day.exercises) {
+  const groups = programGroups(day.exercises.map((pe) => !!pe.supersetWithNext));
+  for (const [index, pe] of day.exercises.entries()) {
     // Resolve the exercise by uuid or name; create a custom one if missing
     const ex = exercises.find(
       (e) => (pe.exerciseUuid && e.uuid === pe.exerciseUuid) || e.name.toLowerCase() === pe.exerciseName.toLowerCase()
@@ -80,7 +82,15 @@ export async function startWorkoutFromDay(
     const weightKg = suggestWeight(last, pe.targetSets, pe.targetReps) ?? topWeight(last) ?? undefined;
     const sets = Math.max(1, pe.targetSets || 1);
     for (let i = 1; i <= sets; i++) {
-      await addWorkoutSet({ workoutId: id, exerciseId, setNumber: i, weightKg, restSec: pe.restSec, completed: false });
+      await addWorkoutSet({
+        workoutId: id,
+        exerciseId,
+        setNumber: i,
+        weightKg,
+        restSec: pe.restSec,
+        completed: false,
+        supersetGroup: groups[index],
+      });
     }
   }
   return id;

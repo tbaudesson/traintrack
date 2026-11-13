@@ -120,6 +120,17 @@ export function ProgramDaysEditor({
                       />
                     </label>
                   </div>
+                  {ei < day.exercises.length - 1 && (
+                    <label className="mt-2 flex min-h-10 items-center gap-2 text-xs text-muted-foreground">
+                      <input
+                        type="checkbox"
+                        checked={!!ex.supersetWithNext}
+                        onChange={(e) => updateExercise(di, ei, { supersetWithNext: e.target.checked || undefined })}
+                        className="size-5"
+                      />
+                      {t("supersetWithNext")}
+                    </label>
+                  )}
                 </div>
               ))}
 
