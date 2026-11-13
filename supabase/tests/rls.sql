@@ -207,5 +207,62 @@ begin
   perform _root();
 end $$;
 
+-- ─── Security review 037 ────────────────────────────────────
+insert into workouts (id, user_id, date) values
+  ('b0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000001', '2026-11-01');
+insert into exercises (id, user_id, name, muscle_group, is_custom) values
+  ('e0000000-0000-4000-8000-000000000001', null, 'Test Lift', 'chest', false);
+insert into programs (id, user_id, owner_user_id, assigned_to_user_id, name, start_date) values
+  ('f0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000003',
+   'a0000000-0000-4000-8000-000000000003', 'a0000000-0000-4000-8000-000000000007', 'Assigned', '2026-11-02');
+do $$
+declare
+  atk uuid := 'a0000000-0000-4000-8000-000000000001';
+  vic uuid := 'a0000000-0000-4000-8000-000000000002';
+  client uuid := 'a0000000-0000-4000-8000-000000000007';
+  admin_id uuid := 'a0000000-0000-4000-8000-000000000003';
+  own_w uuid := 'b0000000-0000-4000-8000-000000000001';
+  vic_w uuid := 'b0000000-0000-4000-8000-000000000002';
+begin
+  perform _as(atk);
+  -- A note on one's own workout naming someone else's file opens nothing.
+  begin
+    insert into workout_notes (user_id, workout_id, body, audio_path) values (atk, own_w, 'steal', vic || '/n.webm');
+  exception when others then null;
+  end;
+  perform _t('a note cannot open someone else''s voice file',
+    _count(format('select 1 from storage.objects where name like %L', vic || '/%')) = 0);
+  perform _denied('a note cannot name someone else''s voice file',
+    format('insert into workout_notes (user_id, workout_id, body, audio_path) values (%L, %L, %L, %L)', atk, own_w, 'x', vic || '/n.webm'));
+  perform _denied('a set cannot join someone else''s workout',
+    format('insert into workout_sets (user_id, workout_id, set_number, reps, weight_kg, completed) values (%L, %L, 1, 1000, 1000, true)', atk, vic_w));
+  perform _allowed('a set joins one''s own workout',
+    format('insert into workout_sets (user_id, workout_id, set_number, reps, weight_kg, completed) values (%L, %L, 1, 5, 60, true)', atk, own_w));
+  perform _denied('a half-filled pain is refused',
+    format('insert into workout_notes (user_id, workout_id, body, pain_area) values (%L, %L, %L, %L)', atk, own_w, 'x', 'knee'));
+  perform _allowed('a full pain report is accepted',
+    format('insert into workout_notes (user_id, workout_id, body, pain_area, pain_level) values (%L, %L, %L, %L, 6)', atk, own_w, '', 'knee'));
+  perform _denied('a user cannot translate the library',
+    format('select admin_update_exercise_i18n(%L, %L, %L, %L, %L)', 'e0000000-0000-4000-8000-000000000001', 'x', 'x', 'x', 'x'));
+  perform _denied('a user cannot add to the library',
+    format('select admin_create_library_exercise(%L, %L, %L, %L, %L, %L, %L)', 'Fake', 'chest', 'barbell', '', '', '', ''));
+  perform _root();
+
+  perform _as(client);
+  update programs set start_date = '2030-01-01' where id = 'f0000000-0000-4000-8000-000000000001';
+  perform _root();
+  perform _t('a client cannot move their coach''s program start',
+    (select start_date from programs where id = 'f0000000-0000-4000-8000-000000000001') = '2026-11-02');
+
+  perform _as(admin_id);
+  perform _allowed('an admin translates the library',
+    format('select admin_update_exercise_i18n(%L, %L, %L, %L, %L)', 'e0000000-0000-4000-8000-000000000001', 'Test FR', 'Test DE', '', ''));
+  perform _allowed('an admin adds to the library',
+    format('select admin_create_library_exercise(%L, %L, %L, %L, %L, %L, %L)', 'Brand New Lift', 'back', 'cable', '', '', 'Nouveau', 'Neu'));
+  perform _denied('the library refuses a duplicate name',
+    format('select admin_create_library_exercise(%L, %L, %L, %L, %L, %L, %L)', 'test lift', 'chest', 'barbell', '', '', '', ''));
+  perform _root();
+end $$;
+
 select ' FAIL ' || name from _r where not ok;
 select count(*) filter (where ok) as passed, count(*) filter (where not ok) as failed from _r;
