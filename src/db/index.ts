@@ -1,3 +1,4 @@
+import type { StrengthGoal } from "@/lib/goals";
 import Dexie, { type EntityTable } from "dexie";
 
 // ─── Sync metadata mixin ─────────────────────────────────────────────
@@ -57,6 +58,8 @@ export interface AthleteProfile extends SyncFields {
   trainingDays?: number[];
   /** Usual training time, "18:30", for the calendar reminders. */
   trainingTime?: string;
+  /** Lifts to reach, see lib/goals. */
+  strengthGoals?: StrengthGoal[];
   /** Optional daily macro targets */
   nutritionTargets?: { calories?: number; protein?: number; carbs?: number; fat?: number; water?: number };
   /** GDPR Art. 9 explicit consent to process health/fitness data */

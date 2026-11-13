@@ -98,3 +98,53 @@ export async function startWorkoutFromDay(
   }
   return id;
 }
+
+/**
+ * The last strength session worth repeating: the most recent one with at
+ * least one working set done, before today.
+ */
+export function lastRepeatable<W extends Pick<Workout, "id" | "date" | "kind">>(
+  workouts: W[],
+  sets: { workoutId: number; completed: boolean; isWarmup?: boolean }[],
+  today: string
+): W | undefined {
+  const withWork = new Set(sets.filter((s) => s.completed && !s.isWarmup).map((s) => s.workoutId));
+  return [...workouts]
+    .filter((w) => w.kind !== "cardio" && w.date < today && w.id !== undefined && withWork.has(w.id))
+    .sort((a, b) => b.date.localeCompare(a.date) || (b.id ?? 0) - (a.id ?? 0))[0];
+}
+
+/**
+ * Start today with the same session as a past one: the same exercises in the
+ * same order, as many working sets, the weights of last time, the supersets
+ * and the program it belonged to. Reps are left for the athlete to fill.
+ */
+export async function repeatWorkout(source: Workout, date: string): Promise<number> {
+  const sets = (await db.workoutSets.where("workoutId").equals(source.id!).toArray())
+    .filter((s) => !s.deletedAt && !s.isWarmup)
+    .sort((a, b) => a.setNumber - b.setNumber || (a.id ?? 0) - (b.id ?? 0));
+  const id = await createWorkout({
+    date,
+    title: source.title,
+    programId: source.programId,
+    programDayIndex: source.programDayIndex,
+    kind: "strength",
+  });
+  const order: number[] = [];
+  for (const s of sets) if (!order.includes(s.exerciseId)) order.push(s.exerciseId);
+  for (const exerciseId of order) {
+    const own = sets.filter((s) => s.exerciseId === exerciseId);
+    for (const [i, s] of own.entries()) {
+      await addWorkoutSet({
+        workoutId: id,
+        exerciseId,
+        setNumber: i + 1,
+        weightKg: s.weightKg ?? undefined,
+        restSec: s.restSec,
+        supersetGroup: s.supersetGroup ?? null,
+        completed: false,
+      });
+    }
+  }
+  return id;
+}

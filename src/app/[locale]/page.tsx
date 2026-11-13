@@ -16,7 +16,7 @@ import { useNutritionForDate, sumMacros } from "@/hooks/useNutrition";
 import { useTodayReadiness, readinessScore } from "@/hooks/useReadiness";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useTeams } from "@/hooks/useTeams";
-import { daysToOffer, findWorkoutProgramDay, startWorkoutFromDay } from "@/lib/startWorkout";
+import { daysToOffer, findWorkoutProgramDay, lastRepeatable, repeatWorkout, startWorkoutFromDay } from "@/lib/startWorkout";
 import { describeTarget, isCardio, isCardioDone, weeklyGoal } from "@/lib/cardio";
 import { SportPicker } from "@/components/domain/SportPicker";
 import { WeekStrip } from "@/components/domain/WeekStrip";
@@ -33,7 +33,7 @@ import type { ReactNode } from "react";
 import type { Program, ProgramDay, Sport } from "@/db";
 import {
   type LucideIcon,
-  Activity, Upload, ArrowRight, ListChecks, MessageSquare, Plus, Sparkles, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
+  Activity, Upload, RotateCcw, ArrowRight, ListChecks, MessageSquare, Plus, Sparkles, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
 } from "lucide-react";
 import { localDate, localDateIn } from "@/lib/dates";
 
@@ -214,6 +214,19 @@ export default function HomePage() {
   }
 
   const trainable = programs.filter((p) => (p.structure ?? []).length > 0);
+  const repeatable = lastRepeatable(workouts, sets, today);
+
+  async function repeatLast() {
+    if (!repeatable) return;
+    setChoosing(false);
+    setStarting(true);
+    try {
+      const id = await repeatWorkout(repeatable, today);
+      router.push(`/log/${id}`);
+    } finally {
+      setStarting(false);
+    }
+  }
   const templateGroups = (
     [
       { key: "readyMadeStrength", items: templates.filter((x) => x.goal !== "endurance") },
@@ -394,6 +407,16 @@ export default function HomePage() {
 
                 <section className="space-y-2">
                   <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("noProgram")}</h3>
+                  {repeatable && (
+                    <DetailRow
+                      onClick={repeatLast}
+                      disabled={starting}
+                      icon={RotateCcw}
+                      tone="neutral"
+                      title={t("repeatLast")}
+                      subtitle={`${repeatable.title || t("freeSession")} · ${repeatable.date.split("-").reverse().join("/")}`}
+                    />
+                  )}
                   <DetailRow onClick={startFree} disabled={starting} icon={Plus} tone="neutral" title={t("freeSession")} subtitle={t("freeSessionHint")} />
                   <DetailRow onClick={() => { setChoosing(false); setSportOpen(true); }} disabled={starting} icon={Activity} tone="neutral" title={tc("newSession")} subtitle={tc("newSessionHint")} />
                   <GpxImport

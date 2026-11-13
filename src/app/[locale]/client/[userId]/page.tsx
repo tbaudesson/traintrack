@@ -22,6 +22,8 @@ import { SectionHeading } from "@/components/ui/page-parts";
 import { formatDistance, formatDuration, isCardio } from "@/lib/cardio";
 import { localDate } from "@/lib/dates";
 import { useTeamAdherence } from "@/hooks/useClientActivity";
+import { NudgeButton } from "@/components/domain/NudgeButton";
+import { GoalsSection } from "@/components/domain/GoalsSection";
 
 function scoreColor(s: number) {
   if (s >= 75) return "text-green-600";
@@ -128,6 +130,7 @@ export default function ClientDetailPage() {
                     );
                   })}
                 </div>
+                <NudgeButton userId={userId} adherence={adherence} />
                 <p className="text-sm">
                   {adherence.rate !== null ? t("adherenceRate", { percent: Math.round(adherence.rate * 100) }) : t("adherenceNoPlan")}
                   {adherence.recentRpe !== null && ` · ${t("adherenceRpe", { rpe: adherence.recentRpe })}`}
@@ -136,6 +139,8 @@ export default function ClientDetailPage() {
             </Card>
           </section>
         )}
+
+        <GoalsSection profile={clientProfile} workouts={workouts} sets={sets} exercises={exercises} editable={false} />
 
         {/* Readiness */}
         {readiness.length > 0 && (

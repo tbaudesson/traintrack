@@ -10,10 +10,11 @@ import type { Program } from "@/db";
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Upload, Activity, Plus, Dumbbell, Calendar, Loader2, ClipboardList } from "lucide-react";
+import { Upload, Activity, Plus, Dumbbell, Calendar, Loader2, ClipboardList, RotateCcw } from "lucide-react";
+import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
 import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
 import { DetailRow } from "@/components/ui/detail-row";
-import { daysToOffer, startWorkoutFromDay } from "@/lib/startWorkout";
+import { daysToOffer, lastRepeatable, repeatWorkout, startWorkoutFromDay } from "@/lib/startWorkout";
 import { describeTarget, formatDistance, isCardio } from "@/lib/cardio";
 import { SportPicker } from "@/components/domain/SportPicker";
 import { GpxImport } from "@/components/domain/GpxImport";
@@ -32,6 +33,15 @@ export default function LogPage() {
   const tc = useTranslations("cardio");
 
   const today = localDate();
+  const allSets = useAllWorkoutSets();
+  const repeatable = lastRepeatable(workouts, allSets, today);
+
+  async function repeatLast() {
+    if (!repeatable) return;
+    setBusy(true);
+    const id = await repeatWorkout(repeatable, today);
+    router.push(`/log/${id}`);
+  }
 
   async function startCardio(sport: Sport) {
     setSportOpen(false);
@@ -69,6 +79,16 @@ export default function LogPage() {
         <Button className="w-full" onClick={startEmpty} disabled={busy}>
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="mr-1 h-4 w-4" />{t("newWorkout")}</>}
         </Button>
+
+        {repeatable && (
+          <DetailRow
+            onClick={repeatLast}
+            disabled={busy}
+            icon={RotateCcw}
+            title={t("repeatLast")}
+            subtitle={`${repeatable.title || t("newWorkout")} · ${repeatable.date.split("-").reverse().join("/")}`}
+          />
+        )}
 
         <Button variant="outline" className="w-full" onClick={() => setSportOpen(true)} disabled={busy}>
           <Activity className="mr-1 h-4 w-4" aria-hidden="true" />

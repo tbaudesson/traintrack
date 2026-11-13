@@ -15,6 +15,7 @@ import {
 } from "@/lib/groupService";
 import { useTeamAdherence } from "@/hooks/useClientActivity";
 import { byAttention, type Adherence } from "@/lib/adherence";
+import { NudgeButton } from "@/components/domain/NudgeButton";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -331,6 +332,15 @@ function TeamCard({
                       <span className="flex-1 truncate">{m.display_name}</span>
                     )}
                     {m.status === "active" && m.user_id && <AdherenceBadge value={adherenceByUser?.get(m.user_id)} />}
+                    {m.status === "active" && m.user_id && (
+                      <NudgeButton
+                        compact
+                        userId={m.user_id}
+                        name={m.display_name}
+                        adherence={adherenceByUser?.get(m.user_id)}
+                        onSent={() => showToast(t("nudgeSent"))}
+                      />
+                    )}
                     <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                       {m.status === "pending" ? t("status_pending") : t(`role_${m.role}`)}
                     </span>

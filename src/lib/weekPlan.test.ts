@@ -68,3 +68,22 @@ describe("monday of a date", () => {
     expect(mondayOfDate("2026-11-09")).toBe("2026-11-09");
   });
 });
+
+describe("the session to repeat", () => {
+  it("is the latest strength session with work done, before today", async () => {
+    const { lastRepeatable } = await import("./startWorkout");
+    const workouts = [
+      { id: 1, date: "2026-11-09", kind: "strength" as const },
+      { id: 2, date: "2026-11-10", kind: "cardio" as const },
+      { id: 3, date: "2026-11-10", kind: "strength" as const },
+      { id: 4, date: "2026-11-11", kind: "strength" as const },
+    ];
+    const sets = [
+      { workoutId: 1, completed: true },
+      { workoutId: 2, completed: true },
+      { workoutId: 3, completed: true, isWarmup: true },
+      { workoutId: 4, completed: true },
+    ];
+    expect(lastRepeatable(workouts, sets, "2026-11-11")?.id).toBe(1);
+  });
+});

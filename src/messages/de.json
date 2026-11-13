@@ -77,6 +77,7 @@
     "backToLogin": "Zurück zur Anmeldung"
   },
   "home": {
+    "repeatLast": "Letzte Einheit wiederholen",
     "weekPlan": "Meine Woche",
     "weekPlanEdit": "Ändern",
     "weekPlanSetup": "Planen",
@@ -169,6 +170,7 @@
     "saved": "Profil gespeichert"
   },
   "log": {
+    "repeatLast": "Letzte Einheit wiederholen",
     "title": "Trainingsprotokoll",
     "newWorkout": "Neue Einheit",
     "prefill": "Sätze vorausfüllen (Niveau {level})",
@@ -300,6 +302,16 @@
     "videoEmbedHint": "Füge einen YouTube- oder Vimeo-Link ein, um ihn in der App abzuspielen. Ein Suchlink öffnet YouTube."
   },
   "teams": {
+    "nudge": "Nachfragen",
+    "nudgeNamed": "Bei {name} nachfragen",
+    "nudgeSend": "Nachricht senden",
+    "nudgeSent": "Nachricht gesendet",
+    "nudgeHello": "Hallo {name},",
+    "nudgeHelloAnon": "Hallo,",
+    "nudge_never": "willkommen! Deine erste Einheit wartet in TrainTrack auf dich. Brauchst du Hilfe beim Einstieg?",
+    "nudge_idle": "ich habe dich seit {days} Tagen nicht trainieren sehen. Alles in Ordnung? Sag mir, ob wir dein Programm anpassen sollen.",
+    "nudge_lowRate": "du hast in den letzten Wochen {percent} % der geplanten Einheiten gemacht. Sollen wir deinen Plan besser an deinen Alltag anpassen?",
+    "nudge_hard": "deine letzten Einheiten wirken sehr hart (RPE {rpe} im Schnitt). Wie fühlst du dich? Wir können bei Bedarf reduzieren.",
     "adherenceWeek": "{done}/{planned} diese Woche",
     "adherenceSessions": "{count, plural, =0 {Keine Einheit diese Woche} one {# Einheit diese Woche} other {# Einheiten diese Woche}}",
     "adherenceThisWeek": "Diese Woche",
@@ -817,5 +829,25 @@
     "zone3": "Mittel: die Sätze werden kurz.",
     "zone4": "Hart: nur noch wenige Worte, 20 bis 40 min durchhaltbar.",
     "zone5": "Sehr hart: Sprechen unmöglich, höchstens einige Minuten."
+  },
+  "goals": {
+    "title": "Meine Ziele",
+    "add": "Neues Ziel",
+    "needProfile": "Vervollständigen Sie Ihr Athletenprofil, um Ziele zu setzen.",
+    "empty": "Setzen Sie sich ein Ziel in Zahlen, etwa 100 kg beim Bankdrücken: die App verfolgt Ihren Fortschritt und schätzt, wann Sie es erreichen.",
+    "target": "Ziel: {kg} kg (geschätztes 1RM)",
+    "deadline": "bis {date}",
+    "delete": "Ziel löschen",
+    "deleteConfirm": "Dieses Ziel löschen?",
+    "achieved": "Erreicht am {date}",
+    "current": "Aktuell: {kg} kg",
+    "projected": "bei diesem Tempo erreicht um den {date}",
+    "projectedLate": "bei diesem Tempo um den {date}: nach der Frist",
+    "notEnough": "noch zu wenige Einheiten für eine Schätzung",
+    "exercise": "Übung",
+    "targetLabel": "Ziel-1RM (kg)",
+    "deadlineLabel": "Frist (optional)",
+    "hint": "Das 1RM wird aus Ihren Sätzen geschätzt: 80 kg × 8 Wiederholungen ergeben etwa 101 kg. Kein Maximaltest nötig.",
+    "save": "Ziel speichern"
   }
 }

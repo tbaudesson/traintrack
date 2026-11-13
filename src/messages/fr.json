@@ -77,6 +77,7 @@
     "backToLogin": "Retour à la connexion"
   },
   "home": {
+    "repeatLast": "Refaire ma dernière séance",
     "weekPlan": "Ma semaine",
     "weekPlanEdit": "Modifier",
     "weekPlanSetup": "Planifier",
@@ -169,6 +170,7 @@
     "saved": "Profil enregistré"
   },
   "log": {
+    "repeatLast": "Refaire ma dernière séance",
     "title": "Journal de séance",
     "newWorkout": "Nouvelle séance",
     "prefill": "Pré-remplir les séries (niveau {level})",
@@ -300,6 +302,16 @@
     "videoEmbedHint": "Collez un lien YouTube ou Vimeo pour le lire dans l'application. Un lien de recherche ouvre YouTube."
   },
   "teams": {
+    "nudge": "Relancer",
+    "nudgeNamed": "Relancer {name}",
+    "nudgeSend": "Envoyer le message",
+    "nudgeSent": "Message envoyé",
+    "nudgeHello": "Salut {name},",
+    "nudgeHelloAnon": "Salut,",
+    "nudge_never": "bienvenue ! Ta première séance t'attend dans TrainTrack. Besoin d'un coup de main pour démarrer ?",
+    "nudge_idle": "je ne t'ai pas vu t'entraîner depuis {days} jours. Tout va bien ? Dis-moi si on doit adapter ton programme.",
+    "nudge_lowRate": "tu as fait {percent} % des séances prévues ces dernières semaines. On ajuste ton planning pour qu'il colle mieux à ton emploi du temps ?",
+    "nudge_hard": "tes dernières séances ont l'air très dures (RPE {rpe} en moyenne). Comment tu te sens ? On peut alléger si besoin.",
     "adherenceWeek": "{done}/{planned} cette sem.",
     "adherenceSessions": "{count, plural, =0 {Aucune séance cette sem.} one {# séance cette sem.} other {# séances cette sem.}}",
     "adherenceThisWeek": "Cette semaine",
@@ -817,5 +829,25 @@
     "zone3": "Modéré : les phrases deviennent courtes.",
     "zone4": "Soutenu : quelques mots seulement, l'effort est tenable 20 à 40 min.",
     "zone5": "Très dur : impossible de parler, quelques minutes au maximum."
+  },
+  "goals": {
+    "title": "Mes objectifs",
+    "add": "Nouvel objectif",
+    "needProfile": "Complétez votre profil athlète pour vous fixer des objectifs.",
+    "empty": "Fixez-vous un objectif chiffré, par exemple 100 kg au développé couché : l'app suivra votre progression et estimera quand vous l'atteindrez.",
+    "target": "Objectif : {kg} kg (1RM estimé)",
+    "deadline": "échéance {date}",
+    "delete": "Supprimer l'objectif",
+    "deleteConfirm": "Supprimer cet objectif ?",
+    "achieved": "Atteint le {date}",
+    "current": "Actuel : {kg} kg",
+    "projected": "au rythme actuel, atteint vers le {date}",
+    "projectedLate": "au rythme actuel, vers le {date} : après l'échéance",
+    "notEnough": "pas encore assez de séances pour estimer une date",
+    "exercise": "Exercice",
+    "targetLabel": "1RM visé (kg)",
+    "deadlineLabel": "Échéance (facultatif)",
+    "hint": "Le 1RM est estimé à partir de vos séries : 80 kg × 8 répétitions donnent environ 101 kg. Pas besoin de tester votre maximum.",
+    "save": "Enregistrer l'objectif"
   }
 }
