@@ -15,3 +15,26 @@ describe("built-in programs", () => {
     expect([...new Set(missing)]).toEqual([]);
   });
 });
+
+describe("strength programs in every language", () => {
+  const strength = PROGRAM_TEMPLATES.filter((t) => t.goal !== "endurance");
+  const byLocale = (locale: string) => strength.filter((t) => t.locale === locale);
+
+  it("offer all fourteen in French, English and German", () => {
+    for (const locale of ["fr", "en", "de"]) expect(byLocale(locale)).toHaveLength(14);
+  });
+
+  it("keep the same exercises, with a name for every day", () => {
+    const exercises = (locale: string) => byLocale(locale).map((t) => t.structure.map((d) => d.exercises));
+    expect(exercises("en")).toEqual(exercises("fr"));
+    expect(exercises("de")).toEqual(exercises("fr"));
+    expect(strength.flatMap((t) => t.structure).filter((d) => !d.name)).toEqual([]);
+  });
+
+  it("give every program a different name within a language", () => {
+    for (const locale of ["fr", "en", "de"]) {
+      const names = PROGRAM_TEMPLATES.filter((t) => t.locale === locale).map((t) => t.name);
+      expect(new Set(names).size).toBe(names.length);
+    }
+  });
+});

@@ -1,6 +1,7 @@
 import type { ProgramDay } from "@/db";
 import { ENDURANCE_TEMPLATES } from "./enduranceTemplates";
-import type { PlanLocale } from "./enduranceText";
+import { PLAN_LOCALES, type PlanLocale } from "./enduranceText";
+import { STRENGTH_ORIGINAL, STRENGTH_TEXT } from "./strengthText";
 
 /**
  * Ready-made program templates so a user can SELECT a proven program instead of
@@ -32,7 +33,8 @@ const ex = (exerciseName: string, targetSets: number, targetReps: string, restSe
   restSec,
 });
 
-export const PROGRAM_TEMPLATES: ProgramTemplate[] = [
+/** The strength programs as first written, each in its own language. */
+const STRENGTH_ORIGINALS: ProgramTemplate[] = [
   {
     id: "fullbody-beginner-3",
     name: "Full Body — Beginner",
@@ -219,8 +221,28 @@ export const PROGRAM_TEMPLATES: ProgramTemplate[] = [
       { name: "Circuit bas", exercises: [ex("Leg Press", 4, "15-20", 45), ex("Leg Curl", 3, "15-20", 45), ex("Hip Thrust", 3, "12-15", 45), ex("Plank", 3, "45-60s", 30)] },
     ],
   },
-  ...ENDURANCE_TEMPLATES,
 ];
+
+/**
+ * Every strength program in every language. The original keeps its id; a
+ * translation takes the same exercises with its name, description and days.
+ */
+export const STRENGTH_TEMPLATES: ProgramTemplate[] = PLAN_LOCALES.flatMap((locale) =>
+  STRENGTH_ORIGINALS.map((tpl): ProgramTemplate => {
+    if (STRENGTH_ORIGINAL[tpl.id] === locale) return { ...tpl, locale };
+    const text = STRENGTH_TEXT[tpl.id][locale]!;
+    return {
+      ...tpl,
+      id: `${tpl.id}-${locale}`,
+      locale,
+      name: text.name,
+      description: text.description,
+      structure: tpl.structure.map((day, i) => ({ ...day, name: text.days[i] })),
+    };
+  })
+);
+
+export const PROGRAM_TEMPLATES: ProgramTemplate[] = [...STRENGTH_TEMPLATES, ...ENDURANCE_TEMPLATES];
 
 /** Rank templates by closeness to the user's goal / level / days-per-week. */
 export function rankTemplates(pref: {
