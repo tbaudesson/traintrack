@@ -359,6 +359,8 @@
     "daysAgo": "{days}d ago"
   },
   "settings": {
+    "importTitle": "Import my history (Strong, Hevy)",
+    "exportCSV": "Export my sessions (CSV)",
     "plan": "Week plan",
     "planHint": "Your training days: the home screen places your next sessions on them.",
     "planTime": "Usual time",
@@ -897,5 +899,23 @@
     "area_knee": "Knee",
     "area_ankle": "Ankle",
     "area_other": "Other"
+  },
+  "importHistory": {
+    "hint": "In Strong or Hevy, export your sessions as CSV (in the app's settings or profile), then pick the file here. It is read on your phone and not sent anywhere.",
+    "pick": "Pick the CSV file",
+    "unreadable": "This file is not a readable Strong or Hevy export.",
+    "tooBig": "This file is too large (30 MB at most).",
+    "title": "Import from {source}",
+    "summary": "{workouts, plural, one {# session} other {# sessions}}, {sets, plural, one {# set} other {# sets}}",
+    "period": "from {from} to {to}",
+    "nothingNew": "Nothing new: all these sessions are already in TrainTrack.",
+    "duplicates": "{count, plural, one {# session already there will be skipped} other {# sessions already there will be skipped}}.",
+    "skipped": "{count, plural, one {# row skipped} other {# rows skipped}} (cardio, empty sets).",
+    "unit": "Weight unit in Strong",
+    "unitHint": "Strong exports in the unit set in the app, without naming it: pick the right one.",
+    "exercises": "{matched, plural, one {# exercise recognised} other {# exercises recognised}}, {created, plural, =0 {none to create} one {# new to create} other {# new to create}}",
+    "createdList": "New:",
+    "confirm": "Import {count, plural, one {# session} other {# sessions}}",
+    "done": "{workouts, plural, one {# session imported} other {# sessions imported}} ({sets} sets)."
   }
 }

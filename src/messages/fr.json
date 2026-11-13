@@ -359,6 +359,8 @@
     "daysAgo": "il y a {days}j"
   },
   "settings": {
+    "importTitle": "Importer mon historique (Strong, Hevy)",
+    "exportCSV": "Exporter mes séances (CSV)",
     "plan": "Planning de la semaine",
     "planHint": "Vos jours d'entraînement : l'accueil place vos prochaines séances dessus.",
     "planTime": "Heure habituelle",
@@ -897,5 +899,23 @@
     "area_knee": "Genou",
     "area_ankle": "Cheville",
     "area_other": "Autre"
+  },
+  "importHistory": {
+    "hint": "Dans Strong ou Hevy, exportez vos séances au format CSV (dans les réglages ou le profil de l'app), puis choisissez le fichier ici. Il est lu sur votre téléphone, sans être envoyé ailleurs.",
+    "pick": "Choisir le fichier CSV",
+    "unreadable": "Ce fichier n'est pas un export Strong ou Hevy lisible.",
+    "tooBig": "Ce fichier est trop volumineux (30 Mo au maximum).",
+    "title": "Import depuis {source}",
+    "summary": "{workouts, plural, one {# séance} other {# séances}}, {sets, plural, one {# série} other {# séries}}",
+    "period": "du {from} au {to}",
+    "nothingNew": "Rien de nouveau : toutes ces séances sont déjà dans TrainTrack.",
+    "duplicates": "{count, plural, one {# séance déjà présente sera ignorée} other {# séances déjà présentes seront ignorées}}.",
+    "skipped": "{count, plural, one {# ligne ignorée} other {# lignes ignorées}} (cardio, séries vides).",
+    "unit": "Unité des poids dans Strong",
+    "unitHint": "Strong exporte dans l'unité choisie dans l'app, sans l'indiquer : choisissez la bonne.",
+    "exercises": "{matched, plural, one {# exercice reconnu} other {# exercices reconnus}}, {created, plural, =0 {aucun à créer} one {# nouveau à créer} other {# nouveaux à créer}}",
+    "createdList": "Nouveaux :",
+    "confirm": "Importer {count, plural, one {# séance} other {# séances}}",
+    "done": "{workouts, plural, one {# séance importée} other {# séances importées}} ({sets} séries)."
   }
 }

@@ -53,3 +53,58 @@ export async function downloadJSONBackup(): Promise<void> {
   const date = localDate();
   downloadFile(json, `traintrack-backup-${date}.json`, "application/json");
 }
+
+const csvField = (value: string | number | undefined | null) => {
+  const text = value === undefined || value === null ? "" : String(value);
+  return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+};
+
+/**
+ * The strength sessions as a CSV in Strong's layout (one row per set, weights
+ * in kg, warm-ups marked "W"), which Strong-compatible apps and spreadsheets
+ * read, and which TrainTrack can import again.
+ */
+export function sessionsCsv(
+  workouts: { id?: number; date: string; title?: string; durationMin?: number; kind?: string; userId?: string | null }[],
+  sets: { workoutId: number; exerciseId: number; setNumber: number; weightKg?: number | null; reps?: number | null; rpe?: number | null; completed: boolean; isWarmup?: boolean }[],
+  exerciseName: (id: number) => string
+): string {
+  const header = ["Date", "Workout Name", "Duration", "Exercise Name", "Set Order", "Weight", "Reps", "Distance", "Seconds", "Notes", "Workout Notes", "RPE"];
+  const lines = [header.join(",")];
+  for (const w of [...workouts].filter((x) => x.kind !== "cardio").sort((a, b) => a.date.localeCompare(b.date) || (a.id ?? 0) - (b.id ?? 0))) {
+    const own = sets
+      .filter((s) => s.workoutId === w.id && s.completed)
+      .sort((a, b) => Number(!!b.isWarmup) - Number(!!a.isWarmup) || a.setNumber - b.setNumber);
+    for (const s of own) {
+      lines.push(
+        [
+          `${w.date} 00:00:00`,
+          w.title ?? "",
+          w.durationMin ? `${Math.floor(w.durationMin / 60)}h ${w.durationMin % 60}m` : "",
+          exerciseName(s.exerciseId),
+          s.isWarmup ? "W" : s.setNumber,
+          s.weightKg ?? 0,
+          s.reps ?? 0,
+          0,
+          0,
+          "",
+          "",
+          s.rpe ?? "",
+        ]
+          .map(csvField)
+          .join(",")
+      );
+    }
+  }
+  return lines.join("\n") + "\n";
+}
+
+export async function downloadSessionsCsv(userId: string | null | undefined): Promise<void> {
+  const [workouts, sets, exercises] = await Promise.all([
+    db.workouts.filter((w) => !w.deletedAt && (!userId || w.userId === userId)).toArray(),
+    db.workoutSets.filter((s) => !s.deletedAt && (!userId || s.userId === userId)).toArray(),
+    db.exercises.toArray(),
+  ]);
+  const names = new Map(exercises.map((e) => [e.id, e.name]));
+  downloadFile(sessionsCsv(workouts, sets, (id) => names.get(id) ?? "?"), `traintrack-seances-${localDate()}.csv`, "text/csv");
+}

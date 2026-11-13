@@ -5,7 +5,8 @@ import { useTranslations, useLocale } from "next-intl";
 import { useRouter, usePathname, Link } from "@/i18n/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { deleteMyAccount, updateMyDisplayName } from "@/lib/adminService";
-import { downloadJSONBackup } from "@/lib/exportService";
+import { downloadJSONBackup, downloadSessionsCsv } from "@/lib/exportService";
+import { HistoryImport } from "@/components/domain/HistoryImport";
 import db from "@/db";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -30,7 +31,7 @@ import {
   Download, Shield, LogOut, Trash2, Loader2, Sparkles, Check, Type, ShieldCheck,
   Palette, LayoutGrid, Monitor, Sun, Moon, Globe, RotateCcw, User, Trophy,
   Home, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse,
-  Pencil, X, Bell, BellOff, KeyRound, Newspaper, Gauge, CalendarDays, CalendarPlus, Flag, Activity,
+  Pencil, X, Bell, BellOff, KeyRound, Newspaper, Gauge, CalendarDays, CalendarPlus, FileUp, Flag, Activity,
   type LucideIcon,
 } from "lucide-react";
 import { localDate } from "@/lib/dates";
@@ -567,12 +568,21 @@ export default function SettingsPage() {
           </Button>
         </Section>
 
+        {/* History from another app */}
+        <Section icon={FileUp} title={t("importTitle")}>
+          <HistoryImport />
+        </Section>
+
         {/* Data & privacy */}
         <Section icon={Download} title={t("export")}>
           <p className="mb-3 text-xs text-muted-foreground">{t("exportDesc")}</p>
           <Button variant="outline" onClick={() => downloadJSONBackup()} className="w-full">
             <Download className="mr-2 h-4 w-4" />
             {t("exportJSON")}
+          </Button>
+          <Button variant="outline" onClick={() => downloadSessionsCsv(user?.id)} className="mt-2 w-full">
+            <Download className="mr-2 h-4 w-4" />
+            {t("exportCSV")}
           </Button>
           <Link href="/legal/privacy" className="mt-2 block">
             <Button variant="ghost" className="w-full justify-start">

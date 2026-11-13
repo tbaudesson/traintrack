@@ -359,6 +359,8 @@
     "daysAgo": "vor {days}T"
   },
   "settings": {
+    "importTitle": "Verlauf importieren (Strong, Hevy)",
+    "exportCSV": "Einheiten exportieren (CSV)",
     "plan": "Wochenplan",
     "planHint": "Ihre Trainingstage: der Startbildschirm verteilt Ihre nächsten Einheiten darauf.",
     "planTime": "Übliche Uhrzeit",
@@ -897,5 +899,23 @@
     "area_knee": "Knie",
     "area_ankle": "Knöchel",
     "area_other": "Sonstiges"
+  },
+  "importHistory": {
+    "hint": "Exportieren Sie Ihre Einheiten in Strong oder Hevy als CSV (in den Einstellungen oder im Profil der App) und wählen Sie die Datei hier aus. Sie wird auf Ihrem Telefon gelesen und nirgendwohin gesendet.",
+    "pick": "CSV-Datei wählen",
+    "unreadable": "Diese Datei ist kein lesbarer Strong- oder Hevy-Export.",
+    "tooBig": "Diese Datei ist zu groß (höchstens 30 MB).",
+    "title": "Import aus {source}",
+    "summary": "{workouts, plural, one {# Einheit} other {# Einheiten}}, {sets, plural, one {# Satz} other {# Sätze}}",
+    "period": "vom {from} bis {to}",
+    "nothingNew": "Nichts Neues: alle diese Einheiten sind bereits in TrainTrack.",
+    "duplicates": "{count, plural, one {# bereits vorhandene Einheit wird übersprungen} other {# bereits vorhandene Einheiten werden übersprungen}}.",
+    "skipped": "{count, plural, one {# Zeile übersprungen} other {# Zeilen übersprungen}} (Cardio, leere Sätze).",
+    "unit": "Gewichtseinheit in Strong",
+    "unitHint": "Strong exportiert in der in der App gewählten Einheit, ohne sie zu nennen: wählen Sie die richtige.",
+    "exercises": "{matched, plural, one {# Übung erkannt} other {# Übungen erkannt}}, {created, plural, =0 {keine neu} one {# neu anzulegen} other {# neu anzulegen}}",
+    "createdList": "Neu:",
+    "confirm": "{count, plural, one {# Einheit} other {# Einheiten}} importieren",
+    "done": "{workouts, plural, one {# Einheit importiert} other {# Einheiten importiert}} ({sets} Sätze)."
   }
 }
