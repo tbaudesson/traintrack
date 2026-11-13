@@ -1,4 +1,5 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
+import { useExercises } from "@/hooks/useExercises";
 import { useLocale } from "next-intl";
 
 /**
@@ -6,7 +7,7 @@ import { useLocale } from "next-intl";
  * key everywhere (programs and sessions find exercises by it); only what the
  * athlete reads changes. Custom exercises keep the name their author gave.
  */
-const NAMES: Record<string, { fr: string; de: string }> = {
+export const NAMES: Record<string, { fr: string; de: string }> = {
   "Barbell Bench Press": { fr: "Développé couché à la barre", de: "Bankdrücken mit Langhantel" },
   "Incline Barbell Bench Press": { fr: "Développé incliné à la barre", de: "Schrägbankdrücken mit Langhantel" },
   "Dumbbell Bench Press": { fr: "Développé couché aux haltères", de: "Kurzhantel-Bankdrücken" },
@@ -58,7 +59,7 @@ const NAMES: Record<string, { fr: string; de: string }> = {
   "Straight-Arm Pulldown": { fr: "Pull-over à la poulie, bras tendus", de: "Latziehen mit gestreckten Armen" },
 };
 
-const DESCRIPTIONS: Record<string, { fr: string; de: string }> = {
+export const DESCRIPTIONS: Record<string, { fr: string; de: string }> = {
   "Side Plank": {
     fr: "Sur un avant-bras, le corps aligné, les hanches hautes. Tenir sans s'affaisser.",
     de: "Auf einem Unterarm, Körper in einer Linie, Hüfte hoch. Halten, ohne durchzuhängen.",
@@ -100,21 +101,38 @@ const DESCRIPTIONS: Record<string, { fr: string; de: string }> = {
 type Lang = "fr" | "de";
 const lang = (locale: string): Lang | null => (locale === "fr" || locale === "de" ? locale : null);
 
-/** An exercise's name in the app's language; unknown and custom names as they are. */
-export function exerciseLabel(name: string | undefined, locale: string): string {
+type Translated = { nameFr?: string | null; nameDe?: string | null; descriptionFr?: string | null; descriptionDe?: string | null };
+
+/**
+ * An exercise's name in the app's language: the admin's translation, then the
+ * one the app shipped with, then the name itself (custom and English names).
+ */
+export function exerciseLabel(name: string | undefined, locale: string, row?: Translated): string {
   if (!name) return "?";
   const l = lang(locale);
-  return (l && NAMES[name]?.[l]) || name;
+  if (!l) return name;
+  return (l === "fr" ? row?.nameFr : row?.nameDe) || NAMES[name]?.[l] || name;
 }
 
-/** An exercise's description in the app's language, when the library has one. */
-export function exerciseDescription(name: string | undefined, description: string | undefined, locale: string): string | undefined {
+/** An exercise's description in the app's language, when there is one. */
+export function exerciseDescription(
+  ex: (Translated & { name?: string; description?: string }) | undefined,
+  locale: string
+): string | undefined {
+  if (!ex) return undefined;
   const l = lang(locale);
-  return (name && l && DESCRIPTIONS[name]?.[l]) || description;
+  if (!l) return ex.description;
+  return (l === "fr" ? ex.descriptionFr : ex.descriptionDe) || (ex.name ? DESCRIPTIONS[ex.name]?.[l] : undefined) || ex.description;
 }
 
-/** The label function for the current language, for components. */
+/** The label function for the current language, reading the library's translations. */
 export function useExerciseLabel(): (name: string | undefined) => string {
   const locale = useLocale();
-  return useCallback((name: string | undefined) => exerciseLabel(name, locale), [locale]);
+  const exercises = useExercises();
+  const rows = useMemo(() => {
+    const map = new Map<string, Translated>();
+    for (const e of exercises) if (!e.isCustom || !map.has(e.name)) map.set(e.name, e);
+    return map;
+  }, [exercises]);
+  return useCallback((name: string | undefined) => exerciseLabel(name, locale, name ? rows.get(name) : undefined), [locale, rows]);
 }

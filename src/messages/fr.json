@@ -283,6 +283,13 @@
     "analyticsHint": "Enregistrez une séance (avec poids et répétitions) pour débloquer le volume, la progression par exercice, l'équilibre musculaire et les records."
   },
   "exercises": {
+    "translations": "Traductions",
+    "nameFr": "Nom en français",
+    "nameDe": "Nom en allemand",
+    "descriptionFr": "Description en français",
+    "descriptionDe": "Description en allemand",
+    "toLibrary": "Ajouter à la bibliothèque partagée (tous les utilisateurs)",
+    "addLibrary": "Ajouter à la bibliothèque",
     "title": "Exercices",
     "library": "Bibliothèque",
     "custom": "Mes exercices personnalisés",
@@ -994,5 +1001,44 @@
     "goals": "Objectifs atteints (14 jours)",
     "goalsEmpty": "Aucun objectif atteint récemment.",
     "deload": "En semaine de décharge"
+  },
+  "wizard": {
+    "step": "Étape {step} sur {total}",
+    "title0": "Quel est votre objectif ?",
+    "hint0": "Il nous sert à vous proposer un programme adapté.",
+    "title1": "Parlez-nous de vous",
+    "hint1": "Tout est facultatif, et sert à adapter les charges et la nutrition.",
+    "title2": "Avec quel matériel ?",
+    "hint2": "Choisissez un raccourci ou cochez ce que vous avez.",
+    "title3": "Votre programme",
+    "hint3": "Voici ceux qui correspondent le mieux à votre objectif, votre niveau et votre matériel.",
+    "title4": "Votre semaine",
+    "hint4": "Vos jours d'entraînement : l'accueil y placera vos séances.",
+    "gym": "Salle de sport",
+    "home": "À la maison",
+    "perWeek": "{count, plural, one {# jour par semaine} other {# jours par semaine}}",
+    "best": "le plus adapté",
+    "later": "Je choisirai plus tard",
+    "days": "Jours d'entraînement",
+    "time": "Heure habituelle",
+    "start": "Début du programme",
+    "back": "Retour",
+    "next": "Continuer",
+    "nextOrSkip": "Continuer"
+  },
+  "nutritionCalc": {
+    "open": "Calculer pour moi",
+    "title": "Calcul à partir de votre profil",
+    "weight": "Poids (kg)",
+    "height": "Taille (cm)",
+    "age": "Âge",
+    "from": "Objectif : {goal} · {days} jours d'entraînement par semaine",
+    "bmr": "Métabolisme de base : {kcal} kcal",
+    "maintenance": "Maintien avec votre activité (× {factor, number}) : {kcal} kcal",
+    "target": "Objectif : {kcal} kcal ({change, plural, =0 {maintien} other {{change} %}})",
+    "macros": "Protéines {protein} g · glucides {carbs} g · lipides {fat} g · eau {water} ml",
+    "apply": "Utiliser ces objectifs",
+    "needData": "Indiquez votre poids, votre taille et votre âge.",
+    "disclaimer": "Un point de départ, à ajuster selon votre évolution sur 2 à 3 semaines. Ce n'est pas un avis médical."
   }
 }

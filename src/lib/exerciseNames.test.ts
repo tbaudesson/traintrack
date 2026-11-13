@@ -23,7 +23,13 @@ describe("exercise names", () => {
   });
 
   it("translate the descriptions the library has", () => {
-    expect(exerciseDescription("Side Plank", "On one forearm…", "de")).toMatch(/^Auf einem Unterarm/);
-    expect(exerciseDescription("Mon exercice", "Ma description", "fr")).toBe("Ma description");
+    expect(exerciseDescription({ name: "Side Plank", description: "On one forearm…" }, "de")).toMatch(/^Auf einem Unterarm/);
+    expect(exerciseDescription({ name: "Mon exercice", description: "Ma description" }, "fr")).toBe("Ma description");
+  });
+
+  it("prefer the admin's translations", () => {
+    expect(exerciseLabel("Back Squat", "fr", { nameFr: "Squat barre haute" })).toBe("Squat barre haute");
+    expect(exerciseLabel("Back Squat", "de", { nameFr: "Squat barre haute" })).toBe("Kniebeuge");
+    expect(exerciseDescription({ name: "Side Plank", descriptionFr: "Ma version" }, "fr")).toBe("Ma version");
   });
 });

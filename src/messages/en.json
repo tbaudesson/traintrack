@@ -283,6 +283,13 @@
     "analyticsHint": "Log a workout (with weight and reps) to unlock volume, per-exercise progression, muscle balance and PRs."
   },
   "exercises": {
+    "translations": "Translations",
+    "nameFr": "French name",
+    "nameDe": "German name",
+    "descriptionFr": "French description",
+    "descriptionDe": "German description",
+    "toLibrary": "Add to the shared library (every user)",
+    "addLibrary": "Add to the library",
     "title": "Exercises",
     "library": "Library",
     "custom": "My custom exercises",
@@ -994,5 +1001,44 @@
     "goals": "Goals reached (14 days)",
     "goalsEmpty": "No goal reached lately.",
     "deload": "On a deload week"
+  },
+  "wizard": {
+    "step": "Step {step} of {total}",
+    "title0": "What is your goal?",
+    "hint0": "We use it to suggest a program that fits.",
+    "title1": "Tell us about you",
+    "hint1": "All optional, it helps adapt loads and nutrition.",
+    "title2": "What equipment?",
+    "hint2": "Pick a shortcut or tick what you have.",
+    "title3": "Your program",
+    "hint3": "These fit your goal, level and equipment best.",
+    "title4": "Your week",
+    "hint4": "Your training days: the home screen will place your sessions on them.",
+    "gym": "Gym",
+    "home": "At home",
+    "perWeek": "{count, plural, one {# day a week} other {# days a week}}",
+    "best": "best fit",
+    "later": "I'll choose later",
+    "days": "Training days",
+    "time": "Usual time",
+    "start": "Program start",
+    "back": "Back",
+    "next": "Continue",
+    "nextOrSkip": "Continue"
+  },
+  "nutritionCalc": {
+    "open": "Work it out for me",
+    "title": "From your profile",
+    "weight": "Weight (kg)",
+    "height": "Height (cm)",
+    "age": "Age",
+    "from": "Goal: {goal} · {days} training days a week",
+    "bmr": "Basal metabolic rate: {kcal} kcal",
+    "maintenance": "Maintenance with your activity (× {factor, number}): {kcal} kcal",
+    "target": "Target: {kcal} kcal ({change, plural, =0 {maintenance} other {{change}%}})",
+    "macros": "Protein {protein} g · carbs {carbs} g · fat {fat} g · water {water} ml",
+    "apply": "Use these targets",
+    "needData": "Enter your weight, height and age.",
+    "disclaimer": "A starting point, to adjust after 2 to 3 weeks. Not medical advice."
   }
 }

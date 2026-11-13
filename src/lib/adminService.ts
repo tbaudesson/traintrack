@@ -129,6 +129,44 @@ export async function adminUpdateExerciseContent(
   if (error) throw new Error(error.message);
 }
 
+/** Admin: the French and German name and description of any exercise. */
+export async function adminUpdateExerciseI18n(
+  exerciseUuid: string,
+  t: { nameFr: string; nameDe: string; descriptionFr: string; descriptionDe: string }
+): Promise<void> {
+  const { error } = await supabase.rpc("admin_update_exercise_i18n", {
+    p_uuid: exerciseUuid,
+    p_name_fr: t.nameFr,
+    p_name_de: t.nameDe,
+    p_description_fr: t.descriptionFr,
+    p_description_de: t.descriptionDe,
+  });
+  if (error) throw new Error(error.message);
+}
+
+/** Admin: add an exercise to the shared library; returns its id. */
+export async function adminCreateLibraryExercise(e: {
+  name: string;
+  muscleGroup: string;
+  equipment: string;
+  description: string;
+  videoUrl: string;
+  nameFr: string;
+  nameDe: string;
+}): Promise<string> {
+  const { data, error } = await supabase.rpc("admin_create_library_exercise", {
+    p_name: e.name,
+    p_muscle_group: e.muscleGroup,
+    p_equipment: e.equipment,
+    p_description: e.description,
+    p_video_url: e.videoUrl,
+    p_name_fr: e.nameFr,
+    p_name_de: e.nameDe,
+  });
+  if (error) throw new Error(error.message);
+  return data as string;
+}
+
 // ─── App settings (GDPR config, etc.) ────────────────────────────────
 
 export async function getAppSettings(): Promise<Record<string, string>> {

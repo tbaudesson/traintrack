@@ -283,6 +283,13 @@
     "analyticsHint": "Protokolliere ein Workout (mit Gewicht und Wdh.), um Volumen, Übungsfortschritt, Muskelbalance und Rekorde freizuschalten."
   },
   "exercises": {
+    "translations": "Übersetzungen",
+    "nameFr": "Französischer Name",
+    "nameDe": "Deutscher Name",
+    "descriptionFr": "Französische Beschreibung",
+    "descriptionDe": "Deutsche Beschreibung",
+    "toLibrary": "Zur gemeinsamen Bibliothek hinzufügen (alle Nutzer)",
+    "addLibrary": "Zur Bibliothek hinzufügen",
     "title": "Übungen",
     "library": "Bibliothek",
     "custom": "Meine eigenen Übungen",
@@ -994,5 +1001,44 @@
     "goals": "Erreichte Ziele (14 Tage)",
     "goalsEmpty": "Zuletzt kein Ziel erreicht.",
     "deload": "In Entlastungswoche"
+  },
+  "wizard": {
+    "step": "Schritt {step} von {total}",
+    "title0": "Was ist dein Ziel?",
+    "hint0": "Damit schlagen wir dir ein passendes Programm vor.",
+    "title1": "Erzähl uns von dir",
+    "hint1": "Alles optional, es hilft, Lasten und Ernährung anzupassen.",
+    "title2": "Welche Ausrüstung?",
+    "hint2": "Wähle eine Abkürzung oder kreuze an, was du hast.",
+    "title3": "Dein Programm",
+    "hint3": "Diese passen am besten zu deinem Ziel, Niveau und deiner Ausrüstung.",
+    "title4": "Deine Woche",
+    "hint4": "Deine Trainingstage: der Startbildschirm verteilt deine Einheiten darauf.",
+    "gym": "Fitnessstudio",
+    "home": "Zu Hause",
+    "perWeek": "{count, plural, one {# Tag pro Woche} other {# Tage pro Woche}}",
+    "best": "passt am besten",
+    "later": "Ich wähle später",
+    "days": "Trainingstage",
+    "time": "Übliche Uhrzeit",
+    "start": "Programmstart",
+    "back": "Zurück",
+    "next": "Weiter",
+    "nextOrSkip": "Weiter"
+  },
+  "nutritionCalc": {
+    "open": "Für mich berechnen",
+    "title": "Aus deinem Profil",
+    "weight": "Gewicht (kg)",
+    "height": "Größe (cm)",
+    "age": "Alter",
+    "from": "Ziel: {goal} · {days} Trainingstage pro Woche",
+    "bmr": "Grundumsatz: {kcal} kcal",
+    "maintenance": "Erhaltung mit deiner Aktivität (× {factor, number}): {kcal} kcal",
+    "target": "Ziel: {kcal} kcal ({change, plural, =0 {Erhaltung} other {{change} %}})",
+    "macros": "Eiweiß {protein} g · Kohlenhydrate {carbs} g · Fett {fat} g · Wasser {water} ml",
+    "apply": "Diese Ziele verwenden",
+    "needData": "Gib dein Gewicht, deine Größe und dein Alter an.",
+    "disclaimer": "Ein Ausgangspunkt, nach 2 bis 3 Wochen anzupassen. Kein ärztlicher Rat."
   }
 }

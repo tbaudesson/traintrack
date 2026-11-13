@@ -10,6 +10,8 @@ import {
   sumMacros,
 } from "@/hooks/useNutrition";
 import { useAthleteProfile, updateNutritionTargets } from "@/hooks/useAthleteProfile";
+import { NutritionCalculator } from "@/components/domain/NutritionCalculator";
+import { useBodyMetrics } from "@/hooks/useBodyMetrics";
 import { useTodayHydration, addWater, setWater } from "@/hooks/useHydration";
 import { useWorkouts } from "@/hooks/useWorkouts";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
@@ -61,6 +63,7 @@ export default function NutritionPage() {
   const trainedToday = workouts.some((w) => w.date === today);
   const totals = sumMacros(entries);
   const targets = profile?.nutritionTargets;
+  const bodyMetrics = useBodyMetrics();
   const waterGoal = targets?.water ?? 2500;
 
   const [adding, setAdding] = useState(false);
@@ -263,6 +266,17 @@ export default function NutritionPage() {
           <Card>
             <CardContent className="space-y-3 py-4">
               <p className="text-sm font-semibold">{t("targets")}</p>
+              <NutritionCalculator
+                profile={profile ?? undefined}
+                latestWeight={bodyMetrics.find((m) => m.weightKg)?.weightKg}
+                onApply={(plan) => {
+                  setTCal(String(plan.calories));
+                  setTPro(String(plan.protein));
+                  setTCarb(String(plan.carbs));
+                  setTFat(String(plan.fat));
+                  setTWater(String(plan.water));
+                }}
+              />
               <div className="grid grid-cols-2 gap-2">
                 <LabeledInput label={t("calories")} value={tCal} onChange={setTCal} />
                 <LabeledInput label={t("protein")} value={tPro} onChange={setTPro} />

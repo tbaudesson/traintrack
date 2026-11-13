@@ -122,6 +122,11 @@ export interface Exercise extends SyncFields {
   equipment?: Equipment;
   description?: string;
   videoUrl?: string;
+  /** Translations an admin can edit; the English name stays the key. */
+  nameFr?: string | null;
+  nameDe?: string | null;
+  descriptionFr?: string | null;
+  descriptionDe?: string | null;
   /** true = user-created custom exercise; false = seeded library row */
   isCustom: boolean;
   createdAt: string;

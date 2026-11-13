@@ -766,9 +766,9 @@ export default function SessionLoggerPage() {
                         ))}
                       </ul>
                     )}
-                    {exerciseDescription(ex?.name, ex?.description, locale) && <p className="text-sm text-muted-foreground">{exerciseDescription(ex?.name, ex?.description, locale)}</p>}
+                    {exerciseDescription(ex, locale) && <p className="text-sm text-muted-foreground">{exerciseDescription(ex, locale)}</p>}
                     {ex?.videoUrl && <VideoEmbed url={ex.videoUrl} />}
-                    {!exerciseDescription(ex?.name, ex?.description, locale) && !ex?.videoUrl && <p className="text-sm text-muted-foreground">{t("noGuide")}</p>}
+                    {!exerciseDescription(ex, locale) && !ex?.videoUrl && <p className="text-sm text-muted-foreground">{t("noGuide")}</p>}
                   </div>
                 )}
 

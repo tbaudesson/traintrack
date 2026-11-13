@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useExercises, createCustomExercise, updateExercise, deleteExercise, patchExerciseLocal } from "@/hooks/useExercises";
 import { useAuth } from "@/contexts/AuthContext";
-import { adminUpdateExerciseContent } from "@/lib/adminService";
+import { adminCreateLibraryExercise, adminUpdateExerciseContent, adminUpdateExerciseI18n } from "@/lib/adminService";
+import db from "@/db";
 import type { Exercise, MuscleGroup, Equipment } from "@/db";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { VideoEmbed } from "@/components/domain/VideoEmbed";
@@ -14,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Plus, Search, Loader2, Dumbbell, ChevronDown, ChevronUp, Pencil, Trash2, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SectionHeading } from "@/components/ui/page-parts";
-import { useExerciseLabel, exerciseDescription } from "@/lib/exerciseNames";
+import { useExerciseLabel, exerciseDescription, NAMES, DESCRIPTIONS } from "@/lib/exerciseNames";
 
 const MUSCLE_GROUPS: MuscleGroup[] = ["chest", "back", "legs", "shoulders", "arms", "core", "full_body", "other"];
 const EQUIPMENT: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "bodyweight", "kettlebell", "bands", "other"];
@@ -74,6 +75,11 @@ export default function ExercisesPage() {
 
 function AddExerciseForm({ onDone }: { onDone: () => void }) {
   const t = useTranslations("exercises");
+  const { isAdmin } = useAuth();
+  const [library, setLibrary] = useState(false);
+  const [nameFr, setNameFr] = useState("");
+  const [nameDe, setNameDe] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [mg, setMg] = useState<MuscleGroup>("chest");
   const [equip, setEquip] = useState<Equipment>("barbell");
@@ -84,13 +90,30 @@ function AddExerciseForm({ onDone }: { onDone: () => void }) {
   async function handleAdd() {
     if (!name.trim()) return;
     setBusy(true);
+    setError(null);
     try {
+      if (library) {
+        // A shared library exercise: created server-side, then kept locally right away.
+        const uuid = await adminCreateLibraryExercise({
+          name: name.trim(), muscleGroup: mg, equipment: equip, description, videoUrl, nameFr, nameDe,
+        });
+        const now = new Date().toISOString();
+        await db.exercises.add({
+          uuid, userId: null, _dirty: 0, name: name.trim(), muscleGroup: mg, equipment: equip, isCustom: false,
+          description: description.trim() || undefined, videoUrl: videoUrl.trim() || undefined,
+          nameFr: nameFr.trim() || null, nameDe: nameDe.trim() || null, createdAt: now, updatedAt: now,
+        });
+        onDone();
+        return;
+      }
       await createCustomExercise({
         name: name.trim(), muscleGroup: mg, equipment: equip,
         description: description.trim() || undefined,
         videoUrl: videoUrl.trim() || undefined,
       });
       onDone();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
     }
@@ -99,6 +122,12 @@ function AddExerciseForm({ onDone }: { onDone: () => void }) {
   return (
     <Card>
       <CardContent className="space-y-3 py-4">
+        {isAdmin && (
+          <label className="flex min-h-10 items-center gap-2 text-sm font-medium">
+            <input type="checkbox" checked={library} onChange={(e) => setLibrary(e.target.checked)} className="size-5" />
+            {t("toLibrary")}
+          </label>
+        )}
         <Input placeholder={t("name")} value={name} onChange={(e) => setName(e.target.value)} />
         <div>
           <label className="mb-1 block text-xs font-medium text-muted-foreground">{t("muscleGroup")}</label>
@@ -124,8 +153,15 @@ function AddExerciseForm({ onDone }: { onDone: () => void }) {
         </div>
         <Input placeholder={t("descPlaceholder")} value={description} onChange={(e) => setDescription(e.target.value)} />
         <Input placeholder={t("videoPlaceholder")} value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} />
+        {library && (
+          <>
+            <Input placeholder={t("nameFr")} value={nameFr} onChange={(e) => setNameFr(e.target.value)} />
+            <Input placeholder={t("nameDe")} value={nameDe} onChange={(e) => setNameDe(e.target.value)} />
+          </>
+        )}
+        {error && <p className="text-xs text-destructive">{error}</p>}
         <Button onClick={handleAdd} disabled={busy || !name.trim()} className="w-full">
-          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : t("addCustom")}
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : library ? t("addLibrary") : t("addCustom")}
         </Button>
       </CardContent>
     </Card>
@@ -143,6 +179,11 @@ function ExerciseRow({ ex }: { ex: Exercise }) {
   const [name, setName] = useState(ex.name);
   const [description, setDescription] = useState(ex.description ?? "");
   const [videoUrl, setVideoUrl] = useState(ex.videoUrl ?? "");
+  const [nameFr, setNameFr] = useState(ex.nameFr ?? (ex.isCustom ? "" : (NAMES[ex.name]?.fr ?? "")));
+  const [nameDe, setNameDe] = useState(ex.nameDe ?? (ex.isCustom ? "" : (NAMES[ex.name]?.de ?? "")));
+  const [descriptionFr, setDescriptionFr] = useState(ex.descriptionFr ?? (DESCRIPTIONS[ex.name]?.fr ?? ""));
+  const [descriptionDe, setDescriptionDe] = useState(ex.descriptionDe ?? (DESCRIPTIONS[ex.name]?.de ?? ""));
+  const [error, setError] = useState<string | null>(null);
   const hasDetail = !!ex.description || !!ex.videoUrl;
   // Custom exercises are fully editable by their owner; admins can also curate
   // the description/video on the shared built-in library.
@@ -158,15 +199,22 @@ function ExerciseRow({ ex }: { ex: Exercise }) {
           videoUrl: videoUrl.trim() || undefined,
         });
       } else if (isAdmin && ex.uuid) {
-        // Built-in row: write server-side via the admin RPC, then reflect locally.
+        // Built-in row: write server-side via the admin RPCs, then reflect locally.
         await adminUpdateExerciseContent(ex.uuid, description.trim(), videoUrl.trim());
+        await adminUpdateExerciseI18n(ex.uuid, { nameFr, nameDe, descriptionFr, descriptionDe });
         await patchExerciseLocal(ex.id!, {
           description: description.trim() || undefined,
           videoUrl: videoUrl.trim() || undefined,
+          nameFr: nameFr.trim() || null,
+          nameDe: nameDe.trim() || null,
+          descriptionFr: descriptionFr.trim() || null,
+          descriptionDe: descriptionDe.trim() || null,
         });
       }
       setEditing(false);
       setOpen(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
     }
@@ -192,6 +240,16 @@ function ExerciseRow({ ex }: { ex: Exercise }) {
                 <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("descPlaceholder")} />
                 <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder={t("videoPlaceholder")} />
                 <p className="text-xs text-muted-foreground">{t("videoEmbedHint")}</p>
+                {!ex.isCustom && isAdmin && (
+                  <div className="space-y-2 rounded-lg bg-muted/40 p-2">
+                    <p className="text-xs font-semibold text-muted-foreground">{t("translations")}</p>
+                    <Input value={nameFr} onChange={(e) => setNameFr(e.target.value)} placeholder={t("nameFr")} aria-label={t("nameFr")} />
+                    <Input value={descriptionFr} onChange={(e) => setDescriptionFr(e.target.value)} placeholder={t("descriptionFr")} aria-label={t("descriptionFr")} />
+                    <Input value={nameDe} onChange={(e) => setNameDe(e.target.value)} placeholder={t("nameDe")} aria-label={t("nameDe")} />
+                    <Input value={descriptionDe} onChange={(e) => setDescriptionDe(e.target.value)} placeholder={t("descriptionDe")} aria-label={t("descriptionDe")} />
+                  </div>
+                )}
+                {error && <p className="text-xs text-destructive">{error}</p>}
                 <div className="flex gap-2">
                   <Button size="sm" onClick={save} disabled={busy} className="flex-1">
                     {busy ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Check className="mr-1 h-4 w-4" />}{t("save")}
@@ -201,7 +259,7 @@ function ExerciseRow({ ex }: { ex: Exercise }) {
               </>
             ) : (
               <>
-                {ex.description && <p className="text-sm text-muted-foreground">{exerciseDescription(ex.name, ex.description, locale)}</p>}
+                {exerciseDescription(ex, locale) && <p className="text-sm text-muted-foreground">{exerciseDescription(ex, locale)}</p>}
                 {ex.videoUrl && <VideoEmbed url={ex.videoUrl} />}
                 {!hasDetail && !ex.isCustom && (
                   <p className="text-xs text-muted-foreground">{ex.equipment ?? ""}</p>
