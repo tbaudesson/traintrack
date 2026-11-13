@@ -10,12 +10,13 @@ import type { Program } from "@/db";
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Activity, Plus, Dumbbell, Calendar, Loader2, ClipboardList } from "lucide-react";
+import { Upload, Activity, Plus, Dumbbell, Calendar, Loader2, ClipboardList } from "lucide-react";
 import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
 import { DetailRow } from "@/components/ui/detail-row";
 import { daysToOffer, startWorkoutFromDay } from "@/lib/startWorkout";
 import { describeTarget, formatDistance, isCardio } from "@/lib/cardio";
 import { SportPicker } from "@/components/domain/SportPicker";
+import { GpxImport } from "@/components/domain/GpxImport";
 import type { Sport } from "@/db";
 import { localDate } from "@/lib/dates";
 
@@ -73,6 +74,16 @@ export default function LogPage() {
           <Activity className="mr-1 h-4 w-4" aria-hidden="true" />
           {tc("newSession")}
         </Button>
+        <GpxImport
+          existing={workouts}
+          onImported={({ workoutId }) => router.push(`/log/${workoutId}`)}
+          trigger={(open) => (
+            <Button variant="ghost" className="-mt-4 w-full text-accent-text" onClick={open} disabled={busy}>
+              <Upload className="mr-1 h-4 w-4" aria-hidden="true" />
+              {tc("importGpx")}
+            </Button>
+          )}
+        />
         <SportPicker open={sportOpen} onOpenChange={setSportOpen} onPick={startCardio} />
 
         {/* Start from a program */}

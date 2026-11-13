@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Gauge, Info, Target } from "lucide-react";
+import { Gauge, Info, Target, Upload } from "lucide-react";
+import { GpxImport } from "@/components/domain/GpxImport";
 import type { CardioTarget, Workout } from "@/db";
 import { updateWorkout } from "@/hooks/useWorkouts";
 import { Card, CardContent } from "@/components/ui/card";
@@ -85,6 +86,24 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
               <Input type="number" inputMode="numeric" min={0} max={59} value={seconds} onChange={(e) => setSeconds(e.target.value)} onBlur={save} className="mt-1" />
             </label>
           </div>
+          <GpxImport
+            workout={workout}
+            onImported={({ activity }) => {
+              setDistance(String(swim ? activity.distanceM : Math.round(activity.distanceM / 10) / 100));
+              setMinutes(String(Math.floor(activity.durationSec / 60)));
+              setSeconds(String(activity.durationSec % 60));
+            }}
+            trigger={(open) => (
+              <button
+                type="button"
+                onClick={open}
+                className="flex min-h-10 w-full items-center justify-center gap-1.5 text-sm font-medium text-accent-text"
+              >
+                <Upload className="h-4 w-4" aria-hidden="true" />
+                {t("importGpxFill")}
+              </button>
+            )}
+          />
           {pace && (
             <p className="flex items-center gap-1.5 text-sm font-medium">
               <Gauge className="h-4 w-4 shrink-0 text-accent-text" aria-hidden="true" />

@@ -20,6 +20,7 @@ import { daysToOffer, findWorkoutProgramDay, startWorkoutFromDay } from "@/lib/s
 import { describeTarget, isCardio, isCardioDone, weeklyGoal } from "@/lib/cardio";
 import { SportPicker } from "@/components/domain/SportPicker";
 import { WeekStrip } from "@/components/domain/WeekStrip";
+import { GpxImport } from "@/components/domain/GpxImport";
 import { mondayOfDate, upcomingSessions, weekPlan } from "@/lib/weekPlan";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,7 +33,7 @@ import type { ReactNode } from "react";
 import type { Program, ProgramDay, Sport } from "@/db";
 import {
   type LucideIcon,
-  Activity, ArrowRight, ListChecks, MessageSquare, Plus, Sparkles, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
+  Activity, Upload, ArrowRight, ListChecks, MessageSquare, Plus, Sparkles, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
 } from "lucide-react";
 import { localDate, localDateIn } from "@/lib/dates";
 
@@ -395,6 +396,16 @@ export default function HomePage() {
                   <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("noProgram")}</h3>
                   <DetailRow onClick={startFree} disabled={starting} icon={Plus} tone="neutral" title={t("freeSession")} subtitle={t("freeSessionHint")} />
                   <DetailRow onClick={() => { setChoosing(false); setSportOpen(true); }} disabled={starting} icon={Activity} tone="neutral" title={tc("newSession")} subtitle={tc("newSessionHint")} />
+                  <GpxImport
+                    existing={workouts}
+                    onImported={({ workoutId }) => {
+                      setChoosing(false);
+                      router.push(`/log/${workoutId}`);
+                    }}
+                    trigger={(open) => (
+                      <DetailRow onClick={open} icon={Upload} tone="neutral" title={tc("importGpx")} subtitle={tc("importGpxHint")} />
+                    )}
+                  />
                 </section>
 
                 <section className="space-y-2">
