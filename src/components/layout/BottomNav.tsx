@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
-import { NAV_CATALOG, getNavItemIds } from "@/lib/navConfig";
+import { WHEEL_CATALOG, getNavItemIds, type NavItemDef } from "@/lib/navConfig";
 import { cn } from "@/lib/utils";
 import {
   Home, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse, Trophy, Flag, MessageCircle, Activity, Newspaper,
@@ -70,8 +70,8 @@ function prefersStillness() {
  * Closed, it is only the medallion (Home) over a thin curve. Hovering or
  * tapping opens a full circle of sections on a dotted ring. Dragging round the
  * wheel, the mouse wheel or the arrow keys turn it, and the section reaching
- * the top slot grows into a large card in the middle. The favourites chosen in
- * Settings sit highest; every other section waits further round.
+ * the top slot grows into a large card in the middle. Only the sections chosen
+ * in Settings are on it, the first ones highest.
  *
  * Positions are computed every frame rather than left to CSS transitions: a
  * transition would send an item wrapping round the ring back across the top,
@@ -90,25 +90,29 @@ export function BottomNav() {
     return () => window.removeEventListener("navitemschange", sync);
   }, []);
 
-  const items = useMemo((): WheelEntry[] => {
-    const available = NAV_CATALOG.filter((n) => n.id !== "home" && (!n.feature || hasFeature(n.feature)));
-    const rank = (id: string) => {
-      const at = ids.indexOf(id);
-      return at === -1 ? ids.length + 1 : at;
-    };
-    const ranked = [...available].sort((a, b) => rank(a.id) - rank(b.id));
+  // The ring, one slot per section. Short even rings get an empty slot, so
+  // that no section waits across from the top, where the ring wraps round.
+  const ring = useMemo((): (WheelEntry | null)[] => {
+    const ranked = ids
+      .map((id) => WHEEL_CATALOG.find((n) => n.id === id))
+      .filter((n): n is NavItemDef => !!n && (!n.feature || hasFeature(n.feature)));
+    const slots = ranked.length % 2 === 0 && ranked.length < 2 * SIDE_SLOTS + 2 ? ranked.length + 1 : ranked.length;
     // Round the ring from the top, one side then the other.
-    const n = ranked.length;
-    const arranged = [...ranked];
-    ranked.forEach((item, position) => {
+    const arranged: (WheelEntry | null)[] = Array(slots).fill(null);
+    ranked.forEach((d, position) => {
       const slot = position % 2 ? (position + 1) / 2 : -position / 2;
-      arranged[(slot + n) % n] = item;
+      arranged[(slot + slots) % slots] = { id: d.id, href: d.href, label: t(d.key), icon: ICONS[d.icon] ?? Home };
     });
-    return arranged.map((d) => ({ id: d.id, href: d.href, label: t(d.key), icon: ICONS[d.icon] ?? Home }));
+    return arranged;
   }, [ids, hasFeature, t]);
 
-  const count = items.length;
-  const activeIndex = items.findIndex((item) => pathname.startsWith(item.href));
+  const count = ring.length;
+  const activeIndex = ring.findIndex((item) => !!item && pathname.startsWith(item.href));
+  /** The nearest slot holding a section, going on in direction `dir` from an empty one. */
+  const settle = useCallback(
+    (slot: number, dir: number) => (ring[((slot % count) + count) % count] ? slot : slot + (dir || 1)),
+    [ring, count]
+  );
 
   const [open, setOpen] = useState(false);
   const [rotation, setRotation] = useState(0);
@@ -188,12 +192,12 @@ export function BottomNav() {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") closeWheel();
-      if (e.key === "ArrowLeft") setRotation((r) => Math.round(r) - 1);
-      if (e.key === "ArrowRight") setRotation((r) => Math.round(r) + 1);
+      if (e.key === "ArrowLeft") setRotation((r) => settle(Math.round(r) - 1, -1));
+      if (e.key === "ArrowRight") setRotation((r) => settle(Math.round(r) + 1, 1));
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, closeWheel]);
+  }, [open, closeWheel, settle]);
 
   useEffect(() => () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
@@ -244,7 +248,7 @@ export function BottomNav() {
     if (!d?.moved) return;
     suppressClick.current = true;
     setDragging(false);
-    setRotation((r) => Math.round(r));
+    setRotation((r) => settle(Math.round(r), Math.sign(r - Math.round(r))));
   };
   const wheelLock = useRef(0);
   const onWheel = (e: React.WheelEvent) => {
@@ -253,7 +257,7 @@ export function BottomNav() {
     const now = Date.now();
     if (Math.abs(delta) < 4 || now - wheelLock.current < 140) return;
     wheelLock.current = now;
-    setRotation((r) => Math.round(r) + Math.sign(delta));
+    setRotation((r) => settle(Math.round(r) + Math.sign(delta), Math.sign(delta)));
   };
 
   // A mouse opens on hover and closes on leaving; touch opens on tap.
@@ -320,7 +324,8 @@ export function BottomNav() {
           <WheelBackdrop radius={radius} openness={openness} centreHeight={centreHeight} />
 
           <ul className="absolute left-1/2 h-0 w-0" style={{ bottom: centreHeight }} role="list" aria-hidden={!open}>
-            {items.map((item, i) => {
+            {ring.map((item, i) => {
+              if (!item) return null;
               const offset = slotOffset(i, shown.rotation, count);
               const distance = Math.abs(offset);
               const opacity = clamp01((edge - distance) / 0.5) * clamp01(openness * 1.4 - 0.2);

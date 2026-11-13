@@ -24,13 +24,13 @@ import { trainingCalendar } from "@/lib/ics";
 import type { FitnessLevel } from "@/db";
 import { getMode, applyMode, getAccent, applyAccent, ACCENTS, type ThemeMode, type Accent } from "@/lib/appTheme";
 import {
-  NAV_CATALOG, getNavItemIds, setNavItemIds, resetNavItemIds, MAX_NAV_ITEMS, LOCKED_NAV_ID,
+  WHEEL_CATALOG, getNavItemIds, setNavItemIds, resetNavItemIds, LOCKED_NAV_ID,
 } from "@/lib/navConfig";
 import {
   Download, Shield, LogOut, Trash2, Loader2, Sparkles, Check, Type, ShieldCheck,
-  Palette, LayoutGrid, Monitor, Sun, Moon, Globe, RotateCcw, CheckCircle2, User, Trophy,
+  Palette, LayoutGrid, Monitor, Sun, Moon, Globe, RotateCcw, User, Trophy,
   Home, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse,
-  Pencil, X, Bell, BellOff, KeyRound, Newspaper, Gauge, CalendarDays, CalendarPlus,
+  Pencil, X, Bell, BellOff, KeyRound, Newspaper, Gauge, CalendarDays, CalendarPlus, Flag, Activity,
   type LucideIcon,
 } from "lucide-react";
 import { localDate } from "@/lib/dates";
@@ -47,7 +47,7 @@ const ACCENT_SWATCH: Record<Accent, string> = {
 };
 
 const NAV_ICONS: Record<string, LucideIcon> = {
-  Home, Newspaper, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse, Trophy,
+  Home, Newspaper, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse, Trophy, Flag, Activity,
 };
 
 const WEEKDAYS = [1, 2, 3, 4, 5, 6, 7];
@@ -88,6 +88,10 @@ export default function SettingsPage() {
   const athlete = useAthleteProfile();
   const { user, profile, signOut, isAdmin, refreshProfile } = useAuth();
   const { hasFeature } = useFeatureAccess();
+  const canShowNav = (id: string) => {
+    const feature = WHEEL_CATALOG.find((n) => n.id === id)?.feature;
+    return !feature || hasFeature(feature);
+  };
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -168,23 +172,14 @@ export default function SettingsPage() {
   function chooseTextSize(s: TextSize) { applyTextSize(s); setTextSize(s); }
   function chooseMode(m: ThemeMode) { applyMode(m); setMode(m); }
   function chooseAccent(a: Accent) { applyAccent(a); setAccent(a); }
+  // Taking a section off the wheel, or putting it back at the end of it.
   function toggleNav(id: string) {
     if (id === LOCKED_NAV_ID) return; // "more" is mandatory
-    setNavIds((cur) => {
-      let next: string[];
-      if (cur.includes(id)) {
-        next = cur.filter((x) => x !== id);
-      } else {
-        next = [...cur, id];
-        // If over the cap, evict the oldest removable tab so adding always works
-        if (next.length > MAX_NAV_ITEMS) {
-          const victim = next.find((x) => x !== LOCKED_NAV_ID && x !== id);
-          if (victim) next = next.filter((x) => x !== victim);
-        }
-      }
-      setNavItemIds(next);
-      return next;
-    });
+    const next = navIds.includes(id) ? navIds.filter((x) => x !== id) : [...navIds, id];
+    // At least one section besides "more" stays on the wheel.
+    if (!next.some((x) => x !== LOCKED_NAV_ID && canShowNav(x))) return;
+    setNavIds(next);
+    setNavItemIds(next);
   }
 
   function saveKey() {
@@ -482,8 +477,9 @@ export default function SettingsPage() {
         >
           <p className="mb-3 text-xs text-muted-foreground">{ta("navDesc")}</p>
           <div className="grid grid-cols-2 gap-2">
-            {NAV_CATALOG.filter((item) => !item.feature || hasFeature(item.feature)).map((item) => {
-              const checked = navIds.includes(item.id);
+            {WHEEL_CATALOG.filter((item) => canShowNav(item.id)).map((item) => {
+              const rank = navIds.filter(canShowNav).indexOf(item.id);
+              const checked = rank >= 0;
               const locked = item.id === LOCKED_NAV_ID;
               const Icon = NAV_ICONS[item.icon] ?? Home;
               return (
@@ -491,9 +487,10 @@ export default function SettingsPage() {
                   key={item.id}
                   onClick={() => toggleNav(item.id)}
                   disabled={locked}
+                  aria-pressed={checked}
                   className={cn(
                     "flex items-center gap-2 rounded-lg border p-2.5 text-xs transition-colors",
-                    checked || locked
+                    checked
                       ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-900/20"
                       : "border-border text-muted-foreground hover:border-accent-300",
                     locked && "opacity-70"
@@ -501,7 +498,11 @@ export default function SettingsPage() {
                 >
                   <Icon className="h-4 w-4" />
                   {tnav(item.key)}
-                  {(checked || locked) && <CheckCircle2 className="ml-auto h-3.5 w-3.5 text-accent-500" />}
+                  {checked && (
+                    <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent-600 px-1 text-[11px] font-semibold tabular-nums text-white">
+                      {rank + 1}
+                    </span>
+                  )}
                 </button>
               );
             })}
