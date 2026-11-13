@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { warmupSets } from "./warmup";
 import { substitutes } from "./substitutes";
-import { chainedNext, linkGroup, programGroups, restsAfter, supersetOf, unlinkAfter } from "./supersets";
+import { chainedNext, linkGroup, programGroups, restsAfter, supersetLabels, supersetOf, unlinkAfter } from "./supersets";
 
 describe("warm-up sets", () => {
   it("climb from the empty bar to the working weight", () => {
@@ -60,6 +60,10 @@ describe("supersets", () => {
     const three = [{ exerciseId: 1, group: 1 }, { exerciseId: 2, group: 1 }, { exerciseId: 3, group: 1 }];
     expect([...unlinkAfter(1, three)]).toEqual([[1, null], [2, 2], [3, 2]]);
     expect([...unlinkAfter(2, three)]).toEqual([[1, 1], [2, 1], [3, null]]);
+  });
+
+  it("label supersets A1, A2, then B1, B2", () => {
+    expect(supersetLabels([3, 3, null, 7, 7, 7, 9])).toEqual(["A1", "A2", "", "B1", "B2", "B3", ""]);
   });
 
   it("turn a program's links into groups", () => {

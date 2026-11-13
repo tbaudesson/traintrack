@@ -300,6 +300,10 @@
     "videoEmbedHint": "Füge einen YouTube- oder Vimeo-Link ein, um ihn in der App abzuspielen. Ein Suchlink öffnet YouTube."
   },
   "teams": {
+    "setsCount": "{count, plural, one {# Satz} other {# Sätze}}",
+    "customExercise": "Eigene Übung",
+    "notDone": "Nicht gemacht",
+    "setsSkipped": "{count, plural, one {# Satz ausgelassen} other {# Sätze ausgelassen}}",
     "title": "Teams",
     "myTeams": "Teams, die ich coache",
     "myMemberships": "Meine Teams",

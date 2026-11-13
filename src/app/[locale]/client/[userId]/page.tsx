@@ -15,6 +15,9 @@ import { Calendar, TrendingUp, CheckCircle, HeartPulse, Apple, ChevronDown, Chev
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
+import { SessionDetail } from "@/components/domain/SessionDetail";
+import { useExercises } from "@/hooks/useExercises";
+import type { Exercise, WorkoutSet } from "@/db";
 import { SectionHeading } from "@/components/ui/page-parts";
 import { formatDistance, formatDuration, isCardio } from "@/lib/cardio";
 import { localDate, localDateIn } from "@/lib/dates";
@@ -36,6 +39,8 @@ export default function ClientDetailPage() {
 
   const workouts = useWorkouts(userId);
   const sets = useAllWorkoutSets(userId);
+  const exercises = useExercises();
+  const exMap = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises]);
   const readiness = useReadiness(userId);
   const today = localDate();
   const nutritionToday = useNutritionForDate(today, userId);
@@ -166,6 +171,8 @@ export default function ClientDetailPage() {
                 date={w.date}
                 cardio={isCardio(w) ? [w.distanceM ? formatDistance(w.distanceM, w.sport) : null, w.durationSec ? formatDuration(w.durationSec) : null].filter(Boolean).join(" · ") : undefined}
                 setCount={sets.filter((s) => s.workoutId === w.id).length}
+                sets={sets.filter((s) => s.workoutId === w.id)}
+                exercises={exMap}
                 volume={Math.round(
                   sets
                     .filter((s) => s.workoutId === w.id)
@@ -187,7 +194,11 @@ function ClientWorkoutCard({
   setCount,
   volume,
   cardio,
+  sets,
+  exercises,
 }: {
+  sets: WorkoutSet[];
+  exercises: Map<number | undefined, Exercise>;
   workoutId: number;
   title: string;
   date: string;
@@ -207,7 +218,7 @@ function ClientWorkoutCard({
           <div className="flex-1">
             <p className="font-medium">{title}</p>
             <p className="text-xs text-muted-foreground">
-              {date} · {cardio ?? `${setCount} ${t("roster")}`}
+              {date} · {cardio ?? t("setsCount", { count: setCount })}
             </p>
           </div>
           {!cardio && <span className="text-sm font-semibold text-accent-text">{volume}</span>}
@@ -218,7 +229,8 @@ function ClientWorkoutCard({
           )}
         </button>
         {open && (
-          <div className="border-t border-border py-3">
+          <div className="space-y-3 border-t border-border py-3">
+            {!cardio && <SessionDetail sets={sets} exercises={exercises} />}
             <WorkoutNotes workoutId={workoutId} />
           </div>
         )}

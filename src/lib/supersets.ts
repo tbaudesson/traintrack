@@ -61,3 +61,18 @@ export function unlinkAfter(exerciseId: number, slots: Slot[]): Map<number, numb
   for (const id of after) changes.set(id, after.length > 1 ? fresh : null);
   return changes;
 }
+
+/**
+ * The usual gym labels: exercises of the first superset are A1, A2…, of the
+ * second B1, B2…; an exercise done on its own has none.
+ */
+export function supersetLabels(groups: (number | null | undefined)[]): string[] {
+  const letters = new Map<number, string>();
+  const seen = new Map<number, number>();
+  return groups.map((group) => {
+    if (group == null || groups.filter((g) => g === group).length < 2) return "";
+    if (!letters.has(group)) letters.set(group, String.fromCharCode(65 + letters.size));
+    seen.set(group, (seen.get(group) ?? 0) + 1);
+    return `${letters.get(group)}${seen.get(group)}`;
+  });
+}

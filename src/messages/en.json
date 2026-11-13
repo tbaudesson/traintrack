@@ -300,6 +300,10 @@
     "videoEmbedHint": "Paste a YouTube or Vimeo link to play it inside the app. A search link opens YouTube instead."
   },
   "teams": {
+    "setsCount": "{count, plural, one {# set} other {# sets}}",
+    "customExercise": "Custom exercise",
+    "notDone": "Not done",
+    "setsSkipped": "{count, plural, one {# set skipped} other {# sets skipped}}",
     "title": "Teams",
     "myTeams": "Teams I coach",
     "myMemberships": "Teams I'm in",

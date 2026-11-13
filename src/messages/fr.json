@@ -300,6 +300,10 @@
     "videoEmbedHint": "Collez un lien YouTube ou Vimeo pour le lire dans l'application. Un lien de recherche ouvre YouTube."
   },
   "teams": {
+    "setsCount": "{count, plural, one {# série} other {# séries}}",
+    "customExercise": "Exercice personnalisé",
+    "notDone": "Pas fait",
+    "setsSkipped": "{count, plural, one {# série non faite} other {# séries non faites}}",
     "title": "Équipes",
     "myTeams": "Équipes que je coache",
     "myMemberships": "Mes équipes",

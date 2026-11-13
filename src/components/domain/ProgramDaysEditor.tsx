@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 import { useExercises } from "@/hooks/useExercises";
 import type { CardioTarget, ProgramDay, ProgramExercise, Sport } from "@/db";
 import { SPORTS } from "@/lib/cardio";
+import { programGroups, supersetLabels } from "@/lib/supersets";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -83,10 +85,23 @@ export function ProgramDaysEditor({
 
               {day.cardio && <CardioDayFields value={day.cardio} onChange={(cardio) => updateDay(di, { ...day, cardio })} />}
 
-              {!day.cardio && day.exercises.map((ex, ei) => (
-                <div key={ei} className="rounded-lg border border-border p-2">
+              {!day.cardio && day.exercises.map((ex, ei, all) => {
+                const label = supersetLabels(programGroups(all.map((e) => !!e.supersetWithNext)))[ei];
+                return (
+                <div
+                  key={ei}
+                  className={cn(
+                    "rounded-lg border p-2",
+                    label ? "border-accent-500/50 border-l-4 border-l-accent-500" : "border-border",
+                    ex.supersetWithNext && "-mb-1 rounded-b-none"
+                  )}
+                >
                   <div className="mb-2 flex items-center gap-2">
-                    <Dumbbell className="h-4 w-4 text-accent-500" />
+                    {label ? (
+                      <span className="w-6 shrink-0 text-xs font-bold text-accent-text">{label}</span>
+                    ) : (
+                      <Dumbbell className="h-4 w-4 text-accent-500" />
+                    )}
                     <span className="flex-1 text-sm font-medium">{ex.exerciseName}</span>
                     <button onClick={() => removeExercise(di, ei)} className="text-muted-foreground hover:text-destructive">
                       <X className="h-4 w-4" />
@@ -132,7 +147,8 @@ export function ProgramDaysEditor({
                     </label>
                   )}
                 </div>
-              ))}
+                );
+              })}
 
               {!day.cardio && (
                 <Button variant="ghost" size="sm" className="w-full" onClick={() => setPickerDay(di)}>
