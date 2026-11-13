@@ -2,9 +2,7 @@ import type { Workout, WorkoutSet } from "@/db";
 
 type Session = Pick<Workout, "id" | "date">;
 type SetLike = Pick<WorkoutSet, "workoutId" | "exerciseId" | "setNumber" | "weightKg" | "reps" | "completed"> &
-  Partial<Pick<WorkoutSet, "isWarmup">>;
-
-const WEIGHT_STEP_KG = 2.5;
+  Partial<Pick<WorkoutSet, "isWarmup" | "rpe">>;
 
 /** Oldest first: by date, then by creation order within a day. */
 function ranks(workouts: Session[]): Map<number, number> {
@@ -41,6 +39,28 @@ export function lastPerformance<S extends SetLike>(
     .sort((a, b) => a.setNumber - b.setNumber);
 }
 
+/** The logged sets of the last sessions with this exercise, most recent first. */
+export function recentPerformances<S extends SetLike>(
+  exerciseId: number,
+  current: Session | undefined,
+  workouts: Session[],
+  sets: S[],
+  count: number
+): S[][] {
+  const rank = ranks(workouts);
+  const limit = current?.id !== undefined ? (rank.get(current.id) ?? Infinity) : Infinity;
+  const bySession = new Map<number, S[]>();
+  for (const s of sets) {
+    const r = rank.get(s.workoutId);
+    if (r === undefined || r >= limit || s.exerciseId !== exerciseId || !isLogged(s)) continue;
+    bySession.set(r, [...(bySession.get(r) ?? []), s]);
+  }
+  return [...bySession.entries()]
+    .sort(([a], [b]) => b - a)
+    .slice(0, count)
+    .map(([, own]) => own.sort((a, b) => a.setNumber - b.setNumber));
+}
+
 /** The top of a rep target: "8-10" → 10, "12" → 12. Timed targets have none. */
 export function topOfRepRange(target: string | undefined): number | null {
   if (!target || /s\s*$/i.test(target.trim())) return null;
@@ -75,14 +95,6 @@ export function valuesForTick(
   const reps = bottomOfRepRange(hint.targetReps);
   if (!set.reps && reps !== null) filled.reps = reps;
   return filled;
-}
-
-/** The heavier weight to try, once every target set reached the top of the range. */
-export function suggestWeight(last: SetLike[], targetSets: number, targetReps: string | undefined): number | null {
-  const top = topOfRepRange(targetReps);
-  const weight = topWeight(last);
-  if (top === null || weight === null || last.length < targetSets) return null;
-  return last.every((s) => (s.reps ?? 0) >= top) ? weight + WEIGHT_STEP_KG : null;
 }
 
 export function topWeight(last: SetLike[]): number | null {

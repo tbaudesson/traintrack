@@ -1,6 +1,7 @@
 import type { Exercise, Program, ProgramDay, Workout } from "@/db";
 import db, { getCurrentUserIdSync } from "@/db";
-import { lastPerformance, suggestWeight, topWeight } from "@/lib/performance";
+import { lastPerformance, recentPerformances, topWeight } from "@/lib/performance";
+import { nextLoad } from "@/lib/progression";
 import { createWorkout } from "@/hooks/useWorkouts";
 import { addWorkoutSet } from "@/hooks/useWorkoutSets";
 import { programGroups } from "./supersets";
@@ -79,7 +80,9 @@ export async function startWorkoutFromDay(
       exerciseId = await createCustomExercise({ name: pe.exerciseName, muscleGroup: "other" });
     }
     const last = lastPerformance(exerciseId, undefined, pastWorkouts, pastSets);
-    const weightKg = suggestWeight(last, pe.targetSets, pe.targetReps) ?? topWeight(last) ?? undefined;
+    const sessions = recentPerformances(exerciseId, undefined, pastWorkouts, pastSets, 2);
+    const advice = nextLoad({ sessions, targetSets: pe.targetSets, targetReps: pe.targetReps, equipment: ex?.equipment });
+    const weightKg = advice?.weightKg ?? topWeight(last) ?? undefined;
     const sets = Math.max(1, pe.targetSets || 1);
     for (let i = 1; i <= sets; i++) {
       await addWorkoutSet({

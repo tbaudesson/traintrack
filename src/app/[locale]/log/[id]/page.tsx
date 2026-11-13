@@ -10,6 +10,7 @@ import { useExercises } from "@/hooks/useExercises";
 import { usePrograms } from "@/hooks/usePrograms";
 import { useAthleteProfile } from "@/hooks/useAthleteProfile";
 import { defaultSetValues } from "@/lib/setDefaults";
+import { nextLoad, type Advice } from "@/lib/progression";
 import { warmupSets, type WarmupStep } from "@/lib/warmup";
 import { substitutes } from "@/lib/substitutes";
 import { chainedNext, linkGroup, restsAfter, supersetOf, unlinkAfter } from "@/lib/supersets";
@@ -21,7 +22,7 @@ import { formatDistance, formatDuration, formatPace, isCardio, isCardioDone, new
 import { SessionSummary, type SessionSummaryData } from "@/components/domain/SessionSummary";
 import db from "@/db";
 import {
-  beatsRecord, bestLifts, elapsedMinutes, isTimedTarget, timestampIn, valuesForTick, lastPerformance, recordHistory, suggestWeight, topWeight, totalVolume,
+  beatsRecord, bestLifts, elapsedMinutes, isTimedTarget, timestampIn, valuesForTick, lastPerformance, recordHistory, recentPerformances, topWeight, totalVolume,
 } from "@/lib/performance";
 import Image from "next/image";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -34,7 +35,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight } from "lucide-react";
+import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight, TrendingDown, Equal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { connectHeartRate, isBluetoothSupported, type HeartRateMonitor } from "@/lib/bleHeartRate";
@@ -220,11 +221,21 @@ export default function SessionLoggerPage() {
     );
   }
 
+  /** How to load an exercise today, from the last two times and their RPE. */
+  function adviceFor(exerciseId: number, target: ReturnType<typeof targetFor>): Advice | null {
+    return nextLoad({
+      sessions: recentPerformances(exerciseId, workout, allWorkouts, allSets, 2),
+      targetSets: target?.targetSets,
+      targetReps: target?.targetReps,
+      equipment: exMap.get(exerciseId)?.equipment,
+    });
+  }
+
   /** What one tap on "Prefill" would write into each unfinished set. */
   function prefillFor(exerciseId: number, exSets: typeof sets) {
     const target = targetFor(exerciseId);
     const previous = lastPerformance(exerciseId, workout, allWorkouts, allSets);
-    const suggestion = target ? suggestWeight(previous, target.targetSets, target.targetReps) : null;
+    const suggestion = adviceFor(exerciseId, target)?.weightKg ?? null;
     const work = exSets.filter((s) => !s.isWarmup);
     return work
       .map((s) => ({
@@ -547,7 +558,8 @@ export default function SessionLoggerPage() {
           const nextSet = exSets.find((s) => !s.completed);
           const previous = lastPerformance(exerciseId, workout, allWorkouts, allSets);
           const previousTop = topWeight(previous);
-          const suggestion = target ? suggestWeight(previous, target.targetSets, target.targetReps) : null;
+          const advice = adviceFor(exerciseId, target);
+          const suggestion = advice?.weightKg ?? null;
           const best = bestLifts(exerciseId, allSets);
           const records = recordHistory(exerciseId, allWorkouts, allSets).slice(-5).reverse();
           return (
@@ -605,12 +617,7 @@ export default function SessionLoggerPage() {
                   </p>
                 )}
 
-                {suggestion !== null && (
-                  <p className="flex items-center gap-1.5 text-sm font-medium text-success-text">
-                    <TrendingUp className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    {t("suggestion", { kg: suggestion })}
-                  </p>
-                )}
+                {advice && <AdviceLine advice={advice} />}
 
                 {guideOpen && (
                   <div className="space-y-2 rounded-xl bg-muted/50 p-3">
@@ -917,5 +924,30 @@ function NumCell({ label, placeholder, value, onChange }: { label: string; place
       aria-label={label}
       className="h-11 w-full rounded-md border border-border bg-transparent px-1 text-center text-base outline-none focus:border-accent-500"
     />
+  );
+}
+
+/** Today's load and why: up, hold or ease off, from the last RPE. */
+function AdviceLine({ advice }: { advice: Advice }) {
+  const t = useTranslations("log");
+  const { kind, weightKg: kg, fromKg, rpe } = advice;
+  const values = { kg, diff: Math.round((kg - fromKg) * 10) / 10, rpe: rpe ?? "" };
+  const text =
+    kind === "jump" ? t("adviceJump", values)
+    : kind === "up" ? (rpe === undefined ? t("suggestion", values) : t("adviceUp", values))
+    : kind === "moreReps" ? t("adviceMoreReps", values)
+    : kind === "hold" ? t("adviceHold", values)
+    : t("adviceDeload", values);
+  const Icon = kind === "deload" ? TrendingDown : kind === "jump" || kind === "up" ? TrendingUp : Equal;
+  return (
+    <p
+      className={cn(
+        "flex items-start gap-1.5 text-sm font-medium",
+        kind === "jump" || kind === "up" ? "text-success-text" : kind === "deload" ? "text-amber-600 dark:text-amber-400" : "text-accent-text"
+      )}
+    >
+      <Icon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+      {text}
+    </p>
   );
 }

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  beatsRecord, bestLifts, isTimedTarget, valuesForTick, estimateOneRepMax, lastPerformance, platesPerSide, recordHistory, suggestWeight, topOfRepRange,
+  beatsRecord, bestLifts, isTimedTarget, valuesForTick, estimateOneRepMax, lastPerformance, platesPerSide, recordHistory, topOfRepRange,
 } from "./performance";
 
 const workouts = [
@@ -28,19 +28,7 @@ describe("lastPerformance", () => {
   });
 });
 
-describe("suggestWeight", () => {
-  it("adds a step once every set reached the top of the range", () => {
-    expect(suggestWeight([set(1, 1, 60, 10), set(1, 2, 60, 10), set(1, 3, 60, 11)], 3, "8-10")).toBe(62.5);
-  });
-
-  it("waits while a set falls short", () => {
-    expect(suggestWeight([set(1, 1, 60, 10), set(1, 2, 60, 9), set(1, 3, 60, 10)], 3, "8-10")).toBeNull();
-  });
-
-  it("waits while sets are missing", () => {
-    expect(suggestWeight([set(1, 1, 60, 10)], 3, "8-10")).toBeNull();
-  });
-
+describe("rep ranges", () => {
   it("has no opinion on timed targets", () => {
     expect(topOfRepRange("30-45s")).toBeNull();
   });
