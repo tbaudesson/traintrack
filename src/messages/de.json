@@ -733,6 +733,16 @@
     "dayStrength": "Kraft",
     "dayCardio": "Ausdauer",
     "intensity": "Intensität",
-    "instructions": "Anweisungen"
+    "instructions": "Anweisungen",
+    "purpose": "Ziel der Einheit",
+    "steps": "Ablauf",
+    "stepsHint": "Ein Schritt pro Zeile: Aufwärmen, Hauptteil, Auslaufen",
+    "zoneGuide": "Intensitätsbereiche",
+    "zone": "Zone {zone}",
+    "zone1": "Sehr leicht: Sie könnten stundenlang plaudern.",
+    "zone2": "Leicht: Sie sprechen in ganzen Sätzen.",
+    "zone3": "Mittel: die Sätze werden kurz.",
+    "zone4": "Hart: nur noch wenige Worte, 20 bis 40 min durchhaltbar.",
+    "zone5": "Sehr hart: Sprechen unmöglich, höchstens einige Minuten."
   }
 }

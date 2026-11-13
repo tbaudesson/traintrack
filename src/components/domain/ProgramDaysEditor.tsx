@@ -8,6 +8,7 @@ import { SPORTS } from "@/lib/cardio";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Trash2, Dumbbell, X } from "lucide-react";
 
@@ -193,6 +194,20 @@ function CardioDayFields({ value, onChange }: { value: CardioTarget; onChange: (
       <label className="block text-sm font-medium">
         {t("instructions")}
         <Input value={value.notes ?? ""} onChange={(e) => onChange({ ...value, notes: e.target.value || undefined })} className="mt-1" />
+      </label>
+      <label className="block text-sm font-medium">
+        {t("purpose")}
+        <Input value={value.purpose ?? ""} onChange={(e) => onChange({ ...value, purpose: e.target.value || undefined })} className="mt-1" />
+      </label>
+      <label className="block text-sm font-medium">
+        {t("steps")}
+        <Textarea
+          value={(value.steps ?? []).join("\n")}
+          onChange={(e) => onChange({ ...value, steps: e.target.value ? e.target.value.split("\n") : undefined })}
+          placeholder={t("stepsHint")}
+          rows={4}
+          className="mt-1"
+        />
       </label>
     </div>
   );

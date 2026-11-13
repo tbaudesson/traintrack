@@ -65,6 +65,29 @@ describe("endurance plans", () => {
     expect(longest(14)).toBeGreaterThan(longest(15));
   });
 
+  it("lay out every session step by step, with its purpose", () => {
+    const bare = ENDURANCE_TEMPLATES.flatMap((t) => t.structure)
+      .filter((d) => d.cardio && (!d.cardio.purpose || (d.cardio.steps ?? []).length < 2));
+    expect(bare.map((d) => d.name)).toEqual([]);
+  });
+
+  it("taper only after the longest long run", () => {
+    const tenK = ENDURANCE_TEMPLATES.find((t) => t.id === "plan-10k-8")!;
+    const week6 = tenK.structure.filter((d) => d.week === 6).map((d) => d.name);
+    expect(week6).not.toContain("S6 · Rappel d'allure");
+  });
+
+  it("change the swimming sessions from week to week", () => {
+    const swim = ENDURANCE_TEMPLATES.find((t) => t.id === "plan-natation-8")!;
+    const series = swim.structure.filter((d) => d.name.endsWith("Séries")).map((d) => d.cardio?.steps?.join());
+    expect(new Set(series).size).toBe(series.length);
+  });
+
+  it("add up the swim distance from its laps", () => {
+    const swim = ENDURANCE_TEMPLATES.find((t) => t.id === "plan-natation-8")!;
+    expect(swim.structure[0].cardio?.distanceKm).toBe(1.5);
+  });
+
   it("give every session a distance or a duration", () => {
     const empty = ENDURANCE_TEMPLATES.flatMap((t) => t.structure)
       .filter((d) => d.cardio && !d.cardio.distanceKm && !d.cardio.durationMin);

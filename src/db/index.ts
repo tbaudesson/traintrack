@@ -134,6 +134,10 @@ export interface CardioTarget {
   durationMin?: number;
   intensity?: string;
   notes?: string;
+  /** Why the session matters, in one sentence. */
+  purpose?: string;
+  /** Ordered steps: warm-up, main set, cool-down. */
+  steps?: string[];
 }
 
 export interface ProgramDay {

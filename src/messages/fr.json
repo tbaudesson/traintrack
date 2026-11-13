@@ -733,6 +733,16 @@
     "dayStrength": "Musculation",
     "dayCardio": "Endurance",
     "intensity": "Intensité",
-    "instructions": "Consignes"
+    "instructions": "Consignes",
+    "purpose": "Objectif de la séance",
+    "steps": "Déroulé",
+    "stepsHint": "Une étape par ligne : échauffement, corps de séance, retour au calme",
+    "zoneGuide": "Repères d'intensité",
+    "zone": "Zone {zone}",
+    "zone1": "Très facile : vous pourriez tenir des heures en discutant.",
+    "zone2": "Facile : vous parlez en phrases complètes.",
+    "zone3": "Modéré : les phrases deviennent courtes.",
+    "zone4": "Soutenu : quelques mots seulement, l'effort est tenable 20 à 40 min.",
+    "zone5": "Très dur : impossible de parler, quelques minutes au maximum."
   }
 }

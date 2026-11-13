@@ -733,6 +733,16 @@
     "dayStrength": "Strength",
     "dayCardio": "Endurance",
     "intensity": "Intensity",
-    "instructions": "Instructions"
+    "instructions": "Instructions",
+    "purpose": "Session goal",
+    "steps": "Steps",
+    "stepsHint": "One step per line: warm-up, main set, cool-down",
+    "zoneGuide": "Intensity guide",
+    "zone": "Zone {zone}",
+    "zone1": "Very easy: you could chat for hours.",
+    "zone2": "Easy: you can speak in full sentences.",
+    "zone3": "Moderate: sentences get short.",
+    "zone4": "Hard: only a few words, sustainable for 20 to 40 min.",
+    "zone5": "Very hard: no talking, a few minutes at most."
   }
 }
