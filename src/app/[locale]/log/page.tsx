@@ -12,6 +12,8 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Upload, Activity, Plus, Dumbbell, Calendar, Loader2, ClipboardList, RotateCcw } from "lucide-react";
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
+import { useAthleteProfile } from "@/hooks/useAthleteProfile";
+import { mondayOfDate } from "@/lib/weekPlan";
 import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
 import { DetailRow } from "@/components/ui/detail-row";
 import { daysToOffer, lastRepeatable, repeatWorkout, startWorkoutFromDay } from "@/lib/startWorkout";
@@ -34,12 +36,14 @@ export default function LogPage() {
 
   const today = localDate();
   const allSets = useAllWorkoutSets();
+  const athlete = useAthleteProfile();
+  const deloading = athlete?.deloadWeek === mondayOfDate(today);
   const repeatable = lastRepeatable(workouts, allSets, today);
 
   async function repeatLast() {
     if (!repeatable) return;
     setBusy(true);
-    const id = await repeatWorkout(repeatable, today);
+    const id = await repeatWorkout(repeatable, today, { deload: deloading });
     router.push(`/log/${id}`);
   }
 
@@ -58,7 +62,7 @@ export default function LogPage() {
 
   async function startFromProgramDay(program: Program, dayIndex: number) {
     setBusy(true);
-    const id = await startWorkoutFromDay(program, dayIndex, exercises, today);
+    const id = await startWorkoutFromDay(program, dayIndex, exercises, today, { deload: deloading });
     router.push(`/log/${id}`);
   }
 

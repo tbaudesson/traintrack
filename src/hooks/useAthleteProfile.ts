@@ -49,7 +49,7 @@ export async function updateFitnessLevel(fitnessLevel: FitnessLevel): Promise<vo
 }
 
 /** Update the week plan (training days, usual time) or the strength goals. */
-export async function updateTrainingSchedule(change: Partial<Pick<AthleteProfile, "trainingDays" | "trainingTime" | "strengthGoals">>): Promise<void> {
+export async function updateTrainingSchedule(change: Partial<Pick<AthleteProfile, "trainingDays" | "trainingTime" | "strengthGoals" | "deloadWeek">>): Promise<void> {
   const uid = getCurrentUserIdSync();
   const existing = (await db.athleteProfiles.toArray()).find(
     (p) => !p.deletedAt && (p.userId === uid || p.userId == null)

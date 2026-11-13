@@ -14,6 +14,8 @@ import { nextLoad, type Advice } from "@/lib/progression";
 import { oneRepMaxHistory } from "@/lib/goals";
 import { formatPercents, percentWeights, referenceMax } from "@/lib/percent";
 import { localDate } from "@/lib/dates";
+import { mondayOfDate } from "@/lib/weekPlan";
+import { lighter } from "@/lib/startWorkout";
 import { warmupSets, type WarmupStep } from "@/lib/warmup";
 import { substitutes } from "@/lib/substitutes";
 import { chainedNext, linkGroup, restsAfter, supersetOf, unlinkAfter } from "@/lib/supersets";
@@ -38,7 +40,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight, TrendingDown, Equal, Gauge } from "lucide-react";
+import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight, TrendingDown, Equal, Gauge, BatteryLow } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { connectHeartRate, isBluetoothSupported, type HeartRateMonitor } from "@/lib/bleHeartRate";
@@ -224,6 +226,16 @@ export default function SessionLoggerPage() {
     );
   }
 
+  // A deload week lightens every load the session suggests.
+  const deloading = !!workout && profile?.deloadWeek === mondayOfDate(workout.date);
+
+  /** The usual load lightened for a deload week, or null outside one. */
+  function deloadKgFor(exerciseId: number, target: ReturnType<typeof targetFor>): number | null {
+    if (!deloading) return null;
+    const usual = adviceFor(exerciseId, target)?.weightKg ?? topWeight(lastPerformance(exerciseId, workout, allWorkouts, allSets));
+    return usual ? lighter(usual, exMap.get(exerciseId)?.equipment) : null;
+  }
+
   /** How to load an exercise today, from the last two times and their RPE. */
   function adviceFor(exerciseId: number, target: ReturnType<typeof targetFor>): Advice | null {
     return nextLoad({
@@ -249,7 +261,7 @@ export default function SessionLoggerPage() {
   function prefillFor(exerciseId: number, exSets: typeof sets) {
     const target = targetFor(exerciseId);
     const previous = lastPerformance(exerciseId, workout, allWorkouts, allSets);
-    const suggestion = adviceFor(exerciseId, target)?.weightKg ?? null;
+    const suggestion = deloadKgFor(exerciseId, target) ?? adviceFor(exerciseId, target)?.weightKg ?? null;
     const work = exSets.filter((s) => !s.isWarmup);
     const plan = percentPlanFor(exerciseId, target, work.length);
     return work
@@ -577,8 +589,9 @@ export default function SessionLoggerPage() {
           const previousTop = topWeight(previous);
           const percentPlan = percentPlanFor(exerciseId, target, work.length);
           // A percentage program sets the load itself: no RPE advice on top.
-          const advice = percentPlan ? null : adviceFor(exerciseId, target);
-          const suggestion = advice?.weightKg ?? null;
+          const deloadKg = percentPlan ? null : deloadKgFor(exerciseId, target);
+          const advice = percentPlan || deloading ? null : adviceFor(exerciseId, target);
+          const suggestion = deloadKg ?? advice?.weightKg ?? null;
           const best = bestLifts(exerciseId, allSets);
           const records = recordHistory(exerciseId, allWorkouts, allSets).slice(-5).reverse();
           return (
@@ -637,6 +650,13 @@ export default function SessionLoggerPage() {
                 )}
 
                 {advice && <AdviceLine advice={advice} />}
+
+                {deloading && !percentPlan && (
+                  <p className="flex items-start gap-1.5 text-sm font-medium text-accent-text">
+                    <BatteryLow className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                    {deloadKg ? t("deloadLoad", { kg: deloadKg }) : t("deloadNoLoad")}
+                  </p>
+                )}
 
                 {percentPlan && target?.percents && (
                   <p className="flex items-start gap-1.5 text-sm font-medium text-accent-text">

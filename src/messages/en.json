@@ -170,6 +170,8 @@
     "saved": "Profile saved"
   },
   "log": {
+    "deloadLoad": "Deload week: {kg} kg (−10%), easy does it",
+    "deloadNoLoad": "Deload week: keep it light",
     "percentPlan": "{percents}% of your estimated 1RM ({max} kg): {weights} kg",
     "percentNoMax": "{percents}% of 1RM: do a first session to estimate it",
     "repeatLast": "Repeat my last session",
@@ -304,6 +306,7 @@
     "videoEmbedHint": "Paste a YouTube or Vimeo link to play it inside the app. A search link opens YouTube instead."
   },
   "teams": {
+    "deloadActive": "Deload week in progress",
     "nudge": "Check in",
     "nudgeNamed": "Check in with {name}",
     "nudgeSend": "Send the message",
@@ -853,5 +856,18 @@
     "deadlineLabel": "Deadline (optional)",
     "hint": "The 1RM is estimated from your sets: 80 kg × 8 reps gives about 101 kg. No need to test your max.",
     "save": "Save the goal"
+  },
+  "deload": {
+    "title": "A deload week is due",
+    "reasonWeeks": "{weeks} training weeks in a row without a light one.",
+    "reasonRpe": "Your sessions over the last two weeks were very hard (average RPE {rpe}).",
+    "reasonReadiness": "Your readiness is low this week ({score}/100 on average).",
+    "what": "A lighter week (loads −10%, about 40% fewer sets) lets the body recover and come back stronger.",
+    "activate": "Start it this week",
+    "later": "Later",
+    "needProfile": "Complete my profile",
+    "activeTitle": "Deload week in progress",
+    "activeText": "Your sessions start with fewer sets and loads 10% lighter. Progress resumes on Monday.",
+    "cancel": "Cancel"
   }
 }

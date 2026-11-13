@@ -7,7 +7,14 @@ import { addWorkoutSet } from "@/hooks/useWorkoutSets";
 import { programGroups } from "./supersets";
 import { oneRepMaxHistory } from "./goals";
 import { percentWeights, referenceMax } from "./percent";
+import { DELOAD_LOAD, deloadSets } from "./deload";
 import { createCustomExercise } from "@/hooks/useExercises";
+
+/** A deload load: a tenth lighter, to the plate step below. */
+export function lighter(kg: number, equipment?: Exercise["equipment"]): number {
+  const step = equipment === "dumbbell" || equipment === "kettlebell" ? 2 : 2.5;
+  return Math.max(step, Math.floor((kg * DELOAD_LOAD) / step) * step);
+}
 
 /** The title a workout started from a program day carries. */
 export function programDayTitle(programName: string, dayName: string): string {
@@ -56,7 +63,8 @@ export async function startWorkoutFromDay(
   program: Program,
   dayIndex: number,
   exercises: Exercise[],
-  date: string
+  date: string,
+  options: { deload?: boolean } = {}
 ): Promise<number> {
   const uid = getCurrentUserIdSync();
   const pastWorkouts = await db.workouts.filter((w) => !w.deletedAt && (!uid || w.userId === uid)).toArray();
@@ -84,9 +92,12 @@ export async function startWorkoutFromDay(
     const last = lastPerformance(exerciseId, undefined, pastWorkouts, pastSets);
     const sessions = recentPerformances(exerciseId, undefined, pastWorkouts, pastSets, 2);
     const advice = nextLoad({ sessions, targetSets: pe.targetSets, targetReps: pe.targetReps, equipment: ex?.equipment });
-    const weightKg = advice?.weightKg ?? topWeight(last) ?? undefined;
+    const usual = advice?.weightKg ?? topWeight(last) ?? undefined;
+    // A deload week lightens the usual load; percentages already set their own.
+    const weightKg = options.deload && usual ? lighter(usual, ex?.equipment) : usual;
     const max = pe.percents?.length ? referenceMax(oneRepMaxHistory(exerciseId, pastWorkouts, pastSets), date) : null;
-    const sets = Math.max(1, pe.targetSets || 1);
+    const planned = Math.max(1, pe.targetSets || 1);
+    const sets = options.deload ? deloadSets(planned) : planned;
     for (let i = 1; i <= sets; i++) {
       await addWorkoutSet({
         workoutId: id,
@@ -122,7 +133,7 @@ export function lastRepeatable<W extends Pick<Workout, "id" | "date" | "kind">>(
  * same order, as many working sets, the weights of last time, the supersets
  * and the program it belonged to. Reps are left for the athlete to fill.
  */
-export async function repeatWorkout(source: Workout, date: string): Promise<number> {
+export async function repeatWorkout(source: Workout, date: string, options: { deload?: boolean } = {}): Promise<number> {
   const sets = (await db.workoutSets.where("workoutId").equals(source.id!).toArray())
     .filter((s) => !s.deletedAt && !s.isWarmup)
     .sort((a, b) => a.setNumber - b.setNumber || (a.id ?? 0) - (b.id ?? 0));
@@ -136,13 +147,15 @@ export async function repeatWorkout(source: Workout, date: string): Promise<numb
   const order: number[] = [];
   for (const s of sets) if (!order.includes(s.exerciseId)) order.push(s.exerciseId);
   for (const exerciseId of order) {
-    const own = sets.filter((s) => s.exerciseId === exerciseId);
+    const all = sets.filter((s) => s.exerciseId === exerciseId);
+    const own = options.deload ? all.slice(0, deloadSets(all.length)) : all;
+    const equipment = (await db.exercises.get(exerciseId))?.equipment;
     for (const [i, s] of own.entries()) {
       await addWorkoutSet({
         workoutId: id,
         exerciseId,
         setNumber: i + 1,
-        weightKg: s.weightKg ?? undefined,
+        weightKg: s.weightKg ? (options.deload ? lighter(s.weightKg, equipment) : s.weightKg) : undefined,
         restSec: s.restSec,
         supersetGroup: s.supersetGroup ?? null,
         completed: false,

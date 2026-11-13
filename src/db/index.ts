@@ -60,6 +60,8 @@ export interface AthleteProfile extends SyncFields {
   trainingTime?: string;
   /** Lifts to reach, see lib/goals. */
   strengthGoals?: StrengthGoal[];
+  /** Monday of the week chosen as a deload, see lib/deload. */
+  deloadWeek?: string | null;
   /** Optional daily macro targets */
   nutritionTargets?: { calories?: number; protein?: number; carbs?: number; fat?: number; water?: number };
   /** GDPR Art. 9 explicit consent to process health/fitness data */

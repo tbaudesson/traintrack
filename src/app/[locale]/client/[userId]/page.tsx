@@ -21,6 +21,7 @@ import type { Exercise, WorkoutSet } from "@/db";
 import { SectionHeading } from "@/components/ui/page-parts";
 import { formatDistance, formatDuration, isCardio } from "@/lib/cardio";
 import { localDate } from "@/lib/dates";
+import { mondayOfDate } from "@/lib/weekPlan";
 import { useTeamAdherence } from "@/hooks/useClientActivity";
 import { NudgeButton } from "@/components/domain/NudgeButton";
 import { GoalsSection } from "@/components/domain/GoalsSection";
@@ -130,6 +131,9 @@ export default function ClientDetailPage() {
                     );
                   })}
                 </div>
+                {clientProfile?.deloadWeek === mondayOfDate(today) && (
+                  <p className="text-sm font-medium text-accent-text">{t("deloadActive")}</p>
+                )}
                 <NudgeButton userId={userId} adherence={adherence} />
                 <p className="text-sm">
                   {adherence.rate !== null ? t("adherenceRate", { percent: Math.round(adherence.rate * 100) }) : t("adherenceNoPlan")}

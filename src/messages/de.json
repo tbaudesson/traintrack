@@ -170,6 +170,8 @@
     "saved": "Profil gespeichert"
   },
   "log": {
+    "deloadLoad": "Entlastungswoche: {kg} kg (−10 %), locker bleiben",
+    "deloadNoLoad": "Entlastungswoche: leicht bleiben",
     "percentPlan": "{percents} % deines geschätzten 1RM ({max} kg): {weights} kg",
     "percentNoMax": "{percents} % vom 1RM: mach zuerst eine Einheit, um es zu schätzen",
     "repeatLast": "Letzte Einheit wiederholen",
@@ -304,6 +306,7 @@
     "videoEmbedHint": "Füge einen YouTube- oder Vimeo-Link ein, um ihn in der App abzuspielen. Ein Suchlink öffnet YouTube."
   },
   "teams": {
+    "deloadActive": "Entlastungswoche läuft",
     "nudge": "Nachfragen",
     "nudgeNamed": "Bei {name} nachfragen",
     "nudgeSend": "Nachricht senden",
@@ -853,5 +856,18 @@
     "deadlineLabel": "Frist (optional)",
     "hint": "Das 1RM wird aus Ihren Sätzen geschätzt: 80 kg × 8 Wiederholungen ergeben etwa 101 kg. Kein Maximaltest nötig.",
     "save": "Ziel speichern"
+  },
+  "deload": {
+    "title": "Eine Entlastungswoche ist fällig",
+    "reasonWeeks": "{weeks} Trainingswochen am Stück ohne leichte Woche.",
+    "reasonRpe": "Deine Einheiten der letzten zwei Wochen waren sehr hart (durchschnittliche RPE {rpe}).",
+    "reasonReadiness": "Deine Tagesform ist diese Woche niedrig ({score}/100 im Schnitt).",
+    "what": "Eine leichtere Woche (Lasten −10 %, etwa 40 % weniger Sätze) lässt den Körper erholen und stärker zurückkommen.",
+    "activate": "Diese Woche starten",
+    "later": "Später",
+    "needProfile": "Profil vervollständigen",
+    "activeTitle": "Entlastungswoche läuft",
+    "activeText": "Deine Einheiten starten mit weniger Sätzen und 10 % leichteren Lasten. Ab Montag geht die Steigerung weiter.",
+    "cancel": "Abbrechen"
   }
 }

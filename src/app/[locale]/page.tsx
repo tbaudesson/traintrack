@@ -13,7 +13,9 @@ import { useProgramTemplates } from "@/lib/templateService";
 import { useUnreadComments } from "@/hooks/useCoachComments";
 import { useExercises } from "@/hooks/useExercises";
 import { useNutritionForDate, sumMacros } from "@/hooks/useNutrition";
-import { useTodayReadiness, readinessScore } from "@/hooks/useReadiness";
+import { useTodayReadiness, useReadiness, readinessScore } from "@/hooks/useReadiness";
+import { DeloadCard } from "@/components/domain/DeloadCard";
+import { deloadAdvice } from "@/lib/deload";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useTeams } from "@/hooks/useTeams";
 import { daysToOffer, findWorkoutProgramDay, lastRepeatable, repeatWorkout, startWorkoutFromDay } from "@/lib/startWorkout";
@@ -111,6 +113,7 @@ export default function HomePage() {
   const router = useRouter();
   const { user, profile: account } = useAuth();
   const profile = useAthleteProfile();
+  const readiness = useReadiness();
   const workouts = useWorkouts();
   const sets = useAllWorkoutSets();
   const programs = useTrainablePrograms();
@@ -146,6 +149,21 @@ export default function HomePage() {
     const next = lastDone?.at ? (lastDone.at.index + 1) % program.structure.length : 0;
     return { program, index: next, day: program.structure[next], workoutId: undefined };
   }, [programs, workouts, today]);
+
+  // Deload: running this week, or suggested from the weeks in a row and fatigue.
+  const thisMonday = mondayOfDate(today);
+  const deloading = profile?.deloadWeek === thisMonday;
+  const deload = useMemo(
+    () =>
+      deloadAdvice({
+        today,
+        workouts,
+        sets,
+        readiness: readiness.map((r) => ({ date: r.date, score: readinessScore(r) })),
+        deloadWeek: profile?.deloadWeek ?? undefined,
+      }),
+    [today, workouts, sets, readiness, profile]
+  );
 
   // The week: done, missed, and the next sessions placed on the training days ahead.
   const plan = useMemo(() => {
@@ -206,7 +224,7 @@ export default function HomePage() {
     setChoosing(false);
     setStarting(true);
     try {
-      const id = await startWorkoutFromDay(program, index, exercises, today);
+      const id = await startWorkoutFromDay(program, index, exercises, today, { deload: deloading });
       router.push(`/log/${id}`);
     } finally {
       setStarting(false);
@@ -221,7 +239,7 @@ export default function HomePage() {
     setChoosing(false);
     setStarting(true);
     try {
-      const id = await repeatWorkout(repeatable, today);
+      const id = await repeatWorkout(repeatable, today, { deload: deloading });
       router.push(`/log/${id}`);
     } finally {
       setStarting(false);
@@ -373,6 +391,8 @@ export default function HomePage() {
               {t("changeSession")}
             </button>
           </section>
+
+          <DeloadCard advice={deload} monday={thisMonday} active={deloading} hasProfile={!!profile} />
 
           <WeekStrip plan={plan} planned={(profile?.trainingDays ?? []).length > 0} />
 

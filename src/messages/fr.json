@@ -170,6 +170,8 @@
     "saved": "Profil enregistré"
   },
   "log": {
+    "deloadLoad": "Semaine de décharge : {kg} kg (−10 %), sans forcer",
+    "deloadNoLoad": "Semaine de décharge : reste léger, sans forcer",
     "percentPlan": "{percents} % de ton 1RM estimé ({max} kg) : {weights} kg",
     "percentNoMax": "{percents} % du 1RM : fais une première séance pour l'estimer",
     "repeatLast": "Refaire ma dernière séance",
@@ -304,6 +306,7 @@
     "videoEmbedHint": "Collez un lien YouTube ou Vimeo pour le lire dans l'application. Un lien de recherche ouvre YouTube."
   },
   "teams": {
+    "deloadActive": "Semaine de décharge en cours",
     "nudge": "Relancer",
     "nudgeNamed": "Relancer {name}",
     "nudgeSend": "Envoyer le message",
@@ -853,5 +856,18 @@
     "deadlineLabel": "Échéance (facultatif)",
     "hint": "Le 1RM est estimé à partir de vos séries : 80 kg × 8 répétitions donnent environ 101 kg. Pas besoin de tester votre maximum.",
     "save": "Enregistrer l'objectif"
+  },
+  "deload": {
+    "title": "Semaine de décharge conseillée",
+    "reasonWeeks": "{weeks} semaines d'entraînement d'affilée sans semaine légère.",
+    "reasonRpe": "Tes séances des deux dernières semaines ont été très dures (RPE moyen {rpe}).",
+    "reasonReadiness": "Ta forme du jour est basse cette semaine ({score}/100 en moyenne).",
+    "what": "Une semaine plus légère (charges −10 %, environ 40 % de séries en moins) laisse le corps récupérer et repartir plus fort.",
+    "activate": "Activer cette semaine",
+    "later": "Plus tard",
+    "needProfile": "Compléter mon profil",
+    "activeTitle": "Semaine de décharge en cours",
+    "activeText": "Tes séances démarrent avec moins de séries et des charges allégées de 10 %. La progression reprend lundi.",
+    "cancel": "Annuler"
   }
 }
