@@ -685,6 +685,11 @@
     "sessionDetail": "{sets} séries · {volume} kg"
   },
   "adminTemplates": {
+    "language": "Langue",
+    "allLanguages": "Toutes les langues",
+    "language_fr": "Français",
+    "language_en": "Anglais",
+    "language_de": "Allemand",
     "new": "Nouveau programme type",
     "untitled": "Nouveau programme",
     "day": "Jour",

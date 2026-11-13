@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useLocale } from "next-intl";
+import type { PlanLocale } from "./enduranceText";
 import type { ProgramDay } from "@/db";
 import { supabase } from "./supabase";
 import { PROGRAM_TEMPLATES, type ProgramGoal, type ProgramLevel, type ProgramTemplate } from "./programTemplates";
@@ -19,6 +21,8 @@ interface Row {
   structure: ProgramDay[];
   is_published: boolean;
   sort_order: number;
+  /** Absent until migration 026 is applied. */
+  locale?: PlanLocale | null;
 }
 
 const TABLE = "program_templates";
@@ -35,6 +39,7 @@ function fromRow(r: Row): AdminTemplate {
     daysPerWeek: r.days_per_week,
     isPublished: r.is_published,
     sortOrder: r.sort_order,
+    locale: r.locale ?? undefined,
   };
 }
 
@@ -49,6 +54,7 @@ function toRow(t: Partial<AdminTemplate>): Partial<Row> {
   if (t.structure !== undefined) row.structure = t.structure;
   if (t.isPublished !== undefined) row.is_published = t.isPublished;
   if (t.sortOrder !== undefined) row.sort_order = t.sortOrder;
+  if ("locale" in t) row.locale = t.locale ?? null;
   return row;
 }
 
@@ -81,16 +87,21 @@ export async function deleteTemplate(id: string): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
+/** A template is offered to everyone, or only to users of its language. */
+export const speaks = (locale: string) => (t: Pick<ProgramTemplate, "locale">) => !t.locale || t.locale === locale;
+
 /**
- * The catalogue offered to users. Starts from the built-in list, which also
- * stands in when offline. An admin's view is narrowed to what users see.
+ * The catalogue offered to users, in their language. Starts from the built-in
+ * list, which also stands in when offline. An admin's view is narrowed to what
+ * users see.
  */
 export function useProgramTemplates(): ProgramTemplate[] {
+  const locale = useLocale();
   const [templates, setTemplates] = useState<ProgramTemplate[]>(PROGRAM_TEMPLATES);
   useEffect(() => {
     listTemplates()
       .then((all) => setTemplates(all.filter((t) => t.isPublished)))
       .catch(() => {});
   }, []);
-  return templates;
+  return templates.filter(speaks(locale));
 }

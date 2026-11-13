@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import type { Workout } from "@/db";
 import { cardioBests, describeTarget, formatDistance, formatDuration, formatPace, isCardioDone, newCardioRecords } from "./cardio";
 import { ENDURANCE_TEMPLATES } from "./enduranceTemplates";
+import { speaks } from "./templateService";
 
 const run = (id: number, distanceM?: number, durationSec?: number) =>
   ({ id, kind: "cardio", sport: "run", distanceM, durationSec }) as Workout;
@@ -86,6 +87,23 @@ describe("endurance plans", () => {
   it("add up the swim distance from its laps", () => {
     const swim = ENDURANCE_TEMPLATES.find((t) => t.id === "plan-natation-8")!;
     expect(swim.structure[0].cardio?.distanceKm).toBe(1.5);
+  });
+
+  it("offer the same plans in every language", () => {
+    const shape = (locale: string) =>
+      ENDURANCE_TEMPLATES.filter((t) => t.locale === locale).map((t) =>
+        t.structure.map((d) => [d.week, d.cardio?.distanceKm, d.cardio?.durationMin, d.cardio?.steps?.length, d.exercises.length])
+      );
+    expect(shape("en")).toEqual(shape("fr"));
+    expect(shape("de")).toEqual(shape("fr"));
+  });
+
+  it("show each user the plans of their language only", () => {
+    const names = (locale: string) => ENDURANCE_TEMPLATES.filter(speaks(locale)).map((t) => t.name);
+    expect(names("en")).toContain("Marathon in 16 weeks");
+    expect(names("en")).not.toContain("Marathon en 16 semaines");
+    expect(names("de")).toContain("Marathon in 16 Wochen");
+    expect(speaks("de")({})).toBe(true);
   });
 
   it("give every session a distance or a duration", () => {

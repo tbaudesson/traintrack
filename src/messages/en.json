@@ -685,6 +685,11 @@
     "sessionDetail": "{sets} sets · {volume} kg"
   },
   "adminTemplates": {
+    "language": "Language",
+    "allLanguages": "All languages",
+    "language_fr": "French",
+    "language_en": "English",
+    "language_de": "German",
     "new": "New template",
     "untitled": "New program",
     "day": "Day",

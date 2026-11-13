@@ -14,6 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { ProgramGoal, ProgramLevel } from "@/lib/programTemplates";
 import { getTemplate, updateTemplate, type AdminTemplate } from "@/lib/templateService";
+import { PLAN_LOCALES, type PlanLocale } from "@/lib/enduranceText";
 
 const GOALS: ProgramGoal[] = ["strength", "hypertrophy", "endurance", "fat_loss", "general"];
 const LEVELS: ProgramLevel[] = ["beginner", "intermediate", "advanced"];
@@ -108,6 +109,17 @@ export default function TemplateEditorPage() {
                 </select>
               </label>
             </div>
+            <label className="block text-sm font-medium">
+              {t("language")}
+              <select
+                value={item.locale ?? ""}
+                onChange={(e) => patch({ locale: (e.target.value || undefined) as PlanLocale | undefined })}
+                className={SELECT}
+              >
+                <option value="">{t("allLanguages")}</option>
+                {PLAN_LOCALES.map((l) => <option key={l} value={l}>{t(`language_${l}`)}</option>)}
+              </select>
+            </label>
             <label className="block text-sm font-medium">
               {tl("days")}
               <Input

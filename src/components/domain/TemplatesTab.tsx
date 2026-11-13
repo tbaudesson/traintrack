@@ -66,6 +66,9 @@ export function TemplatesTab() {
                   {tl(`goal_${item.goal}`)} · {tl(`level_${item.level}`)} · {item.daysPerWeek} {tl("daysShort")}
                 </p>
               </div>
+              {item.locale && (
+                <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground uppercase">{item.locale}</span>
+              )}
               {!item.isPublished && (
                 <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">{t("hidden")}</span>
               )}

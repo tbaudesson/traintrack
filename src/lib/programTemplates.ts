@@ -1,5 +1,6 @@
 import type { ProgramDay } from "@/db";
 import { ENDURANCE_TEMPLATES } from "./enduranceTemplates";
+import type { PlanLocale } from "./enduranceText";
 
 /**
  * Ready-made program templates so a user can SELECT a proven program instead of
@@ -12,6 +13,8 @@ export type ProgramLevel = "beginner" | "intermediate" | "advanced";
 
 export interface ProgramTemplate {
   id: string;
+  /** Offered only to users of this language; none means everyone. */
+  locale?: PlanLocale;
   name: string;
   description: string;
   goal: ProgramGoal;
