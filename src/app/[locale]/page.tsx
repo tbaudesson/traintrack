@@ -42,6 +42,7 @@ import {
   type LucideIcon,
   Activity, Upload, RotateCcw, ArrowRight, ListChecks, MessageSquare, Plus, Sparkles, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
   Timer,
+  PersonStanding,
 } from "lucide-react";
 import { localDate, localDateIn } from "@/lib/dates";
 import { useFormat } from "@/lib/format";
@@ -118,6 +119,7 @@ export default function HomePage() {
   const tp = useTranslations("programs");
   const tc = useTranslations("cardio");
   const ti = useTranslations("intervals");
+  const tmo = useTranslations("mobility");
   const router = useRouter();
   const { user, profile: account } = useAuth();
   const profile = useAthleteProfile();
@@ -510,6 +512,7 @@ export default function HomePage() {
                   )}
                   <DetailRow onClick={startFree} disabled={starting} icon={Plus} tone="neutral" title={t("freeSession")} subtitle={t("freeSessionHint")} />
                   <DetailRow href="/intervals" icon={Timer} tone="neutral" title={ti("title")} subtitle={ti("hint")} />
+                  <DetailRow href="/mobility" icon={PersonStanding} tone="neutral" title={tmo("title")} subtitle={tmo("hint")} />
                   <DetailRow onClick={() => { setChoosing(false); setSportOpen(true); }} disabled={starting} icon={Activity} tone="neutral" title={tc("newSession")} subtitle={tc("newSessionHint")} />
                   <GpxImport
                     existing={workouts}

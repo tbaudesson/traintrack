@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Pause, Play, SkipForward, Square } from "lucide-react";
-import { GET_READY_SEC, type IntervalSession } from "@/lib/intervals";
+import { GET_READY_SEC } from "@/lib/intervals";
 import { beep } from "@/lib/beep";
 import { useExerciseLabel } from "@/lib/exerciseNames";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,11 @@ export interface IntervalResult {
   elapsedSec: number;
 }
 
+/** What the timer plays: an exercise (or one side of it), or a rest. */
+export type PlayerStep =
+  | { type: "work"; exercise: { name: string; sides?: boolean; cue?: string }; seconds: number; side?: "left" | "right" }
+  | { type: "rest"; seconds: number; recovery?: boolean };
+
 const clock = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
 
 /**
@@ -24,7 +29,16 @@ const clock = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padSt
  * next exercise shown during the rest. Pause, skip and stop at any time; what
  * was done is handed back to be saved.
  */
-export function IntervalPlayer({ session, onEnd }: { session: IntervalSession; onEnd: (result: IntervalResult) => void }) {
+export function IntervalPlayer({
+  session,
+  onEnd,
+  labels,
+}: {
+  session: { steps: PlayerStep[] };
+  onEnd: (result: IntervalResult) => void;
+  /** What an effort and a rest are called: "Stretch" and "Next" for a stretching session. */
+  labels?: { work: string; rest: string };
+}) {
   const t = useTranslations("intervals");
   const xl = useExerciseLabel();
   const { steps } = session;
@@ -142,7 +156,13 @@ export function IntervalPlayer({ session, onEnd }: { session: IntervalSession; o
             !step ? "text-muted-foreground" : resting ? "text-emerald-700 dark:text-emerald-300" : "text-accent-text"
           )}
         >
-          {!step ? t("getReady") : step.type === "work" ? t("work") : step.recovery ? t("recovery") : t("rest")}
+          {!step
+            ? t("getReady")
+            : step.type === "work"
+              ? (labels?.work ?? t("work"))
+              : step.recovery
+                ? t("recovery")
+                : (labels?.rest ?? t("rest"))}
         </p>
         {step?.type === "work" && <h2 className="text-4xl font-bold tracking-tight">{xl(step.exercise.name)}</h2>}
 
@@ -167,10 +187,13 @@ export function IntervalPlayer({ session, onEnd }: { session: IntervalSession; o
           </p>
         </div>
 
+        {step?.type === "work" && step.side && <p className="text-base font-semibold">{t(step.side === "left" ? "leftSide" : "rightSide")}</p>}
+        {step?.type === "work" && step.exercise.cue && <p className="max-w-sm text-sm text-muted-foreground">{step.exercise.cue}</p>}
         {step?.type === "work" && step.exercise.sides && <p className="text-sm font-medium text-muted-foreground">{t("switchSides")}</p>}
         {resting && next?.type === "work" && (
           <p className="text-base text-muted-foreground">
             {t("next")} <span className="font-semibold text-foreground">{xl(next.exercise.name)}</span>
+            {next.side && ` · ${t(next.side === "left" ? "leftSide" : "rightSide")}`}
           </p>
         )}
       </div>

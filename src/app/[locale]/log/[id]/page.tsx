@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useWorkout, useWorkouts, updateWorkout, deleteWorkout } from "@/hooks/useWorkouts";
 import { useWorkoutSets, useAllWorkoutSets, addWorkoutSet, updateWorkoutSet, deleteWorkoutSet } from "@/hooks/useWorkoutSets";
 import { useExercises } from "@/hooks/useExercises";
@@ -46,7 +46,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight, TrendingDown, Equal, Gauge, BatteryLow, Bandage } from "lucide-react";
+import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight, TrendingDown, Equal, Gauge, BatteryLow, Bandage, PersonStanding } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { IntervalWorkoutView } from "@/components/domain/IntervalWorkoutView";
@@ -78,6 +78,7 @@ export default function SessionLoggerPage() {
   const [painFor, setPainFor] = useState<number | null>(null);
   const [guided, setGuided] = useState(false);
   const tg = useTranslations("guided");
+  const tm = useTranslations("mobility");
   const { num, day, short } = useFormat();
   const pains = usePainReports();
   const { profile: account } = useAuth();
@@ -615,6 +616,23 @@ export default function SessionLoggerPage() {
           <CardioLogger key={workout.id} workout={workout} target={programDay?.cardio} />
         )}
 
+        {workout && (
+          <div className="grid grid-cols-2 gap-2">
+            <Link href={`/mobility?mode=warmup&workout=${workoutId}`}>
+              <Button variant="outline" className="w-full rounded-full">
+                <PersonStanding className="mr-1 h-4 w-4" aria-hidden="true" />
+                {tm("warmupButton")}
+              </Button>
+            </Link>
+            <Link href={`/mobility?mode=stretch&workout=${workoutId}`}>
+              <Button variant="outline" className="w-full rounded-full">
+                <PersonStanding className="mr-1 h-4 w-4" aria-hidden="true" />
+                {tm("stretchButton")}
+              </Button>
+            </Link>
+          </div>
+        )}
+
         {workout && !isCardio(workout) && groups.length === 0 && (
           <EmptyState icon={Dumbbell} title={t("noExercises")} />
         )}
@@ -958,7 +976,11 @@ export default function SessionLoggerPage() {
         <PlateCalculator open onOpenChange={() => setPlateWeight(null)} initialWeight={plateWeight || undefined} />
       )}
 
-      <SessionSummary data={summary} onClose={() => router.push("/log")} />
+      <SessionSummary
+        data={summary}
+        onClose={() => router.push("/log")}
+        onStretch={() => router.push(`/mobility?mode=stretch&workout=${workoutId}`)}
+      />
 
       {effort && (
         <div role="timer" aria-label={t("effortLabel")} className="fixed bottom-24 left-1/2 z-[55] flex -translate-x-1/2 items-center gap-2 rounded-full bg-success-text py-1 pr-1 pl-4 whitespace-nowrap text-background shadow-lg">

@@ -258,7 +258,8 @@
     "effortLabel": "Belastung",
     "effortOfSet": "Satz {set}",
     "finishSet": "Fertig",
-    "secondsShort": "Sek."
+    "secondsShort": "Sek.",
+    "summaryStretch": "Ein paar Minuten dehnen"
   },
   "progress": {
     "title": "Fortschritt",
@@ -1086,6 +1087,38 @@
     "timesSeconds": "{count} × {seconds} s",
     "again": "Diese Einheit wiederholen",
     "delete": "Einheit löschen",
-    "deleteConfirm": "Diese Einheit löschen?"
+    "deleteConfirm": "Diese Einheit löschen?",
+    "leftSide": "Linke Seite",
+    "rightSide": "Rechte Seite"
+  },
+  "mobility": {
+    "title": "Aufwärmen und Dehnen",
+    "hint": "Vor oder nach dem Training, 5 bis 15 Min.",
+    "warmupTitle": "Aufwärmen",
+    "stretchTitle": "Dehnen",
+    "mode": "Wann",
+    "mode_warmup": "Vorher: Aufwärmen",
+    "mode_stretch": "Nachher: Dehnen",
+    "modeHint_warmup": "Dynamische Bewegungen, um warm zu werden und die Gelenke zu mobilisieren.",
+    "modeHint_stretch": "Gehaltene Positionen, ruhig atmen. Es zieht, darf aber nie wehtun.",
+    "target": "Muskeln",
+    "target_session": "Die der Einheit",
+    "target_full": "Ganzer Körper",
+    "target_upper": "Oberkörper",
+    "target_lower": "Unterkörper",
+    "duration": "Dauer",
+    "moves": "{count, plural, one {# Übung} other {# Übungen}}",
+    "bothSides": "jede Seite",
+    "start": "Starten",
+    "work_warmup": "Mobilisation",
+    "work_stretch": "Dehnung",
+    "transition": "Als Nächstes",
+    "warmupDone": "Aufgewärmt, ab ins Training!",
+    "stretchDone": "Dehnen fertig, gute Erholung!",
+    "toSession": "Zur Einheit",
+    "backToSession": "Zurück zur Einheit",
+    "home": "Zur Startseite",
+    "warmupButton": "Aufwärmen",
+    "stretchButton": "Dehnen"
   }
 }

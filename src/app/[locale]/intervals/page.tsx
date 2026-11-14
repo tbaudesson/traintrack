@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Play, Shuffle, Timer } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
@@ -22,10 +22,10 @@ import {
 import { localDate } from "@/lib/dates";
 import { unlockAudio } from "@/lib/beep";
 import { useExerciseLabel } from "@/lib/exerciseNames";
-import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SectionHeading } from "@/components/ui/page-parts";
 import { Button } from "@/components/ui/button";
+import { Choice, ChoiceField } from "@/components/ui/choice";
 import { IntervalPlayer, type IntervalResult } from "@/components/domain/IntervalPlayer";
 
 const SAVED = "traintrack-interval-plan";
@@ -146,24 +146,24 @@ export default function IntervalsPage() {
       <div className="space-y-6 p-4 pb-28">
         <p className="text-sm text-muted-foreground">{t("intro")}</p>
 
-        <Field label={t("focus")}>
+        <ChoiceField label={t("focus")}>
           {INTERVAL_FOCUSES.map((focus) => (
             <Choice key={focus} on={plan.focus === focus} onClick={() => change({ focus })}>
               {t(`focus_${focus}`)}
             </Choice>
           ))}
-        </Field>
+        </ChoiceField>
 
-        <Field label={t("equipment")}>
+        <ChoiceField label={t("equipment")}>
           <Choice on={!plan.dumbbells} onClick={() => change({ dumbbells: false })}>
             {t("bodyweight")}
           </Choice>
           <Choice on={plan.dumbbells} onClick={() => change({ dumbbells: true })}>
             {t("dumbbells")}
           </Choice>
-        </Field>
+        </ChoiceField>
 
-        <Field label={t("pattern")} hint={t(`patternHint_${plan.pattern}`)}>
+        <ChoiceField label={t("pattern")} hint={t(`patternHint_${plan.pattern}`)}>
           {INTERVAL_PATTERNS.map((pattern) => {
             const s = patternSeconds(pattern);
             return (
@@ -172,15 +172,15 @@ export default function IntervalsPage() {
               </Choice>
             );
           })}
-        </Field>
+        </ChoiceField>
 
-        <Field label={t("duration")}>
+        <ChoiceField label={t("duration")}>
           {INTERVAL_MINUTES.map((minutes) => (
             <Choice key={minutes} on={plan.minutes === minutes} onClick={() => change({ minutes })}>
               {minutes} min
             </Choice>
           ))}
-        </Field>
+        </ChoiceField>
 
         <section className="space-y-3">
           <div className="flex items-center justify-between">
@@ -237,31 +237,5 @@ export default function IntervalsPage() {
 
       {playing && <IntervalPlayer session={session} onEnd={save} />}
     </>
-  );
-}
-
-function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
-  return (
-    <fieldset className="space-y-2">
-      <legend className="mb-2 text-sm font-semibold">{label}</legend>
-      <div className="flex flex-wrap gap-2">{children}</div>
-      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
-    </fieldset>
-  );
-}
-
-function Choice({ on, onClick, children }: { on: boolean; onClick: () => void; children: ReactNode }) {
-  return (
-    <button
-      type="button"
-      aria-pressed={on}
-      onClick={onClick}
-      className={cn(
-        "min-h-11 rounded-full border px-4 text-sm font-medium transition-colors",
-        on ? "border-accent-500 bg-accent-500 text-white" : "border-border text-foreground hover:bg-muted"
-      )}
-    >
-      {children}
-    </button>
   );
 }

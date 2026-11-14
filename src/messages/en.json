@@ -258,7 +258,8 @@
     "effortLabel": "Effort",
     "effortOfSet": "Set {set}",
     "finishSet": "Finish",
-    "secondsShort": "Sec."
+    "secondsShort": "Sec.",
+    "summaryStretch": "Stretch for a few minutes"
   },
   "progress": {
     "title": "Progress",
@@ -1086,6 +1087,38 @@
     "timesSeconds": "{count} × {seconds} s",
     "again": "Do this session again",
     "delete": "Delete the session",
-    "deleteConfirm": "Delete this session?"
+    "deleteConfirm": "Delete this session?",
+    "leftSide": "Left side",
+    "rightSide": "Right side"
+  },
+  "mobility": {
+    "title": "Warm-up and stretching",
+    "hint": "Before or after the session, 5 to 15 min",
+    "warmupTitle": "Warm-up",
+    "stretchTitle": "Stretching",
+    "mode": "When",
+    "mode_warmup": "Before: warm-up",
+    "mode_stretch": "After: stretching",
+    "modeHint_warmup": "Dynamic moves to raise the temperature and loosen the joints.",
+    "modeHint_stretch": "Holds, breathing slowly. It pulls, but it must never hurt.",
+    "target": "Muscles",
+    "target_session": "The session's",
+    "target_full": "Whole body",
+    "target_upper": "Upper body",
+    "target_lower": "Lower body",
+    "duration": "Length",
+    "moves": "{count, plural, one {# move} other {# moves}}",
+    "bothSides": "each side",
+    "start": "Start",
+    "work_warmup": "Move",
+    "work_stretch": "Stretch",
+    "transition": "Next",
+    "warmupDone": "Warmed up, on to the session!",
+    "stretchDone": "Stretching done, recover well!",
+    "toSession": "Go to the session",
+    "backToSession": "Back to the session",
+    "home": "Back to home",
+    "warmupButton": "Warm up",
+    "stretchButton": "Stretch"
   }
 }

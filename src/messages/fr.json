@@ -258,7 +258,8 @@
     "effortLabel": "Effort",
     "effortOfSet": "Série {set}",
     "finishSet": "Terminer",
-    "secondsShort": "Sec."
+    "secondsShort": "Sec.",
+    "summaryStretch": "S'étirer quelques minutes"
   },
   "progress": {
     "title": "Progrès",
@@ -1086,6 +1087,38 @@
     "timesSeconds": "{count} × {seconds} s",
     "again": "Refaire cette séance",
     "delete": "Supprimer la séance",
-    "deleteConfirm": "Supprimer cette séance ?"
+    "deleteConfirm": "Supprimer cette séance ?",
+    "leftSide": "Côté gauche",
+    "rightSide": "Côté droit"
+  },
+  "mobility": {
+    "title": "Échauffement et étirements",
+    "hint": "Avant ou après la séance, de 5 à 15 min",
+    "warmupTitle": "Échauffement",
+    "stretchTitle": "Étirements",
+    "mode": "Moment",
+    "mode_warmup": "Avant : échauffement",
+    "mode_stretch": "Après : étirements",
+    "modeHint_warmup": "Des mouvements dynamiques pour monter en température et mobiliser les articulations.",
+    "modeHint_stretch": "Des postures tenues, en respirant lentement. Ça tire, mais ça ne doit jamais faire mal.",
+    "target": "Muscles visés",
+    "target_session": "Ceux de la séance",
+    "target_full": "Tout le corps",
+    "target_upper": "Haut du corps",
+    "target_lower": "Bas du corps",
+    "duration": "Durée",
+    "moves": "{count, plural, one {# mouvement} other {# mouvements}}",
+    "bothSides": "chaque côté",
+    "start": "Démarrer",
+    "work_warmup": "Mobilisation",
+    "work_stretch": "Étirement",
+    "transition": "Suivant",
+    "warmupDone": "Échauffé, place à la séance !",
+    "stretchDone": "Étirements terminés, bonne récupération !",
+    "toSession": "Aller à la séance",
+    "backToSession": "Revenir à la séance",
+    "home": "Retour à l'accueil",
+    "warmupButton": "S'échauffer",
+    "stretchButton": "S'étirer"
   }
 }

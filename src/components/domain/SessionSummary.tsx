@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Clock, Dumbbell, Gauge, Layers, Route, Trophy, type LucideIcon } from "lucide-react";
+import { Clock, Dumbbell, Gauge, Layers, Route, Trophy, type LucideIcon, PersonStanding } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useFormat } from "@/lib/format";
@@ -28,7 +28,16 @@ function Tile({ icon: Icon, label, value }: { icon: LucideIcon; label: string; v
   );
 }
 
-export function SessionSummary({ data, onClose }: { data: SessionSummaryData | null; onClose: () => void }) {
+export function SessionSummary({
+  data,
+  onClose,
+  onStretch,
+}: {
+  data: SessionSummaryData | null;
+  onClose: () => void;
+  /** Offered at the end: a few minutes of stretching for the muscles just worked. */
+  onStretch?: () => void;
+}) {
   const t = useTranslations("log");
   const { num } = useFormat();
   const tc = useTranslations("cardio");
@@ -77,6 +86,12 @@ export function SessionSummary({ data, onClose }: { data: SessionSummaryData | n
           </ul>
         )}
         </>
+        )}
+        {onStretch && (
+          <Button variant="outline" onClick={onStretch} className="w-full">
+            <PersonStanding className="mr-1 h-4 w-4" aria-hidden="true" />
+            {t("summaryStretch")}
+          </Button>
         )}
         <Button onClick={onClose} className="w-full">{t("summaryDone")}</Button>
       </DialogContent>
