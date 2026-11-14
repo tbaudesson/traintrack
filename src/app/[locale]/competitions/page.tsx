@@ -143,6 +143,9 @@ export default function CompetitionsPage() {
                 <p className="text-xs text-muted-foreground">
                   {badScore ? t("scoreHint") : final !== null ? t("finalIs", { score: num(final, 3) }) : t("scoreHint")}
                 </p>
+                {draft.date >= localDate() && !draft.compulsory && !draft.technical && !draft.freestyle && (
+                  <p className="rounded-lg bg-accent-500/10 p-2 text-xs">{t("upcomingHint")}</p>
+                )}
                 <div className="grid grid-cols-2 gap-2">
                   <Field label={t("rankLabel")}>
                     <Input value={draft.rank} onChange={set("rank")} inputMode="numeric" />

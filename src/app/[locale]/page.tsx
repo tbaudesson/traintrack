@@ -1,5 +1,6 @@
 "use client";
 
+import { sessionHref } from "@/lib/routes";
 import { useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -15,6 +16,8 @@ import { useExercises } from "@/hooks/useExercises";
 import { useNutritionForDate, sumMacros } from "@/hooks/useNutrition";
 import { useTodayReadiness, useReadiness, readinessScore } from "@/hooks/useReadiness";
 import { DeloadCard } from "@/components/domain/DeloadCard";
+import { ReadinessBanner } from "@/components/domain/ReadinessBanner";
+import { useLighterToday } from "@/hooks/useLighterToday";
 import { WeeklyReportCard } from "@/components/domain/WeeklyReportCard";
 import { MyPrograms } from "@/components/domain/MyPrograms";
 import { PROGRAM_TEMPLATES } from "@/lib/programTemplates";
@@ -184,6 +187,8 @@ export default function HomePage() {
   // Deload: running this week, or suggested from the weeks in a row and fatigue.
   const thisMonday = mondayOfDate(today);
   const deloading = profile?.deloadWeek === thisMonday;
+  // A deload week or a day of low form: the session starts lighter.
+  const lighterToday = useLighterToday();
   // Last week's report, from Monday to Wednesday, until closed.
   const lastMonday = mondayOfDate(localDateIn(-7, now));
   const showReport =
@@ -249,7 +254,7 @@ export default function HomePage() {
 
   async function start() {
     if (session?.workoutId) {
-      router.push(`/log/${session.workoutId}`);
+      router.push(sessionHref(session.workoutId));
       return;
     }
     if (!session) {
@@ -263,8 +268,8 @@ export default function HomePage() {
     setChoosing(false);
     setStarting(true);
     try {
-      const id = await startWorkoutFromDay(program, index, exercises, today, { deload: deloading });
-      router.push(`/log/${id}`);
+      const id = await startWorkoutFromDay(program, index, exercises, today, { deload: lighterToday.lighter });
+      router.push(sessionHref(id));
     } finally {
       setStarting(false);
     }
@@ -278,8 +283,8 @@ export default function HomePage() {
     setChoosing(false);
     setStarting(true);
     try {
-      const id = await repeatWorkout(repeatable, today, { deload: deloading });
-      router.push(`/log/${id}`);
+      const id = await repeatWorkout(repeatable, today, { deload: lighterToday.lighter });
+      router.push(sessionHref(id));
     } finally {
       setStarting(false);
     }
@@ -294,7 +299,7 @@ export default function HomePage() {
   async function startCardio(sport: Sport) {
     setSportOpen(false);
     const id = await createWorkout({ date: today, title: tc(`sport_${sport}`), kind: "cardio", sport });
-    router.push(`/log/${id}`);
+    router.push(sessionHref(id));
   }
 
   const dayDetail = (day: ProgramDay) =>
@@ -317,7 +322,7 @@ export default function HomePage() {
     setStarting(true);
     try {
       const id = await createWorkout({ date: today, title: tl("newWorkout") });
-      router.push(`/log/${id}`);
+      router.push(sessionHref(id));
     } finally {
       setStarting(false);
     }
@@ -346,7 +351,7 @@ export default function HomePage() {
           <p className="truncate text-sm text-muted-foreground">{t("tagline")}</p>
         </div>
         {comments.length > 0 ? (
-          <Link href={`/log/${comments[0].workoutId}`} aria-label={t("newComments", { count: comments.length })} className="relative flex size-11 items-center justify-center rounded-lg text-foreground">
+          <Link href={sessionHref(comments[0].workoutId)} aria-label={t("newComments", { count: comments.length })} className="relative flex size-11 items-center justify-center rounded-lg text-foreground">
             <Bell className="size-6" aria-hidden="true" />
             <span className="absolute right-2 top-2 size-2.5 rounded-full bg-accent-600 ring-2 ring-background" />
           </Link>
@@ -454,6 +459,7 @@ export default function HomePage() {
             </button>
           </section>
 
+          <ReadinessBanner readiness={lighterToday.reason === "deload" ? null : lighterToday.readiness} keptNormal={lighterToday.keptNormal} onKeep={lighterToday.setKeptNormal} />
           <DeloadCard advice={deload} monday={thisMonday} active={deloading} hasProfile={!!profile} />
 
           {showReport && (
@@ -486,7 +492,7 @@ export default function HomePage() {
             favorite={prefs.sport}
             onContinue={(program) => {
               const running = workouts.find((w) => w.date === today && findWorkoutProgramDay([program], w));
-              if (running?.id) router.push(`/log/${running.id}`);
+              if (running?.id) router.push(sessionHref(running.id));
               else startDay(program, nextDayIndex(program, workouts, today));
             }}
           />
@@ -540,7 +546,7 @@ export default function HomePage() {
                     existing={workouts}
                     onImported={({ workoutId }) => {
                       setChoosing(false);
-                      router.push(`/log/${workoutId}`);
+                      router.push(sessionHref(workoutId));
                     }}
                     trigger={(open) => (
                       <DetailRow onClick={open} icon={Upload} tone="neutral" title={tc("importGpx")} subtitle={tc("importGpxHint")} />
@@ -620,7 +626,7 @@ export default function HomePage() {
           )}
 
           {comments.length > 0 && (
-            <Link href={`/log/${comments[0].workoutId}`} className="block">
+            <Link href={sessionHref(comments[0].workoutId)} className="block">
               <Card className="active:scale-[0.99]">
                 <CardContent className="flex items-center gap-3 py-3">
                   <MessageSquare className="size-5 shrink-0 text-accent-text" aria-hidden="true" />

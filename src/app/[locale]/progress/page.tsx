@@ -17,7 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Dumbbell, Layers, Flame, Trophy, TrendingUp, ChevronRight } from "lucide-react";
+import { Dumbbell, Layers, Flame, Trophy, TrendingUp, ChevronRight, FileText } from "lucide-react";
+import { DetailRow } from "@/components/ui/detail-row";
 import { Link } from "@/i18n/navigation";
 import { useCompetitions } from "@/hooks/useCompetitions";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
@@ -41,6 +42,7 @@ type ExMetric = "e1rm" | "top" | "reps" | "vol";
 export default function ProgressPage() {
   const t = useTranslations("progress");
   const tcomp = useTranslations("competitions");
+  const tm = useTranslations("monthly");
   const competitions = useCompetitions();
   const prefs = useAppPrefs();
   const { num, day } = useFormat();
@@ -187,6 +189,8 @@ export default function ProgressPage() {
           pains={pains}
           lastMonday={mondayOfDate(localDateIn(-7, now))}
         />
+
+        <DetailRow href="/report" icon={FileText} title={tm("open")} subtitle={tm("openHint")} />
 
         <GoalsSection profile={athlete} workouts={workouts} sets={sets} exercises={exercises} editable />
 

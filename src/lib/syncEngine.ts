@@ -555,6 +555,12 @@ function notifyListeners(state: SyncState, error?: string) {
   }
 }
 
+/** How many local changes wait to be sent: rows marked dirty in every synced table. */
+export async function countPending(): Promise<number> {
+  const counts = await Promise.all(SYNC_ORDER.map((name) => db.table(name).where("_dirty").equals(1).count().catch(() => 0)));
+  return counts.reduce((a, b) => a + b, 0);
+}
+
 export function onSyncStateChange(listener: SyncListener): () => void {
   _listeners.add(listener);
   // Immediately notify with current state

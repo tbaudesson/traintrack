@@ -24,7 +24,8 @@
     "error": "Erreur de synchronisation",
     "offline": "Hors ligne",
     "syncNow": "Synchroniser maintenant",
-    "offlineBanner": "Hors ligne — vos modifications seront synchronisées au retour de la connexion"
+    "offlineBanner": "Hors ligne — vos modifications seront synchronisées au retour de la connexion",
+    "offlinePending": "Hors ligne — {count, plural, one {# modification enregistrée} other {# modifications enregistrées}} sur l'appareil, envoyée{count, plural, one {} other {s}} au retour du réseau"
   },
   "common": {
     "save": "Enregistrer",
@@ -1288,7 +1289,10 @@
     "bestCompulsory": "Meilleurs imposés",
     "bestFreestyle": "Meilleur libre",
     "progressUp": "+{points} points de note finale depuis la première de vos {count} compétitions.",
-    "progressDown": "−{points} points de note finale depuis la première de vos {count} compétitions."
+    "progressDown": "−{points} points de note finale depuis la première de vos {count} compétitions.",
+    "upcoming": "À venir",
+    "inDays": "{count, plural, =0 {aujourd'hui} one {dans # jour} other {dans # jours}}",
+    "upcomingHint": "Pour une compétition à venir, laissez les notes vides : elle s'affichera dans « À venir » et pourra servir à caler un programme."
   },
   "spinning": {
     "start": "Lancer la séance guidée ({count} blocs)",
@@ -1304,5 +1308,59 @@
     "kind_sprint": "Sprint",
     "kind_recovery": "Récupération",
     "kind_cooldown": "Retour au calme"
+  },
+  "readinessAdjust": {
+    "title": "Forme basse aujourd'hui ({score}/100)",
+    "text": "Votre séance du jour sera allégée : moins de séries et des charges 10 % plus légères. Mieux vaut une séance facile qu'une séance qui fatigue.",
+    "keep": "Garder la séance normale",
+    "keptTitle": "Séance normale gardée ({score}/100)",
+    "keptText": "Vous avez choisi la séance complète malgré une forme basse : écoutez vos sensations et arrêtez si besoin.",
+    "lighten": "Alléger quand même"
+  },
+  "season": {
+    "title": "Préparer une date",
+    "hint": "Choisissez la date de votre compétition ou de votre course : le programme de {weeks} semaines sera calé pour que sa dernière semaine, l'affûtage, soit celle de l'objectif.",
+    "date": "Date de l'objectif",
+    "otherDate": "Ou une autre date",
+    "preview": "Début le {start} · dernière semaine du {from} au {to}",
+    "late": "Il est un peu tard : {count, plural, one {# semaine est déjà passée} other {# semaines sont déjà passées}}, vous commencerez en semaine {week}.",
+    "apply": "Caler le programme sur cette date"
+  },
+  "monthly": {
+    "title": "Bilan du mois",
+    "titleOf": "Bilan de {name}",
+    "open": "Bilan du mois",
+    "openHint": "Assiduité, progrès, records, forme et compétitions",
+    "openHintCoach": "Le mois de l'athlète, prêt à lui envoyer",
+    "previous": "Mois précédent",
+    "next": "Mois suivant",
+    "empty": "Aucune séance ce mois-ci.",
+    "attendance": "{days} jours sur {planned} prévus",
+    "daysTrained": "Jours d'entraînement",
+    "sessions": "Séances : {strength} muscu, {cardio} endurance",
+    "volume": "Volume soulevé",
+    "volumeChange": "Volume ({change} % vs mois précédent)",
+    "time": "Temps d'entraînement",
+    "rpe": "RPE moyen",
+    "readiness": "Forme moyenne",
+    "cardio": "Endurance : {count, plural, one {# sortie} other {# sorties}}",
+    "progressTitle": "Plus gros progrès",
+    "progressLine": "{name} : 1RM estimé {before} → {best} kg (+{percent} %)",
+    "recordsTitle": "{count, plural, one {# record battu} other {# records battus}}",
+    "competitionsTitle": "Compétitions",
+    "painsTitle": "{count, plural, one {# douleur signalée} other {# douleurs signalées}}",
+    "send": "Envoyer à {name}",
+    "sent": "Bilan envoyé",
+    "share": "Partager",
+    "print": "Imprimer ou PDF",
+    "textTitle": "Bilan de {month} {name}",
+    "textAttendance": "Assiduité : {days} jours sur {planned} prévus ({percent} %)",
+    "textDays": "{days} jours d'entraînement",
+    "textVolume": "Volume : {kg} kg{change}",
+    "textRecords": "Records : {list}",
+    "textProgress": "Progrès : {list}",
+    "textCardio": "Endurance : {count} sorties, {distance}",
+    "textCompetitions": "Compétitions : {list}",
+    "textPains": "{count, plural, one {# douleur signalée} other {# douleurs signalées}} : à surveiller"
   }
 }

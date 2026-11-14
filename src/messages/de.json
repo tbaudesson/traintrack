@@ -24,7 +24,8 @@
     "error": "Synchronisierungsfehler",
     "offline": "Offline",
     "syncNow": "Jetzt synchronisieren",
-    "offlineBanner": "Offline — deine Änderungen werden synchronisiert, sobald die Verbindung zurückkehrt"
+    "offlineBanner": "Offline — deine Änderungen werden synchronisiert, sobald die Verbindung zurückkehrt",
+    "offlinePending": "Offline — {count, plural, one {# Änderung} other {# Änderungen}} auf dem Gerät gespeichert, gesendet sobald das Netz zurück ist"
   },
   "common": {
     "save": "Speichern",
@@ -1288,7 +1289,10 @@
     "bestCompulsory": "Beste Pflicht",
     "bestFreestyle": "Beste Kür",
     "progressUp": "+{points} Punkte Endnote seit dem ersten deiner {count} Turniere.",
-    "progressDown": "−{points} Punkte Endnote seit dem ersten deiner {count} Turniere."
+    "progressDown": "−{points} Punkte Endnote seit dem ersten deiner {count} Turniere.",
+    "upcoming": "Demnächst",
+    "inDays": "{count, plural, =0 {heute} one {in # Tag} other {in # Tagen}}",
+    "upcomingHint": "Für ein kommendes Turnier die Noten leer lassen: Es erscheint unter „Demnächst“ und kann zum Ausrichten eines Programms dienen."
   },
   "spinning": {
     "start": "Geführte Einheit starten ({count} Blöcke)",
@@ -1304,5 +1308,59 @@
     "kind_sprint": "Sprint",
     "kind_recovery": "Erholung",
     "kind_cooldown": "Ausklang"
+  },
+  "readinessAdjust": {
+    "title": "Heute wenig Form ({score}/100)",
+    "text": "Deine heutige Einheit wird leichter: weniger Sätze und 10 % weniger Gewicht. Besser eine leichte Einheit als eine, die erschöpft.",
+    "keep": "Normale Einheit behalten",
+    "keptTitle": "Normale Einheit behalten ({score}/100)",
+    "keptText": "Du hast trotz wenig Form die volle Einheit gewählt: hör auf deinen Körper und brich bei Bedarf ab.",
+    "lighten": "Doch leichter machen"
+  },
+  "season": {
+    "title": "Auf einen Termin hinarbeiten",
+    "hint": "Wähle das Datum deines Turniers oder Wettkampfs: Das {weeks}-Wochen-Programm wird so gelegt, dass seine letzte Woche, das Tapering, die Woche des Ziels ist.",
+    "date": "Datum des Ziels",
+    "otherDate": "Oder ein anderes Datum",
+    "preview": "Beginn am {start} · letzte Woche vom {from} bis {to}",
+    "late": "Etwas spät: {count, plural, one {# Woche ist} other {# Wochen sind}} schon vorbei, du beginnst in Woche {week}.",
+    "apply": "Programm auf dieses Datum legen"
+  },
+  "monthly": {
+    "title": "Monatsbilanz",
+    "titleOf": "Bilanz von {name}",
+    "open": "Monatsbilanz",
+    "openHint": "Trainingstreue, Fortschritte, Rekorde, Form und Turniere",
+    "openHintCoach": "Der Monat des Athleten, bereit zum Senden",
+    "previous": "Vorheriger Monat",
+    "next": "Nächster Monat",
+    "empty": "Keine Einheit in diesem Monat.",
+    "attendance": "{days} von {planned} geplanten Tagen",
+    "daysTrained": "Trainingstage",
+    "sessions": "Einheiten: {strength} Kraft, {cardio} Ausdauer",
+    "volume": "Bewegtes Volumen",
+    "volumeChange": "Volumen ({change} % ggü. Vormonat)",
+    "time": "Trainingszeit",
+    "rpe": "Durchschnittliche RPE",
+    "readiness": "Durchschnittliche Form",
+    "cardio": "Ausdauer: {count, plural, one {# Einheit} other {# Einheiten}}",
+    "progressTitle": "Größte Fortschritte",
+    "progressLine": "{name}: geschätztes 1RM {before} → {best} kg (+{percent} %)",
+    "recordsTitle": "{count, plural, one {# Rekord gebrochen} other {# Rekorde gebrochen}}",
+    "competitionsTitle": "Turniere",
+    "painsTitle": "{count, plural, one {# Schmerz gemeldet} other {# Schmerzen gemeldet}}",
+    "send": "An {name} senden",
+    "sent": "Bilanz gesendet",
+    "share": "Teilen",
+    "print": "Drucken oder PDF",
+    "textTitle": "Bilanz {month} {name}",
+    "textAttendance": "Trainingstreue: {days} von {planned} geplanten Tagen ({percent} %)",
+    "textDays": "{days} Trainingstage",
+    "textVolume": "Volumen: {kg} kg{change}",
+    "textRecords": "Rekorde: {list}",
+    "textProgress": "Fortschritte: {list}",
+    "textCardio": "Ausdauer: {count} Einheiten, {distance}",
+    "textCompetitions": "Turniere: {list}",
+    "textPains": "{count, plural, one {# Schmerz gemeldet} other {# Schmerzen gemeldet}}: im Auge behalten"
   }
 }

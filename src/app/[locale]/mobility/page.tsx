@@ -1,5 +1,6 @@
 "use client";
 
+import { sessionHref } from "@/lib/routes";
 import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { CheckCircle2, Play } from "lucide-react";
@@ -90,7 +91,7 @@ export default function MobilityPage() {
   const session = useMemo(() => buildMobilitySession(mode, minutes, muscles, locale, injuries), [mode, minutes, muscles, locale, injuries]);
   const leftOut = MOBILITY_EXERCISES.filter((e) => e.mode === mode && mobilityWarning(e.key, injuries)?.level === "avoid").length;
   const areaWords = (areas: string[]) => areas.map((a) => (locale === "de" ? tpain(`area_${a}`) : tpain(`area_${a}`).toLowerCase())).join(", ");
-  const back = link?.workoutId ? `/log/${link.workoutId}` : "/";
+  const back = link?.workoutId ? sessionHref(link.workoutId) : "/";
 
   if (!link) return <PageHeader title={t("title")} showBack />;
 

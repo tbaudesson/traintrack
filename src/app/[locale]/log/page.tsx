@@ -1,9 +1,11 @@
 "use client";
 
+import { sessionHref } from "@/lib/routes";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useFormat } from "@/lib/format";
 import { useRouter } from "@/i18n/navigation";
+import { useLighterToday } from "@/hooks/useLighterToday";
 import { useWorkouts, createWorkout } from "@/hooks/useWorkouts";
 import { useTrainablePrograms } from "@/hooks/usePrograms";
 import { useExercises } from "@/hooks/useExercises";
@@ -13,8 +15,6 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Upload, Activity, Plus, Dumbbell, Calendar, Loader2, ClipboardList, RotateCcw, Timer } from "lucide-react";
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
-import { useAthleteProfile } from "@/hooks/useAthleteProfile";
-import { mondayOfDate } from "@/lib/weekPlan";
 import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
 import { DetailRow } from "@/components/ui/detail-row";
 import { daysToOffer, lastRepeatable, repeatWorkout, startWorkoutFromDay } from "@/lib/startWorkout";
@@ -39,34 +39,34 @@ export default function LogPage() {
 
   const today = localDate();
   const allSets = useAllWorkoutSets();
-  const athlete = useAthleteProfile();
-  const deloading = athlete?.deloadWeek === mondayOfDate(today);
+  // A deload week or a day of low form: the session starts lighter.
+  const deloading = useLighterToday().lighter;
   const repeatable = lastRepeatable(workouts, allSets, today);
 
   async function repeatLast() {
     if (!repeatable) return;
     setBusy(true);
     const id = await repeatWorkout(repeatable, today, { deload: deloading });
-    router.push(`/log/${id}`);
+    router.push(sessionHref(id));
   }
 
   async function startCardio(sport: Sport) {
     setSportOpen(false);
     setBusy(true);
     const id = await createWorkout({ date: today, title: tc(`sport_${sport}`), kind: "cardio", sport });
-    router.push(`/log/${id}`);
+    router.push(sessionHref(id));
   }
 
   async function startEmpty() {
     setBusy(true);
     const id = await createWorkout({ date: today, title: t("newWorkout") });
-    router.push(`/log/${id}`);
+    router.push(sessionHref(id));
   }
 
   async function startFromProgramDay(program: Program, dayIndex: number) {
     setBusy(true);
     const id = await startWorkoutFromDay(program, dayIndex, exercises, today, { deload: deloading });
-    router.push(`/log/${id}`);
+    router.push(sessionHref(id));
   }
 
   return (
@@ -103,7 +103,7 @@ export default function LogPage() {
         </Button>
         <GpxImport
           existing={workouts}
-          onImported={({ workoutId }) => router.push(`/log/${workoutId}`)}
+          onImported={({ workoutId }) => router.push(sessionHref(workoutId))}
           trigger={(open) => (
             <Button variant="ghost" className="-mt-4 w-full text-accent-text" onClick={open} disabled={busy}>
               <Upload className="mr-1 h-4 w-4" aria-hidden="true" />
@@ -147,7 +147,7 @@ export default function LogPage() {
             workouts.map((w) => (
               <DetailRow
                 key={w.id}
-                onClick={() => router.push(`/log/${w.id}`)}
+                onClick={() => router.push(sessionHref(w.id))}
                 icon={Calendar}
                 tone="neutral"
                 title={w.title || t("title")}

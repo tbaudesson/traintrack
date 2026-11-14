@@ -1,15 +1,16 @@
 "use client";
 
+import { sessionHref } from "@/lib/routes";
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowRight, CalendarDays, Check, LogOut, Loader2, Pencil, UserCheck, Wand2 } from "lucide-react";
 import { getCurrentUserIdSync, type ProgramDay } from "@/db";
 import { useRouter } from "@/i18n/navigation";
+import { useLighterToday } from "@/hooks/useLighterToday";
 import { deleteProgram, updateProgram, useProgram } from "@/hooks/usePrograms";
 import { useWorkouts } from "@/hooks/useWorkouts";
 import { useExercises } from "@/hooks/useExercises";
-import { useAthleteProfile } from "@/hooks/useAthleteProfile";
 import { describeTarget } from "@/lib/cardio";
 import { localDate } from "@/lib/dates";
 import { useExerciseLabel } from "@/lib/exerciseNames";
@@ -21,13 +22,13 @@ import { PROGRAM_TEMPLATES } from "@/lib/programTemplates";
 import { nextMonday, programWeek } from "@/lib/programWeek";
 import { findWorkoutProgramDay, nextDayIndex, startWorkoutFromDay } from "@/lib/startWorkout";
 import { useReadyMadeNames } from "@/lib/templateService";
-import { mondayOfDate } from "@/lib/weekPlan";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CategoryIcon } from "@/components/domain/ProgramCatalog";
+import { SeasonTarget } from "@/components/domain/SeasonTarget";
 
 /**
  * A program as one follows it: what it is, how far one is, its sessions week
@@ -46,8 +47,8 @@ export default function ProgramPage() {
   const program = useProgram(programId);
   const workouts = useWorkouts();
   const exercises = useExercises();
-  const profile = useAthleteProfile();
   const readyMade = useReadyMadeNames();
+  const lighterToday = useLighterToday();
   const [busy, setBusy] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const today = localDate();
@@ -78,13 +79,12 @@ export default function ProgramPage() {
   const perWeek = weeks ? Math.round(days.length / weeks) : days.length;
 
   async function start() {
-    if (running?.id) return router.push(`/log/${running.id}`);
+    if (running?.id) return router.push(sessionHref(running.id));
     if (next === null || !program) return;
     setBusy(true);
     try {
-      const deload = profile?.deloadWeek === mondayOfDate(today);
-      const id = await startWorkoutFromDay(program, next, exercises, today, { deload });
-      router.push(`/log/${id}`);
+      const id = await startWorkoutFromDay(program, next, exercises, today, { deload: lighterToday.lighter });
+      router.push(sessionHref(id));
     } finally {
       setBusy(false);
     }
@@ -192,6 +192,11 @@ export default function ProgramPage() {
                 : tp("startHint")}
             </p>
           </section>
+        )}
+
+        {/* A competition or a race to peak for: the plan ends on its week. */}
+        {weeks && origin !== "coach" && (
+          <SeasonTarget weeks={weeks} today={today} onApply={(start) => updateProgram(programId, { startDate: start })} />
         )}
 
         {/* The sessions, week by week. */}

@@ -11,9 +11,10 @@ import { useReadiness, readinessScore } from "@/hooks/useReadiness";
 import { useNutritionForDate, sumMacros } from "@/hooks/useNutrition";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, TrendingUp, CheckCircle, HeartPulse, Apple, ChevronDown, ChevronUp, Bandage } from "lucide-react";
+import { Calendar, TrendingUp, CheckCircle, HeartPulse, Apple, ChevronDown, ChevronUp, Bandage, FileText } from "lucide-react";
 import { useInjuriesOf } from "@/hooks/useAthleteProfile";
 import { useCompetitions } from "@/hooks/useCompetitions";
+import { DetailRow } from "@/components/ui/detail-row";
 import { CompetitionResults } from "@/components/domain/CompetitionResults";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -82,6 +83,7 @@ export default function ClientDetailPage() {
   const injuries = useInjuriesOf(userId);
   const competitions = useCompetitions(userId);
   const tcomp = useTranslations("competitions");
+  const tm = useTranslations("monthly");
   const tinj = useTranslations("injuries");
   const thisWeek = adherence?.weeks.at(-1);
 
@@ -247,6 +249,8 @@ export default function ClientDetailPage() {
           pains={painHistory}
           lastMonday={mondayOfDate(localDateIn(-7))}
         />
+
+        <DetailRow href={`/client/${userId}/report`} icon={FileText} title={tm("open")} subtitle={tm("openHintCoach")} />
 
         <GoalsSection profile={clientProfile} workouts={workouts} sets={sets} exercises={exercises} editable={false} />
 

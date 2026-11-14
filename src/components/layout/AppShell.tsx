@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { BottomNav } from "./BottomNav";
 import { OfflineBanner } from "./OfflineBanner";
+import { OfflineWarmup } from "./OfflineWarmup";
 import { Loader2 } from "lucide-react";
 
 /**
@@ -72,6 +73,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <>
       <OfflineBanner />
+      <OfflineWarmup />
       <main id="main-content" className="flex-1 overflow-y-auto pb-20">
         {children}
       </main>

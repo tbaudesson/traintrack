@@ -1,6 +1,8 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { useLiveQuery } from "dexie-react-hooks";
+import { countPending } from "@/lib/syncEngine";
 import { WifiOff } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -25,12 +27,15 @@ export function OfflineBanner() {
     () => false
   );
 
+  // Changes kept on the device until the network is back.
+  const pending = useLiveQuery(() => countPending(), []) ?? 0;
+
   if (!isOffline) return null;
 
   return (
     <div className="sticky top-0 z-50 flex items-center justify-center gap-2 bg-amber-500 px-4 py-1.5 text-xs font-medium text-white">
       <WifiOff className="h-3.5 w-3.5" />
-      {t("offlineBanner")}
+      {pending > 0 ? t("offlinePending", { count: pending }) : t("offlineBanner")}
     </div>
   );
 }

@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { Medal, Pencil } from "lucide-react";
+import { CalendarClock, Medal, Pencil } from "lucide-react";
+import { localDate } from "@/lib/dates";
+import { upcomingCompetitions } from "@/lib/seasonPlan";
 import type { CompetitionResult } from "@/db";
 import { competitionSummary, finalScore } from "@/lib/competitions";
 import { useFormat } from "@/lib/format";
@@ -13,22 +14,52 @@ import { useFormat } from "@/lib/format";
  * competition with its scores and ranking. Read by the athlete, who can edit
  * them, and by their coach.
  */
-export function CompetitionResults({ results, onEdit }: { results: CompetitionResult[]; onEdit?: (r: CompetitionResult) => void }) {
+export function CompetitionResults({ results: all, onEdit }: { results: CompetitionResult[]; onEdit?: (r: CompetitionResult) => void }) {
   const t = useTranslations("competitions");
   const { num, day } = useFormat();
+  // Competitions to come, not scored yet, apart from the results.
+  const today = localDate();
+  const upcoming = upcomingCompetitions(all, today);
+  const results = all.filter((r) => !upcoming.includes(r));
   const summary = competitionSummary(results);
   const score = (n: number | null | undefined) => (typeof n === "number" ? num(n, 3) : "—");
-  const data = useMemo(
-    () =>
-      [...results]
-        .sort((a, b) => a.date.localeCompare(b.date))
-        .map((r) => ({ date: r.date, compulsory: r.compulsory ?? null, technical: r.technical ?? null, freestyle: r.freestyle ?? null, final: finalScore(r) })),
-    [results]
-  );
+  const data = [...results]
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map((r) => ({ date: r.date, compulsory: r.compulsory ?? null, technical: r.technical ?? null, freestyle: r.freestyle ?? null, final: finalScore(r) }));
   const hasTechnical = results.some((r) => typeof r.technical === "number");
 
   return (
     <div className="space-y-4">
+      {upcoming.length > 0 && (
+        <section className="space-y-1.5">
+          <h3 className="text-sm font-semibold">{t("upcoming")}</h3>
+          {upcoming.map((r) => (
+            <div key={r.id} className="flex items-center gap-3 rounded-2xl bg-accent-500/10 p-3 ring-1 ring-accent-500/30">
+              <CalendarClock className="h-5 w-5 shrink-0 text-accent-text" aria-hidden="true" />
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold">{r.event}</p>
+                <p className="text-xs text-muted-foreground">
+                  {[day(r.date), t("inDays", { count: daysUntil(r.date, today) }), r.horse && t("onHorse", { horse: r.horse })].filter(Boolean).join(" · ")}
+                </p>
+              </div>
+              {onEdit && (
+                <button type="button" onClick={() => onEdit(r)} aria-label={t("edit")} className="flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted">
+                  <Pencil className="h-4 w-4" aria-hidden="true" />
+                </button>
+              )}
+            </div>
+          ))}
+        </section>
+      )}
+
+      {results.length > 0 && resultsView()}
+    </div>
+  );
+
+  // The results, once there are some: a plain function, not a component, so nothing remounts.
+  function resultsView() {
+    return (
+    <>
       <div className="grid grid-cols-3 gap-2">
         <Best label={t("bestFinal")} value={score(summary.best.final)} />
         <Best label={t("bestCompulsory")} value={score(summary.best.compulsory)} />
@@ -90,9 +121,12 @@ export function CompetitionResults({ results, onEdit }: { results: CompetitionRe
           </li>
         ))}
       </ul>
-    </div>
-  );
+    </>
+    );
+  }
 }
+
+const daysUntil = (date: string, today: string) => Math.round((Date.parse(date) - Date.parse(today)) / 86_400_000);
 
 function Best({ label, value }: { label: string; value: string }) {
   return (

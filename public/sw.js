@@ -1,4 +1,4 @@
-const CACHE_NAME = "traintrack-v6";
+const CACHE_NAME = "traintrack-v7";
 
 const PRECACHE_URLS = ["/fr", "/en", "/de"];
 
@@ -73,7 +73,21 @@ self.addEventListener("fetch", (event) => {
         }
         return response;
       })
-      .catch(async () => (await caches.match(event.request)) || Response.error())
+      .catch(async () => {
+        const exact = await caches.match(event.request);
+        if (exact) return exact;
+        // A page opened offline: the same page with other query parameters
+        // (a session started without network: /log/session?id=N, a number
+        // never seen), then the home page of the language, then nothing.
+        if (event.request.mode === "navigate") {
+          const samePage = await caches.match(event.request, { ignoreSearch: true });
+          if (samePage) return samePage;
+          const locale = url.pathname.split("/")[1];
+          const home = await caches.match(`/${["fr", "en", "de"].includes(locale) ? locale : "fr"}`);
+          if (home) return home;
+        }
+        return Response.error();
+      })
   );
 });
 

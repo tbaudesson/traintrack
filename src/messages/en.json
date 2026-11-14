@@ -24,7 +24,8 @@
     "error": "Sync error",
     "offline": "Offline",
     "syncNow": "Sync now",
-    "offlineBanner": "Offline — your changes will sync when the connection returns"
+    "offlineBanner": "Offline — your changes will sync when the connection returns",
+    "offlinePending": "Offline — {count, plural, one {# change saved} other {# changes saved}} on this device, sent when the network is back"
   },
   "common": {
     "save": "Save",
@@ -1288,7 +1289,10 @@
     "bestCompulsory": "Best compulsory",
     "bestFreestyle": "Best freestyle",
     "progressUp": "+{points} points of final score since the first of your {count} competitions.",
-    "progressDown": "−{points} points of final score since the first of your {count} competitions."
+    "progressDown": "−{points} points of final score since the first of your {count} competitions.",
+    "upcoming": "Coming up",
+    "inDays": "{count, plural, =0 {today} one {in # day} other {in # days}}",
+    "upcomingHint": "For a competition still to come, leave the scores empty: it shows under “Coming up” and can be used to set a program on it."
   },
   "spinning": {
     "start": "Start the guided session ({count} blocks)",
@@ -1304,5 +1308,59 @@
     "kind_sprint": "Sprint",
     "kind_recovery": "Recovery",
     "kind_cooldown": "Cool-down"
+  },
+  "readinessAdjust": {
+    "title": "Low form today ({score}/100)",
+    "text": "Today's session will be lighter: fewer sets and loads 10 % lighter. Better an easy session than one that wears you out.",
+    "keep": "Keep the normal session",
+    "keptTitle": "Normal session kept ({score}/100)",
+    "keptText": "You chose the full session despite low form: listen to your body and stop if needed.",
+    "lighten": "Lighten it after all"
+  },
+  "season": {
+    "title": "Aim for a date",
+    "hint": "Choose the date of your competition or race: the {weeks}-week program will be set so that its last week, the taper, is the event's week.",
+    "date": "Event date",
+    "otherDate": "Or another date",
+    "preview": "Starts {start} · last week {from} to {to}",
+    "late": "It's a little late: {count, plural, one {# week has} other {# weeks have}} already gone by, you'll start in week {week}.",
+    "apply": "Set the program on this date"
+  },
+  "monthly": {
+    "title": "Monthly report",
+    "titleOf": "{name}'s report",
+    "open": "Monthly report",
+    "openHint": "Attendance, progress, records, form and competitions",
+    "openHintCoach": "The athlete's month, ready to send",
+    "previous": "Previous month",
+    "next": "Next month",
+    "empty": "No session this month.",
+    "attendance": "{days} days out of {planned} planned",
+    "daysTrained": "Training days",
+    "sessions": "Sessions: {strength} strength, {cardio} endurance",
+    "volume": "Volume lifted",
+    "volumeChange": "Volume ({change} % vs last month)",
+    "time": "Training time",
+    "rpe": "Average RPE",
+    "readiness": "Average form",
+    "cardio": "Endurance: {count, plural, one {# outing} other {# outings}}",
+    "progressTitle": "Biggest gains",
+    "progressLine": "{name}: estimated 1RM {before} → {best} kg (+{percent} %)",
+    "recordsTitle": "{count, plural, one {# record beaten} other {# records beaten}}",
+    "competitionsTitle": "Competitions",
+    "painsTitle": "{count, plural, one {# pain reported} other {# pains reported}}",
+    "send": "Send to {name}",
+    "sent": "Report sent",
+    "share": "Share",
+    "print": "Print or PDF",
+    "textTitle": "{month} report {name}",
+    "textAttendance": "Attendance: {days} days out of {planned} planned ({percent} %)",
+    "textDays": "{days} training days",
+    "textVolume": "Volume: {kg} kg{change}",
+    "textRecords": "Records: {list}",
+    "textProgress": "Gains: {list}",
+    "textCardio": "Endurance: {count} outings, {distance}",
+    "textCompetitions": "Competitions: {list}",
+    "textPains": "{count, plural, one {# pain reported} other {# pains reported}}: to keep an eye on"
   }
 }

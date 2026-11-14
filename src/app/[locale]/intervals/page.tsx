@@ -1,5 +1,6 @@
 "use client";
 
+import { sessionHref } from "@/lib/routes";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Play, Shuffle, Timer } from "lucide-react";
@@ -156,7 +157,7 @@ export default function IntervalsPage() {
       numbers.set(name, setNumber);
       await addWorkoutSet({ workoutId: id, exerciseId, setNumber, reps: step.seconds, restSec: rest, completed: true });
     }
-    router.push(`/log/${id}`);
+    router.push(sessionHref(id));
   }
 
   if (!plan || !session || !withDemos) return <PageHeader title={t("title")} showBack />;

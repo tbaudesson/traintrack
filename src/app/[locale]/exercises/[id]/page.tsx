@@ -1,5 +1,6 @@
 "use client";
 
+import { sessionHref } from "@/lib/routes";
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -111,7 +112,7 @@ export default function ExerciseHistoryPage() {
             <section className="space-y-2">
               <SectionHeading>{t("sessions", { count: history.sessions.length })}</SectionHeading>
               {history.sessions.map((s) => (
-                <Link key={s.workoutId} href={`/log/${s.workoutId}`} className="t-surface block rounded-2xl p-3 ring-1 ring-foreground/5">
+                <Link key={s.workoutId} href={sessionHref(s.workoutId)} className="t-surface block rounded-2xl p-3 ring-1 ring-foreground/5">
                   <div className="flex items-baseline justify-between gap-2">
                     <p className="text-sm font-semibold">{day(s.date)}</p>
                     {s.oneRepMax && <p className="text-xs text-muted-foreground">{t("estimated", { kg: num(s.oneRepMax) })}</p>}
