@@ -1139,5 +1139,24 @@
     "coachTitle": "Blessures déclarées",
     "coachHint": "Les exercices qui sollicitent ces zones sont signalés à l'athlète, et dans ses programmes.",
     "declareFromPain": "Déclarer une blessure ({area}) : les exercices qui sollicitent cette zone seront signalés."
+  },
+  "catalog": {
+    "title": "Programmes tout faits",
+    "cat_bodybuilding": "Musculation",
+    "cat_strength": "Force",
+    "cat_fitness": "Fitness et perte de poids",
+    "cat_running": "Course à pied",
+    "cat_swimming": "Natation",
+    "cat_cycling": "Vélo",
+    "cat_vaulting": "Voltige",
+    "cat_timed": "Callisthenics",
+    "cat_mobility": "Échauffement et étirements",
+    "count": "{count, plural, one {# programme} other {# programmes}}",
+    "timedHint": "Séances minutées",
+    "mobilityHint": "Avant ou après la séance",
+    "allLevels": "Tous niveaux",
+    "perWeek": "{count} séances / sem.",
+    "weeks": "{count, plural, one {# semaine} other {# semaines}}",
+    "home": "À la maison"
   }
 }

@@ -1139,5 +1139,24 @@
     "coachTitle": "Gemeldete Verletzungen",
     "coachHint": "Übungen, die diese Bereiche belasten, werden dem Athleten und in seinen Programmen markiert.",
     "declareFromPain": "Verletzung melden ({area}): Übungen, die diesen Bereich belasten, werden markiert."
+  },
+  "catalog": {
+    "title": "Fertige Programme",
+    "cat_bodybuilding": "Muskelaufbau",
+    "cat_strength": "Kraft",
+    "cat_fitness": "Fitness und Abnehmen",
+    "cat_running": "Laufen",
+    "cat_swimming": "Schwimmen",
+    "cat_cycling": "Radfahren",
+    "cat_vaulting": "Voltigieren",
+    "cat_timed": "Calisthenics",
+    "cat_mobility": "Aufwärmen und Dehnen",
+    "count": "{count, plural, one {# Programm} other {# Programme}}",
+    "timedHint": "Einheiten auf Zeit",
+    "mobilityHint": "Vor oder nach dem Training",
+    "allLevels": "Alle Niveaus",
+    "perWeek": "{count} Einheiten / Woche",
+    "weeks": "{count, plural, one {# Woche} other {# Wochen}}",
+    "home": "Zu Hause"
   }
 }

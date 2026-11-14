@@ -32,6 +32,7 @@ export function DetailRow({
   onClick,
   disabled,
   icon,
+  leading,
   tone,
   title,
   subtitle,
@@ -39,7 +40,9 @@ export function DetailRow({
   href?: string;
   onClick?: () => void;
   disabled?: boolean;
-  icon: Icon;
+  icon?: Icon;
+  /** Something else than an icon well on the left, e.g. a coloured category icon. */
+  leading?: ReactNode;
   tone?: keyof typeof TONES;
   title: string;
   subtitle?: ReactNode;
@@ -47,7 +50,7 @@ export function DetailRow({
   const interactive = !!(href || onClick);
   const body = (
     <>
-      <IconWell icon={icon} tone={tone} />
+      {leading ?? (icon && <IconWell icon={icon} tone={tone} />)}
       <span className="min-w-0 flex-1">
         <span className="block truncate font-medium">{title}</span>
         {subtitle && <span className="block truncate text-xs text-muted-foreground">{subtitle}</span>}

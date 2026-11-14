@@ -8,10 +8,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAthleteProfile } from "@/hooks/useAthleteProfile";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { getApiKey, generateProgram } from "@/lib/aiService";
-import { rankTemplates, type ProgramGoal, type ProgramLevel } from "@/lib/programTemplates";
+import { PROGRAM_TEMPLATES, type ProgramTemplate } from "@/lib/programTemplates";
+import { planWeeks, programCategory } from "@/lib/programCategories";
+import type { ProgramDay } from "@/db";
+import { CategoryIcon, ProgramCatalog } from "@/components/domain/ProgramCatalog";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -19,8 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, ClipboardList, Loader2, UserCheck, Sparkles, LayoutTemplate, Dumbbell, Home } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Plus, ClipboardList, Loader2, UserCheck, Sparkles } from "lucide-react";
 import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
 import { DetailRow } from "@/components/ui/detail-row";
 import { useClients } from "@/hooks/useClients";
@@ -35,35 +36,28 @@ export default function ProgramsPage() {
   const { user } = useAuth();
   const { hasFeature } = useFeatureAccess();
   const profile = useAthleteProfile();
-  const tt = useTranslations("templates");
+  const tc = useTranslations("catalog");
   const [busy, setBusy] = useState(false);
 
-  // Template picker state
-  const [tplOpen, setTplOpen] = useState(false);
-  const [tGoal, setTGoal] = useState<ProgramGoal | undefined>(undefined);
-  const [tLevel, setTLevel] = useState<ProgramLevel | undefined>(undefined);
-  const [tDays, setTDays] = useState<number | undefined>(undefined);
-
   const catalogue = useProgramTemplates();
-  const ranked = rankTemplates({ goal: tGoal, level: tLevel, daysPerWeek: tDays }, catalogue);
 
-  function openTemplates() {
-    if (profile?.fitnessLevel) setTLevel(profile.fitnessLevel as ProgramLevel);
-    setTplOpen(true);
-  }
-
-  async function applyTemplate(tplId: string) {
-    const tpl = ranked.find((x) => x.id === tplId);
-    if (!tpl) return;
+  async function applyTemplate(tpl: ProgramTemplate) {
     setBusy(true);
     const id = await createProgram({
       name: tpl.name,
       description: tpl.description,
       structure: tpl.structure,
     });
-    setTplOpen(false);
     setBusy(false);
     router.push(`/programs/${id}`);
+  }
+
+  /** "Running · 8 weeks", or the number of days of a program without weeks. */
+  function describe(p: { name: string; structure?: ProgramDay[] }) {
+    const category = programCategory(p, [...catalogue, ...PROGRAM_TEMPLATES]);
+    const weeks = planWeeks(p.structure ?? []);
+    const length = weeks ? tc("weeks", { count: weeks }) : `${(p.structure ?? []).length} ${t("days")}`;
+    return { category, subtitle: category ? `${tc(`cat_${category}`)} · ${length}` : length };
   }
 
   // AI generation dialog state
@@ -140,10 +134,6 @@ export default function ProgramsPage() {
         showBack
         actions={
           <div className="flex flex-wrap justify-end gap-2">
-            <Button size="sm" variant="outline" onClick={openTemplates}>
-              <LayoutTemplate className="mr-1 h-4 w-4" />
-              {tt("choose")}
-            </Button>
             {hasFeature("ai_programs") && (
               <Button size="sm" variant="outline" onClick={openAi}>
                 <Sparkles className="mr-1 h-4 w-4" />
@@ -157,6 +147,8 @@ export default function ProgramsPage() {
         }
       />
       <div className="space-y-6 p-4 pb-24">
+        <ProgramCatalog templates={catalogue} level={profile?.fitnessLevel} busy={busy} onUse={applyTemplate} />
+
         {assignedToMe.length > 0 && (
           <section className="space-y-2">
             <SectionHeading>{t("assignedToMe")}</SectionHeading>
@@ -177,15 +169,18 @@ export default function ProgramsPage() {
           {mine.length === 0 ? (
             <EmptyState icon={ClipboardList} title={t("noPrograms")} />
           ) : (
-            mine.map((p) => (
-              <DetailRow
-                key={p.id}
-                onClick={() => router.push(`/programs/${p.id}`)}
-                icon={ClipboardList}
-                title={p.name}
-                subtitle={`${(p.structure ?? []).length} ${t("days")}${p.assignedToUserId ? ` · ${t("assigned")}` : ""}`}
-              />
-            ))
+            mine.map((p) => {
+              const { category, subtitle } = describe(p);
+              return (
+                <DetailRow
+                  key={p.id}
+                  onClick={() => router.push(`/programs/${p.id}`)}
+                  leading={<CategoryIcon category={category ?? "custom"} />}
+                  title={p.name}
+                  subtitle={`${subtitle}${p.assignedToUserId ? ` · ${t("assigned")}` : ""}`}
+                />
+              );
+            })
           )}
         </section>
 
@@ -248,90 +243,6 @@ export default function ProgramsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Template picker */}
-      <Dialog open={tplOpen} onOpenChange={setTplOpen}>
-        <DialogContent className="max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <LayoutTemplate className="h-5 w-5 text-accent-500" />
-              {tt("title")}
-            </DialogTitle>
-          </DialogHeader>
-          <p className="text-xs text-muted-foreground">{tt("subtitle")}</p>
-
-          <div className="space-y-3 py-1">
-            <FilterRow label={tt("goal")}>
-              {(["strength", "hypertrophy", "endurance", "fat_loss", "general"] as ProgramGoal[]).map((g) => (
-                <Chip key={g} active={tGoal === g} onClick={() => setTGoal(tGoal === g ? undefined : g)}>{tt(`goal_${g}`)}</Chip>
-              ))}
-            </FilterRow>
-            <FilterRow label={tt("level")}>
-              {(["beginner", "intermediate", "advanced"] as ProgramLevel[]).map((l) => (
-                <Chip key={l} active={tLevel === l} onClick={() => setTLevel(tLevel === l ? undefined : l)}>{tt(`level_${l}`)}</Chip>
-              ))}
-            </FilterRow>
-            <FilterRow label={tt("days")}>
-              {[3, 4, 6].map((d) => (
-                <Chip key={d} active={tDays === d} onClick={() => setTDays(tDays === d ? undefined : d)}>{d}</Chip>
-              ))}
-            </FilterRow>
-          </div>
-
-          <div className="space-y-2">
-            {ranked.map((tpl) => (
-              <Card key={tpl.id}>
-                <CardContent className="py-3">
-                  <div className="flex items-start gap-2">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-100 dark:bg-accent-900/30">
-                      {tpl.homeFriendly ? <Home className="h-4 w-4 text-accent-text" /> : <Dumbbell className="h-4 w-4 text-accent-text" />}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium">{tpl.name}</p>
-                      <p className="text-xs text-muted-foreground">{tpl.description}</p>
-                      <div className="mt-1.5 flex flex-wrap gap-1">
-                        <Tag>{tt(`goal_${tpl.goal}`)}</Tag>
-                        <Tag>{tt(`level_${tpl.level}`)}</Tag>
-                        <Tag>{tpl.daysPerWeek} {tt("daysShort")}</Tag>
-                        <Tag>{tpl.structure.length} {t("days")}</Tag>
-                      </div>
-                    </div>
-                  </div>
-                  <Button size="sm" className="mt-2 w-full" onClick={() => applyTemplate(tpl.id)} disabled={busy}>
-                    {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : tt("use")}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   );
-}
-
-function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label className="mb-1 block text-xs font-medium text-muted-foreground">{label}</label>
-      <div className="flex flex-wrap gap-1.5">{children}</div>
-    </div>
-  );
-}
-
-function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "rounded-full border px-2.5 py-1 text-xs",
-        active ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-950/40" : "border-border text-muted-foreground"
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
-function Tag({ children }: { children: React.ReactNode }) {
-  return <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{children}</span>;
 }

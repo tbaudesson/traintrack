@@ -1139,5 +1139,24 @@
     "coachTitle": "Declared injuries",
     "coachHint": "The exercises that load these areas are flagged to the athlete, and in their programs.",
     "declareFromPain": "Declare an injury ({area}): the exercises that load this area will be flagged."
+  },
+  "catalog": {
+    "title": "Ready-made programs",
+    "cat_bodybuilding": "Bodybuilding",
+    "cat_strength": "Strength",
+    "cat_fitness": "Fitness and weight loss",
+    "cat_running": "Running",
+    "cat_swimming": "Swimming",
+    "cat_cycling": "Cycling",
+    "cat_vaulting": "Vaulting",
+    "cat_timed": "Callisthenics",
+    "cat_mobility": "Warm-up and stretching",
+    "count": "{count, plural, one {# program} other {# programs}}",
+    "timedHint": "Timed sessions",
+    "mobilityHint": "Before or after the session",
+    "allLevels": "All levels",
+    "perWeek": "{count} sessions / wk",
+    "weeks": "{count, plural, one {# week} other {# weeks}}",
+    "home": "At home"
   }
 }
