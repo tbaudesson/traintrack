@@ -144,7 +144,13 @@
     "weekPrevious": "Previous week",
     "weekFollowing": "Following week",
     "sameDay": "Sessions planned that day",
-    "nextSessionOn": "Next session · {date}"
+    "nextSessionOn": "Next session · {date}",
+    "welcomeTitle": "Welcome! Let’s set up your program",
+    "welcomeText": "The set-up guide takes 2 minutes:",
+    "welcomeStep1": "a program for your sport and your level",
+    "welcomeStep2": "your sessions placed in the week",
+    "welcomeStep3": "the exercises to avoid with your injuries",
+    "welcomeStart": "Start the guide"
   },
   "onboarding": {
     "title": "Your athlete profile",
@@ -432,7 +438,8 @@
     "groupTraining": "Training",
     "groupPersonal": "Personalisation",
     "groupAlerts": "Notifications and assistant",
-    "groupData": "Data and account"
+    "groupData": "Data and account",
+    "rerunWizard": "Run the set-up guide again"
   },
   "programs": {
     "startDate": "Start date",
@@ -1097,7 +1104,16 @@
     "aboutMore": "More about you (optional)",
     "fromCoach": "{coach} prepared your program:",
     "fromCoachStart": "Starts on {date}",
-    "fromCoachDays": "Its days are set by your coach. Tell below when you usually train."
+    "fromCoachDays": "Its days are set by your coach. Tell below when you usually train.",
+    "introTitle": "Welcome to TrainTrack",
+    "introText": "In 2 minutes, let’s set up your program and your week. Everything can be changed later.",
+    "introCoach": "{coach} prepared a program for you. In 2 minutes, let’s complete your profile.",
+    "introStep1": "Your sport and your goal",
+    "introStep2": "Your level, and what to spare",
+    "introStep3": "Your equipment",
+    "introStep4": "Your program and your training days",
+    "introStart": "Let’s go",
+    "introLater": "Later"
   },
   "nutritionCalc": {
     "open": "Work it out for me",

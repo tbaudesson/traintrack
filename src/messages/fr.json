@@ -144,7 +144,13 @@
     "weekPrevious": "Semaine précédente",
     "weekFollowing": "Semaine suivante",
     "sameDay": "Séances prévues ce jour-là",
-    "nextSessionOn": "Prochaine séance · {date}"
+    "nextSessionOn": "Prochaine séance · {date}",
+    "welcomeTitle": "Bienvenue ! Préparons votre programme",
+    "welcomeText": "L’assistant de démarrage vous guide en 2 minutes :",
+    "welcomeStep1": "un programme adapté à votre sport et votre niveau",
+    "welcomeStep2": "vos séances placées dans la semaine",
+    "welcomeStep3": "les exercices à éviter selon vos blessures",
+    "welcomeStart": "Lancer l’assistant"
   },
   "onboarding": {
     "title": "Votre profil athlète",
@@ -432,7 +438,8 @@
     "groupTraining": "Entraînement",
     "groupPersonal": "Personnalisation",
     "groupAlerts": "Notifications et assistant",
-    "groupData": "Données et compte"
+    "groupData": "Données et compte",
+    "rerunWizard": "Relancer l’assistant de démarrage"
   },
   "programs": {
     "startDate": "Date de début",
@@ -1097,7 +1104,16 @@
     "aboutMore": "Plus d’informations (facultatif)",
     "fromCoach": "{coach} vous a préparé votre programme :",
     "fromCoachStart": "Début le {date}",
-    "fromCoachDays": "Ses jours sont fixés par votre coach. Indiquez ci-dessous vos disponibilités habituelles."
+    "fromCoachDays": "Ses jours sont fixés par votre coach. Indiquez ci-dessous vos disponibilités habituelles.",
+    "introTitle": "Bienvenue sur TrainTrack",
+    "introText": "En 2 minutes, préparons votre programme et votre semaine. Tout se modifie ensuite.",
+    "introCoach": "{coach} vous a préparé un programme. En 2 minutes, complétons votre profil.",
+    "introStep1": "Votre sport et votre objectif",
+    "introStep2": "Votre niveau, et ce qu’il faut ménager",
+    "introStep3": "Votre matériel",
+    "introStep4": "Votre programme et vos jours d’entraînement",
+    "introStart": "C’est parti",
+    "introLater": "Plus tard"
   },
   "nutritionCalc": {
     "open": "Calculer pour moi",

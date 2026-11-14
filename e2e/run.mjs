@@ -302,7 +302,12 @@ await test("the monthly report counts the sessions of the month", async () => {
 });
 
 await test("sign-up: sport, injuries, a program of that sport put in the planning", async () => {
-  await page.goto(`${BASE}/fr/onboarding`);
+  // From Settings, the set-up guide runs again, opening on its welcome screen.
+  await page.goto(`${BASE}/fr/settings`);
+  await page.getByRole("link", { name: "Relancer l’assistant de démarrage" }).click();
+  await page.getByRole("heading", { name: "Bienvenue sur TrainTrack" }).waitFor({ timeout: 10000 });
+  await snap("onboarding-welcome");
+  await page.getByRole("button", { name: "C’est parti" }).click();
   await page.getByRole("button", { name: "Course à pied" }).click();
   expect((await page.getByRole("button", { name: "Endurance", pressed: true }).count()) === 1, "the sport did not suggest its goal");
   await page.getByRole("button", { name: "Continuer" }).click();

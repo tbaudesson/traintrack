@@ -1,7 +1,7 @@
 "use client";
 
 import { sessionHref } from "@/lib/routes";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -43,7 +43,7 @@ import { planCalendar } from "@/lib/ics";
 import { plannedPrograms, scheduleSessions, scheduleWeek, sessionChoices, type SessionChoice } from "@/lib/schedule";
 import { downloadFile } from "@/lib/exportService";
 import { useCompetitions } from "@/hooks/useCompetitions";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DetailRow } from "@/components/ui/detail-row";
@@ -54,7 +54,7 @@ import type { ReactNode } from "react";
 import type { Program, ProgramDay, Sport } from "@/db";
 import {
   type LucideIcon,
-  Activity, Upload, RotateCcw, ArrowRight, ListChecks, MessageSquare, Plus, Sparkles, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
+  Activity, Upload, RotateCcw, ArrowRight, Check, ListChecks, MessageSquare, Plus, Sparkles, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
   Timer,
   PersonStanding,
 } from "lucide-react";
@@ -158,7 +158,7 @@ export default function HomePage() {
         return false;
       }
     };
-    return { stepsClosed: read("first-steps-closed"), calendar: read("calendar-exported"), look: read("look-seen") };
+    return { stepsClosed: read("first-steps-closed"), calendar: read("calendar-exported"), look: read("look-seen"), onboardingLater: read("onboarding-later") };
   });
   const setFlag = (key: string, storageKey: string) => {
     try {
@@ -361,6 +361,10 @@ export default function HomePage() {
 
   const goal = session ? weeklyGoal(session.program, session.day) : 0;
   const needsOnboarding = profile !== undefined && !profile;
+  // A new athlete goes straight to the guided set-up, unless they chose "later".
+  useEffect(() => {
+    if (needsOnboarding && !flags.onboardingLater) router.replace("/onboarding");
+  }, [needsOnboarding, flags.onboardingLater, router]);
 
   async function start() {
     if (session?.workoutId) {
@@ -483,17 +487,27 @@ export default function HomePage() {
       </header>
 
       {needsOnboarding ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 py-8 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-accent-100 dark:bg-accent-900/30">
-              <Dumbbell className="h-7 w-7 text-accent-text" aria-hidden="true" />
-            </div>
-            <p className="text-sm text-muted-foreground">{t("completeProfile")}</p>
-            <Link href="/onboarding">
-              <Button>{t("goToOnboarding")}</Button>
-            </Link>
-          </CardContent>
-        </Card>
+        <section className="t-hero space-y-4 rounded-3xl p-6">
+          <div className="flex size-14 items-center justify-center rounded-2xl bg-accent-500/15 text-accent-text">
+            <Sparkles className="size-7" aria-hidden="true" />
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold tracking-tight">{t("welcomeTitle")}</h2>
+            <p className="text-sm text-muted-foreground">{t("welcomeText")}</p>
+          </div>
+          <ul className="space-y-1.5 text-sm">
+            {(["welcomeStep1", "welcomeStep2", "welcomeStep3"] as const).map((k) => (
+              <li key={k} className="flex items-start gap-2">
+                <Check className="mt-0.5 size-4 shrink-0 text-accent-text" aria-hidden="true" />
+                {t(k)}
+              </li>
+            ))}
+          </ul>
+          <Link href="/onboarding" className={cn(buttonVariants({ size: "lg" }), "w-full rounded-full")}>
+            {t("welcomeStart")}
+            <ArrowRight className="size-4" aria-hidden="true" />
+          </Link>
+        </section>
       ) : (
         <>
           <section className="t-hero relative overflow-hidden rounded-3xl p-5">

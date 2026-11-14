@@ -53,6 +53,8 @@ export default function OnboardingPage() {
   const [joined] = useState(joinedTeam);
   const fromCoach = !!joined?.programName;
   const [step, setStep] = useState(0);
+  // A welcome screen first: what the set-up does, and a way to do it later.
+  const [intro, setIntro] = useState(true);
   const [sport, setSport] = useState<FavoriteSport | null>(null);
   const [goal, setGoal] = useState<TrainingGoal | null>(null);
   const [areas, setAreas] = useState<PainArea[]>([]);
@@ -133,6 +135,46 @@ export default function OnboardingPage() {
         : "border-border text-muted-foreground hover:bg-accent"
     );
   const canNext = step === 0 ? goal !== null : step === 3 ? consent && days.length > 0 : true;
+
+  function later() {
+    try {
+      window.localStorage.setItem("traintrack-onboarding-later", "1");
+    } catch {
+      // Private window: the home screen will offer the set-up again.
+    }
+    router.replace("/");
+  }
+
+  if (intro) {
+    return (
+      <div className="mx-auto flex min-h-[80vh] max-w-lg flex-col justify-center gap-6 p-6">
+        <div className="flex size-16 items-center justify-center rounded-3xl bg-accent-500/15 text-accent-text">
+          <Sparkles className="size-8" aria-hidden="true" />
+        </div>
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">{tw("introTitle")}</h1>
+          <p className="text-muted-foreground">{joined ? tw("introCoach", { coach: joined.coachName ?? joined.teamName }) : tw("introText")}</p>
+        </div>
+        <ol className="space-y-3">
+          {(["introStep1", "introStep2", "introStep3", "introStep4"] as const).map((k, i) => (
+            <li key={k} className="flex items-start gap-3 text-sm">
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-accent-500 text-xs font-bold text-white">{i + 1}</span>
+              <span className="pt-1">{tw(k)}</span>
+            </li>
+          ))}
+        </ol>
+        <div className="space-y-2">
+          <Button size="lg" className="w-full rounded-full" onClick={() => setIntro(false)}>
+            {tw("introStart")}
+            <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
+          </Button>
+          <Button variant="ghost" className="w-full" onClick={later}>
+            {tw("introLater")}
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

@@ -335,6 +335,12 @@ export default function SettingsPage() {
               {t("levelSetup")}
             </Link>
           )}
+          {/* The guided set-up, again: sport, goal, level, equipment, a program and its week. */}
+          {athlete && (
+            <Link href="/onboarding" className={cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-3 w-full")}>
+              {t("rerunWizard")}
+            </Link>
+          )}
         </Section>
 
         {/* Week plan */}
