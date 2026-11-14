@@ -1,11 +1,15 @@
 /**
  * Short beeps for the timed sessions, made with Web Audio: no sound file to
  * load and it works offline. Browsers only let a page play sound after a tap,
- * so unlockAudio() is called from the tap that starts the session.
+ * so unlockAudio() is called from the tap that starts the session; it also
+ * readies the voice coach, under the same rule.
  */
+import { unlockVoice } from "./voice";
+
 let context: AudioContext | null = null;
 
 export function unlockAudio(): void {
+  unlockVoice();
   try {
     if (!context) {
       const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;

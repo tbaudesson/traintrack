@@ -134,7 +134,10 @@
     "readyMadeStrength": "Ready-made programs · Strength",
     "readyMadeEndurance": "Ready-made programs · Endurance",
     "readyMadeDays": "{count, plural, one {# day} other {# days}} · tap to add",
-    "readyMadeWeeks": "{count}-week plan · tap to add"
+    "readyMadeWeeks": "{count}-week plan · tap to add",
+    "exportCalendar": "Add the next 8 weeks to my calendar",
+    "calendarSession": "Training: {name}",
+    "calendarCompetition": "Competition: {name}"
   },
   "onboarding": {
     "title": "Your athlete profile",
@@ -458,7 +461,8 @@
     "myCreations": "My creations",
     "noCreations": "Build your own program with “New program”.",
     "byCoach": "by your coach",
-    "readyMade": "ready-made"
+    "readyMade": "ready-made",
+    "importExcel": "Import"
   },
   "readiness": {
     "title": "Daily readiness",
@@ -1135,7 +1139,16 @@
     "deleteConfirm": "Delete this session?",
     "leftSide": "Left side",
     "rightSide": "Right side",
-    "demo": "Watch the demo"
+    "demo": "Watch the demo",
+    "voiceCoach": "Voice coach",
+    "voiceGetReady": "Get ready. First exercise: {what}.",
+    "voiceWork": "{what}. {time}.",
+    "voiceRest": "Rest, {time}.",
+    "voiceRecovery": "Recovery, {time}.",
+    "voiceNext": "Next: {what}.",
+    "voiceSwitch": "Switch sides.",
+    "voiceSeconds": "{count, plural, one {# second} other {# seconds}}",
+    "voiceMinutes": "{count, plural, one {# minute} other {# minutes}}"
   },
   "mobility": {
     "title": "Warm-up and stretching",
@@ -1418,5 +1431,50 @@
     "more": "… and {count} more sessions",
     "notFound": "This link leads to no program: it may have been removed.",
     "offline": "This program can't be opened without a connection."
+  },
+  "load": {
+    "title": "Training load",
+    "ratio": "ratio {ratio}",
+    "zone_low": "Load dropping",
+    "zone_optimal": "Load under control",
+    "zone_caution": "Marked rise",
+    "zone_danger": "Rise too sharp",
+    "advice_low": "This week weighs much less than usual. Fine after a rest or a deload week; otherwise, build back up gradually.",
+    "advice_optimal": "This week is close to what your body is used to. Keep it up.",
+    "advice_caution": "You are doing clearly more than usual. Keep the next days lighter and look after your sleep.",
+    "advice_danger": "Far more than usual in one week: that is when injuries happen most. Ease off for a few days.",
+    "coach_low": "This athlete is training much less than usual this week.",
+    "coach_optimal": "Their load stays close to what they are used to.",
+    "coach_caution": "This athlete is doing clearly more than usual: plan lighter days.",
+    "coach_danger": "Their load jumped this week: higher injury risk, ease it off.",
+    "thisWeek": "This wk",
+    "weeksAgo": "-{count} wk",
+    "weeksLabel": "Load of the last four weeks: {weeks}",
+    "how": "Each session counts its minutes times how hard it felt (RPE). The last 7 days are compared with the average of the last 4 weeks; between 0.8 and 1.3, all is well."
+  },
+  "programImport": {
+    "title": "Import a program from Excel",
+    "intro": "Write your program in a spreadsheet (Excel, Numbers, Google Sheets…), one row per exercise, then import the .xlsx or .csv file.",
+    "ruleColumns": "Columns: Week, Session, Exercise, Sets, Reps, Rest (s), % 1RM. Only Session and Exercise are required.",
+    "ruleBlank": "A session or week left blank takes the one of the row above (merged cells work).",
+    "ruleNames": "Exercises are recognised in English, French or German; others become custom exercises.",
+    "template": "Download the template",
+    "templateFile": "traintrack-program-template",
+    "sheetName": "Program",
+    "pick": "Choose the file",
+    "name": "Program name",
+    "untitled": "Imported program",
+    "session": "Session {n}",
+    "week": "W{n}",
+    "summaryWeeks": "{sessions, plural, one {# session} other {# sessions}} over {weeks, plural, one {# week} other {# weeks}}, {exercises, plural, one {# exercise} other {# exercises}}.",
+    "summaryRotation": "{sessions, plural, one {# session} other {# sessions}} in rotation, {exercises, plural, one {# exercise} other {# exercises}}.",
+    "unknown": "{count, plural, one {One exercise is not in the library and will be created as a custom exercise} other {# exercises are not in the library and will be created as custom exercises}}: {list}.",
+    "badReps": "{count, plural, one {One row has reps Excel turned into a date} other {# rows have reps Excel turned into a date}}: they get 8-12, to fix afterwards. Tip: write “8 to 12”, or start from the template.",
+    "other": "Another file",
+    "create": "Create the program",
+    "errorFormat": "This file cannot be read. Save it as .xlsx (Excel) or .csv, then try again.",
+    "errorTooBig": "This file is too large for a program (5 MB at most).",
+    "errorHeader": "No “Exercise” column in the first rows. Start from the template for the column names.",
+    "errorEmpty": "No exercise found under the headers."
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { Check, X } from "lucide-react";
+import { CalendarPlus, Check, X } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import type { PlanDay } from "@/lib/weekPlan";
@@ -9,8 +9,11 @@ import type { PlanDay } from "@/lib/weekPlan";
 const weekday = (locale: string, day: number, width: "narrow" | "short") =>
   new Intl.DateTimeFormat(locale, { weekday: width, timeZone: "UTC" }).format(new Date(Date.UTC(2024, 0, day)));
 
-/** The week at a glance: done, missed, planned and rest days, then what comes next. */
-export function WeekStrip({ plan, planned }: { plan: PlanDay[]; planned: boolean }) {
+/**
+ * The week at a glance: done, missed, planned and rest days, then what comes
+ * next, and a way to put the weeks ahead in the phone's calendar.
+ */
+export function WeekStrip({ plan, planned, onExport }: { plan: PlanDay[]; planned: boolean; onExport?: () => void }) {
   const t = useTranslations("home");
   const locale = useLocale();
   const next = plan.filter((d) => d.status === "planned" && d.label).slice(0, 3);
@@ -63,6 +66,12 @@ export function WeekStrip({ plan, planned }: { plan: PlanDay[]; planned: boolean
         </ul>
       )}
       {!planned && <p className="text-xs text-muted-foreground">{t("weekPlanHint")}</p>}
+      {planned && onExport && (
+        <button type="button" onClick={onExport} className="flex min-h-10 items-center gap-1.5 text-sm font-medium text-accent-text">
+          <CalendarPlus className="h-4 w-4" aria-hidden="true" />
+          {t("exportCalendar")}
+        </button>
+      )}
     </section>
   );
 }

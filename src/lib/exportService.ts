@@ -36,7 +36,8 @@ export async function exportJSON(): Promise<string> {
   return JSON.stringify(data, null, 2);
 }
 
-function downloadFile(content: string, filename: string, mime: string): void {
+/** Hand a text file to the browser to save (or, for a calendar, to open). */
+export function downloadFile(content: string, filename: string, mime: string): void {
   const blob = new Blob([content], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

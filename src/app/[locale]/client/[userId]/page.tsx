@@ -32,6 +32,8 @@ import { useTeamAdherence } from "@/hooks/useClientActivity";
 import { NudgeButton } from "@/components/domain/NudgeButton";
 import { GoalsSection } from "@/components/domain/GoalsSection";
 import { WeeklyReportCard } from "@/components/domain/WeeklyReportCard";
+import { TrainingLoadCard } from "@/components/domain/TrainingLoadCard";
+import { trainingLoad } from "@/lib/trainingLoad";
 import { programWeek } from "@/lib/programWeek";
 import { Link } from "@/i18n/navigation";
 import { usePainReports } from "@/hooks/usePain";
@@ -60,6 +62,7 @@ export default function ClientDetailPage() {
   const exMap = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises]);
   const readiness = useReadiness(userId);
   const today = localDate();
+  const load = useMemo(() => trainingLoad({ today, workouts, sets }), [today, workouts, sets]);
   const nutritionToday = useNutritionForDate(today, userId);
   const macros = sumMacros(nutritionToday);
 
@@ -254,6 +257,8 @@ export default function ClientDetailPage() {
             })}
           </section>
         )}
+
+        {load && <TrainingLoadCard load={load} forCoach />}
 
         <WeeklyReportCard
           workouts={workouts}

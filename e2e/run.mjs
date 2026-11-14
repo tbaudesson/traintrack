@@ -5,7 +5,7 @@
 // server — so no test account is needed and no real data is touched. Started
 // by scripts/e2e.sh, which builds and serves the app.
 import { chromium } from "playwright-core";
-import { existsSync, mkdirSync, readdirSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
 
@@ -51,9 +51,20 @@ const expect = (cond, message) => {
 };
 
 const browser = await chromium.launch({ executablePath: chromiumPath() });
-const context = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: "fr-FR" });
+const context = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: "fr-FR", acceptDownloads: true });
+// The voice coach speaks into a list the tests can read.
+await context.addInitScript(() => {
+  window.__spoken = [];
+  if (window.speechSynthesis) window.speechSynthesis.speak = (u) => u.text && window.__spoken.push(u.text);
+});
 const page = await context.newPage();
 const errors = [];
+/** With E2E_SHOTS=1, a picture of the screen at the key steps, in e2e/artifacts. */
+const snap = async (name) => {
+  if (!process.env.E2E_SHOTS) return;
+  mkdirSync(ARTIFACTS, { recursive: true });
+  await page.screenshot({ path: join(ARTIFACTS, `${name}.png`), fullPage: true }).catch(() => {});
+};
 page.on("pageerror", (e) => errors.push(e.message));
 
 // ── Setup: the service worker, the pages, a cached user ─────────────
@@ -104,6 +115,22 @@ await page.evaluate(async (user) => {
   ].entries()) {
     await put("exercises", { name, muscleGroup, equipment, isCustom: false, userId: null, uuid: `e2e-ex-${i}`, _dirty: 0, createdAt: now, updatedAt: now });
   }
+  // Five weeks of easy runs, then a much harder week: the load jumps.
+  const day = (ago) => {
+    const d = new Date();
+    d.setDate(d.getDate() - ago);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  };
+  const runs = [
+    ...[8, 10, 12, 15, 17, 19, 22, 24, 26, 29, 31, 33].map((ago) => ({ ago, min: 30 })),
+    ...[1, 2, 3, 4].map((ago) => ({ ago, min: 90 })),
+  ];
+  for (const [i, r] of runs.entries()) {
+    await put("workouts", {
+      userId: user, uuid: `e2e-run-${i}`, date: day(r.ago), kind: "cardio", sport: "run", title: "Footing",
+      durationSec: r.min * 60, distanceM: r.min * 180, _dirty: 0, createdAt: now, updatedAt: now,
+    });
+  }
 }, USER);
 
 await context.setOffline(true);
@@ -124,6 +151,26 @@ await test("a ready-made program is added from the home screen", async () => {
   await page.keyboard.press("Escape");
   // It now appears in "My programs" on the home screen.
   await page.locator("section", { hasText: "Mes programmes" }).getByText("Full Body — Débutant").first().waitFor({ timeout: 10000 });
+});
+
+await test("the weeks ahead go to the phone's calendar", async () => {
+  await page.goto(`${BASE}/fr`);
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("button", { name: /Ajouter les 8 prochaines semaines à mon agenda/ }).click(),
+  ]);
+  const ics = readFileSync(await download.path(), "utf8");
+  expect(download.suggestedFilename().endsWith(".ics"), "not a calendar file");
+  expect((ics.match(/BEGIN:VEVENT/g) ?? []).length >= 20, "too few sessions in the calendar");
+  expect(/SUMMARY:Entraînement : .+/.test(ics) && ics.includes("T183000"), "sessions not at the training time");
+});
+
+await test("a sharp rise of the training load is flagged on the home screen", async () => {
+  await page.goto(`${BASE}/fr`);
+  const card = page.locator("section", { hasText: "Charge d’entraînement" });
+  await card.getByText(/Hausse trop brutale|Hausse marquée/).waitFor({ timeout: 10000 });
+  await card.scrollIntoViewIfNeeded();
+  await snap("load-card");
 });
 
 await test("its first session starts, with its sets ready, at the fixed session address", async () => {
@@ -166,6 +213,16 @@ await test("a timed callisthenics session plays and stops without saving", async
   await dialog.getByText(/Préparez-vous/).waitFor({ timeout: 5000 });
   await dialog.getByRole("button", { name: /Passer/ }).click();
   await dialog.getByText(/Effort/).waitFor({ timeout: 5000 });
+  // The voice coach announced the first exercise, then the effort.
+  const spoken = await page.evaluate(() => window.__spoken);
+  expect(spoken.some((s) => s.startsWith("Préparez-vous. Premier exercice")), `not announced: ${JSON.stringify(spoken)}`);
+  expect(spoken.some((s) => / secondes?\.$/.test(s)), `effort not announced: ${JSON.stringify(spoken)}`);
+  await snap("player-voice");
+  const voice = dialog.getByRole("button", { name: "Coach vocal" });
+  expect((await voice.getAttribute("aria-pressed")) === "true", "voice coach off by default");
+  await voice.click();
+  expect((await voice.getAttribute("aria-pressed")) === "false", "voice coach did not turn off");
+  await voice.click();
   await dialog.getByRole("button", { name: /Terminer la séance/ }).click();
   expect(page.url().includes("/intervals"), "left the page although nothing was done");
 });
@@ -185,6 +242,21 @@ await test("the style chosen in Settings restyles the whole app", async () => {
   expect(await page.evaluate(() => document.documentElement.classList.contains("style-dynamic")), "no style-dynamic class");
   await page.getByRole("button", { name: /Classique/ }).click();
   expect(!(await page.evaluate(() => document.documentElement.classList.contains("style-dynamic"))), "style not reset");
+});
+
+await test("a program is imported from an Excel file, after a preview", async () => {
+  await page.goto(`${BASE}/fr/programs`);
+  await page.getByRole("button", { name: "Importer" }).click();
+  const dialog = page.getByRole("dialog");
+  const [template] = await Promise.all([page.waitForEvent("download"), dialog.getByRole("button", { name: /Télécharger le modèle/ }).click()]);
+  expect(template.suggestedFilename().endsWith(".xlsx"), "the template is not an .xlsx file");
+  await dialog.locator('input[type="file"]').setInputFiles(new URL("../src/lib/__fixtures__/program-fr.xlsx", import.meta.url).pathname);
+  await dialog.getByText("3 séances sur 2 semaines, 6 exercices.").waitFor({ timeout: 5000 });
+  await dialog.getByText(/créé comme exercice personnel : Curl araignée maison/).waitFor();
+  await snap("import-preview");
+  await dialog.getByRole("button", { name: "Créer le programme" }).click();
+  await page.waitForURL(/\/fr\/programs\/\d+$/, { timeout: 10000 });
+  await page.getByText("Haut du corps").first().waitFor({ timeout: 10000 });
 });
 
 await test("the monthly report counts the sessions of the month", async () => {

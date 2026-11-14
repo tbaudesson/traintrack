@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   useReadiness,
@@ -17,6 +17,11 @@ import { cn } from "@/lib/utils";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { UpgradeNotice } from "@/components/domain/UpgradeNotice";
 import { SectionHeading } from "@/components/ui/page-parts";
+import { useWorkouts } from "@/hooks/useWorkouts";
+import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
+import { trainingLoad } from "@/lib/trainingLoad";
+import { localDate } from "@/lib/dates";
+import { TrainingLoadCard } from "@/components/domain/TrainingLoadCard";
 
 function Scale({
   label,
@@ -59,9 +64,9 @@ function Scale({
 }
 
 function scoreColor(s: number) {
-  if (s >= 75) return "text-green-600";
-  if (s >= 50) return "text-amber-600";
-  return "text-rose-600";
+  if (s >= 75) return "text-green-700 dark:text-green-400";
+  if (s >= 50) return "text-amber-700 dark:text-amber-400";
+  return "text-rose-700 dark:text-rose-400";
 }
 
 export default function ReadinessPage() {
@@ -69,6 +74,8 @@ export default function ReadinessPage() {
   const { hasFeature } = useFeatureAccess();
   const today = useTodayReadiness();
   const history = useReadiness();
+  const workouts = useWorkouts();
+  const sets = useAllWorkoutSets();
 
   const [mood, setMood] = useState<number>();
   const [energy, setEnergy] = useState<number>();
@@ -100,6 +107,7 @@ export default function ReadinessPage() {
   }
 
   const liveScore = readinessScore({ mood, energy, sleep, soreness });
+  const load = useMemo(() => trainingLoad({ today: localDate(), workouts, sets }), [workouts, sets]);
   const rec =
     liveScore == null ? null : liveScore >= 75 ? t("recHigh") : liveScore >= 50 ? t("recMid") : t("recLow");
 
@@ -127,6 +135,8 @@ export default function ReadinessPage() {
             </CardContent>
           </Card>
         )}
+
+        {load && <TrainingLoadCard load={load} />}
 
         <Card>
           <CardContent className="space-y-4 py-4">

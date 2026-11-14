@@ -57,3 +57,52 @@ export function trainingCalendar(input: {
     "",
   ].join("\r\n");
 }
+
+/**
+ * A calendar file of what is planned: each session on its day (at the
+ * training time with an alarm half an hour before, or over the whole day
+ * without a time), and each competition over its day. Ids are stable, so a
+ * calendar that knows them updates the events instead of doubling them.
+ */
+export function planCalendar(input: {
+  sessions: { date: string; title: string; description?: string }[];
+  competitions: { date: string; title: string; description?: string }[];
+  /** "18:30", or null for whole-day events. */
+  time: string | null;
+  /** Makes the ids unique to the athlete. */
+  owner: string;
+  calendarName: string;
+  now: Date;
+}): string {
+  const stamp = input.now.toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
+  const compact = (date: string) => date.replace(/-/g, "");
+  const nextDay = (date: string) => {
+    const [y, m, d] = date.split("-").map(Number);
+    return new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10).replace(/-/g, "");
+  };
+  const [hour, minute] = (input.time ?? "").split(":").map(Number);
+  const timed = input.time !== null && Number.isInteger(hour) && Number.isInteger(minute);
+  const event = (kind: string, e: { date: string; title: string; description?: string }, at: boolean) => [
+    "BEGIN:VEVENT",
+    `UID:${kind}-${e.date}-${input.owner}@traintrack`,
+    `DTSTAMP:${stamp}`,
+    ...(at
+      ? [`DTSTART:${compact(e.date)}T${pad(hour)}${pad(minute)}00`, "DURATION:PT1H"]
+      : [`DTSTART;VALUE=DATE:${compact(e.date)}`, `DTEND;VALUE=DATE:${nextDay(e.date)}`]),
+    `SUMMARY:${escape(e.title)}`,
+    ...(e.description ? [`DESCRIPTION:${escape(e.description)}`] : []),
+    ...(at ? ["BEGIN:VALARM", "ACTION:DISPLAY", "TRIGGER:-PT30M", `DESCRIPTION:${escape(e.title)}`, "END:VALARM"] : []),
+    "END:VEVENT",
+  ];
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//TrainTrack//Planning//FR",
+    "CALSCALE:GREGORIAN",
+    `X-WR-CALNAME:${escape(input.calendarName)}`,
+    ...input.sessions.flatMap((e) => event("session", e, timed)),
+    ...input.competitions.flatMap((e) => event("competition", e, false)),
+    "END:VCALENDAR",
+    "",
+  ].join("\r\n");
+}

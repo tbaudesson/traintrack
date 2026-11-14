@@ -80,12 +80,14 @@ export interface AppPrefs {
   sport: FavoriteSport | null;
   silhouette: Silhouette;
   rest: RestPrefs;
+  /** The voice coach of the timed sessions. */
+  voice: boolean;
 }
 
 const PREFS_KEY = "traintrack.prefs";
 const PREFS_EVENT = "traintrack-prefs";
 const DEFAULT_REST: RestPrefs = { defaultSec: 90, warmupSec: 60, sound: false, vibrate: true, notify: false };
-const DEFAULT_PREFS: AppPrefs = { style: "classic", sport: null, silhouette: "male", rest: DEFAULT_REST };
+const DEFAULT_PREFS: AppPrefs = { style: "classic", sport: null, silhouette: "male", rest: DEFAULT_REST, voice: true };
 
 let cached: { raw: string | null; prefs: AppPrefs } | null = null;
 
@@ -116,6 +118,7 @@ export function getPrefs(): AppPrefs {
       vibrate: typeof parsed.rest?.vibrate === "boolean" ? parsed.rest.vibrate : DEFAULT_REST.vibrate,
       notify: typeof parsed.rest?.notify === "boolean" ? parsed.rest.notify : DEFAULT_REST.notify,
     },
+    voice: typeof parsed.voice === "boolean" ? parsed.voice : true,
   };
   cached = { raw, prefs };
   return prefs;

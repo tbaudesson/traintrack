@@ -68,3 +68,29 @@ export function mondayOfDate(date: string): string {
   const day = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
   return addDays(date, -((day + 6) % 7));
 }
+
+/**
+ * The sessions ahead over a number of weeks, placed like the week strip
+ * does: on the training days from today on, skipping a day already trained,
+ * each taking the next session of the program.
+ */
+export function plannedSessions(input: {
+  today: string;
+  trainingDays: number[];
+  workouts: { date: string }[];
+  /** Names of the next sessions of the program, in order. */
+  upcoming: string[];
+  weeks: number;
+}): { date: string; label: string }[] {
+  const upcoming = [...input.upcoming];
+  const done = new Set(input.workouts.map((w) => w.date));
+  const out: { date: string; label: string }[] = [];
+  for (let i = 0; i < input.weeks * 7 && upcoming.length; i++) {
+    const date = addDays(input.today, i);
+    const [y, m, d] = date.split("-").map(Number);
+    const weekday = ((new Date(Date.UTC(y, m - 1, d)).getUTCDay() + 6) % 7) + 1;
+    if (!input.trainingDays.includes(weekday) || done.has(date)) continue;
+    out.push({ date, label: upcoming.shift()! });
+  }
+  return out;
+}

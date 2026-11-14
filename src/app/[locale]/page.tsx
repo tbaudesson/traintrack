@@ -26,6 +26,8 @@ import { homePicture } from "@/lib/appTheme";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
 import { usePainReports } from "@/hooks/usePain";
 import { deloadAdvice } from "@/lib/deload";
+import { trainingLoad } from "@/lib/trainingLoad";
+import { TrainingLoadCard } from "@/components/domain/TrainingLoadCard";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useTeams } from "@/hooks/useTeams";
 import { daysToOffer, findWorkoutProgramDay, lastRepeatable, nextDayIndex, repeatWorkout, startWorkoutFromDay } from "@/lib/startWorkout";
@@ -34,7 +36,10 @@ import { describeTarget, isCardio, isCardioDone, weeklyGoal } from "@/lib/cardio
 import { SportPicker } from "@/components/domain/SportPicker";
 import { WeekStrip } from "@/components/domain/WeekStrip";
 import { GpxImport } from "@/components/domain/GpxImport";
-import { mondayOfDate, upcomingSessions, weekPlan } from "@/lib/weekPlan";
+import { mondayOfDate, plannedSessions, upcomingSessions, weekPlan } from "@/lib/weekPlan";
+import { planCalendar } from "@/lib/ics";
+import { downloadFile } from "@/lib/exportService";
+import { useCompetitions } from "@/hooks/useCompetitions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -206,6 +211,8 @@ export default function HomePage() {
       }),
     [today, workouts, sets, readiness, profile]
   );
+  // The load: on the home screen only when it rises too fast.
+  const load = useMemo(() => trainingLoad({ today, workouts, sets }), [today, workouts, sets]);
 
   // The week: done, missed, and the next sessions placed on the training days ahead.
   const plan = useMemo(() => {
@@ -220,6 +227,30 @@ export default function HomePage() {
   }, [session, today, profile, workouts]);
 
   const sessionWeek = session ? programWeek(session.program, today) : null;
+  const competitions = useCompetitions();
+
+  /** The next eight weeks of sessions, and the competitions ahead, as a calendar file. */
+  function exportCalendar() {
+    const from = session ? (session.workoutId ? session.index + 1 : session.index) : 0;
+    const sessions = plannedSessions({
+      today,
+      trainingDays: profile?.trainingDays ?? [],
+      workouts,
+      upcoming: session ? upcomingSessions(session.program, from, 8 * 7) : [],
+      weeks: 8,
+    });
+    const ics = planCalendar({
+      sessions: sessions.map((s) => ({ date: s.date, title: t("calendarSession", { name: s.label }), description: session?.program.name })),
+      competitions: competitions
+        .filter((c) => c.date >= today)
+        .map((c) => ({ date: c.date, title: t("calendarCompetition", { name: c.event }), description: c.category ?? undefined })),
+      time: profile?.trainingTime ?? null,
+      owner: user?.id ?? "me",
+      calendarName: "TrainTrack",
+      now: new Date(),
+    });
+    downloadFile(ics, "traintrack-seances.ics", "text/calendar");
+  }
 
   const percent = useMemo(() => {
     if (!session?.workoutId) return 0;
@@ -461,6 +492,7 @@ export default function HomePage() {
 
           <ReadinessBanner readiness={lighterToday.reason === "deload" ? null : lighterToday.readiness} keptNormal={lighterToday.keptNormal} onKeep={lighterToday.setKeptNormal} />
           <DeloadCard advice={deload} monday={thisMonday} active={deloading} hasProfile={!!profile} />
+          {load && (load.zone === "caution" || load.zone === "danger") && <TrainingLoadCard load={load} />}
 
           {showReport && (
             <WeeklyReportCard
@@ -482,7 +514,7 @@ export default function HomePage() {
             />
           )}
 
-          <WeekStrip plan={plan} planned={(profile?.trainingDays ?? []).length > 0} />
+          <WeekStrip plan={plan} planned={(profile?.trainingDays ?? []).length > 0} onExport={exportCalendar} />
 
           <MyPrograms
             programs={programs}

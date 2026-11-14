@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
-import { Pause, Play, PlayCircle, SkipForward, Square } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { Pause, Play, PlayCircle, SkipForward, Square, Volume2, VolumeX } from "lucide-react";
 import { GET_READY_SEC } from "@/lib/intervals";
 import { beep } from "@/lib/beep";
+import { speak, stepAnnouncement, stopSpeaking, voiceSupported } from "@/lib/voice";
+import { savePrefs } from "@/lib/appTheme";
+import { useAppPrefs } from "@/hooks/useAppPrefs";
 import { useExerciseLabel } from "@/lib/exerciseNames";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -36,8 +39,9 @@ const clock = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padSt
 /**
  * The timed session full screen: a countdown, then each effort and each rest
  * with a big clock, a beep on the last three seconds and at each start, the
- * next exercise shown during the rest. Pause, skip and stop at any time; what
- * was done is handed back to be saved.
+ * next exercise shown during the rest, and a voice coach announcing each
+ * step (it can be turned off). Pause, skip and stop at any time; what was
+ * done is handed back to be saved.
  */
 export function IntervalPlayer({
   session,
@@ -50,7 +54,10 @@ export function IntervalPlayer({
   labels?: { work: string; rest: string; counter?: (n: number, total: number) => string };
 }) {
   const t = useTranslations("intervals");
+  const locale = useLocale();
   const xl = useExerciseLabel();
+  const { voice } = useAppPrefs();
+  const canSpeak = voiceSupported();
   const { steps } = session;
   const [index, setIndex] = useState(-1);
   const [endsAt, setEndsAt] = useState(() => Date.now() + GET_READY_SEC * 1000);
@@ -124,9 +131,35 @@ export function IntervalPlayer({
         lastBeep.current = -secs;
         beep("rest");
         navigator.vibrate?.(100);
+        if (voice) speak(t("voiceSwitch"), locale);
       }
     };
   });
+
+  // The voice coach: what starts now, said once per step.
+  const spokenTime = (sec: number) => (sec >= 60 && sec % 60 === 0 ? t("voiceMinutes", { count: sec / 60 }) : t("voiceSeconds", { count: sec }));
+  const announce = useRef<() => void>(() => {});
+  useEffect(() => {
+    announce.current = () => {
+      if (!voice) return;
+      speak(
+        stepAnnouncement(steps, index, {
+          name: xl,
+          getReady: (what) => t("voiceGetReady", { what }),
+          work: (what, sec) => t("voiceWork", { what, time: spokenTime(sec) }),
+          side: (side) => t(side === "left" ? "leftSide" : "rightSide"),
+          rest: (sec) => t("voiceRest", { time: spokenTime(sec) }),
+          recovery: (sec) => t("voiceRecovery", { time: spokenTime(sec) }),
+          next: (what) => t("voiceNext", { what }),
+        }),
+        locale
+      );
+    };
+  });
+  useEffect(() => {
+    announce.current();
+  }, [index]);
+  useEffect(() => stopSpeaking, []);
 
   // The clock: a quarter of a second is enough for whole seconds.
   useEffect(() => {
@@ -174,7 +207,23 @@ export function IntervalPlayer({
     >
       <div className="flex items-center justify-between px-5 pt-5 text-sm font-medium text-muted-foreground tabular-nums">
         <span>{labels?.counter ? labels.counter(Math.max(1, workNumber), works) : t("intervalOf", { n: Math.max(1, workNumber), total: works })}</span>
-        <span>{t("remaining", { time: clock(remaining) })}</span>
+        <span className="flex items-center gap-1">
+          {t("remaining", { time: clock(remaining) })}
+          {canSpeak && (
+            <button
+              type="button"
+              onClick={() => {
+                if (voice) stopSpeaking();
+                savePrefs({ voice: !voice });
+              }}
+              aria-pressed={voice}
+              aria-label={t("voiceCoach")}
+              className="-my-2 -mr-2 flex size-11 items-center justify-center rounded-full text-foreground hover:bg-foreground/10"
+            >
+              {voice ? <Volume2 className="h-5 w-5" aria-hidden="true" /> : <VolumeX className="h-5 w-5" aria-hidden="true" />}
+            </button>
+          )}
+        </span>
       </div>
       <div className="mx-5 mt-2 h-1.5 overflow-hidden rounded-full bg-foreground/10">
         <div className="h-full rounded-full bg-accent-500 transition-all" style={{ width: `${(Math.max(0, workNumber - (resting ? 0 : 1)) / works) * 100}%` }} />

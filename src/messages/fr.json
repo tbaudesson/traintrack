@@ -134,7 +134,10 @@
     "readyMadeStrength": "Programmes tout faits · Musculation",
     "readyMadeEndurance": "Programmes tout faits · Endurance",
     "readyMadeDays": "{count, plural, one {# jour} other {# jours}} · toucher pour l'ajouter",
-    "readyMadeWeeks": "Plan de {count} semaines · toucher pour l'ajouter"
+    "readyMadeWeeks": "Plan de {count} semaines · toucher pour l'ajouter",
+    "exportCalendar": "Ajouter les 8 prochaines semaines à mon agenda",
+    "calendarSession": "Entraînement : {name}",
+    "calendarCompetition": "Compétition : {name}"
   },
   "onboarding": {
     "title": "Votre profil athlète",
@@ -458,7 +461,8 @@
     "myCreations": "Mes créations",
     "noCreations": "Créez votre propre programme avec « Nouveau programme ».",
     "byCoach": "par votre coach",
-    "readyMade": "tout fait"
+    "readyMade": "tout fait",
+    "importExcel": "Importer"
   },
   "readiness": {
     "title": "Forme du jour",
@@ -1135,7 +1139,16 @@
     "deleteConfirm": "Supprimer cette séance ?",
     "leftSide": "Côté gauche",
     "rightSide": "Côté droit",
-    "demo": "Voir la démo"
+    "demo": "Voir la démo",
+    "voiceCoach": "Coach vocal",
+    "voiceGetReady": "Préparez-vous. Premier exercice : {what}.",
+    "voiceWork": "{what}. {time}.",
+    "voiceRest": "Repos, {time}.",
+    "voiceRecovery": "Récupération, {time}.",
+    "voiceNext": "Ensuite : {what}.",
+    "voiceSwitch": "Changez de côté.",
+    "voiceSeconds": "{count, plural, one {# seconde} other {# secondes}}",
+    "voiceMinutes": "{count, plural, one {# minute} other {# minutes}}"
   },
   "mobility": {
     "title": "Échauffement et étirements",
@@ -1418,5 +1431,50 @@
     "more": "… et {count} autres séances",
     "notFound": "Ce lien ne mène à aucun programme : il a peut-être été retiré.",
     "offline": "Impossible d'ouvrir ce programme sans connexion."
+  },
+  "load": {
+    "title": "Charge d’entraînement",
+    "ratio": "ratio {ratio}",
+    "zone_low": "Charge en baisse",
+    "zone_optimal": "Charge maîtrisée",
+    "zone_caution": "Hausse marquée",
+    "zone_danger": "Hausse trop brutale",
+    "advice_low": "Cette semaine pèse bien moins que d’habitude. Normal après un repos ou une semaine allégée ; sinon, reprenez progressivement.",
+    "advice_optimal": "Cette semaine est proche de ce que votre corps a l’habitude d’encaisser. Continuez ainsi.",
+    "advice_caution": "Vous en faites nettement plus que d’habitude. Gardez les prochains jours plus légers et soignez le sommeil.",
+    "advice_danger": "Bien plus que d’habitude en une semaine : c’est le moment où les blessures arrivent le plus. Levez le pied quelques jours.",
+    "coach_low": "Cet athlète s’entraîne bien moins que d’habitude cette semaine.",
+    "coach_optimal": "Sa charge reste proche de ce qu’il ou elle a l’habitude d’encaisser.",
+    "coach_caution": "Cet athlète en fait nettement plus que d’habitude : prévoir des jours plus légers.",
+    "coach_danger": "Sa charge a bondi cette semaine : risque de blessure accru, à alléger.",
+    "thisWeek": "Cette sem.",
+    "weeksAgo": "-{count} sem.",
+    "weeksLabel": "Charge des quatre dernières semaines : {weeks}",
+    "how": "Chaque séance compte ses minutes multipliées par l’effort ressenti (RPE). Les 7 derniers jours sont comparés à la moyenne des 4 dernières semaines ; entre 0,8 et 1,3, tout va bien."
+  },
+  "programImport": {
+    "title": "Importer un programme depuis Excel",
+    "intro": "Écrivez votre programme dans un tableur (Excel, Numbers, Google Sheets…), une ligne par exercice, puis importez le fichier .xlsx ou .csv.",
+    "ruleColumns": "Colonnes : Semaine, Séance, Exercice, Séries, Répétitions, Repos (s), % 1RM. Seules Séance et Exercice sont obligatoires.",
+    "ruleBlank": "Une séance ou une semaine laissée vide reprend celle de la ligne du dessus (les cellules fusionnées marchent).",
+    "ruleNames": "Les exercices sont reconnus en français, anglais ou allemand ; les autres deviennent des exercices personnels.",
+    "template": "Télécharger le modèle",
+    "templateFile": "modele-programme-traintrack",
+    "sheetName": "Programme",
+    "pick": "Choisir le fichier",
+    "name": "Nom du programme",
+    "untitled": "Programme importé",
+    "session": "Séance {n}",
+    "week": "S{n}",
+    "summaryWeeks": "{sessions, plural, one {# séance} other {# séances}} sur {weeks, plural, one {# semaine} other {# semaines}}, {exercises, plural, one {# exercice} other {# exercices}}.",
+    "summaryRotation": "{sessions, plural, one {# séance} other {# séances}} en rotation, {exercises, plural, one {# exercice} other {# exercices}}.",
+    "unknown": "{count, plural, one {Un exercice n’est pas dans la bibliothèque et sera créé comme exercice personnel} other {# exercices ne sont pas dans la bibliothèque et seront créés comme exercices personnels}} : {list}.",
+    "badReps": "{count, plural, one {Une ligne a des répétitions transformées en date par Excel} other {# lignes ont des répétitions transformées en date par Excel}} : elles reçoivent 8-12, à corriger ensuite. Astuce : écrivez « 8 à 12 », ou partez du modèle.",
+    "other": "Autre fichier",
+    "create": "Créer le programme",
+    "errorFormat": "Ce fichier ne se lit pas. Enregistrez-le au format .xlsx (Excel) ou .csv, puis réessayez.",
+    "errorTooBig": "Ce fichier est trop lourd pour un programme (5 Mo au plus).",
+    "errorHeader": "Aucune colonne « Exercice » dans les premières lignes. Partez du modèle pour les noms de colonnes.",
+    "errorEmpty": "Aucun exercice trouvé sous les en-têtes."
   }
 }

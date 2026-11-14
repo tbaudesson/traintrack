@@ -134,7 +134,10 @@
     "readyMadeStrength": "Fertige Programme · Kraft",
     "readyMadeEndurance": "Fertige Programme · Ausdauer",
     "readyMadeDays": "{count, plural, one {# Tag} other {# Tage}} · zum Hinzufügen tippen",
-    "readyMadeWeeks": "{count}-Wochen-Plan · zum Hinzufügen tippen"
+    "readyMadeWeeks": "{count}-Wochen-Plan · zum Hinzufügen tippen",
+    "exportCalendar": "Die nächsten 8 Wochen in meinen Kalender",
+    "calendarSession": "Training: {name}",
+    "calendarCompetition": "Wettkampf: {name}"
   },
   "onboarding": {
     "title": "Dein Athletenprofil",
@@ -458,7 +461,8 @@
     "myCreations": "Meine Programme",
     "noCreations": "Erstelle dein eigenes Programm mit „Neues Programm“.",
     "byCoach": "von deinem Coach",
-    "readyMade": "fertig"
+    "readyMade": "fertig",
+    "importExcel": "Importieren"
   },
   "readiness": {
     "title": "Tagesform",
@@ -633,7 +637,7 @@
     "disable": "Benachrichtigungen deaktivieren",
     "denied": "Berechtigung verweigert. Erlaube Benachrichtigungen in den Browsereinstellungen.",
     "notConfigured": "Push-Benachrichtigungen sind für dieses Deployment noch nicht konfiguriert.",
-    "tooManyDevices": "Zu viele Geräte erhalten bereits Ihre Benachrichtigungen (höchstens 10). Deaktivieren Sie sie auf einem alten Gerät.",
+    "tooManyDevices": "Zu viele Geräte erhalten bereits deine Benachrichtigungen (höchstens 10). Deaktiviere sie auf einem alten Gerät.",
     "unsupported": "Dieses Gerät unterstützt keine Push-Benachrichtigungen.",
     "error": "Benachrichtigungen konnten nicht aktualisiert werden.",
     "kind_reminder": "Trainingserinnerung",
@@ -1135,7 +1139,16 @@
     "deleteConfirm": "Diese Einheit löschen?",
     "leftSide": "Linke Seite",
     "rightSide": "Rechte Seite",
-    "demo": "Demo ansehen"
+    "demo": "Demo ansehen",
+    "voiceCoach": "Sprachcoach",
+    "voiceGetReady": "Mach dich bereit. Erste Übung: {what}.",
+    "voiceWork": "{what}. {time}.",
+    "voiceRest": "Pause, {time}.",
+    "voiceRecovery": "Erholung, {time}.",
+    "voiceNext": "Danach: {what}.",
+    "voiceSwitch": "Seite wechseln.",
+    "voiceSeconds": "{count, plural, one {# Sekunde} other {# Sekunden}}",
+    "voiceMinutes": "{count, plural, one {# Minute} other {# Minuten}}"
   },
   "mobility": {
     "title": "Aufwärmen und Dehnen",
@@ -1238,7 +1251,7 @@
     "shareText": "Hier ist mein Programm „{name}“ auf TrainTrack:",
     "linkCopied": "Link kopiert: in eine Nachricht einfügen.",
     "shareFailed": "Teilen hat nicht geklappt, bitte erneut versuchen.",
-    "tooManyShares": "Sie haben bereits 100 Programme geteilt: Das ist das Maximum.",
+    "tooManyShares": "Du hast bereits 100 Programme geteilt: Das ist das Maximum.",
     "shareOffline": "Zum Teilen ist eine Verbindung nötig."
   },
   "exerciseHistory": {
@@ -1418,5 +1431,50 @@
     "more": "… und {count} weitere Einheiten",
     "notFound": "Dieser Link führt zu keinem Programm: Es wurde vielleicht entfernt.",
     "offline": "Ohne Verbindung lässt sich dieses Programm nicht öffnen."
+  },
+  "load": {
+    "title": "Trainingsbelastung",
+    "ratio": "Verhältnis {ratio}",
+    "zone_low": "Belastung sinkt",
+    "zone_optimal": "Belastung im Rahmen",
+    "zone_caution": "Deutlicher Anstieg",
+    "zone_danger": "Anstieg zu abrupt",
+    "advice_low": "Diese Woche wiegt viel weniger als sonst. Normal nach einer Pause oder Entlastungswoche; sonst steigere dich schrittweise wieder.",
+    "advice_optimal": "Diese Woche liegt nahe an dem, was dein Körper gewohnt ist. Weiter so.",
+    "advice_caution": "Du machst deutlich mehr als sonst. Halte die nächsten Tage leichter und achte auf deinen Schlaf.",
+    "advice_danger": "Viel mehr als sonst in einer Woche: Genau dann passieren die meisten Verletzungen. Tritt ein paar Tage kürzer.",
+    "coach_low": "Diese Person trainiert diese Woche viel weniger als sonst.",
+    "coach_optimal": "Die Belastung bleibt nahe am Gewohnten.",
+    "coach_caution": "Diese Person macht deutlich mehr als sonst: leichtere Tage einplanen.",
+    "coach_danger": "Die Belastung ist diese Woche stark gestiegen: höheres Verletzungsrisiko, reduzieren.",
+    "thisWeek": "Diese Wo.",
+    "weeksAgo": "-{count} Wo.",
+    "weeksLabel": "Belastung der letzten vier Wochen: {weeks}",
+    "how": "Jede Einheit zählt ihre Minuten mal die empfundene Anstrengung (RPE). Die letzten 7 Tage werden mit dem Schnitt der letzten 4 Wochen verglichen; zwischen 0,8 und 1,3 ist alles gut."
+  },
+  "programImport": {
+    "title": "Programm aus Excel importieren",
+    "intro": "Schreib dein Programm in eine Tabelle (Excel, Numbers, Google Sheets…), eine Zeile pro Übung, und importiere dann die .xlsx- oder .csv-Datei.",
+    "ruleColumns": "Spalten: Woche, Einheit, Übung, Sätze, Wiederholungen, Pause (s), % 1RM. Nur Einheit und Übung sind Pflicht.",
+    "ruleBlank": "Eine leere Einheit oder Woche übernimmt die der Zeile darüber (verbundene Zellen funktionieren).",
+    "ruleNames": "Übungen werden auf Deutsch, Englisch oder Französisch erkannt; andere werden eigene Übungen.",
+    "template": "Vorlage herunterladen",
+    "templateFile": "traintrack-programm-vorlage",
+    "sheetName": "Programm",
+    "pick": "Datei wählen",
+    "name": "Name des Programms",
+    "untitled": "Importiertes Programm",
+    "session": "Einheit {n}",
+    "week": "W{n}",
+    "summaryWeeks": "{sessions, plural, one {# Einheit} other {# Einheiten}} über {weeks, plural, one {# Woche} other {# Wochen}}, {exercises, plural, one {# Übung} other {# Übungen}}.",
+    "summaryRotation": "{sessions, plural, one {# Einheit} other {# Einheiten}} im Wechsel, {exercises, plural, one {# Übung} other {# Übungen}}.",
+    "unknown": "{count, plural, one {Eine Übung ist nicht in der Bibliothek und wird als eigene Übung angelegt} other {# Übungen sind nicht in der Bibliothek und werden als eigene Übungen angelegt}}: {list}.",
+    "badReps": "{count, plural, one {In einer Zeile hat Excel die Wiederholungen in ein Datum verwandelt} other {In # Zeilen hat Excel die Wiederholungen in ein Datum verwandelt}}: Sie bekommen 8-12, bitte danach korrigieren. Tipp: „8 bis 12“ schreiben oder von der Vorlage ausgehen.",
+    "other": "Andere Datei",
+    "create": "Programm anlegen",
+    "errorFormat": "Diese Datei lässt sich nicht lesen. Speichere sie als .xlsx (Excel) oder .csv und versuch es erneut.",
+    "errorTooBig": "Diese Datei ist zu groß für ein Programm (höchstens 5 MB).",
+    "errorHeader": "Keine Spalte „Übung“ in den ersten Zeilen. Geh von der Vorlage aus, um die Spaltennamen zu übernehmen.",
+    "errorEmpty": "Unter den Überschriften wurde keine Übung gefunden."
   }
 }

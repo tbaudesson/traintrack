@@ -21,7 +21,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, ClipboardList, Loader2, UserCheck, Sparkles } from "lucide-react";
+import { Plus, ClipboardList, Loader2, UserCheck, Sparkles, FileSpreadsheet } from "lucide-react";
+import { ProgramImportDialog } from "@/components/domain/ProgramImportDialog";
 import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
 import { DetailRow } from "@/components/ui/detail-row";
 import { useClients } from "@/hooks/useClients";
@@ -40,6 +41,7 @@ export default function ProgramsPage() {
   const profile = useAthleteProfile();
   const tc = useTranslations("catalog");
   const [busy, setBusy] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   const catalogue = useProgramTemplates();
   const prefs = useAppPrefs();
@@ -145,6 +147,10 @@ export default function ProgramsPage() {
                 {tai("generate")}
               </Button>
             )}
+            <Button size="sm" variant="outline" onClick={() => setImporting(true)}>
+              <FileSpreadsheet className="mr-1 h-4 w-4" aria-hidden="true" />
+              {t("importExcel")}
+            </Button>
             <Button size="sm" onClick={handleCreate} disabled={busy}>
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="mr-1 h-4 w-4" />{t("create")}</>}
             </Button>
@@ -254,6 +260,7 @@ export default function ProgramsPage() {
         </DialogContent>
       </Dialog>
 
+      <ProgramImportDialog open={importing} onOpenChange={setImporting} />
     </>
   );
 }
