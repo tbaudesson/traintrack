@@ -1,7 +1,7 @@
 "use client";
 
 import { sessionHref } from "@/lib/routes";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/contexts/AuthContext";
@@ -228,10 +228,26 @@ export default function HomePage() {
   const load = useMemo(() => trainingLoad({ today, workouts, sets }), [today, workouts, sets]);
 
   // The week: done, missed, and the next sessions placed on the training days ahead.
+  // With a planning, the week shown can be moved; by default the next one
+  // once nothing is left to do in this one (on a Saturday, say).
+  const [weekChoice, setWeekChoice] = useState<number | null>(null);
+  const shiftDays = (date: string, days: number) => localDateIn(days, Date.parse(`${date}T12:00:00`));
+  const scheduleOf = useCallback(
+    (monday: string) => {
+      const sessions = scheduleSessions({ planned, workouts, from: monday, to: shiftDays(monday, 6), today });
+      return scheduleWeek({ monday, today, planned, sessions, workouts });
+    },
+    [planned, workouts, today]
+  );
+  const weekOffset = useMemo(() => {
+    if (!planned.length) return 0;
+    if (weekChoice !== null) return weekChoice;
+    return scheduleOf(weekStart).some((d) => d.status === "planned") ? 0 : 1;
+  }, [planned, weekChoice, scheduleOf, weekStart]);
+
   const plan = useMemo(() => {
     if (planned.length) {
-      const sessions = scheduleSessions({ planned, workouts, from: weekStart, to: localDateIn(6, Date.parse(`${weekStart}T12:00:00`)), today });
-      return scheduleWeek({ monday: weekStart, today, planned, sessions, workouts }).map((d) => ({
+      return scheduleOf(shiftDays(weekStart, weekOffset * 7)).map((d) => ({
         date: d.date,
         weekday: d.weekday,
         today: d.today,
@@ -248,7 +264,7 @@ export default function HomePage() {
       workouts,
       upcoming: session ? upcomingSessions(session.program, from, 7) : [],
     });
-  }, [session, today, profile, workouts, planned, weekStart]);
+  }, [session, today, profile, workouts, planned, weekStart, weekOffset, scheduleOf]);
 
   const sessionWeek = session ? programWeek(session.program, today) : null;
   // The next sessions of the planning, over two weeks: a plan starting next Monday shows already.
@@ -552,7 +568,14 @@ export default function HomePage() {
             />
           )}
 
-          <WeekStrip plan={plan} planned={planned.length > 0 || (profile?.trainingDays ?? []).length > 0} onExport={exportCalendar} upcoming={upcoming} />
+          <WeekStrip
+            plan={plan}
+            planned={planned.length > 0 || (profile?.trainingDays ?? []).length > 0}
+            onExport={exportCalendar}
+            upcoming={upcoming}
+            offset={planned.length ? weekOffset : undefined}
+            onOffset={(n) => setWeekChoice(Math.max(-4, Math.min(8, n)))}
+          />
 
           <MyPrograms
             programs={programs}

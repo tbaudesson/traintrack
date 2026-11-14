@@ -273,7 +273,7 @@ await test("two programs planned on their own days show together in the week and
   await page.getByRole("heading", { name: "Mon planning", exact: true }).waitFor({ timeout: 5000 });
   // Home: the week lists the sessions of both, each with its program.
   await page.goto(`${BASE}/fr`);
-  const week = page.locator("section", { hasText: "Ma semaine" });
+  const week = page.locator("section", { hasText: "prochaines semaines à mon agenda" });
   await week.getByText("· Full Body — Débutant").first().waitFor({ timeout: 10000 });
   await week.getByText("· program fr").first().waitFor({ timeout: 10000 });
   await snap("week-planning");

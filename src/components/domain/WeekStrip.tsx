@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { CalendarPlus, Check, X } from "lucide-react";
+import { CalendarPlus, Check, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import type { PlanDay } from "@/lib/weekPlan";
@@ -18,12 +18,17 @@ export function WeekStrip({
   planned,
   onExport,
   upcoming,
+  offset,
+  onOffset,
 }: {
   plan: PlanDay[];
   planned: boolean;
   onExport?: () => void;
   /** With a planning: the next sessions, beyond this week too. */
   upcoming?: { date: string; label: string; program: string }[];
+  /** With a planning: the week shown, 0 for this one, and how to move it. */
+  offset?: number;
+  onOffset?: (offset: number) => void;
 }) {
   const t = useTranslations("home");
   const locale = useLocale();
@@ -44,7 +49,27 @@ export function WeekStrip({
   return (
     <section className="t-surface space-y-3 rounded-2xl p-4 ring-1 ring-foreground/5">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold">{t("weekPlan")}</h2>
+        <div className="flex items-center gap-1">
+          {offset !== undefined && onOffset && (
+            <button type="button" onClick={() => onOffset(offset - 1)} aria-label={t("weekPrevious")} className="-ml-2 flex size-10 items-center justify-center rounded-full hover:bg-muted">
+              <ChevronLeft className="size-4" aria-hidden="true" />
+            </button>
+          )}
+          <h2 className="text-sm font-semibold" aria-live="polite">
+            {!offset
+              ? t("weekPlan")
+              : offset === 1
+                ? t("weekNext")
+                : offset === -1
+                  ? t("weekLast")
+                  : t("weekOf", { date: `${Number(plan[0].date.slice(8))} ${new Intl.DateTimeFormat(locale, { month: "short", timeZone: "UTC" }).format(new Date(`${plan[0].date}T00:00:00Z`))}` })}
+          </h2>
+          {offset !== undefined && onOffset && (
+            <button type="button" onClick={() => onOffset(offset + 1)} aria-label={t("weekFollowing")} className="flex size-10 items-center justify-center rounded-full hover:bg-muted">
+              <ChevronRight className="size-4" aria-hidden="true" />
+            </button>
+          )}
+        </div>
         {/* With a planning, the days are set program by program. */}
         <Link href={upcoming ? "/programs" : "/settings"} className="flex min-h-10 items-center text-sm font-medium text-accent-text">
           {planned ? t("weekPlanEdit") : t("weekPlanSetup")}

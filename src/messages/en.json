@@ -137,7 +137,12 @@
     "readyMadeWeeks": "{count}-week plan · tap to add",
     "exportCalendar": "Add the next 8 weeks to my calendar",
     "calendarSession": "Training: {name}",
-    "calendarCompetition": "Competition: {name}"
+    "calendarCompetition": "Competition: {name}",
+    "weekNext": "Next week",
+    "weekLast": "Last week",
+    "weekOf": "Week of {date}",
+    "weekPrevious": "Previous week",
+    "weekFollowing": "Following week"
   },
   "onboarding": {
     "title": "Your athlete profile",

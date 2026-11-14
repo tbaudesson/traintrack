@@ -95,7 +95,9 @@ export function MyPrograms({
                   ? t("week", { week: week.week })
                   : t("sessions", { count: progress.sessions });
           return (
-            <li key={program.id} className="t-surface w-44 shrink-0 snap-start space-y-2.5 rounded-2xl p-3.5 ring-1 ring-foreground/5">
+            <li key={program.id} className="t-surface relative w-44 shrink-0 snap-start space-y-2.5 rounded-2xl p-3.5 ring-1 ring-foreground/5">
+              {/* The whole card opens the program; "Continue" starts its next session. */}
+              <Link href={`/programs/${program.id}`} aria-label={program.name} className="absolute inset-0 rounded-2xl" />
               <div className="flex items-center gap-2">
                 <span className={cn("flex size-10 shrink-0 items-center justify-center rounded-full", style.tone)}>
                   <Icon className="size-5" aria-hidden="true" />
@@ -120,16 +122,16 @@ export function MyPrograms({
                 <button
                   type="button"
                   onClick={() => onContinue(program)}
-                  className="flex min-h-10 items-center gap-1 text-sm font-semibold text-accent-text"
+                  className="relative z-10 flex min-h-10 items-center gap-1 text-sm font-semibold text-accent-text"
                 >
                   {t("continue")}
                   <ArrowRight className="size-4" aria-hidden="true" />
                 </button>
               ) : (
-                <Link href={`/programs/${program.id}`} className="flex min-h-10 items-center gap-1 text-sm font-medium text-muted-foreground">
+                <span className="flex min-h-10 items-center gap-1 text-sm font-medium text-muted-foreground" aria-hidden="true">
                   {t("discover")}
-                  <ArrowRight className="size-4" aria-hidden="true" />
-                </Link>
+                  <ArrowRight className="size-4" />
+                </span>
               )}
             </li>
           );
