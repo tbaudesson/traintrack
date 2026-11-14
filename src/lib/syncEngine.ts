@@ -571,6 +571,70 @@ export function getSyncState(): SyncState {
 export async function forceFullResync(): Promise<void> {
   await db.syncMeta.clear();
   await syncAll();
+  const userId = await getCurrentUserId();
+  if (userId) await reconcileForeignRows(userId, serverStillHas);
+}
+
+// ─── Reconciliation: drop what the server no longer shows ─────────────
+
+const RECONCILE_KEY = "traintrack-reconciled-at";
+const RECONCILE_EVERY_MS = 12 * 60 * 60 * 1000;
+const RECONCILE_CHUNK = 150;
+
+/** Which of these ids the caller can still read on the server; null on any error. */
+export type StillHas = (supabaseTable: string, ids: string[]) => Promise<Set<string> | null>;
+
+const serverStillHas: StillHas = async (supabaseTable, ids) => {
+  const { data, error } = await supabase.from(supabaseTable).select("id").in("id", ids);
+  if (error) return null;
+  return new Set((data as { id: string }[]).map((row) => row.id));
+};
+
+/**
+ * The pull only learns about rows that changed; a row erased on the server
+ * (an athlete's account deleted, an athlete who left the team, a manual
+ * cleanup) would stay on the coach's phone for good. This asks the server
+ * which local copies of OTHER people's rows still exist and are still
+ * readable, and drops the rest. The user's own rows are never touched, nor a
+ * change not pushed yet, and the first error stops it without deleting more:
+ * an expired session must never empty a phone. Returns how many rows went.
+ */
+export async function reconcileForeignRows(userId: string, stillHas: StillHas): Promise<number> {
+  let removed = 0;
+  for (const config of TABLE_CONFIGS) {
+    const table = db.table(config.dexieTable);
+    const foreign = await table
+      .filter((row) => !!row.uuid && row._dirty !== 1 && !!row.userId && row.userId !== userId)
+      .toArray();
+    for (let i = 0; i < foreign.length; i += RECONCILE_CHUNK) {
+      const chunk = foreign.slice(i, i + RECONCILE_CHUNK);
+      const alive = await stillHas(config.supabaseTable, chunk.map((row) => row.uuid as string));
+      if (!alive) return removed;
+      const gone = chunk.filter((row) => !alive.has(row.uuid as string)).map((row) => row.id as number);
+      if (gone.length) {
+        await table.bulkDelete(gone);
+        removed += gone.length;
+      }
+    }
+  }
+  return removed;
+}
+
+/** Reconcile at most every twelve hours, after a successful sync. */
+async function reconcileIfDue(userId: string): Promise<void> {
+  let last = 0;
+  try {
+    last = Number(localStorage.getItem(RECONCILE_KEY)) || 0;
+  } catch {
+    // Storage blocked: reconcile anyway, it is only a cleanup.
+  }
+  if (Date.now() - last < RECONCILE_EVERY_MS) return;
+  await reconcileForeignRows(userId, serverStillHas);
+  try {
+    localStorage.setItem(RECONCILE_KEY, String(Date.now()));
+  } catch {
+    // Same as above.
+  }
 }
 
 export async function syncAll(): Promise<void> {
@@ -622,6 +686,8 @@ export async function syncAll(): Promise<void> {
     }
 
     notifyListeners("idle");
+    // Off the critical path: a failed cleanup must not fail the sync.
+    reconcileIfDue(userId).catch(() => {});
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown sync error";
     console.error("[Sync] Full sync failed:", message);
