@@ -78,6 +78,8 @@ export const REST_WARMUPS = [30, 45, 60, 90] as const;
 export interface AppPrefs {
   style: AppStyle;
   sport: FavoriteSport | null;
+  /** A second sport, practised alongside: its sessions and figures come second. */
+  sport2: FavoriteSport | null;
   silhouette: Silhouette;
   rest: RestPrefs;
   /** The voice coach of the timed sessions. */
@@ -87,7 +89,7 @@ export interface AppPrefs {
 const PREFS_KEY = "traintrack.prefs";
 const PREFS_EVENT = "traintrack-prefs";
 const DEFAULT_REST: RestPrefs = { defaultSec: 90, warmupSec: 60, sound: false, vibrate: true, notify: false };
-const DEFAULT_PREFS: AppPrefs = { style: "classic", sport: null, silhouette: "male", rest: DEFAULT_REST, voice: true };
+const DEFAULT_PREFS: AppPrefs = { style: "classic", sport: null, sport2: null, silhouette: "male", rest: DEFAULT_REST, voice: true };
 
 let cached: { raw: string | null; prefs: AppPrefs } | null = null;
 
@@ -110,6 +112,8 @@ export function getPrefs(): AppPrefs {
   const prefs: AppPrefs = {
     style: APP_STYLES.includes(parsed.style as AppStyle) ? (parsed.style as AppStyle) : "classic",
     sport: FAVORITE_SPORTS.includes(parsed.sport as FavoriteSport) ? (parsed.sport as FavoriteSport) : null,
+    sport2:
+      FAVORITE_SPORTS.includes(parsed.sport2 as FavoriteSport) && parsed.sport2 !== parsed.sport ? (parsed.sport2 as FavoriteSport) : null,
     silhouette: parsed.silhouette === "female" ? "female" : "male",
     rest: {
       defaultSec: (REST_DEFAULTS as readonly number[]).includes(parsed.rest?.defaultSec ?? 0) ? parsed.rest!.defaultSec : DEFAULT_REST.defaultSec,

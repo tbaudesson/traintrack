@@ -103,19 +103,24 @@ export function WeeklyReportCard({
         <>
           <dl className="grid grid-cols-2 gap-2 text-sm">
             <Tile label={t("days")} value={report.planned !== null ? `${report.daysTrained}/${report.planned}` : String(report.daysTrained)} />
-            <Tile
-              label={t("volume")}
-              value={`${num(report.volume, 0)} kg`}
-              extra={
-                report.volumeChange !== null ? (
-                  <span className={cn("text-xs font-semibold", report.volumeChange >= 0 ? "text-success-text" : "text-amber-600 dark:text-amber-400")}>
-                    {report.volumeChange >= 0 ? "+" : ""}
-                    {report.volumeChange} %
-                  </span>
-                ) : undefined
-              }
-            />
-            <Tile label={t("rpe")} value={report.avgRpe !== null ? String(report.avgRpe) : "–"} />
+            {report.volume === 0 && report.cardio.distanceM > 0 ? (
+              // Nothing lifted: the distance covered says more than "0 kg".
+              <Tile label={t("distance")} value={`${num(Math.round(report.cardio.distanceM / 100) / 10)} km`} />
+            ) : report.volume === 0 ? null : (
+              <Tile
+                label={t("volume")}
+                value={`${num(report.volume, 0)} kg`}
+                extra={
+                  report.volumeChange !== null ? (
+                    <span className={cn("text-xs font-semibold", report.volumeChange >= 0 ? "text-success-text" : "text-amber-600 dark:text-amber-400")}>
+                      {report.volumeChange >= 0 ? "+" : ""}
+                      {report.volumeChange} %
+                    </span>
+                  ) : undefined
+                }
+              />
+            )}
+            {report.avgRpe !== null && <Tile label={t("rpe")} value={String(report.avgRpe)} />}
             <Tile label={t("time")} value={time} />
           </dl>
 

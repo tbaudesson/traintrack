@@ -109,3 +109,48 @@ export const runTotals = (blocks: TimedRunBlock[]) => ({
 /** The level a profile's fitness level gives. */
 export const runLevelOf = (fitness: string | undefined): RunLevel =>
   fitness === "advanced" ? "advanced" : fitness === "intermediate" ? "intermediate" : "beginner";
+
+// ─── A plan's interval run, to play with the guide ───────────────
+
+/** Seconds of the first duration in a text: "1 min 30", "2 min", "45 s", "1:30". */
+function firstDuration(text: string): number | null {
+  const m = text.match(/(\d+):(\d{2})|(\d+)\s*min\.?(?:\s*(\d+)(?!\s*(?:×|x|m\b|km)))?|(\d+)\s*s\b/i);
+  if (!m) return null;
+  if (m[1]) return Number(m[1]) * 60 + Number(m[2]);
+  if (m[3]) return Number(m[3]) * 60 + (m[4] ? Number(m[4]) : 0);
+  return Number(m[5]);
+}
+
+/**
+ * The blocks of a plan's run with repeats ("8 × 400 m rapides, 1 min 30 de
+ * récupération"): the warm-up and cool-down of its steps, the efforts at the
+ * pace of the session's zone, the recoveries as written. Null when the run
+ * has no repeats to play.
+ */
+export function planRunBlocks(target: { sport?: string; intensity?: string; steps?: string[] }): RunBlock[] | null {
+  if (target.sport !== "run") return null;
+  const steps = target.steps ?? [];
+  const at = steps.findIndex((s) => /\d+\s*[×x]\s*\(?\s*\d/.test(s));
+  if (at < 0) return null;
+  const text = steps[at];
+  const m = text.match(/(\d+)\s*[×x]\s*\(?\s*(\d+(?:[.,]\d+)?)\s*(km|m|min|s)\b/i);
+  if (!m) return null;
+  const reps = Number(m[1]);
+  const size = Number(m[2].replace(",", "."));
+  const unit = m[3].toLowerCase();
+  if (!(reps >= 1 && reps <= 40)) return null;
+  const effortSize = unit === "km" ? { meters: size * 1000 } : unit === "m" ? { meters: size } : unit === "min" ? { sec: size * 60 } : { sec: size };
+  const short = (effortSize.meters ?? 0) <= 400 && (effortSize.sec ?? 0) <= 60;
+  const zoneNumber = Number(target.intensity?.match(/(\d)\s*$/)?.[1]);
+  const zone: PaceZone =
+    zoneNumber === 5 ? "vma" : zoneNumber === 4 ? (short ? "5k" : "threshold") : zoneNumber === 3 ? "marathon" : zoneNumber >= 1 ? "easy" : "10k";
+  const rest = firstDuration(text.slice((m.index ?? 0) + m[0].length)) ?? (short ? 90 : 120);
+  const before = steps.slice(0, at).map(firstDuration).find((x) => x !== null);
+  const after = steps.slice(at + 1).map(firstDuration).find((x) => x !== null);
+  const clamp = (sec: number | null | undefined, fallback: number) => Math.min(25 * 60, Math.max(3 * 60, sec ?? fallback));
+  return [
+    { kind: "warmup", zone: "easy", sec: clamp(before, 15 * 60) },
+    ...repeat(reps, work(zone, effortSize), jog(rest)),
+    { kind: "cooldown", zone: "recovery", sec: clamp(after, 10 * 60) },
+  ];
+}

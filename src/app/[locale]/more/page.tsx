@@ -29,7 +29,9 @@ export default function MorePage() {
   const name = profile?.display_name ?? user?.email?.split("@")[0] ?? "";
   const initials = name.slice(0, 2).toUpperCase();
 
-  const vaulting = useAppPrefs().sport === "vaulting";
+  const prefs = useAppPrefs();
+  const vaulting = prefs.sport === "vaulting" || prefs.sport2 === "vaulting";
+  const runner = prefs.sport === "running" || prefs.sport2 === "running";
   const competitions = useCompetitions();
   const horses = useHorses();
 
@@ -51,6 +53,8 @@ export default function MorePage() {
     { href: "/messages", icon: MessageCircle, label: t("messages") },
     { href: "/health", icon: Activity, label: t("health") },
   ];
+  // One's sport first: a runner finds running at the top.
+  if (runner) items.sort((a, b) => Number(b.href === "/running") - Number(a.href === "/running"));
 
   return (
     <>

@@ -1,7 +1,7 @@
 "use client";
 
 import { sessionHref } from "@/lib/routes";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -16,7 +16,8 @@ import { useUnreadComments } from "@/hooks/useCoachComments";
 import { useExercises } from "@/hooks/useExercises";
 import { useNutritionForDate, sumMacros } from "@/hooks/useNutrition";
 import { useTodayReadiness, useReadiness, readinessScore } from "@/hooks/useReadiness";
-import { DeloadCard } from "@/components/domain/DeloadCard";
+import { DeloadCard, deloadLaterFor } from "@/components/domain/DeloadCard";
+import { LOW_READINESS } from "@/lib/readinessAdjust";
 import { ReadinessBanner } from "@/components/domain/ReadinessBanner";
 import { useLighterToday } from "@/hooks/useLighterToday";
 import { WeeklyReportCard } from "@/components/domain/WeeklyReportCard";
@@ -46,6 +47,8 @@ import { MoveSessionDialog } from "@/components/domain/MoveSessionDialog";
 import { ExpressDialog } from "@/components/domain/ExpressDialog";
 import { dayMinutes } from "@/lib/express";
 import { isTestProgram, testsDue } from "@/lib/levelTests";
+import { cardioSportOf, detectSport, kindOf, weekOverview } from "@/lib/activityProfile";
+import { savePrefs } from "@/lib/appTheme";
 import { downloadFile } from "@/lib/exportService";
 import { useCompetitions } from "@/hooks/useCompetitions";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -65,18 +68,13 @@ import {
   PartyPopper,
   Gauge,
   X,
+  Footprints,
+  Repeat,
+  CalendarCheck,
 } from "lucide-react";
 import { localDate, localDateIn } from "@/lib/dates";
 import { useFormat } from "@/lib/format";
 
-const DAY_MS = 86400000;
-
-/** Monday 00:00 of the week holding this moment. */
-function mondayOf(ms: number) {
-  const d = new Date(ms);
-  d.setHours(0, 0, 0, 0);
-  return d.getTime() - ((d.getDay() + 6) % 7) * DAY_MS;
-}
 
 function ProgressRing({ percent }: { percent: number }) {
   const r = 42;
@@ -134,7 +132,23 @@ function OverviewTile({
 }
 
 /** A note on the home screen: something worth a look, with a link, until closed. */
-function HomeNote({ icon: Icon, title, text, href, action, onClose }: { icon: LucideIcon; title: string; text: string; href: string; action: string; onClose: () => void }) {
+function HomeNote({
+  icon: Icon,
+  title,
+  text,
+  href,
+  onAction,
+  action,
+  onClose,
+}: {
+  icon: LucideIcon;
+  title: string;
+  text: string;
+  href?: string;
+  onAction?: () => void;
+  action: string;
+  onClose: () => void;
+}) {
   const tc = useTranslations("common");
   return (
     <section className="t-surface relative space-y-1.5 rounded-2xl p-4 pr-12 ring-1 ring-accent-500/30">
@@ -143,10 +157,17 @@ function HomeNote({ icon: Icon, title, text, href, action, onClose }: { icon: Lu
         {title}
       </h2>
       <p className="text-sm text-muted-foreground">{text}</p>
-      <Link href={href} className="inline-flex min-h-10 items-center gap-1 text-sm font-semibold text-accent-text">
-        {action}
-        <ChevronRight className="size-4" aria-hidden="true" />
-      </Link>
+      {href ? (
+        <Link href={href} className="inline-flex min-h-10 items-center gap-1 text-sm font-semibold text-accent-text">
+          {action}
+          <ChevronRight className="size-4" aria-hidden="true" />
+        </Link>
+      ) : (
+        <button type="button" onClick={onAction} className="inline-flex min-h-10 items-center gap-1 text-sm font-semibold text-accent-text">
+          {action}
+          <ChevronRight className="size-4" aria-hidden="true" />
+        </button>
+      )}
       <button type="button" onClick={onClose} aria-label={tc("close")} className="absolute top-2 right-2 flex size-10 items-center justify-center rounded-full text-muted-foreground hover:bg-muted">
         <X className="size-4" aria-hidden="true" />
       </button>
@@ -165,6 +186,7 @@ export default function HomePage() {
   const tc = useTranslations("cardio");
   const ti = useTranslations("intervals");
   const tmo = useTranslations("mobility");
+  const tcat = useTranslations("catalog");
   const router = useRouter();
   const { user, profile: account } = useAuth();
   const profile = useAthleteProfile();
@@ -360,8 +382,18 @@ export default function HomePage() {
   }, [session, today, profile, workouts, planned, shownWeek]);
 
   const sessionWeek = session ? programWeek(session.program, today) : null;
+  // The sport practised: the one chosen, else the one the last weeks show.
+  const detected = useMemo(() => detectSport({ today, workouts, sets }), [today, workouts, sets]);
+  const mainSport = prefs.sport ?? detected;
+  const activity = kindOf(mainSport) ?? "strength";
+  const overview = useMemo(
+    () => weekOverview({ kind: activity, cardioSport: cardioSportOf(mainSport), monday: weekStart, today, workouts, sets }),
+    [activity, mainSport, weekStart, today, workouts, sets]
+  );
+  // A sport chosen that the last weeks contradict: offer the one practised.
+  const sportHint = detected && prefs.sport && kindOf(detected) !== kindOf(prefs.sport) && !closedCards.includes(`sport-${detected}`) ? detected : null;
   // Pressed for time: a shorter version of a strength session not begun, when it is long enough to shorten.
-  const canExpress = !!session && !session.workoutId && !session.day.cardio && session.day.exercises.length > 1 && dayMinutes(session.day) > 25;
+  const canExpress = !!session && session.date === today && !session.workoutId && !session.day.cardio && session.day.exercises.length > 1 && dayMinutes(session.day) > 25;
   // A plan just over (trained in the last four weeks): its review, until closed.
   const finishedProgram = programs.find(
     (p) =>
@@ -374,6 +406,59 @@ export default function HomePage() {
   // The level tests, once done, again every six weeks.
   const testProgram = programs.find((p) => isTestProgram(p) && !p.assignedToUserId);
   const tests = testProgram ? testsDue({ program: testProgram, workouts, today }) : null;
+
+  // The notes of the home screen, most pressing first: a load rising too fast,
+  // a low form, a deload week, a program just over, last week's report, the
+  // tests due, the sport practised. Only the first shows open.
+  const lowForm = lighterToday.reason === "deload" ? null : lighterToday.readiness;
+  const deloadShown = deloading || (!!deload && deloadLaterFor() !== thisMonday);
+  const notes: { key: string; node: ReactNode }[] = [
+    ...(load && (load.zone === "caution" || load.zone === "danger") ? [{ key: "load", node: <TrainingLoadCard key="load" load={load} /> }] : []),
+    ...(lowForm !== null && lowForm < LOW_READINESS ? [{ key: "form", node: <Fragment key="form"><ReadinessBanner readiness={lowForm} keptNormal={lighterToday.keptNormal} onKeep={lighterToday.setKeptNormal} /></Fragment> }] : []),
+    ...(deloadShown ? [{ key: "deload", node: <DeloadCard key="deload" advice={deload} monday={thisMonday} active={deloading} hasProfile={!!profile} /> }] : []),
+    ...(finishedProgram ? [{ key: "review", node: <Fragment key="review"><HomeNote
+              icon={PartyPopper}
+              title={t("programDone", { name: finishedProgram.name })}
+              text={t("programDoneText")}
+              href={`/programs/${finishedProgram.id}#bilan`}
+              action={t("programDoneAction")}
+              onClose={() => closeCard(`review-${finishedProgram.uuid}`)}
+            /></Fragment> }] : []),
+    ...(showReport ? [{ key: "report", node: <Fragment key="report"><WeeklyReportCard
+              workouts={workouts}
+              sets={sets}
+              exercises={exercises}
+              trainingDays={profile?.trainingDays}
+              pains={pains}
+              lastMonday={lastMonday}
+              navigable={false}
+              onDismiss={() => {
+                try {
+                  window.localStorage.setItem("traintrack-report-closed", lastMonday);
+                } catch {
+                  // Private browsing: it shows again next time.
+                }
+                setReportClosed(lastMonday);
+              }}
+            /></Fragment> }] : []),
+    ...(tests?.due && !closedCards.includes(`tests-${tests.next}`) ? [{ key: "tests", node: <Fragment key="tests">`tests-${tests.next}`) && (
+            <HomeNote
+              icon={Gauge}
+              title={t("testsDue")}
+              text={t("testsDueText", { date: short(tests.last) })}
+              href="/tests"
+              action={t("testsDueAction")}
+              onClose={() => closeCard(`tests-${tests.next}`)}
+            /></Fragment> }] : []),
+    ...(sportHint ? [{ key: "sport", node: <Fragment key="sport"><HomeNote
+              icon={Sparkles}
+              title={t("sportHint", { sport: tcat(sportHint === "callisthenics" ? "cat_timed" : `cat_${sportHint}`) })}
+              text={t("sportHintText")}
+              action={t("sportHintAction")}
+              onAction={() => savePrefs({ sport: sportHint, sport2: prefs.sport === sportHint ? prefs.sport2 : prefs.sport })}
+              onClose={() => closeCard(`sport-${sportHint}`)}
+            /></Fragment> }] : []),
+  ];
   // The next sessions of the planning, over two weeks: a plan starting next Monday shows already.
   const upcoming = useMemo(
     () =>
@@ -422,22 +507,6 @@ export default function HomePage() {
     return own.length ? Math.round((own.filter((s) => s.completed).length / own.length) * 100) : 0;
   }, [sets, session, workouts]);
 
-  const week = useMemo(() => {
-    const monday = localDate(mondayOf(now));
-    const lastMonday = localDateIn(-7, mondayOf(now));
-    const volumeOf = (from: string, to: string) => {
-      const ids = new Set(workouts.filter((w) => w.date >= from && w.date < to).map((w) => w.id));
-      return sets.reduce((a, s) => (ids.has(s.workoutId) && s.completed && s.weightKg && s.reps ? a + s.weightKg * s.reps : a), 0);
-    };
-    const current = volumeOf(monday, "9999-12-31");
-    const previous = volumeOf(lastMonday, monday);
-    return {
-      workouts: workouts.filter((w) => w.date >= monday).length,
-      volume: Math.round(current),
-      // No comparison without a previous week to compare to.
-      change: previous > 0 ? Math.round(((current - previous) / previous) * 100) : null,
-    };
-  }, [workouts, sets, now]);
 
   // Ready-made programs the user has not added yet.
   const templates = catalogue.filter((tpl) => !programs.some((p) => p.name === tpl.name));
@@ -478,6 +547,20 @@ export default function HomePage() {
   }
 
   const trainable = programs.filter((p) => (p.structure ?? []).length > 0);
+
+  // The sessions without a program, those of one's sports first.
+  const runner = prefs.sport === "running" || prefs.sport2 === "running" || detected === "running";
+  const freeRows = [
+    { key: "free", rank: activity === "strength" ? 0 : 3, node: <DetailRow key="free" onClick={startFree} disabled={starting} icon={Plus} tone="neutral" title={t("freeSession")} subtitle={t("freeSessionHint")} /> },
+    { key: "intervals", rank: activity === "bodyweight" ? 0 : 4, node: <DetailRow key="intervals" href="/intervals" icon={Timer} tone="neutral" title={ti("title")} subtitle={ti("hint")} /> },
+    ...(runner ? [{ key: "running", rank: 1, node: <DetailRow key="running" href="/running" icon={Footprints} tone="neutral" title={t("runIntervals")} subtitle={t("runIntervalsHint")} /> }] : []),
+    { key: "mobility", rank: 5, node: <DetailRow key="mobility" href="/mobility" icon={PersonStanding} tone="neutral" title={tmo("title")} subtitle={tmo("hint")} /> },
+    {
+      key: "endurance",
+      rank: activity === "endurance" || activity === "vaulting" ? 0 : 2,
+      node: <DetailRow key="endurance" onClick={() => { setChoosing(false); setSportOpen(true); }} disabled={starting} icon={Activity} tone="neutral" title={tc("newSession")} subtitle={tc("newSessionHint")} />,
+    },
+  ].sort((a, b) => a.rank - b.rank);
   const repeatable = lastRepeatable(workouts, sets, today);
 
   async function repeatLast() {
@@ -626,7 +709,7 @@ export default function HomePage() {
                     ? t("nextSessionOn", { date: new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", timeZone: "UTC" }).format(new Date(`${session.date}T00:00:00Z`)) })
                     : t("todaySession")}
                 </p>
-                <h2 className="mt-1 truncate text-3xl font-bold tracking-tight">{session?.day.name ?? t("freeSession")}</h2>
+                <h2 className="mt-1 line-clamp-2 text-3xl leading-tight font-bold tracking-tight break-words">{session?.day.name ?? t("freeSession")}</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {session
                     ? `${session.program.name} · ${dayDetail(session.day)}`
@@ -721,49 +804,16 @@ export default function HomePage() {
             />
           )}
 
-          <ReadinessBanner readiness={lighterToday.reason === "deload" ? null : lighterToday.readiness} keptNormal={lighterToday.keptNormal} onKeep={lighterToday.setKeptNormal} />
-          <DeloadCard advice={deload} monday={thisMonday} active={deloading} hasProfile={!!profile} />
-          {load && (load.zone === "caution" || load.zone === "danger") && <TrainingLoadCard load={load} />}
-
-          {finishedProgram && (
-            <HomeNote
-              icon={PartyPopper}
-              title={t("programDone", { name: finishedProgram.name })}
-              text={t("programDoneText")}
-              href={`/programs/${finishedProgram.id}#bilan`}
-              action={t("programDoneAction")}
-              onClose={() => closeCard(`review-${finishedProgram.uuid}`)}
-            />
-          )}
-          {tests?.due && !closedCards.includes(`tests-${tests.next}`) && (
-            <HomeNote
-              icon={Gauge}
-              title={t("testsDue")}
-              text={t("testsDueText", { date: short(tests.last) })}
-              href="/tests"
-              action={t("testsDueAction")}
-              onClose={() => closeCard(`tests-${tests.next}`)}
-            />
-          )}
-
-          {showReport && (
-            <WeeklyReportCard
-              workouts={workouts}
-              sets={sets}
-              exercises={exercises}
-              trainingDays={profile?.trainingDays}
-              pains={pains}
-              lastMonday={lastMonday}
-              navigable={false}
-              onDismiss={() => {
-                try {
-                  window.localStorage.setItem("traintrack-report-closed", lastMonday);
-                } catch {
-                  // Private browsing: it shows again next time.
-                }
-                setReportClosed(lastMonday);
-              }}
-            />
+          {/* One thing at a time: the most pressing note, the others folded under "To look at". */}
+          {notes.length > 0 && notes[0].node}
+          {notes.length > 1 && (
+            <details className="t-surface rounded-2xl px-4 py-1 ring-1 ring-foreground/5">
+              <summary className="flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold">
+                <ListChecks className="size-4 text-accent-text" aria-hidden="true" />
+                {t("toLookAt", { count: notes.length - 1 })}
+              </summary>
+              <div className="space-y-3 pt-1 pb-3">{notes.slice(1).map((n) => n.node)}</div>
+            </details>
           )}
 
           <WeekStrip
@@ -851,10 +901,7 @@ export default function HomePage() {
                       subtitle={`${repeatable.title || t("freeSession")} · ${day(repeatable.date)}`}
                     />
                   )}
-                  <DetailRow onClick={startFree} disabled={starting} icon={Plus} tone="neutral" title={t("freeSession")} subtitle={t("freeSessionHint")} />
-                  <DetailRow href="/intervals" icon={Timer} tone="neutral" title={ti("title")} subtitle={ti("hint")} />
-                  <DetailRow href="/mobility" icon={PersonStanding} tone="neutral" title={tmo("title")} subtitle={tmo("hint")} />
-                  <DetailRow onClick={() => { setChoosing(false); setSportOpen(true); }} disabled={starting} icon={Activity} tone="neutral" title={tc("newSession")} subtitle={tc("newSessionHint")} />
+                  {freeRows.map((row) => row.node)}
                   <GpxImport
                     existing={workouts}
                     onImported={({ workoutId }) => {
@@ -904,17 +951,23 @@ export default function HomePage() {
               </Link>
             </div>
             <div className="grid grid-cols-3 gap-2">
+              <OverviewTile
+                icon={overview.metric === "distance" ? Footprints : overview.metric === "volume" ? Dumbbell : overview.metric === "reps" ? Repeat : Timer}
+                label={t(`metric_${overview.metric}`)}
+                value={num(overview.value, overview.unit === "km" ? 1 : 0)}
+                hint={t(`unit_${overview.unit}`)}
+                tile="oklch(0.74 0.17 55)"
+              />
               {hasFeature("nutrition") ? (
-                <OverviewTile icon={Flame} label={t("calories")} value={num(Math.round(sumMacros(nutritionToday).calories), 0)} hint={t("kcalToday")} tile="oklch(0.74 0.17 55)" />
+                <OverviewTile icon={Flame} label={t("calories")} value={num(Math.round(sumMacros(nutritionToday).calories), 0)} hint={t("kcalToday")} tile="var(--accent-400)" />
               ) : (
-                <OverviewTile icon={Flame} label={t("weeklyVolume")} value={num(week.volume, 0)} hint="kg" tile="oklch(0.74 0.17 55)" />
+                <OverviewTile icon={CalendarCheck} label={t("workouts")} value={overview.sessions} hint={t("thisWeek")} tile="var(--accent-400)" />
               )}
-              <OverviewTile icon={Dumbbell} label={t("workouts")} value={week.workouts} hint={t("thisWeek")} tile="var(--accent-400)" />
               <OverviewTile
                 icon={TrendingUp}
                 label={t("progression")}
-                value={week.change === null ? "—" : `${week.change > 0 ? "+" : ""}${week.change}%`}
-                hint={t("vsLastWeek")}
+                value={overview.change === null ? "—" : `${overview.change > 0 ? "+" : ""}${overview.change}%`}
+                hint={t("vsSameDay")}
                 highlight
                 tile="oklch(0.74 0.12 200)"
               />
@@ -926,12 +979,12 @@ export default function HomePage() {
               <Target className="size-8 shrink-0 text-accent-text" aria-hidden="true" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">{t("weeklyGoal")}</p>
-                <div className="t-sunken mt-2 h-2.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={Math.min(week.workouts, goal)} aria-valuemin={0} aria-valuemax={goal} aria-label={t("weeklyGoal")}>
-                  <div className="h-full rounded-full bg-linear-to-r from-accent-700 to-accent-400 shadow-[inset_0_1px_0_oklch(1_0_0/0.4)]" style={{ width: `${Math.min(100, (week.workouts / goal) * 100)}%` }} />
+                <div className="t-sunken mt-2 h-2.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={Math.min(overview.sessions, goal)} aria-valuemin={0} aria-valuemax={goal} aria-label={t("weeklyGoal")}>
+                  <div className="h-full rounded-full bg-linear-to-r from-accent-700 to-accent-400 shadow-[inset_0_1px_0_oklch(1_0_0/0.4)]" style={{ width: `${Math.min(100, (overview.sessions / goal) * 100)}%` }} />
                 </div>
               </div>
               <p className="shrink-0 text-right">
-                <span className="text-lg font-semibold tabular-nums">{week.workouts}</span>
+                <span className="text-lg font-semibold tabular-nums">{overview.sessions}</span>
                 <span className="text-muted-foreground"> / {goal}</span>
                 <span className="block text-xs text-muted-foreground">{t("sessions")}</span>
               </p>

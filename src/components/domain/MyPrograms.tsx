@@ -80,7 +80,7 @@ export function MyPrograms({
         </Link>
       </div>
 
-      <ul className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-1">
+      <ul className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1">
         {cards.map(({ program, kind, progress }) => {
           const Icon = iconOf(kind);
           const style = STYLE[kind.kind];
@@ -95,7 +95,7 @@ export function MyPrograms({
                   ? t("week", { week: week.week })
                   : t("sessions", { count: progress.sessions });
           return (
-            <li key={program.id} className="t-surface relative w-44 shrink-0 snap-start space-y-2.5 rounded-2xl p-3.5 ring-1 ring-foreground/5">
+            <li key={program.id} className="t-surface relative w-44 shrink-0 space-y-2.5 rounded-2xl p-3.5 ring-1 ring-foreground/5">
               {/* The whole card opens the program; "Continue" starts its next session. */}
               <Link href={`/programs/${program.id}`} aria-label={program.name} className="absolute inset-0 rounded-2xl" />
               <div className="flex items-center gap-2">
@@ -137,7 +137,7 @@ export function MyPrograms({
           );
         })}
         {/* Choose a ready-made program or build one's own. */}
-        <li className="w-44 shrink-0 snap-start">
+        <li className="w-44 shrink-0">
           <Link
             href="/programs"
             className="flex h-full min-h-44 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-accent-300 p-3.5 text-center text-sm font-semibold text-accent-text dark:border-accent-700"

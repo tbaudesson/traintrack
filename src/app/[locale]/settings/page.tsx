@@ -508,13 +508,26 @@ export default function SettingsPage() {
         <Section icon={Medal} title={ta("sport")}>
           <p className="mb-2 text-xs text-muted-foreground">{ta("sportHint")}</p>
           <div className="mb-4 flex flex-wrap gap-2">
-            <Choice on={prefs.sport === null} onClick={() => savePrefs({ sport: null })}>{ta("sport_none")}</Choice>
+            <Choice on={prefs.sport === null} onClick={() => savePrefs({ sport: null, sport2: null })}>{ta("sport_none")}</Choice>
             {FAVORITE_SPORTS.map((sport) => (
-              <Choice key={sport} on={prefs.sport === sport} onClick={() => savePrefs({ sport })}>
+              <Choice key={sport} on={prefs.sport === sport} onClick={() => savePrefs({ sport, ...(prefs.sport2 === sport ? { sport2: null } : {}) })}>
                 {tcat(sport === "callisthenics" ? "cat_timed" : `cat_${sport}`)}
               </Choice>
             ))}
           </div>
+          {prefs.sport && (
+            <>
+              <p className="mb-2 text-xs text-muted-foreground">{ta("sport2Hint")}</p>
+              <div className="mb-4 flex flex-wrap gap-2">
+                <Choice on={prefs.sport2 === null} onClick={() => savePrefs({ sport2: null })}>{ta("sport_none")}</Choice>
+                {FAVORITE_SPORTS.filter((sport) => sport !== prefs.sport).map((sport) => (
+                  <Choice key={sport} on={prefs.sport2 === sport} onClick={() => savePrefs({ sport2: sport })}>
+                    {tcat(sport === "callisthenics" ? "cat_timed" : `cat_${sport}`)}
+                  </Choice>
+                ))}
+              </div>
+            </>
+          )}
           <p className="mb-2 text-xs text-muted-foreground">{ta("silhouette")}</p>
           <div className="flex gap-2">
             {(["female", "male"] as Silhouette[]).map((s) => (

@@ -26,6 +26,7 @@ import { CompetitionResults } from "@/components/domain/CompetitionResults";
 import { EmptyState } from "@/components/ui/page-parts";
 import { CardioProgress } from "@/components/domain/CardioProgress";
 import { isCardioDone } from "@/lib/cardio";
+import { detectSport, kindOf } from "@/lib/activityProfile";
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell,
 } from "recharts";
@@ -61,6 +62,38 @@ export default function ProgressPage() {
   const workoutDate = useMemo(() => new Map(workouts.map((w) => [w.id, w.date])), [workouts]);
   // A set counts toward analytics once it has both weight and reps.
   const scored = useMemo(() => sets.filter((s) => s.weightKg && s.reps), [sets]);
+
+  // The sport practised decides what comes first.
+  const today = localDate();
+  const activity = kindOf(prefs.sport ?? detectSport({ today, workouts, sets })) ?? "strength";
+
+  // ── Bodyweight exercises: the most repetitions (or seconds) of a session ──
+  const bodyweightSets = useMemo(() => sets.filter((s) => s.completed && !s.isWarmup && (s.reps ?? 0) > 0 && !(s.weightKg && s.weightKg > 0)), [sets]);
+  const bodyweightLifts = useMemo(() => {
+    const count = new Map<number, number>();
+    for (const s of bodyweightSets) count.set(s.exerciseId, (count.get(s.exerciseId) ?? 0) + 1);
+    return exercises.filter((e) => e.id && count.has(e.id)).sort((a, b) => count.get(b.id!)! - count.get(a.id!)!);
+  }, [bodyweightSets, exercises]);
+  const [bodyId, setBodyId] = useState<number | null>(null);
+  const activeBody = bodyId ?? bodyweightLifts[0]?.id ?? null;
+  const bodyData = useMemo(() => {
+    const best = new Map<string, number>();
+    for (const s of bodyweightSets) {
+      if (s.exerciseId !== activeBody) continue;
+      const d = workoutDate.get(s.workoutId);
+      if (d) best.set(d, Math.max(best.get(d) ?? 0, s.reps!));
+    }
+    return [...best.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1)).map(([date, reps]) => ({ date, reps }));
+  }, [bodyweightSets, activeBody, workoutDate]);
+  const bodyBests = useMemo(
+    () =>
+      bodyweightLifts.slice(0, 8).map((e) => ({
+        id: e.id!,
+        name: xl(e.name),
+        best: Math.max(...bodyweightSets.filter((s) => s.exerciseId === e.id).map((s) => s.reps!)),
+      })),
+    [bodyweightLifts, bodyweightSets, xl]
+  );
 
   // ── Summary stats ──────────────────────────────────────────────
   const stats = useMemo(() => {
@@ -167,6 +200,47 @@ export default function ProgressPage() {
   const MUSCLE_COLORS = ["#4F46E5", "#16A34A", "#EA580C", "#DB2777", "#0891B2", "#CA8A04", "#7C3AED", "#64748B"];
   const METRIC_COLORS: Record<ExMetric, string> = { e1rm: "#16A34A", top: "#4F46E5", reps: "#EA580C", vol: "#0891B2" };
 
+  const bodyweightSection = (
+    <Card>
+      <CardContent className="space-y-3 py-3">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-sm font-semibold">{t("bodyweightTitle")}</h3>
+          <select
+            value={activeBody ?? ""}
+            onChange={(e) => setBodyId(Number(e.target.value))}
+            aria-label={t("byExercise")}
+            className="max-w-[55%] truncate rounded-md border border-border bg-transparent px-2 py-1 text-xs"
+          >
+            {bodyweightLifts.map((l) => (
+              <option key={l.id} value={l.id}>{xl(l.name)}</option>
+            ))}
+          </select>
+        </div>
+        <div className="h-44 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={bodyData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(120,120,120,0.15)" />
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(d: string) => day(d).slice(0, 5)} />
+              <YAxis tick={{ fontSize: 10 }} width={32} allowDecimals={false} />
+              <Tooltip />
+              <Line type="monotone" dataKey="reps" name={t("bestSet")} stroke="#EA580C" strokeWidth={2} dot />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        <ul className="space-y-1 text-sm">
+          {bodyBests.map((b) => (
+            <li key={b.id} className="flex items-center gap-2">
+              <Trophy className="h-3.5 w-3.5 shrink-0 text-amber-500" aria-hidden="true" />
+              <span className="flex-1 truncate">{b.name}</span>
+              <span className="font-semibold tabular-nums">{num(b.best, 0)}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="text-xs text-muted-foreground">{t("bodyweightHint")}</p>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <>
       <PageHeader title={t("title")} />
@@ -192,7 +266,14 @@ export default function ProgressPage() {
 
         <DetailRow href="/report" icon={FileText} title={tm("open")} subtitle={tm("openHint")} />
 
-        <GoalsSection profile={athlete} workouts={workouts} sets={sets} exercises={exercises} editable />
+        {/* An endurance or bodyweight athlete sees their own figures first. */}
+        {activity === "endurance" && <CardioProgress workouts={workouts} />}
+        {activity === "bodyweight" && bodyweightLifts.length > 0 && bodyweightSection}
+
+        {/* Strength goals (an estimated 1RM to reach): for those who lift, or who set one. */}
+        {(activity === "strength" || (athlete?.strengthGoals ?? []).length > 0) && (
+          <GoalsSection profile={athlete} workouts={workouts} sets={sets} exercises={exercises} editable />
+        )}
 
         {/* Log bodyweight */}
         <Card>
@@ -210,7 +291,8 @@ export default function ProgressPage() {
           </CardContent>
         </Card>
 
-        <CardioProgress workouts={workouts} />
+        {activity !== "endurance" && <CardioProgress workouts={workouts} />}
+        {activity !== "bodyweight" && bodyweightLifts.length > 0 && scored.length === 0 && bodyweightSection}
 
         {/* Vaulting competitions: shown once there is one, or for a vaulter. */}
         {(competitions.length > 0 || prefs.sport === "vaulting") && (
@@ -230,12 +312,12 @@ export default function ProgressPage() {
           </section>
         )}
 
-        {!hasData && !workouts.some(isCardioDone) && (
+        {!hasData && bodyweightSets.length === 0 && !workouts.some(isCardioDone) && (
           <EmptyState icon={TrendingUp} title={t("noData")} />
         )}
 
         {/* Bodyweight logged but no workout sets yet → explain the empty analytics. */}
-        {scored.length === 0 && bwData.length > 0 && (
+        {scored.length === 0 && bodyweightSets.length === 0 && bwData.length > 0 && (
           <div className="flex items-start gap-3 rounded-lg border border-dashed border-border p-4">
             <Dumbbell className="mt-0.5 h-5 w-5 shrink-0 text-accent-500" />
             <p className="text-sm text-muted-foreground">{t("analyticsHint")}</p>

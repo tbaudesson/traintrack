@@ -160,7 +160,24 @@
     "programDoneAction": "Bilanz ansehen",
     "testsDue": "Zeit für neue Tests",
     "testsDueText": "Deine letzten Tests waren am {date}: sechs Wochen sind vorbei.",
-    "testsDueAction": "Tests machen"
+    "testsDueAction": "Tests machen",
+    "weekStreakShort": "{weeks} Wo.",
+    "metric_distance": "Strecke",
+    "metric_volume": "Volumen",
+    "metric_reps": "Wiederholungen",
+    "metric_time": "Zeit",
+    "unit_km": "km diese Woche",
+    "unit_m": "m diese Woche",
+    "unit_kg": "kg diese Woche",
+    "unit_reps": "diese Woche",
+    "unit_min": "Min. diese Woche",
+    "vsSameDay": "vs. gleicher Tag Vorwoche",
+    "runIntervals": "Geführte Intervalle",
+    "runIntervalsHint": "30/30, 400 m, Schwelle… in deinen Tempos, mit Stimme",
+    "sportHint": "Zuletzt vor allem {sport}?",
+    "sportHintText": "Das zeigen deine letzten Wochen. Die App kann diesen Sport nach vorne stellen: Zahlen, Einheiten und Menüs.",
+    "sportHintAction": "Zu diesem Sport wechseln",
+    "toLookAt": "{count, plural, one {Auch ansehen (#)} other {Auch ansehen (#)}}"
   },
   "onboarding": {
     "title": "Dein Athletenprofil",
@@ -289,7 +306,11 @@
     "summaryStretch": "Ein paar Minuten dehnen",
     "fullHistory": "Gesamter Verlauf der Übung",
     "restOverTitle": "Pause vorbei",
-    "restOverBody": "Weiter mit dem nächsten Satz."
+    "restOverBody": "Weiter mit dem nächsten Satz.",
+    "addLoad": "Gewicht",
+    "platesShort": "Scheiben",
+    "doneSummary": "{sets, plural, one {# Satz} other {# Sätze}} · {reps} Wdh.",
+    "reopen": "Öffnen"
   },
   "progress": {
     "title": "Fortschritt",
@@ -311,7 +332,10 @@
     "metric_vol": "Volumen",
     "muscleVolume": "Volumen pro Muskel (30 Tage)",
     "prsHint": "Bestes geschätztes 1RM pro Übung (Epley-Formel).",
-    "analyticsHint": "Protokolliere ein Workout (mit Gewicht und Wdh.), um Volumen, Übungsfortschritt, Muskelbalance und Rekorde freizuschalten."
+    "analyticsHint": "Protokolliere ein Workout (mit Gewicht und Wdh.), um Volumen, Übungsfortschritt, Muskelbalance und Rekorde freizuschalten.",
+    "bodyweightTitle": "Mit Körpergewicht",
+    "bestSet": "Bester Satz",
+    "bodyweightHint": "Die meisten Wiederholungen (oder Sekunden) in einem Satz, Einheit für Einheit, und dein Rekord pro Übung."
   },
   "exercises": {
     "translations": "Übersetzungen",
@@ -850,7 +874,8 @@
     "sport_none": "Keiner",
     "silhouette": "Startbild",
     "silhouette_female": "Frau",
-    "silhouette_male": "Mann"
+    "silhouette_male": "Mann",
+    "sport2Hint": "Ein zweiter Sport nebenbei? Seine Einheiten und Zahlen kommen danach."
   },
   "activity": {
     "title": "Aktivität",
@@ -1003,7 +1028,8 @@
     "area_hip": "Hüfte",
     "area_knee": "Knie",
     "area_ankle": "Knöchel",
-    "area_other": "Sonstiges"
+    "area_other": "Sonstiges",
+    "reportShort": "Schmerz"
   },
   "importHistory": {
     "hint": "Exportieren Sie Ihre Einheiten in Strong oder Hevy als CSV (in den Einstellungen oder im Profil der App) und wählen Sie die Datei hier aus. Sie wird auf Ihrem Telefon gelesen und nirgendwohin gesendet.",
@@ -1036,7 +1062,8 @@
     "time": "Trainingszeit",
     "records": "{count, plural, one {# Rekord gebrochen} other {# Rekorde gebrochen}}",
     "cardio": "{count, plural, one {# Ausdauereinheit} other {# Ausdauereinheiten}}",
-    "pains": "Beschwerden:"
+    "pains": "Beschwerden:",
+    "distance": "Strecke"
   },
   "myPrograms": {
     "title": "Meine Programme",
@@ -1756,7 +1783,8 @@
     "w_progressive": "Steigerungslauf",
     "d_progressive": "Drei Blöcke, jeder schneller: Grundlage, Marathon, Schwelle.",
     "w_half-cooper": "MAG-Test (halber Cooper)",
-    "d_half-cooper": "6 Minuten so weit wie möglich, dann die Strecke eintragen: deine MAG und Tempos werden aktualisiert."
+    "d_half-cooper": "6 Minuten so weit wie möglich, dann die Strecke eintragen: deine MAG und Tempos werden aktualisiert.",
+    "guided": "Mit dem Guide laufen"
   },
   "mealPlan": {
     "title": "Essensideen für heute",

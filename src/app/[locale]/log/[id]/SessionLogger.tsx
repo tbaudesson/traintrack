@@ -91,6 +91,9 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
   const pains = usePainReports();
   const { profile: account } = useAuth();
   const [openGuide, setOpenGuide] = useState<number | null>(null);
+  // Exercises reopened once done, and bodyweight exercises given a load.
+  const [reopened, setReopened] = useState<Set<number>>(() => new Set());
+  const [loaded, setLoaded] = useState<Set<number>>(() => new Set());
   const [plateWeight, setPlateWeight] = useState<number | null>(null);
   const [newRecord, setNewRecord] = useState<{ exercise: string; weightKg: number; reps: number } | null>(null);
   const [summary, setSummary] = useState<SessionSummaryData | null>(null);
@@ -535,35 +538,8 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
 
   if (workout?.kind === "interval") return <IntervalWorkoutView workout={workout} sets={sets ?? []} exercises={exercises} />;
 
-  return (
-    <>
-      <PageHeader
-        title={workout?.title || t("title")}
-        showBack
-        actions={
-          <div className="flex items-center gap-1">
-            <Button
-              size="icon-sm"
-              variant="ghost"
-              aria-label={t("editWorkout")}
-              onClick={() => {
-                setTitleDraft(workout?.title ?? "");
-                setDateDraft(workout?.date ?? "");
-                setEditMeta((v) => !v);
-              }}
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-            <Button size="sm" onClick={finishWorkout}>
-              {t("finishWorkout")}
-            </Button>
-          </div>
-        }
-      />
-
-      <div className="space-y-4 p-4 pb-28">
-        {/* Heart-rate monitor (Web Bluetooth) */}
-        {isBluetoothSupported() ? (
+  const heartRateCard =
+    isBluetoothSupported() ? (
           <Card>
             <CardContent className="flex items-center gap-3 py-3">
               <div className={cn(
@@ -595,7 +571,37 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
               )}
             </CardContent>
           </Card>
-        ) : null}
+        ) : null;
+
+  return (
+    <>
+      <PageHeader
+        title={workout?.title || t("title")}
+        showBack
+        actions={
+          <div className="flex items-center gap-1">
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              aria-label={t("editWorkout")}
+              onClick={() => {
+                setTitleDraft(workout?.title ?? "");
+                setDateDraft(workout?.date ?? "");
+                setEditMeta((v) => !v);
+              }}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button size="sm" onClick={finishWorkout}>
+              {t("finishWorkout")}
+            </Button>
+          </div>
+        }
+      />
+
+      <div className="space-y-4 p-4 pb-28">
+        {/* Heart-rate monitor (Web Bluetooth): after the plan of a run, before the sets of a strength session. */}
+        {!(workout && isCardio(workout)) && heartRateCard}
 
         {editMeta && (
           <Card>
@@ -635,7 +641,10 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
         )}
 
         {workout && isCardio(workout) && (
-          <CardioLogger key={workout.id} workout={workout} target={programDay?.cardio} />
+          <>
+            <CardioLogger key={workout.id} workout={workout} target={programDay?.cardio} />
+            {heartRateCard}
+          </>
         )}
 
         {workout && (
@@ -703,17 +712,22 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
           const suggestion = deloadKg ?? advice?.weightKg ?? null;
           const best = bestLifts(exerciseId, allSets);
           const records = recordHistory(exerciseId, allWorkouts, allSets).slice(-5).reverse();
+          // A bodyweight exercise shows no load, until one is added (a weighted pull-up).
+          const bodyweight = ex?.equipment === "bodyweight" && !percentPlan && !exSets.some((x) => (x.weightKg ?? 0) > 0) && !loaded.has(exerciseId);
+          const cols = bodyweight ? "grid-cols-[2rem_1fr_1fr_2.5rem_2.5rem]" : "grid-cols-[2rem_1fr_1fr_1fr_2.5rem_2.5rem]";
+          // Done: folded to one line, reopened on demand.
+          const folded = work.length > 0 && exSets.every((x) => x.completed) && !reopened.has(exerciseId) && guideOpen === false;
           return (
             <Fragment key={exerciseId}>
             <Card className={cn("relative", inSuperset && "ring-2 ring-accent-500/40")}>
-              <Image
+              {!bodyweight && !folded && <Image
                 src="/images/dumbbell.webp"
                 alt=""
                 width={78}
                 height={60}
                 unoptimized
                 className="pointer-events-none absolute top-1 right-11 opacity-90 dark:opacity-70"
-              />
+              />}
               <CardContent className="relative space-y-2 py-3">
                 <h3>
                   <button
@@ -730,6 +744,29 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                     />
                   </button>
                 </h3>
+
+                {folded ? (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-green-500 text-white">
+                      <Check className="size-3.5" aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-muted-foreground">
+                      {t("doneSummary", {
+                        sets: work.length,
+                        reps: work.map((x) => x.reps ?? "–").join(", "),
+                      })}
+                      {!bodyweight && work.some((x) => x.weightKg) ? ` · ${num(Math.max(...work.map((x) => x.weightKg ?? 0)))} kg` : ""}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setReopened((r) => new Set(r).add(exerciseId))}
+                      className="min-h-10 shrink-0 px-2 text-sm font-medium text-accent-text"
+                    >
+                      {t("reopen")}
+                    </button>
+                  </div>
+                ) : (
+                <>
 
                 {pain && (
                   <p
@@ -858,9 +895,9 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                 )}
 
                 {/* Column headers */}
-                <div className="grid grid-cols-[2rem_1fr_1fr_1fr_2.5rem_2.5rem] items-center gap-1.5 px-1 text-center text-xs leading-tight text-muted-foreground">
+                <div className={cn("grid items-center gap-1.5 px-1 text-center text-xs leading-tight text-muted-foreground", cols)}>
                   <span>{t("set")}</span>
-                  <span>{t("weight")}</span>
+                  {!bodyweight && <span>{t("weight")}</span>}
                   <span aria-hidden="true">{isTimedTarget(target?.targetReps) ? t("secondsShort") : t("repsShort")}</span>
                   <span>{t("rpe")}</span>
                   <span>{t("doneShort")}</span>
@@ -868,7 +905,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                 </div>
 
                 {exSets.map((s) => (
-                  <div key={s.id} className="grid grid-cols-[2rem_1fr_1fr_1fr_2.5rem_2.5rem] items-center gap-1.5">
+                  <div key={s.id} className={cn("grid items-center gap-1.5", cols)}>
                     <span
                       className={cn(
                         "flex size-8 items-center justify-center rounded-lg text-sm font-bold",
@@ -880,7 +917,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                     >
                       {s.isWarmup ? `${t("warmupShort")}${warmups.indexOf(s) + 1}` : s.setNumber}
                     </span>
-                    <NumCell key={`w${s.weightKg ?? ""}`} label={t("weight")} placeholder={plannedFor(s) !== undefined ? String(plannedFor(s)) : previousTop !== null ? String(suggestion ?? previousTop) : undefined} value={s.weightKg} onChange={(v) => s.id && updateWorkoutSet(s.id, { weightKg: v })} />
+                    {!bodyweight && <NumCell key={`w${s.weightKg ?? ""}`} label={t("weight")} placeholder={plannedFor(s) !== undefined ? String(plannedFor(s)) : previousTop !== null ? String(suggestion ?? previousTop) : undefined} value={s.weightKg} onChange={(v) => s.id && updateWorkoutSet(s.id, { weightKg: v })} />}
                     <NumCell key={`r${s.reps ?? ""}`} label={t("reps")} placeholder={target?.targetReps} value={s.reps} onChange={(v) => s.id && updateWorkoutSet(s.id, { reps: v })} />
                     <NumCell key={`p${s.rpe ?? ""}`} label={t("rpe")} value={s.rpe} onChange={(v) => s.id && updateWorkoutSet(s.id, { rpe: v !== undefined && v >= 1 && v <= 10 ? v : undefined })} />
                     <button
@@ -960,32 +997,46 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                   <Plus className="mr-1 h-4 w-4" />
                   {t("addSet")}
                 </Button>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setPlateWeight(last?.weightKg ?? 0)}
-                    className="flex min-h-10 items-center justify-center gap-1.5 text-sm text-muted-foreground"
-                  >
-                    <Disc3 className="h-4 w-4" aria-hidden="true" />
-                    {t("plates")}
-                  </button>
+                {/* The tools used now and then, out of the way. */}
+                <div className="flex items-stretch justify-center gap-1 border-t border-border/60 pt-1.5">
+                  {bodyweight ? (
+                    <button
+                      type="button"
+                      onClick={() => setLoaded((l) => new Set(l).add(exerciseId))}
+                      className="flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-md text-xs text-muted-foreground hover:bg-muted"
+                    >
+                      <Plus className="h-4 w-4" aria-hidden="true" />
+                      {t("addLoad")}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setPlateWeight(last?.weightKg ?? 0)}
+                      className="flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-md text-xs text-muted-foreground hover:bg-muted"
+                    >
+                      <Disc3 className="h-4 w-4" aria-hidden="true" />
+                      {t("platesShort")}
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => setSwapFor(exerciseId)}
-                    className="flex min-h-10 items-center justify-center gap-1.5 text-sm text-muted-foreground"
+                    className="flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-md text-xs text-muted-foreground hover:bg-muted"
                   >
                     <ArrowLeftRight className="h-4 w-4" aria-hidden="true" />
                     {t("swap")}
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setPainFor(exerciseId)}
+                    className="flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-md text-xs text-muted-foreground hover:bg-muted"
+                  >
+                    <Bandage className="h-4 w-4" aria-hidden="true" />
+                    {tpain("reportShort")}
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setPainFor(exerciseId)}
-                  className="flex min-h-10 w-full items-center justify-center gap-1.5 text-sm text-muted-foreground"
-                >
-                  <Bandage className="h-4 w-4" aria-hidden="true" />
-                  {tpain("report")}
-                </button>
+                </>
+                )}
               </CardContent>
             </Card>
 

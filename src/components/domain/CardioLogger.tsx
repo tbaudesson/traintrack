@@ -6,6 +6,8 @@ import { Footprints, Gauge, Info, Play, Target, Upload } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useRunVma } from "@/hooks/useRunVma";
 import { formatPace as formatKmPace, HR_ZONE_SHARE, hrZoneOf, paceAt } from "@/lib/runPaces";
+import { planRunBlocks } from "@/lib/runWorkouts";
+import { RunGuide } from "@/components/domain/RunGuide";
 import { GpxImport } from "@/components/domain/GpxImport";
 import type { CardioTarget, Workout } from "@/db";
 import { updateWorkout } from "@/hooks/useWorkouts";
@@ -43,6 +45,9 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
     return tr("paceRange", { from: formatKmPace(paceAt(vma, slow)), to: formatKmPace(paceAt(vma, fast)) });
   };
   const plannedZone = run ? hrZoneOf(target?.intensity) : null;
+  // A plan's run with repeats: played with the guide, at the athlete's paces.
+  const runBlocks = target ? planRunBlocks(target) : null;
+  const [running, setRunning] = useState(false);
 
   const save = () => updateWorkout(workout.id!, { distanceM: distanceM || undefined, durationSec: durationSec || undefined });
 
@@ -94,6 +99,18 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
               </ol>
             )}
             {target.notes && <p className="pt-1 text-sm text-muted-foreground">{target.notes}</p>}
+            {runBlocks && (
+              <Button
+                className="mt-2 h-12 w-full rounded-full"
+                onClick={() => {
+                  unlockAudio();
+                  setRunning(true);
+                }}
+              >
+                <Play className="mr-1 h-5 w-5" aria-hidden="true" />
+                {tr("guided")}
+              </Button>
+            )}
             {blocks.length > 0 && (
               <Button
                 className="mt-2 h-12 w-full rounded-full"
@@ -178,6 +195,19 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
           )}
         </CardContent>
       </Card>
+      {running && runBlocks && (
+        <RunGuide
+          blocks={runBlocks}
+          onEnd={({ elapsedSec, distanceM: covered }) => {
+            setRunning(false);
+            if (elapsedSec < 60) return;
+            setMinutes(String(Math.floor(elapsedSec / 60)));
+            setSeconds(String(elapsedSec % 60));
+            setDistance(String(Math.round(covered / 10) / 100));
+            updateWorkout(workout.id!, { durationSec: elapsedSec, distanceM: covered });
+          }}
+        />
+      )}
       {guided && (
         <IntervalPlayer
           session={{ steps: guidedSteps }}

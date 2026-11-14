@@ -160,7 +160,24 @@
     "programDoneAction": "Voir le bilan",
     "testsDue": "C’est l’heure de refaire vos tests",
     "testsDueText": "Vos derniers tests datent du {date} : six semaines ont passé.",
-    "testsDueAction": "Faire mes tests"
+    "testsDueAction": "Faire mes tests",
+    "weekStreakShort": "{weeks} sem.",
+    "metric_distance": "Distance",
+    "metric_volume": "Volume",
+    "metric_reps": "Répétitions",
+    "metric_time": "Temps",
+    "unit_km": "km cette sem.",
+    "unit_m": "m cette sem.",
+    "unit_kg": "kg cette sem.",
+    "unit_reps": "cette semaine",
+    "unit_min": "min cette sem.",
+    "vsSameDay": "vs même jour sem. préc.",
+    "runIntervals": "Fractionnés guidés",
+    "runIntervalsHint": "30/30, 400 m, seuil… à vos allures, avec la voix",
+    "sportHint": "Vous pratiquez surtout : {sport} ?",
+    "sportHintText": "C’est ce que montrent vos dernières semaines. L’app peut mettre ce sport en avant : chiffres, séances et menus.",
+    "sportHintAction": "Passer à ce sport",
+    "toLookAt": "{count, plural, one {À voir aussi (#)} other {À voir aussi (#)}}"
   },
   "onboarding": {
     "title": "Votre profil athlète",
@@ -289,7 +306,11 @@
     "summaryStretch": "S'étirer quelques minutes",
     "fullHistory": "Tout l'historique de l'exercice",
     "restOverTitle": "Repos terminé",
-    "restOverBody": "C'est reparti pour la série suivante."
+    "restOverBody": "C'est reparti pour la série suivante.",
+    "addLoad": "Lest",
+    "platesShort": "Disques",
+    "doneSummary": "{sets, plural, one {# série} other {# séries}} · {reps} rép.",
+    "reopen": "Rouvrir"
   },
   "progress": {
     "title": "Progrès",
@@ -311,7 +332,10 @@
     "metric_vol": "Volume",
     "muscleVolume": "Volume par muscle (30 jours)",
     "prsHint": "Meilleur 1RM estimé par exercice (formule d'Epley).",
-    "analyticsHint": "Enregistrez une séance (avec poids et répétitions) pour débloquer le volume, la progression par exercice, l'équilibre musculaire et les records."
+    "analyticsHint": "Enregistrez une séance (avec poids et répétitions) pour débloquer le volume, la progression par exercice, l'équilibre musculaire et les records.",
+    "bodyweightTitle": "Au poids du corps",
+    "bestSet": "Meilleure série",
+    "bodyweightHint": "Le plus de répétitions (ou de secondes) d’une série, séance après séance, et votre record par exercice."
   },
   "exercises": {
     "translations": "Traductions",
@@ -850,7 +874,8 @@
     "sport_none": "Aucun",
     "silhouette": "Image d'accueil",
     "silhouette_female": "Femme",
-    "silhouette_male": "Homme"
+    "silhouette_male": "Homme",
+    "sport2Hint": "Un deuxième sport pratiqué à côté ? Ses séances et ses chiffres viennent ensuite."
   },
   "activity": {
     "title": "Activité",
@@ -1003,7 +1028,8 @@
     "area_hip": "Hanche",
     "area_knee": "Genou",
     "area_ankle": "Cheville",
-    "area_other": "Autre"
+    "area_other": "Autre",
+    "reportShort": "Douleur"
   },
   "importHistory": {
     "hint": "Dans Strong ou Hevy, exportez vos séances au format CSV (dans les réglages ou le profil de l'app), puis choisissez le fichier ici. Il est lu sur votre téléphone, sans être envoyé ailleurs.",
@@ -1036,7 +1062,8 @@
     "time": "Temps d'entraînement",
     "records": "{count, plural, one {# record battu} other {# records battus}}",
     "cardio": "{count, plural, one {# sortie d'endurance} other {# sorties d'endurance}}",
-    "pains": "Gênes :"
+    "pains": "Gênes :",
+    "distance": "Distance"
   },
   "myPrograms": {
     "title": "Mes programmes",
@@ -1756,7 +1783,8 @@
     "w_progressive": "Progressif",
     "d_progressive": "Trois blocs de plus en plus rapides : endurance, marathon, seuil.",
     "w_half-cooper": "Test VMA (demi-Cooper)",
-    "d_half-cooper": "6 minutes le plus loin possible, puis notez la distance : votre VMA et vos allures sont mises à jour."
+    "d_half-cooper": "6 minutes le plus loin possible, puis notez la distance : votre VMA et vos allures sont mises à jour.",
+    "guided": "Courir avec le guide"
   },
   "mealPlan": {
     "title": "Idées de repas pour aujourd’hui",

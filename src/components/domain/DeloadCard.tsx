@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 
 const KEY = "traintrack-deload-later";
 
-function laterFor(): string | null {
+/** The Monday of the week the suggestion was put off to, on this device. */
+export function deloadLaterFor(): string | null {
   try {
     return typeof window === "undefined" ? null : window.localStorage.getItem(KEY);
   } catch {
@@ -35,7 +36,7 @@ export function DeloadCard({
   hasProfile: boolean;
 }) {
   const t = useTranslations("deload");
-  const [later, setLater] = useState(laterFor);
+  const [later, setLater] = useState(deloadLaterFor);
 
   if (active) {
     return (

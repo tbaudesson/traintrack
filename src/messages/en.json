@@ -160,7 +160,24 @@
     "programDoneAction": "See the review",
     "testsDue": "Time to test again",
     "testsDueText": "Your last tests were on {date}: six weeks have passed.",
-    "testsDueAction": "Do my tests"
+    "testsDueAction": "Do my tests",
+    "weekStreakShort": "{weeks} wk",
+    "metric_distance": "Distance",
+    "metric_volume": "Volume",
+    "metric_reps": "Reps",
+    "metric_time": "Time",
+    "unit_km": "km this week",
+    "unit_m": "m this week",
+    "unit_kg": "kg this week",
+    "unit_reps": "this week",
+    "unit_min": "min this week",
+    "vsSameDay": "vs same day last wk",
+    "runIntervals": "Guided intervals",
+    "runIntervalsHint": "30/30, 400 m, threshold… at your paces, with the voice",
+    "sportHint": "Mostly {sport} lately?",
+    "sportHintText": "That is what your last weeks show. The app can put this sport first: figures, sessions and menus.",
+    "sportHintAction": "Switch to this sport",
+    "toLookAt": "{count, plural, one {Also to look at (#)} other {Also to look at (#)}}"
   },
   "onboarding": {
     "title": "Your athlete profile",
@@ -289,7 +306,11 @@
     "summaryStretch": "Stretch for a few minutes",
     "fullHistory": "The exercise's full history",
     "restOverTitle": "Rest over",
-    "restOverBody": "On to the next set."
+    "restOverBody": "On to the next set.",
+    "addLoad": "Weight",
+    "platesShort": "Plates",
+    "doneSummary": "{sets, plural, one {# set} other {# sets}} · {reps} reps",
+    "reopen": "Reopen"
   },
   "progress": {
     "title": "Progress",
@@ -311,7 +332,10 @@
     "metric_vol": "Volume",
     "muscleVolume": "Volume by muscle (30 days)",
     "prsHint": "Best estimated 1-rep max per exercise (Epley formula).",
-    "analyticsHint": "Log a workout (with weight and reps) to unlock volume, per-exercise progression, muscle balance and PRs."
+    "analyticsHint": "Log a workout (with weight and reps) to unlock volume, per-exercise progression, muscle balance and PRs.",
+    "bodyweightTitle": "Bodyweight",
+    "bestSet": "Best set",
+    "bodyweightHint": "The most reps (or seconds) in one set, session after session, and your record for each exercise."
   },
   "exercises": {
     "translations": "Translations",
@@ -850,7 +874,8 @@
     "sport_none": "None",
     "silhouette": "Home picture",
     "silhouette_female": "Woman",
-    "silhouette_male": "Man"
+    "silhouette_male": "Man",
+    "sport2Hint": "A second sport on the side? Its sessions and figures come next."
   },
   "activity": {
     "title": "Activity",
@@ -1003,7 +1028,8 @@
     "area_hip": "Hip",
     "area_knee": "Knee",
     "area_ankle": "Ankle",
-    "area_other": "Other"
+    "area_other": "Other",
+    "reportShort": "Pain"
   },
   "importHistory": {
     "hint": "In Strong or Hevy, export your sessions as CSV (in the app's settings or profile), then pick the file here. It is read on your phone and not sent anywhere.",
@@ -1036,7 +1062,8 @@
     "time": "Training time",
     "records": "{count, plural, one {# record beaten} other {# records beaten}}",
     "cardio": "{count, plural, one {# endurance outing} other {# endurance outings}}",
-    "pains": "Pain:"
+    "pains": "Pain:",
+    "distance": "Distance"
   },
   "myPrograms": {
     "title": "My programs",
@@ -1756,7 +1783,8 @@
     "w_progressive": "Progression run",
     "d_progressive": "Three blocks, each faster: easy, marathon, threshold.",
     "w_half-cooper": "MAS test (half-Cooper)",
-    "d_half-cooper": "6 minutes as far as you can, then enter the distance: your MAS and paces are updated."
+    "d_half-cooper": "6 minutes as far as you can, then enter the distance: your MAS and paces are updated.",
+    "guided": "Run with the guide"
   },
   "mealPlan": {
     "title": "Meal ideas for today",

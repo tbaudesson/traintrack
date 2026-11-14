@@ -8,11 +8,11 @@ import { useAthleteProfileOrNull, updateTrainingSchedule } from "@/hooks/useAthl
 import { createWorkout, updateWorkout } from "@/hooks/useWorkouts";
 import { useRunVma } from "@/hooks/useRunVma";
 import { unlockAudio } from "@/lib/beep";
-import { formatDistance, formatDuration } from "@/lib/cardio";
+import { formatDuration } from "@/lib/cardio";
 import { localDate } from "@/lib/dates";
 import { useFormat } from "@/lib/format";
 import { sessionHref } from "@/lib/routes";
-import { formatPace, vmaFromHalfCooper, zonePaces } from "@/lib/runPaces";
+import { vmaFromHalfCooper } from "@/lib/runPaces";
 import { RUN_LEVELS, RUN_WORKOUTS, runLevelOf, runTotals, timedBlocks, type RunLevel, type RunWorkout, type TimedRunBlock } from "@/lib/runWorkouts";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -20,7 +20,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RunPacesCard } from "@/components/domain/RunPacesCard";
-import { IntervalPlayer, type IntervalResult, type PlayerStep } from "@/components/domain/IntervalPlayer";
+import type { IntervalResult } from "@/components/domain/IntervalPlayer";
+import { RunGuide, runSummary, useRunWords } from "@/components/domain/RunGuide";
 
 /**
  * Running: one's paces, and interval sessions to run on their own, played
@@ -39,31 +40,14 @@ export default function RunningPage() {
   const [meters, setMeters] = useState("");
   const testVma = vmaFromHalfCooper(Number(meters.replace(",", ".")) || 0);
 
-  /** What a block is called and how fast it goes. */
-  const blockName = (b: TimedRunBlock) =>
-    b.kind === "work" && b.byDistance ? formatDistance(b.meters, "run") : formatSeconds(b.sec);
-  const paceOf = (b: TimedRunBlock) => {
-    const [slow, fast] = zonePaces(vma, b.zone);
-    return t("paceRange", { from: formatPace(slow), to: formatPace(fast) });
-  };
+  const { name: blockName, pace: paceOf } = useRunWords();
 
-  function steps(blocks: TimedRunBlock[]): PlayerStep[] {
-    return blocks.map((b) => ({
-      type: "work",
-      exercise: { name: blockName(b), cue: paceOf(b) },
-      seconds: b.sec,
-      phase: t(`block_${b.kind}`) + (b.kind === "work" ? ` · ${t(`zone_${b.zone}`)}` : ""),
-      easy: b.kind !== "work",
-    }));
-  }
-
-  async function end(result: IntervalResult) {
+  async function end(result: IntervalResult & { distanceM: number }) {
     const run = playing;
     setPlaying(null);
     if (!run || result.elapsedSec < 60) return;
-    const total = runTotals(run.blocks);
     // The distance is estimated from the paces; it can be corrected on the session.
-    const distanceM = Math.round((total.meters * Math.min(result.elapsedSec, total.sec)) / total.sec);
+    const distanceM = result.distanceM;
     const id = await createWorkout({
       date: localDate(),
       title: t(`w_${run.workout.id}`),
@@ -122,7 +106,7 @@ export default function RunningPage() {
                     </div>
                   </div>
                   <p className="text-sm">
-                    <span className="font-medium">{summary(main, blockName)}</span>
+                    <span className="font-medium">{runSummary(main, blockName)}</span>
                     {main[0] && <span className="text-muted-foreground"> · {paceOf(main[0])}</span>}
                   </p>
                   <div className="flex items-center justify-between gap-2">
@@ -150,13 +134,7 @@ export default function RunningPage() {
         </section>
       </div>
 
-      {playing && (
-        <IntervalPlayer
-          session={{ steps: steps(playing.blocks) }}
-          onEnd={end}
-          labels={{ work: t("effort"), rest: t("next"), counter: (n, total) => t("counter", { n, total }) }}
-        />
-      )}
+      {playing && <RunGuide blocks={playing.workout.blocks(level)} onEnd={end} />}
 
       <Dialog open={testWorkout !== null} onOpenChange={(o) => !o && testWorkout !== null && router.push(sessionHref(testWorkout))}>
         <DialogContent>
@@ -177,13 +155,4 @@ export default function RunningPage() {
       </Dialog>
     </>
   );
-}
-
-const formatSeconds = (sec: number) => (sec < 60 ? `${sec} s` : sec % 60 === 0 ? `${sec / 60} min` : `${Math.floor(sec / 60)} min ${sec % 60} s`);
-
-/** The main set in short: "10 × 400 m", or the efforts in a row. */
-function summary(main: TimedRunBlock[], name: (b: TimedRunBlock) => string): string {
-  const names = main.map(name);
-  if (names.length === 1) return names[0];
-  return names.every((n) => n === names[0]) ? `${names.length} × ${names[0]}` : names.join(" · ");
 }

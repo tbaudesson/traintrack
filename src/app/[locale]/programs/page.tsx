@@ -158,15 +158,7 @@ export default function ProgramsPage() {
         }
       />
       <div className="space-y-6 p-4 pb-24">
-        <ProgramCatalog
-          templates={catalogue}
-          level={profile?.fitnessLevel}
-          busy={busy}
-          onUse={applyTemplate}
-          favorite={prefs.sport}
-          added={(tpl) => (mine.find((p) => p.name === tpl.name) ?? mine.find((p) => programFingerprint(p.structure) === programFingerprint(tpl.structure)))?.id}
-        />
-
+        {/* One's own programs first: those followed, then those built. */}
         {/* Programs followed as they are: ready-made ones and a coach's. */}
         {followed.length > 0 && (
           <section className="space-y-2">
@@ -188,12 +180,10 @@ export default function ProgramsPage() {
         )}
 
         {/* Programs one built: edited freely. */}
-        <section className="space-y-2">
-          <SectionHeading>{t("myCreations")}</SectionHeading>
-          {created.length === 0 ? (
-            <EmptyState icon={ClipboardList} title={t("noCreations")} />
-          ) : (
-            created.map((p) => {
+        {created.length > 0 && (
+          <section className="space-y-2">
+            <SectionHeading>{t("myCreations")}</SectionHeading>
+            {created.map((p) => {
               const { category, subtitle } = describe(p);
               return (
                 <DetailRow
@@ -204,9 +194,25 @@ export default function ProgramsPage() {
                   subtitle={subtitle}
                 />
               );
-            })
-          )}
-        </section>
+            })}
+          </section>
+        )}
+
+        <ProgramCatalog
+          templates={catalogue}
+          level={profile?.fitnessLevel}
+          busy={busy}
+          onUse={applyTemplate}
+          favorite={prefs.sport}
+          added={(tpl) => (mine.find((p) => p.name === tpl.name) ?? mine.find((p) => programFingerprint(p.structure) === programFingerprint(tpl.structure)))?.id}
+        />
+
+        {created.length === 0 && (
+          <section className="space-y-2">
+            <SectionHeading>{t("myCreations")}</SectionHeading>
+            <EmptyState icon={ClipboardList} title={t("noCreations")} />
+          </section>
+        )}
 
         {toClients.length > 0 && (
           <section className="space-y-2">

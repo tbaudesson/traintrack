@@ -54,6 +54,9 @@ export function WeekStrip({
     )
     .slice(0, 4);
 
+  // The program's name is worth repeating only when several share the week.
+  const severalPrograms = new Set(next.map((d) => d.program).filter(Boolean)).size > 1;
+
   return (
     <section className="t-surface space-y-3 rounded-2xl p-4 ring-1 ring-foreground/5">
       <div className="flex items-center justify-between">
@@ -63,7 +66,7 @@ export function WeekStrip({
               <ChevronLeft className="size-4" aria-hidden="true" />
             </button>
           )}
-          <h2 className="text-sm font-semibold" aria-live="polite">
+          <h2 className="text-sm font-semibold whitespace-nowrap" aria-live="polite">
             {!offset
               ? t("weekPlan")
               : offset === 1
@@ -80,11 +83,12 @@ export function WeekStrip({
         </div>
         {streak !== undefined && streak >= 2 && (
           <span
-            className="flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:text-amber-300"
-            title={t("weekStreakHint")}
+            className="flex shrink-0 items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-semibold whitespace-nowrap text-amber-800 dark:text-amber-300"
+            title={`${t("weekStreak", { weeks: streak })} · ${t("weekStreakHint")}`}
           >
             <Flame className="size-3.5" aria-hidden="true" />
-            {t("weekStreak", { weeks: streak })}
+            <span aria-hidden="true">{t("weekStreakShort", { weeks: streak })}</span>
+            <span className="sr-only">{t("weekStreak", { weeks: streak })}</span>
           </span>
         )}
         {/* With a planning, the days are set program by program. */}
@@ -130,7 +134,7 @@ export function WeekStrip({
               </span>
               <span className="min-w-0 truncate">
                 <span className="font-medium">{d.label}</span>
-                {d.program && <span className="text-muted-foreground"> · {d.program}</span>}
+                {d.program && severalPrograms && <span className="text-muted-foreground"> · {d.program}</span>}
               </span>
             </li>
           ))}

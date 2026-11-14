@@ -442,6 +442,34 @@ await test("running paces come from a race time, and an interval session plays a
   expect(page.url().includes("/running"), "a session of a few seconds was saved");
 });
 
+await test("the home screen follows the sport practised, and offers it when another is chosen", async () => {
+  // Mostly runs lately: kilometres first, and the guided intervals among the sessions.
+  await page.goto(`${BASE}/fr`);
+  const overview = page.locator("section", { hasText: "Vue d’ensemble" }).or(page.locator("section", { hasText: "Vue d'ensemble" }));
+  await overview.getByText("Distance").first().waitFor({ timeout: 10000 }).catch(async () => {
+    throw new Error(`no distance in the overview: ${(await overview.first().innerText().catch(() => "?")).replace(/\n/g, " | ")}`);
+  });
+  await page.getByText("Changer de séance ou de programme").click();
+  await page.getByRole("dialog").getByText("Fractionnés guidés").waitFor({ timeout: 5000 }).catch(() => {
+    throw new Error("no guided intervals among the sessions");
+  });
+  await page.keyboard.press("Escape");
+  // Weight training chosen in Settings: the app offers the sport the weeks show.
+  await page.goto(`${BASE}/fr/settings`);
+  await page.getByRole("button", { name: "Musculation", exact: true }).first().click();
+  await page.goto(`${BASE}/fr`);
+  // The load rising too fast comes first; the other notes are folded under "To look at".
+  await page.getByText("Charge d’entraînement").first().waitFor({ timeout: 10000 });
+  const more = page.locator("details", { hasText: "À voir aussi" });
+  await more.locator("summary").click();
+  await page.getByText("Vous pratiquez surtout : Course à pied ?").waitFor({ timeout: 10000 });
+  await snap("home-sport-hint");
+  await page.getByRole("button", { name: "Passer à ce sport" }).click();
+  await page.getByText("Vous pratiquez surtout : Course à pied ?").waitFor({ state: "hidden", timeout: 5000 });
+  const prefs = await page.evaluate(() => JSON.parse(localStorage.getItem("traintrack.prefs") ?? "{}"));
+  expect(prefs.sport === "running" && prefs.sport2 === "bodybuilding", `prefs ${JSON.stringify(prefs)}`);
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });
