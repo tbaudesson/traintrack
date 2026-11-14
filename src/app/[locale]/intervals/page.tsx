@@ -9,6 +9,7 @@ import { useExercises, createCustomExercise } from "@/hooks/useExercises";
 import { createWorkout } from "@/hooks/useWorkouts";
 import { addWorkoutSet } from "@/hooks/useWorkoutSets";
 import {
+  INTERVAL_EXERCISES,
   INTERVAL_FOCUSES,
   INTERVAL_MINUTES,
   INTERVAL_PATTERNS,
@@ -20,6 +21,7 @@ import {
   type IntervalPlan,
 } from "@/lib/intervals";
 import { localDate } from "@/lib/dates";
+import { isAvoided } from "@/lib/injuries";
 import { unlockAudio } from "@/lib/beep";
 import { useExerciseLabel } from "@/lib/exerciseNames";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -68,6 +70,7 @@ function sane(p: Partial<IntervalPlan>, fallback: IntervalPlan): IntervalPlan {
  */
 export default function IntervalsPage() {
   const t = useTranslations("intervals");
+  const tinj = useTranslations("injuries");
   const xl = useExerciseLabel();
   const router = useRouter();
   const athlete = useAthleteProfileOrNull();
@@ -90,7 +93,10 @@ export default function IntervalsPage() {
     setPlan(sane(initialPlan(), fallback));
   }, [athlete, plan]);
 
-  const session = useMemo(() => (plan ? buildIntervalSession(plan) : null), [plan]);
+  // An injury leaves out the exercises that load the injured area most.
+  const injuries = useMemo(() => athlete?.injuryAreas ?? [], [athlete]);
+  const pool = useMemo(() => INTERVAL_EXERCISES.filter((e) => !isAvoided(e.name, injuries)), [injuries]);
+  const session = useMemo(() => (plan ? buildIntervalSession(plan, pool) : null), [plan, pool]);
 
   function change(next: Partial<IntervalPlan>) {
     if (!plan) return;
@@ -199,6 +205,11 @@ export default function IntervalsPage() {
               rest,
             })}
           </p>
+          {injuries.length > 0 && pool.length < INTERVAL_EXERCISES.length && (
+            <p className="rounded-lg bg-rose-50 p-2 text-xs text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">
+              {tinj("leftOut", { count: INTERVAL_EXERCISES.length - pool.length })}
+            </p>
+          )}
           {circuits.map((round, i) => (
             <div key={i} className="t-surface space-y-1 rounded-2xl p-3 ring-1 ring-foreground/5">
               {circuits.length > 1 && (

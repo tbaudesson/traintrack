@@ -8,17 +8,20 @@ import { useWorkout, useWorkouts, updateWorkout, deleteWorkout } from "@/hooks/u
 import { useWorkoutSets, useAllWorkoutSets, addWorkoutSet, updateWorkoutSet, deleteWorkoutSet } from "@/hooks/useWorkoutSets";
 import { useExercises } from "@/hooks/useExercises";
 import { usePrograms } from "@/hooks/usePrograms";
-import { useAthleteProfile } from "@/hooks/useAthleteProfile";
+import { useAthleteProfile, useInjuries, updateTrainingSchedule } from "@/hooks/useAthleteProfile";
 import { defaultSetValues } from "@/lib/setDefaults";
 import { nextLoad, type Advice } from "@/lib/progression";
 import { oneRepMaxHistory } from "@/lib/goals";
 import { formatPercents, percentWeights, referenceMax } from "@/lib/percent";
 import { localDate } from "@/lib/dates";
+import { getCurrentUserIdSync } from "@/db";
 import { mondayOfDate } from "@/lib/weekPlan";
 import { lighter } from "@/lib/startWorkout";
 import { usePainReports } from "@/hooks/usePain";
 import { recentPainOn, SEVERE_PAIN } from "@/lib/pain";
 import { PainDialog } from "@/components/domain/PainDialog";
+import { InjuryBadge } from "@/components/domain/InjuryBadge";
+import { bySafety, injuryWarning, toggleInjury } from "@/lib/injuries";
 import { GuidedSession, type GuidedStep } from "@/components/domain/GuidedSession";
 import { guidedOrder } from "@/lib/guided";
 import { useAuth } from "@/contexts/AuthContext";
@@ -79,6 +82,8 @@ export default function SessionLoggerPage() {
   const [guided, setGuided] = useState(false);
   const tg = useTranslations("guided");
   const tm = useTranslations("mobility");
+  const tinj = useTranslations("injuries");
+  const injuries = useInjuries();
   const { num, day, short } = useFormat();
   const pains = usePainReports();
   const { profile: account } = useAuth();
@@ -476,10 +481,13 @@ export default function SessionLoggerPage() {
   const swapOptions =
     swapFor === null
       ? []
-      : substitutes(
-          exMap.get(swapFor),
-          exercises.filter((e) => !groups.some(([id]) => id === e.id)),
-          profile?.equipment
+      : bySafety(
+          substitutes(
+            exMap.get(swapFor),
+            exercises.filter((e) => !groups.some(([id]) => id === e.id)),
+            profile?.equipment
+          ),
+          injuries
         );
 
   async function toggleDone(
@@ -653,6 +661,7 @@ export default function SessionLoggerPage() {
 
         {groups.map(([exerciseId, exSets], index) => {
           const ex = exMap.get(exerciseId);
+          const injuryWarn = injuryWarning(ex?.name, injuries);
           const work = exSets.filter((s) => !s.isWarmup);
           const warmups = exSets.filter((s) => s.isWarmup);
           const last = work[work.length - 1];
@@ -723,6 +732,29 @@ export default function SessionLoggerPage() {
                       date: short(pain.date),
                     })}
                   </p>
+                )}
+
+                {injuryWarn && (
+                  <div
+                    className={cn(
+                      "flex items-start gap-2 rounded-lg p-2 text-sm",
+                      injuryWarn.level === "avoid"
+                        ? "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300"
+                        : "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
+                    )}
+                  >
+                    <p className="flex-1">
+                      {tinj(injuryWarn.level === "avoid" ? "avoidAdvice" : "cautionAdvice", {
+                        areas: injuryWarn.areas.map((a) => (locale === "de" ? tpain(`area_${a}`) : tpain(`area_${a}`).toLowerCase())).join(", "),
+                      })}
+                    </p>
+                    {injuryWarn.level === "avoid" && (
+                      <button type="button" onClick={() => setSwapFor(exerciseId)} className="flex min-h-9 shrink-0 items-center gap-1 font-semibold underline">
+                        <ArrowLeftRight className="h-4 w-4" aria-hidden="true" />
+                        {tinj("replace")}
+                      </button>
+                    )}
+                  </div>
                 )}
 
                 {inSuperset && (
@@ -1038,6 +1070,9 @@ export default function SessionLoggerPage() {
           exercise={{ name: exMap.get(painFor)?.name ?? "?", label: xl(exMap.get(painFor)?.name), uuid: exMap.get(painFor)?.uuid }}
           authorName={account?.display_name ?? undefined}
           onReplace={() => setSwapFor(painFor)}
+          // Only on one's own session: the injury goes on the athlete's profile.
+          injuries={workout?.userId === getCurrentUserIdSync() ? injuries : undefined}
+          onDeclareInjury={(area) => updateTrainingSchedule({ injuryAreas: toggleInjury(injuries, area, localDate()) })}
         />
       )}
 
@@ -1059,7 +1094,10 @@ export default function SessionLoggerPage() {
                   className="flex min-h-11 w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent"
                 >
                   <Dumbbell className="h-4 w-4 shrink-0 text-accent-500" aria-hidden="true" />
-                  <span className="min-w-0 flex-1">{xl(e.name)}</span>
+                  <span className="flex min-w-0 flex-1 flex-col items-start gap-0.5">
+                    {xl(e.name)}
+                    <InjuryBadge exerciseName={e.name} injuries={injuries} />
+                  </span>
                   {e.equipment && <span className="shrink-0 text-xs text-muted-foreground">{to(`equip_${e.equipment}`)}</span>}
                 </button>
               ))}
@@ -1082,7 +1120,10 @@ export default function SessionLoggerPage() {
                 className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent"
               >
                 <Dumbbell className="h-4 w-4 text-accent-500" />
-                {xl(e.name)}
+                <span className="flex min-w-0 flex-1 flex-col items-start gap-0.5">
+                  {xl(e.name)}
+                  <InjuryBadge exerciseName={e.name} injuries={injuries} />
+                </span>
               </button>
             ))}
           </div>

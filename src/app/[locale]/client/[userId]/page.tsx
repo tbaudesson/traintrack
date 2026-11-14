@@ -11,7 +11,8 @@ import { useReadiness, readinessScore } from "@/hooks/useReadiness";
 import { useNutritionForDate, sumMacros } from "@/hooks/useNutrition";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, TrendingUp, CheckCircle, HeartPulse, Apple, ChevronDown, ChevronUp } from "lucide-react";
+import { Calendar, TrendingUp, CheckCircle, HeartPulse, Apple, ChevronDown, ChevronUp, Bandage } from "lucide-react";
+import { useInjuriesOf } from "@/hooks/useAthleteProfile";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
@@ -76,6 +77,8 @@ export default function ClientDetailPage() {
   const tpain = useTranslations("pain");
   const painHistory = usePainReports(userId);
   const pains = painHistory.filter((p) => p.date >= localDateIn(-30));
+  const injuries = useInjuriesOf(userId);
+  const tinj = useTranslations("injuries");
   const thisWeek = adherence?.weeks.at(-1);
 
   const totalVolume = useMemo(() => {
@@ -156,6 +159,25 @@ export default function ClientDetailPage() {
                   {adherence.rate !== null ? t("adherenceRate", { percent: Math.round(adherence.rate * 100) }) : t("adherenceNoPlan")}
                   {adherence.recentRpe !== null && ` · ${t("adherenceRpe", { rpe: adherence.recentRpe })}`}
                 </p>
+              </CardContent>
+            </Card>
+          </section>
+        )}
+
+        {injuries.length > 0 && (
+          <section className="space-y-2">
+            <h2 className="text-sm font-semibold text-muted-foreground">{tinj("coachTitle")}</h2>
+            <Card>
+              <CardContent className="space-y-1.5 py-3">
+                <div className="flex flex-wrap gap-2">
+                  {injuries.map((i) => (
+                    <span key={i.area} className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-1 text-sm font-medium text-rose-700 dark:bg-rose-950/50 dark:text-rose-300">
+                      <Bandage className="h-3.5 w-3.5" aria-hidden="true" />
+                      {tpain(`area_${i.area}`)} · {tinj("since", { date: day(i.since) })}
+                    </span>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground">{tinj("coachHint")}</p>
               </CardContent>
             </Card>
           </section>
@@ -334,7 +356,7 @@ function ClientWorkoutCard({
   cardio?: string;
 }) {
   const t = useTranslations("teams");
-  const { day } = useFormat();
+  const { day, num } = useFormat();
   const [open, setOpen] = useState(false);
   return (
     <Card>
@@ -349,7 +371,7 @@ function ClientWorkoutCard({
               {day(date)} · {cardio ?? t("setsCount", { count: setCount })}
             </p>
           </div>
-          {!cardio && <span className="text-sm font-semibold text-accent-text">{volume}</span>}
+          {!cardio && <span className="text-sm font-semibold text-accent-text">{num(volume, 0)} kg</span>}
           {open ? (
             <ChevronUp className="h-4 w-4 text-muted-foreground" />
           ) : (

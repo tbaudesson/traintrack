@@ -1120,5 +1120,22 @@
     "home": "Back to home",
     "warmupButton": "Warm up",
     "stretchButton": "Stretch"
+  },
+  "injuries": {
+    "title": "Injuries",
+    "avoid": "Not advised · {areas}",
+    "caution": "Caution · {areas}",
+    "avoidHint": "Loads the injured area heavily ({areas}): avoid it until healed.",
+    "cautionHint": "Loads the injured area ({areas}): go lighter, and without pain.",
+    "avoidAdvice": "Not advised with your injury ({areas}): better replace it until you are healed.",
+    "cautionAdvice": "Loads your injured area ({areas}): go lighter and stop if it hurts.",
+    "replace": "Replace",
+    "settingsHint": "Tap the injured area: the exercises that load it will be flagged, not advised or to do with caution, and your coach will see it. This does not replace the advice of a health professional.",
+    "since": "since {date}",
+    "healedHint": "Once healed, tap the area to remove it.",
+    "leftOut": "{count, plural, one {# exercise left out} other {# exercises left out}} because of your injury.",
+    "coachTitle": "Declared injuries",
+    "coachHint": "The exercises that load these areas are flagged to the athlete, and in their programs.",
+    "declareFromPain": "Declare an injury ({area}): the exercises that load this area will be flagged."
   }
 }

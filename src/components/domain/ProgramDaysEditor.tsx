@@ -15,14 +15,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Trash2, Dumbbell, X } from "lucide-react";
 import { useExerciseLabel } from "@/lib/exerciseNames";
+import type { Injury } from "@/lib/injuries";
+import { InjuryBadge } from "@/components/domain/InjuryBadge";
 
 /** The days and exercises of a program, for users' programs and admin templates alike. */
 export function ProgramDaysEditor({
   days,
   setDays,
+  injuries = [],
 }: {
   days: ProgramDay[];
   setDays: Dispatch<SetStateAction<ProgramDay[]>>;
+  /** The injuries of the athlete the program is for: risky exercises are flagged. */
+  injuries?: Injury[];
 }) {
   const t = useTranslations("programs");
   const tc = useTranslations("cardio");
@@ -106,6 +111,7 @@ export function ProgramDaysEditor({
                       <Dumbbell className="h-4 w-4 text-accent-500" />
                     )}
                     <span className="flex-1 text-sm font-medium">{xl(ex.exerciseName)}</span>
+                    <InjuryBadge exerciseName={ex.exerciseName} injuries={injuries} />
                     <button onClick={() => removeExercise(di, ei)} className="text-muted-foreground hover:text-destructive">
                       <X className="h-4 w-4" />
                     </button>
@@ -193,7 +199,10 @@ export function ProgramDaysEditor({
                 className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent"
               >
                 <Dumbbell className="h-4 w-4 text-accent-500" />
-                {xl(e.name)}
+                <span className="flex min-w-0 flex-1 flex-col items-start gap-0.5">
+                  {xl(e.name)}
+                  <InjuryBadge exerciseName={e.name} injuries={injuries} />
+                </span>
               </button>
             ))}
           </div>

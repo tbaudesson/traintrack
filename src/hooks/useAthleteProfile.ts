@@ -2,6 +2,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import db, { type AthleteProfile, type FitnessLevel } from "@/db";
 import { getCurrentUserIdSync } from "@/db";
 import { schedulePush } from "@/lib/syncEngine";
+import type { Injury } from "@/lib/injuries";
 
 /** The current user's athlete profile (or undefined if not set up yet). */
 export function useAthleteProfile() {
@@ -57,8 +58,8 @@ export async function updateFitnessLevel(fitnessLevel: FitnessLevel): Promise<vo
   schedulePush();
 }
 
-/** Update the week plan (training days, usual time) or the strength goals. */
-export async function updateTrainingSchedule(change: Partial<Pick<AthleteProfile, "trainingDays" | "trainingTime" | "strengthGoals" | "deloadWeek">>): Promise<void> {
+/** Update the week plan (training days, usual time), the strength goals, the deload week or the injuries. */
+export async function updateTrainingSchedule(change: Partial<Pick<AthleteProfile, "trainingDays" | "trainingTime" | "strengthGoals" | "deloadWeek" | "injuryAreas">>): Promise<void> {
   const uid = getCurrentUserIdSync();
   const existing = (await db.athleteProfiles.toArray()).find(
     (p) => !p.deletedAt && (p.userId === uid || p.userId == null)
@@ -83,4 +84,25 @@ export async function updateNutritionTargets(
     _dirty: 1,
   });
   schedulePush();
+}
+
+/** The current athlete's injuries in progress; none while the profile is read. */
+export function useInjuries(): Injury[] {
+  const profile = useAthleteProfile();
+  return profile?.injuryAreas ?? NONE;
+}
+const NONE: Injury[] = [];
+
+/**
+ * The injuries of an athlete: a coach reads a client's (their profile is
+ * synced to the coach), anyone else their own when no athlete is given.
+ */
+export function useInjuriesOf(userId: string | null | undefined): Injury[] {
+  const injuries = useLiveQuery(async () => {
+    const uid = userId ?? getCurrentUserIdSync();
+    const all = await db.athleteProfiles.filter((p) => !p.deletedAt).toArray();
+    const profile = all.find((p) => p.userId === uid) ?? (userId ? undefined : all.find((p) => p.userId == null));
+    return profile?.injuryAreas ?? NONE;
+  }, [userId]);
+  return injuries ?? NONE;
 }

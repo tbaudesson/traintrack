@@ -1120,5 +1120,22 @@
     "home": "Zur Startseite",
     "warmupButton": "Aufwärmen",
     "stretchButton": "Dehnen"
+  },
+  "injuries": {
+    "title": "Aktuelle Verletzungen",
+    "avoid": "Nicht empfohlen · {areas}",
+    "caution": "Vorsicht · {areas}",
+    "avoidHint": "Belastet den verletzten Bereich stark ({areas}): bis zur Heilung vermeiden.",
+    "cautionHint": "Belastet den verletzten Bereich ({areas}): leichter und schmerzfrei.",
+    "avoidAdvice": "Mit deiner Verletzung nicht empfohlen ({areas}): bis zur Heilung besser ersetzen.",
+    "cautionAdvice": "Belastet deinen verletzten Bereich ({areas}): leichter nehmen und aufhören, wenn es wehtut.",
+    "replace": "Ersetzen",
+    "settingsHint": "Tippe auf den verletzten Bereich: Übungen, die ihn belasten, werden markiert, als nicht empfohlen oder mit Vorsicht, und dein Coach sieht es. Das ersetzt nicht den Rat einer medizinischen Fachkraft.",
+    "since": "seit {date}",
+    "healedHint": "Wenn verheilt, tippe auf den Bereich, um ihn zu entfernen.",
+    "leftOut": "{count, plural, one {# Übung} other {# Übungen}} wegen deiner Verletzung weggelassen.",
+    "coachTitle": "Gemeldete Verletzungen",
+    "coachHint": "Übungen, die diese Bereiche belasten, werden dem Athleten und in seinen Programmen markiert.",
+    "declareFromPain": "Verletzung melden ({area}): Übungen, die diesen Bereich belasten, werden markiert."
   }
 }

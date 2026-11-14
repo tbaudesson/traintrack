@@ -31,10 +31,12 @@ import {
   Download, Shield, LogOut, Trash2, Loader2, Sparkles, Check, Type, ShieldCheck,
   Palette, LayoutGrid, Monitor, Sun, Moon, Globe, RotateCcw, User, Trophy,
   Home, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse,
-  Pencil, X, Bell, BellOff, KeyRound, Newspaper, Gauge, CalendarDays, CalendarPlus, FileUp, Flag, Activity,
+  Pencil, X, Bell, BellOff, KeyRound, Newspaper, Gauge, CalendarDays, CalendarPlus, FileUp, Flag, Activity, Bandage,
   type LucideIcon,
 } from "lucide-react";
 import { localDate } from "@/lib/dates";
+import { useFormat } from "@/lib/format";
+import { INJURY_AREAS, toggleInjury } from "@/lib/injuries";
 
 const LOCALES = [
   { id: "fr", label: "Français", flag: "🇫🇷" },
@@ -86,6 +88,9 @@ export default function SettingsPage() {
   const tc = useTranslations("common");
   const tm = useTranslations("more");
   const to = useTranslations("onboarding");
+  const tinj = useTranslations("injuries");
+  const tpain = useTranslations("pain");
+  const { short } = useFormat();
   const athlete = useAthleteProfile();
   const { user, profile, signOut, isAdmin, refreshProfile } = useAuth();
   const { hasFeature } = useFeatureAccess();
@@ -290,6 +295,34 @@ export default function SettingsPage() {
             </Link>
           )}
         </Section>
+
+        {/* Injuries in progress */}
+        {athlete && (
+          <Section icon={Bandage} title={tinj("title")}>
+            <p className="mb-2 text-xs text-muted-foreground">{tinj("settingsHint")}</p>
+            <div className="flex flex-wrap gap-2">
+              {INJURY_AREAS.map((area) => {
+                const injury = athlete.injuryAreas?.find((i) => i.area === area);
+                return (
+                  <button
+                    key={area}
+                    type="button"
+                    onClick={() => updateTrainingSchedule({ injuryAreas: toggleInjury(athlete.injuryAreas ?? [], area, localDate()) })}
+                    aria-pressed={!!injury}
+                    className={cn(
+                      "min-h-10 rounded-full border px-3 text-sm transition-colors",
+                      injury ? "border-rose-500 bg-rose-500 font-semibold text-white" : "border-border text-muted-foreground hover:border-rose-300"
+                    )}
+                  >
+                    {tpain(`area_${area}`)}
+                    {injury && <span className="ml-1 text-xs font-normal opacity-90">· {tinj("since", { date: short(injury.since) })}</span>}
+                  </button>
+                );
+              })}
+            </div>
+            {(athlete.injuryAreas?.length ?? 0) > 0 && <p className="mt-2 text-xs text-muted-foreground">{tinj("healedHint")}</p>}
+          </Section>
+        )}
 
         {/* Week plan */}
         <Section icon={CalendarDays} title={t("plan")}>

@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Bandage, Loader2 } from "lucide-react";
 import { addWorkoutNote } from "@/hooks/useWorkoutNotes";
 import { PAIN_AREAS, SEVERE_PAIN, type PainArea } from "@/lib/pain";
+import type { Injury } from "@/lib/injuries";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -21,6 +22,8 @@ export function PainDialog({
   exercise,
   authorName,
   onReplace,
+  injuries,
+  onDeclareInjury,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -28,12 +31,21 @@ export function PainDialog({
   exercise: { name: string; label?: string; uuid?: string };
   authorName?: string;
   onReplace: () => void;
+  /** The athlete's injuries, when they can declare one from here (their own session). */
+  injuries?: Injury[];
+  onDeclareInjury?: (area: PainArea) => void;
 }) {
   const t = useTranslations("pain");
   const [area, setArea] = useState<PainArea | null>(null);
   const [level, setLevel] = useState<number | null>(null);
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
+  const [declare, setDeclare] = useState(true);
+  const tinj = useTranslations("injuries");
+  const locale = useLocale();
+  // A strong pain on an area not declared yet: offer to declare it as an injury.
+  const canDeclare =
+    !!onDeclareInjury && !!injuries && !!area && area !== "other" && level !== null && level >= SEVERE_PAIN && !injuries.some((i) => i.area === area);
 
   async function save(replace: boolean) {
     if (!area || !level) return;
@@ -45,6 +57,7 @@ export function PainDialog({
         painArea: area,
         painLevel: level,
       });
+      if (canDeclare && declare) onDeclareInjury!(area);
       setArea(null);
       setLevel(null);
       setNote("");
@@ -113,6 +126,13 @@ export function PainDialog({
 
           {level !== null && level >= SEVERE_PAIN && (
             <p className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">{t("severeAdvice")}</p>
+          )}
+
+          {canDeclare && (
+            <label className="flex items-start gap-2 text-sm">
+              <input type="checkbox" checked={declare} onChange={(e) => setDeclare(e.target.checked)} className="mt-0.5 size-4 accent-rose-600" />
+              <span>{tinj("declareFromPain", { area: locale === "de" ? t(`area_${area}`) : t(`area_${area}`).toLowerCase() })}</span>
+            </label>
           )}
 
           <label className="block text-sm font-medium">

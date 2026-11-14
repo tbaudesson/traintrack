@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useFormat } from "@/lib/format";
+import { useInjuriesOf } from "@/hooks/useAthleteProfile";
 import { useRouter } from "@/i18n/navigation";
 import { useProgram, updateProgram, deleteProgram, assignProgramToClients } from "@/hooks/usePrograms";
 import { DetailRow } from "@/components/ui/detail-row";
@@ -32,6 +33,10 @@ export default function ProgramEditorPage() {
   const programId = Number(params.id);
   const program = useProgram(programId);
   const { clients } = useClients();
+  // A team program has no single athlete: no injury to flag.
+  const forTeam = !!program?.groupId && !program.assignedToUserId;
+  const athleteInjuries = useInjuriesOf(program?.assignedToUserId);
+  const injuries = forTeam ? [] : athleteInjuries;
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -199,7 +204,7 @@ export default function ProgramEditorPage() {
           </CardContent>
         </Card>
 
-        <ProgramDaysEditor days={days} setDays={setDays} />
+        <ProgramDaysEditor days={days} setDays={setDays} injuries={injuries} />
 
         <Button variant="ghost" className="w-full text-destructive" onClick={handleDelete}>
           <Trash2 className="mr-1 h-4 w-4" />

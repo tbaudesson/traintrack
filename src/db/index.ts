@@ -1,5 +1,6 @@
 import type { StrengthGoal } from "@/lib/goals";
 import type { IntervalPlan } from "@/lib/intervals";
+import type { Injury } from "@/lib/injuries";
 import Dexie, { type EntityTable } from "dexie";
 
 // ─── Sync metadata mixin ─────────────────────────────────────────────
@@ -63,6 +64,8 @@ export interface AthleteProfile extends SyncFields {
   strengthGoals?: StrengthGoal[];
   /** Monday of the week chosen as a deload, see lib/deload. */
   deloadWeek?: string | null;
+  /** Injuries in progress: the exercises loading these areas are flagged. */
+  injuryAreas?: Injury[] | null;
   /** Optional daily macro targets */
   nutritionTargets?: { calories?: number; protein?: number; carbs?: number; fat?: number; water?: number };
   /** GDPR Art. 9 explicit consent to process health/fitness data */

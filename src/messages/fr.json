@@ -1120,5 +1120,22 @@
     "home": "Retour à l'accueil",
     "warmupButton": "S'échauffer",
     "stretchButton": "S'étirer"
+  },
+  "injuries": {
+    "title": "Blessures en cours",
+    "avoid": "Déconseillé · {areas}",
+    "caution": "Prudence · {areas}",
+    "avoidHint": "Sollicite fortement la zone blessée ({areas}) : à éviter en attendant la guérison.",
+    "cautionHint": "Sollicite la zone blessée ({areas}) : plus léger, et sans douleur.",
+    "avoidAdvice": "Déconseillé avec votre blessure ({areas}) : mieux vaut le remplacer en attendant la guérison.",
+    "cautionAdvice": "Sollicite votre zone blessée ({areas}) : prenez plus léger et arrêtez si ça fait mal.",
+    "replace": "Remplacer",
+    "settingsHint": "Touchez la zone blessée : les exercices qui la sollicitent seront signalés, déconseillés ou à faire avec prudence, et votre coach le verra. Ces indications ne remplacent pas l'avis d'un professionnel de santé.",
+    "since": "depuis le {date}",
+    "healedHint": "Une fois guéri, touchez la zone pour la retirer.",
+    "leftOut": "{count, plural, one {# exercice écarté} other {# exercices écartés}} à cause de votre blessure.",
+    "coachTitle": "Blessures déclarées",
+    "coachHint": "Les exercices qui sollicitent ces zones sont signalés à l'athlète, et dans ses programmes.",
+    "declareFromPain": "Déclarer une blessure ({area}) : les exercices qui sollicitent cette zone seront signalés."
   }
 }
