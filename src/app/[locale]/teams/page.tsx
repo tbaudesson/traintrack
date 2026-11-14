@@ -38,7 +38,13 @@ import {
   ChevronUp,
   AlertTriangle,
   LayoutDashboard,
+  Link2,
 } from "lucide-react";
+import { useLiveQuery } from "dexie-react-hooks";
+import db from "@/db";
+import { InviteLinkDialog } from "@/components/domain/InviteLinkDialog";
+import { inviteState, listInvites, revokeInvite, type TeamInvite } from "@/lib/inviteService";
+import { useFormat } from "@/lib/format";
 
 export default function TeamsPage() {
   const t = useTranslations("teams");
@@ -259,6 +265,41 @@ function TeamCard({
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [linking, setLinking] = useState(false);
+  const [invites, setInvites] = useState<TeamInvite[]>([]);
+  const { short } = useFormat();
+
+  // The invitation links of the team, newest first.
+  useEffect(() => {
+    if (!expanded) return;
+    let live = true;
+    listInvites(groupId)
+      .then((list) => live && setInvites(list))
+      .catch(() => live && setInvites([]));
+    return () => {
+      live = false;
+    };
+  }, [expanded, groupId]);
+  async function reloadInvites() {
+    setInvites(await listInvites(groupId).catch(() => []));
+  }
+
+  // How far each athlete who joined has got: profile filled in, first session done.
+  const activeIds = members.filter((m) => m.status === "active" && m.user_id).map((m) => m.user_id!);
+  const activeKey = activeIds.join(",");
+  const started = useLiveQuery(async () => {
+    const ids = new Set(activeKey ? activeKey.split(",") : []);
+    const [profiles, workouts] = await Promise.all([db.athleteProfiles.toArray(), db.workouts.toArray()]);
+    return new Map(
+      [...ids].map((id) => [
+        id,
+        {
+          profile: profiles.some((p) => !p.deletedAt && p.userId === id),
+          session: workouts.some((w) => !w.deletedAt && w.userId === id),
+        },
+      ])
+    );
+  }, [activeKey]);
 
   useEffect(() => {
     if (!expanded) return;
@@ -332,6 +373,11 @@ function TeamCard({
               </Button>
             </div>
             {err && <p className="text-xs text-red-600">{err}</p>}
+            <Button variant="outline" className="w-full" onClick={() => setLinking(true)}>
+              <Link2 className="mr-2 h-4 w-4" aria-hidden="true" />
+              {t("inviteLink")}
+            </Button>
+            <InviteLinkDialog groupId={groupId} open={linking} onOpenChange={setLinking} onCreated={reloadInvites} />
             <TeamMessage team={name} members={members} onSent={(count) => showToast(t("teamMessageSent", { count }))} />
 
             {loadingMembers ? (
@@ -357,6 +403,11 @@ function TeamCard({
                         )}
                       >
                         {tpain("badge", { area: tpain(`area_${painByUser.get(m.user_id)!.area}`), level: painByUser.get(m.user_id)!.level })}
+                      </span>
+                    )}
+                    {m.status === "active" && m.user_id && started?.get(m.user_id) && !started.get(m.user_id)!.session && (
+                      <span className="shrink-0 rounded-full bg-sky-100 px-1.5 py-0.5 text-xs font-medium text-sky-700 dark:bg-sky-900/30 dark:text-sky-300">
+                        {started.get(m.user_id)!.profile ? t("noSessionYet") : t("noProfileYet")}
                       </span>
                     )}
                     {m.status === "active" && m.user_id && <AdherenceBadge value={adherenceByUser?.get(m.user_id)} />}
@@ -387,6 +438,48 @@ function TeamCard({
                 {members.length === 0 && (
                   <p className="py-2 text-center text-xs text-muted-foreground">{t("roster")}</p>
                 )}
+              </div>
+            )}
+
+            {invites.length > 0 && (
+              <div className="space-y-1 border-t border-border pt-2">
+                <p className="text-xs font-semibold text-muted-foreground">{t("links")}</p>
+                {invites.slice(0, 10).map((i) => {
+                  const state = inviteState(i);
+                  return (
+                    <div key={i.id} className="flex items-center gap-2 rounded-md px-1 py-1 text-sm">
+                      <span className="min-w-0 flex-1 truncate">
+                        {i.label ?? t("linkNoName")}
+                        {i.programName && <span className="text-muted-foreground"> · {i.programName}</span>}
+                      </span>
+                      <span
+                        className={cn(
+                          "shrink-0 rounded-full px-2 py-0.5 text-xs",
+                          state === "used" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300" : "bg-muted text-muted-foreground"
+                        )}
+                      >
+                        {state === "used"
+                          ? t("linkUsed", { name: i.usedByName ?? "", date: short(i.usedAt!.slice(0, 10)) })
+                          : state === "open"
+                            ? t("linkOpen", { date: short(i.expiresAt.slice(0, 10)) })
+                            : t(`link_${state}`)}
+                      </span>
+                      {state === "open" && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            await revokeInvite(i.id).catch(() => {});
+                            await reloadInvites();
+                          }}
+                          aria-label={t("linkRevoke")}
+                          className="rounded-md p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                        >
+                          <X className="h-3.5 w-3.5" aria-hidden="true" />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

@@ -78,7 +78,7 @@ await page.waitForLoadState("load");
 expect(await page.evaluate(() => !!navigator.serviceWorker.controller), "the service worker never took control");
 
 // What the background warm-up does once signed in: every page and its files.
-const PAGES = ["", "/log", "/log/session", "/programs", "/progress", "/intervals", "/mobility", "/exercises", "/competitions", "/report", "/settings", "/more", "/horses", "/onboarding", "/readiness"];
+const PAGES = ["", "/log", "/log/session", "/programs", "/progress", "/intervals", "/mobility", "/exercises", "/competitions", "/report", "/settings", "/more", "/horses", "/onboarding", "/readiness", "/join"];
 const warmed = await page.evaluate(async (pages) => {
   const files = new Set();
   for (const p of pages) {
@@ -288,7 +288,10 @@ await test("two programs planned on their own days show together in the week and
   await week.getByText("· Full Body — Débutant").first().waitFor({ timeout: 10000 });
   await week.getByText("· program fr").first().waitFor({ timeout: 10000 });
   await snap("week-planning");
-  const [download] = await Promise.all([page.waitForEvent("download"), week.getByRole("button", { name: /Ajouter les 8 prochaines semaines/ }).click()]);
+  const exportButton = week.getByRole("button", { name: /Ajouter les 8 prochaines semaines/ });
+  // Centred, away from the menu button fixed at the bottom of the screen.
+  await exportButton.evaluate((el) => el.scrollIntoView({ block: "center" }));
+  const [download] = await Promise.all([page.waitForEvent("download"), exportButton.click({ timeout: 10000 })]);
   const ics = readFileSync(await download.path(), "utf8");
   expect(ics.includes("DESCRIPTION:program fr") && ics.includes("DESCRIPTION:Full Body — Débutant"), "the calendar misses a program");
 });
@@ -318,6 +321,17 @@ await test("sign-up: sport, injuries, a program of that sport put in the plannin
   await page.locator("section", { hasText: "prochaines semaines à mon agenda" }).getByText(`· ${name}`).first().waitFor({ timeout: 10000 });
   await page.getByRole("heading", { name: "Vos premiers pas" }).waitFor({ timeout: 5000 });
   await snap("home-first-steps");
+});
+
+await test("an invitation link is kept, out of the address bar, and asks for a connection offline", async () => {
+  const token = "0123456789abcdef".repeat(4);
+  await page.goto(`${BASE}/fr/join#${token}`);
+  await page.getByText(/Il faut une connexion pour ouvrir l’invitation/).waitFor({ timeout: 10000 });
+  expect(!page.url().includes("#"), "the token stayed in the address bar");
+  expect((await page.evaluate(() => localStorage.getItem("traintrack-join"))) === token, "the token was not kept for after sign-in");
+  await page.getByRole("button", { name: "Aller à l’accueil" }).click();
+  await page.waitForURL(/\/fr\/?$/, { timeout: 10000 });
+  expect((await page.evaluate(() => localStorage.getItem("traintrack-join"))) === null, "the token was not forgotten");
 });
 
 await test("no page threw an error", async () => {

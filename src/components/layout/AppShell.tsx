@@ -1,5 +1,6 @@
 "use client";
 
+import { pendingInvite } from "@/lib/inviteService";
 import { useEffect, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,11 +29,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isDeactivatedPage = pathname === "/auth/deactivated";
   // The recovery link signs the user in; they must stay here to set a password.
   const isResetPage = pathname === "/auth/reset";
+  // An invitation link opens signed out too: it offers to sign up or in.
+  const isJoinPage = pathname === "/join";
 
   useEffect(() => {
     if (loading) return;
 
-    if (!isAuthenticated && !isAuthPage) {
+    if (!isAuthenticated && !isAuthPage && !isJoinPage) {
       router.replace("/auth/login");
     } else if (isAuthenticated && isAuthPage && !isPendingPage && !isDeactivatedPage && !isResetPage) {
       if (accountStatus === "pending") {
@@ -40,7 +43,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       } else if (accountStatus === "deactivated") {
         router.replace("/auth/deactivated");
       } else {
-        router.replace("/");
+        // Back to the invitation opened before signing in, if any.
+        router.replace(pendingInvite() ? "/join" : "/");
       }
     } else if (isAuthenticated && !isAuthPage) {
       if (accountStatus === "pending") {
@@ -49,7 +53,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         router.replace("/auth/deactivated");
       }
     }
-  }, [loading, isAuthenticated, isAuthPage, isPendingPage, isDeactivatedPage, isResetPage, accountStatus, router]);
+  }, [loading, isAuthenticated, isAuthPage, isJoinPage, isPendingPage, isDeactivatedPage, isResetPage, accountStatus, router]);
 
   if (loading) {
     return (
@@ -62,7 +66,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     );
   }
 
-  if (isAuthPage) {
+  if (isAuthPage || (isJoinPage && !isAuthenticated)) {
     return <>{children}</>;
   }
 

@@ -11,6 +11,7 @@ import { FAVORITE_SPORTS, savePrefs, type FavoriteSport } from "@/lib/appTheme";
 import { INJURY_AREAS } from "@/lib/injuries";
 import type { PainArea } from "@/lib/pain";
 import { CategoryIcon } from "@/components/domain/ProgramCatalog";
+import { forgetJoined, joinedTeam } from "@/lib/inviteService";
 import { nextMonday } from "@/lib/programWeek";
 import { localDate } from "@/lib/dates";
 import type { TrainingGoal, FitnessLevel, Sex, Equipment } from "@/db";
@@ -48,6 +49,9 @@ export default function OnboardingPage() {
   const router = useRouter();
   const catalogue = useProgramTemplates();
 
+  // Joined through a coach's link: the coach's program replaces the suggestions.
+  const [joined] = useState(joinedTeam);
+  const fromCoach = !!joined?.programName;
   const [step, setStep] = useState(0);
   const [sport, setSport] = useState<FavoriteSport | null>(null);
   const [goal, setGoal] = useState<TrainingGoal | null>(null);
@@ -60,7 +64,7 @@ export default function OnboardingPage() {
   const [injuries, setInjuries] = useState("");
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [programId, setProgramId] = useState<string | null>(null);
-  const [days, setDays] = useState<number[]>([1, 3, 5]);
+  const [days, setDays] = useState<number[]>(() => (joined?.weekdays?.length ? [...joined.weekdays].sort() : [1, 3, 5]));
   const [time, setTime] = useState("18:00");
   const [start, setStart] = useState(() => nextMonday(localDate()));
   const [consent, setConsent] = useState(false);
@@ -111,7 +115,8 @@ export default function OnboardingPage() {
       });
       if (sport) savePrefs({ sport });
       // The program goes into the planning, on the days chosen.
-      if (chosen) {
+      forgetJoined();
+      if (chosen && !fromCoach) {
         await createProgram({ name: chosen.name, description: chosen.description, structure: chosen.structure, startDate: start, weekdays: [...days].sort() });
       }
       router.replace("/");
@@ -259,6 +264,14 @@ export default function OnboardingPage() {
 
         {step === 3 && (
           <>
+          {fromCoach ? (
+            <div className="t-surface space-y-1 rounded-2xl p-4 ring-1 ring-accent-500/40">
+              <p className="text-sm text-muted-foreground">{tw("fromCoach", { coach: joined!.coachName ?? joined!.teamName })}</p>
+              <p className="font-semibold">{joined!.programName}</p>
+              {joined!.startDate && <p className="text-sm text-muted-foreground">{tw("fromCoachStart", { date: new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "UTC" }).format(new Date(`${joined!.startDate}T00:00:00Z`)) })}</p>}
+              <p className="text-xs text-muted-foreground">{tw("fromCoachDays")}</p>
+            </div>
+          ) : (
           <div className="space-y-2">
             {picks.map((p, i) => (
               <button
@@ -292,6 +305,7 @@ export default function OnboardingPage() {
               {tw("later")}
             </button>
           </div>
+          )}
 
             <div className="space-y-2">
               <p className="text-sm font-medium">{tw("days")}</p>
@@ -317,7 +331,7 @@ export default function OnboardingPage() {
                 {tw("time")}
                 <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
               </label>
-              {chosen && (
+              {chosen && !fromCoach && (
                 <label className="space-y-1 text-sm font-medium">
                   {tw("start")}
                   <Input type="date" value={start} min={localDate()} onChange={(e) => setStart(e.target.value)} />

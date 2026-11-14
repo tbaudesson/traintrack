@@ -1,5 +1,6 @@
 "use client";
 
+import { pendingInvite } from "@/lib/inviteService";
 import {
   createContext,
   useContext,
@@ -270,9 +271,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email: string,
       password: string
     ): Promise<{ error?: string }> => {
+      // A coach's invitation link opened before: sent along, it approves the account.
+      const invite = pendingInvite();
       const { error } = await supabase.auth.signUp({
         email,
         password,
+        ...(invite ? { options: { data: { team_invite: invite } } } : {}),
       });
       if (error) {
         const msg = error.message.toLowerCase();

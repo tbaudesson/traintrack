@@ -26,7 +26,7 @@ done
 echo "migrations: $(ls "$ROOT"/supabase/migrations/0*.sql | wc -l | tr -d ' ') applied"
 
 report=$("${PSQL[@]}" -d traintrack -P pager=off -f "$ROOT/supabase/tests/rls.sql")
-echo "$report" | grep -E "^ FAIL" || true
+echo "$report" | grep -E "^ *FAIL" || true
 counts=$(echo "$report" | grep -E "^ +[0-9]+ \| +[0-9]+ *$" | tail -1)
 passed=$(echo "$counts" | awk -F'|' '{gsub(/ /,"",$1); print $1}')
 failed=$(echo "$counts" | awk -F'|' '{gsub(/ /,"",$2); print $2}')

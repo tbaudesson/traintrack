@@ -390,5 +390,115 @@ begin
   perform _root();
 end $$;
 
+-- ─── Invitation links 049 ───────────────────────────────────
+insert into auth.users (id, email) values ('a0000000-0000-4000-8000-000000000049', 'newcomer@x.test');
+update profiles set status = 'active' where email = 'newcomer@x.test';
+insert into groups (id, user_id, name) values
+  ('d0000000-0000-4000-8000-000000000049', 'a0000000-0000-4000-8000-000000000003', 'Club');
+do $$
+declare
+  tr uuid := 'a0000000-0000-4000-8000-000000000003';
+  cl uuid := 'a0000000-0000-4000-8000-000000000007';
+  free uuid := 'a0000000-0000-4000-8000-000000000049';
+  atk uuid := 'a0000000-0000-4000-8000-000000000001';
+  pend uuid := 'a0000000-0000-4000-8000-000000000004';
+  grp uuid := 'd0000000-0000-4000-8000-000000000049';
+  tok text; tok2 text; tok3 text; i int; revoked uuid;
+begin
+  perform _t('signed out, nobody can use a link',
+    not has_function_privilege('anon', 'preview_team_invite(text)', 'execute')
+    and not has_function_privilege('anon', 'accept_team_invite(text)', 'execute')
+    and not has_function_privilege('anon', 'create_team_invite(uuid, text, text, jsonb, date, jsonb, text)', 'execute'));
+
+  perform _as(cl);
+  perform _denied('only the team''s coach creates a link',
+    format('select create_team_invite(%L)', grp));
+
+  perform _as(tr);
+  tok := create_team_invite(grp, 'Léa', 'Plan', '[{"name":"A","exercises":[]}]'::jsonb, '2026-11-16', '[1,3]'::jsonb, 'Bienvenue !');
+  perform _t('a coach creates a link with a prepared program', length(tok) = 64);
+  perform _denied('the table is not readable directly', 'select * from team_invites');
+  perform _denied('days must be days of the week',
+    format('select create_team_invite(%L, null, %L, %L::jsonb, null, %L::jsonb)', grp, 'P', '[]', '[9]'));
+  perform _denied('a coach cannot join their own team', format('select * from accept_team_invite(%L)', tok));
+
+  perform _as(atk);
+  perform _t('a wrong link shows nothing', _count('select * from preview_team_invite(''00000000000000000000000000000000'')') = 0);
+  perform _t('the right link shows its team and program', _count(format('select * from preview_team_invite(%L) where program_name = %L', tok, 'Plan')) = 1);
+  perform _denied('a list of links is for the coach', format('select * from list_team_invites(%L)', grp));
+
+  perform _as(pend);
+  perform _denied('a pending account cannot join', format('select * from accept_team_invite(%L)', tok));
+
+  perform _as(free);
+  perform _allowed('an athlete joins with the link', format('select * from accept_team_invite(%L)', tok));
+  perform _root();
+  perform _t('the athlete is an active member',
+    _count(format('select 1 from group_members where group_id = %L and user_id = %L and status = %L', grp, free, 'active')) = 1);
+  perform _t('the prepared program is the coach''s copy for the athlete, on its days',
+    _count(format('select 1 from programs where assigned_to_user_id = %L and user_id = %L and weekdays = %L::jsonb and start_date = %L', free, tr, '[1,3]', '2026-11-16')) = 1);
+  perform _t('the welcome message is sent', _count(format('select 1 from messages where user_id = %L and recipient_id = %L', tr, free)) = 1);
+
+  perform _as(atk);
+  perform _denied('a link is used once', format('select * from accept_team_invite(%L)', tok));
+  perform _t('a used link shows nothing', _count(format('select * from preview_team_invite(%L)', tok)) = 0);
+
+  perform _as(tr);
+  tok2 := create_team_invite(grp, 'Revoked');
+  perform revoke_team_invite((select l.id from list_team_invites(grp) l where l.label = 'Revoked'));
+  tok3 := create_team_invite(grp, 'Old');
+  perform _root();
+  update team_invites set expires_at = now() - interval '1 minute' where label = 'Old';
+  select id into revoked from team_invites where label = 'Revoked';
+  perform _as(atk);
+  perform _denied('a revoked link no longer opens', format('select * from accept_team_invite(%L)', tok2));
+  perform _denied('an expired link no longer opens', format('select * from accept_team_invite(%L)', tok3));
+  perform _denied('someone else cannot revoke a link',
+    format('select revoke_team_invite(%L)', revoked));
+
+  perform _as(tr);
+  for i in 1..50 loop perform create_team_invite(grp, 'n' || i); end loop;
+  perform _denied('no more than fifty open links a team', format('select create_team_invite(%L)', grp));
+  perform _root();
+end $$;
+
+-- ─── A coach's invitation approves the account 049 ──────────
+do $$
+declare
+  tr uuid := 'a0000000-0000-4000-8000-000000000003';
+  grp uuid := 'd0000000-0000-4000-8000-000000000049';
+  tok text;
+  first_id uuid := 'a0000000-0000-4000-8000-000000000050';
+  second_id uuid := 'a0000000-0000-4000-8000-000000000051';
+  mailed_id uuid := 'a0000000-0000-4000-8000-000000000052';
+  plain_id uuid := 'a0000000-0000-4000-8000-000000000053';
+begin
+  update team_invites set revoked_at = now() where label ~ '^n[0-9]+$';
+  perform _as(tr);
+  tok := create_team_invite(grp, 'Link signup');
+  perform invite_group_member(grp, 'mailed@x.test');
+  perform _root();
+  insert into auth.users (id, email, raw_user_meta_data) values (first_id, 'first@x.test', jsonb_build_object('team_invite', tok));
+  insert into auth.users (id, email, raw_user_meta_data) values (second_id, 'second@x.test', jsonb_build_object('team_invite', tok));
+  insert into auth.users (id, email) values (mailed_id, 'mailed@x.test');
+  insert into auth.users (id, email, raw_user_meta_data) values (plain_id, 'plain@x.test', jsonb_build_object('team_invite', repeat('0', 64)));
+  perform _t('an account signed up with a coach''s link starts active',
+    (select status from profiles where user_id = first_id) = 'active');
+  perform _t('a link approves one account only',
+    (select status from profiles where user_id = second_id) = 'pending');
+  perform _t('an address invited by a coach starts active',
+    (select status from profiles where user_id = mailed_id) = 'active');
+  perform _t('a made-up link approves nothing',
+    (select status from profiles where user_id = plain_id) = 'pending');
+  -- The second account, approved by an admin later, still cannot use the claimed link.
+  update profiles set status = 'active' where user_id = second_id;
+  perform _as(second_id);
+  perform _t('a claimed link shows nothing to another account', _count(format('select * from preview_team_invite(%L)', tok)) = 0);
+  perform _denied('a claimed link cannot be used by another account', format('select * from accept_team_invite(%L)', tok));
+  perform _as(first_id);
+  perform _allowed('the account that claimed the link joins with it', format('select * from accept_team_invite(%L)', tok));
+  perform _root();
+end $$;
+
 select ' FAIL ' || name from _r where not ok;
 select count(*) filter (where ok) as passed, count(*) filter (where not ok) as failed from _r;
