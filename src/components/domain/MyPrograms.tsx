@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { useFormat } from "@/lib/format";
-import { ArrowRight, Award, Bike, ChevronRight, Dumbbell, Flame, Footprints, HeartPulse, Sparkles, Waves, type LucideIcon } from "lucide-react";
+import { ArrowRight, Award, Bike, Plus, ChevronRight, Dumbbell, Flame, Footprints, HeartPulse, Sparkles, Waves, type LucideIcon } from "lucide-react";
 import type { Program, Workout } from "@/db";
 import { Link } from "@/i18n/navigation";
 import { KIND_ORDER, programKind, programProgress, type ProgramKind } from "@/lib/programCards";
@@ -69,7 +69,6 @@ export function MyPrograms({
         ),
     [programs, workouts, catalogue, favorite]
   );
-  if (!cards.length) return null;
 
   return (
     <section className="space-y-2">
@@ -135,6 +134,19 @@ export function MyPrograms({
             </li>
           );
         })}
+        {/* Choose a ready-made program or build one's own. */}
+        <li className="w-44 shrink-0 snap-start">
+          <Link
+            href="/programs"
+            className="flex h-full min-h-44 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-accent-300 p-3.5 text-center text-sm font-semibold text-accent-text dark:border-accent-700"
+          >
+            <span className="flex size-10 items-center justify-center rounded-full bg-accent-500/15">
+              <Plus className="size-5" aria-hidden="true" />
+            </span>
+            {t("add")}
+            <span className="text-xs font-normal text-muted-foreground">{t("addHint")}</span>
+          </Link>
+        </li>
       </ul>
     </section>
   );

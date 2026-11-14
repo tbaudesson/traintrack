@@ -105,3 +105,14 @@ export function useProgramTemplates(): ProgramTemplate[] {
   }, []);
   return templates.filter(speaks(locale));
 }
+
+/** The names of every ready-made program, in every language: a program by one of these names was added, not built. */
+export function useReadyMadeNames(): Set<string> {
+  const [names, setNames] = useState<Set<string>>(() => new Set(PROGRAM_TEMPLATES.map((t) => t.name)));
+  useEffect(() => {
+    listTemplates()
+      .then((all) => setNames(new Set([...PROGRAM_TEMPLATES.map((t) => t.name), ...all.map((t) => t.name)])))
+      .catch(() => {});
+  }, []);
+  return names;
+}

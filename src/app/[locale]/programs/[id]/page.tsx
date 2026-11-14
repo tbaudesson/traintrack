@@ -1,268 +1,283 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useFormat } from "@/lib/format";
-import { useInjuriesOf } from "@/hooks/useAthleteProfile";
+import { ArrowRight, CalendarDays, Check, LogOut, Loader2, Pencil, UserCheck, Wand2 } from "lucide-react";
+import { getCurrentUserIdSync, type ProgramDay } from "@/db";
 import { useRouter } from "@/i18n/navigation";
-import { useProgram, updateProgram, deleteProgram, assignProgramToClients } from "@/hooks/usePrograms";
-import { DetailRow } from "@/components/ui/detail-row";
-import { ProgramDaysEditor } from "@/components/domain/ProgramDaysEditor";
-import { useClients } from "@/hooks/useClients";
-import type { ProgramDay } from "@/db";
+import { deleteProgram, updateProgram, useProgram } from "@/hooks/usePrograms";
+import { useWorkouts } from "@/hooks/useWorkouts";
+import { useExercises } from "@/hooks/useExercises";
+import { useAthleteProfile } from "@/hooks/useAthleteProfile";
+import { describeTarget } from "@/lib/cardio";
+import { localDate } from "@/lib/dates";
+import { useExerciseLabel } from "@/lib/exerciseNames";
+import { useFormat } from "@/lib/format";
+import { planWeeks, programCategory } from "@/lib/programCategories";
+import { customisedName, programOrigin } from "@/lib/programOrigin";
+import { programProgress } from "@/lib/programCards";
+import { PROGRAM_TEMPLATES } from "@/lib/programTemplates";
+import { nextMonday, programWeek } from "@/lib/programWeek";
+import { findWorkoutProgramDay, nextDayIndex, startWorkoutFromDay } from "@/lib/startWorkout";
+import { useReadyMadeNames } from "@/lib/templateService";
+import { mondayOfDate } from "@/lib/weekPlan";
+import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Trash2, Save, Loader2, UserCheck, Users, CalendarDays } from "lucide-react";
-import { nextMonday, programWeek } from "@/lib/programWeek";
-import { localDate } from "@/lib/dates";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CategoryIcon } from "@/components/domain/ProgramCatalog";
 
-export default function ProgramEditorPage() {
-  const t = useTranslations("programs");
+/**
+ * A program as one follows it: what it is, how far one is, its sessions week
+ * by week, and the next one to start. One's own programs open the editor from
+ * here; a ready-made program can be left or customised; a coach's is followed
+ * as it is.
+ */
+export default function ProgramPage() {
+  const t = useTranslations("programView");
+  const tp = useTranslations("programs");
+  const tc = useTranslations("catalog");
+  const xl = useExerciseLabel();
   const { day } = useFormat();
-  const params = useParams();
   const router = useRouter();
-  const programId = Number(params.id);
+  const programId = Number(useParams().id);
   const program = useProgram(programId);
-  const { clients } = useClients();
-  // A team program has no single athlete: no injury to flag.
-  const forTeam = !!program?.groupId && !program.assignedToUserId;
-  const athleteInjuries = useInjuriesOf(program?.assignedToUserId);
-  const injuries = forTeam ? [] : athleteInjuries;
+  const workouts = useWorkouts();
+  const exercises = useExercises();
+  const profile = useAthleteProfile();
+  const readyMade = useReadyMadeNames();
+  const [busy, setBusy] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const today = localDate();
 
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [days, setDays] = useState<ProgramDay[]>([]);
-  const [assignedTo, setAssignedTo] = useState<string | null>(null);
-  const [groupId, setGroupId] = useState<string | null>(null);
-  const [startDate, setStartDate] = useState("");
-  const [loaded, setLoaded] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [assignOpen, setAssignOpen] = useState(false);
-  const [teamOpen, setTeamOpen] = useState(false);
-  const [teamResult, setTeamResult] = useState<string | null>(null);
-  const [assigningTeam, setAssigningTeam] = useState(false);
+  const origin = program ? programOrigin(program, getCurrentUserIdSync(), readyMade) : null;
+  const days = useMemo(() => program?.structure ?? [], [program]);
+  const done = useMemo(() => {
+    if (!program) return new Set<number>();
+    return new Set(workouts.map((w) => findWorkoutProgramDay([program], w)?.index).filter((i): i is number => i !== undefined));
+  }, [program, workouts]);
 
-  if (program && !loaded) {
-    setName(program.name);
-    setDescription(program.description ?? "");
-    setDays(program.structure ?? []);
-    setAssignedTo(program.assignedToUserId ?? null);
-    setGroupId(program.groupId ?? null);
-    setStartDate(program.startDate ?? "");
-    setLoaded(true);
-  }
-
-  async function save() {
-    setSaving(true);
-    try {
-      await updateProgram(programId, {
-        name: name.trim() || t("untitled"),
-        description: description.trim() || undefined,
-        structure: days,
-        assignedToUserId: assignedTo,
-        groupId,
-        startDate: startDate || null,
-      });
-      router.push("/programs");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleDelete() {
-    await deleteProgram(programId);
-    router.push("/programs");
-  }
-
-  function assignClient(userId: string | null, gId: string | null) {
-    setAssignedTo(userId);
-    setGroupId(gId);
-    setAssignOpen(false);
-  }
-
-  const assignedClient = clients.find((c) => c.userId === assignedTo);
-  const weekInfo = startDate ? programWeek({ startDate, structure: days }, localDate()) : null;
-
-  // Every team the coach has clients in, with those clients.
-  const teams = [...new Map(clients.map((c) => [c.groupId, c.groupName])).entries()].map(([groupId, groupName]) => ({
-    groupId,
-    groupName,
-    members: clients.filter((c) => c.groupId === groupId),
-  }));
-
-  async function assignToTeam(team: (typeof teams)[number]) {
-    setAssigningTeam(true);
-    try {
-      const finalName = name.trim() || t("untitled");
-      // Hand out what is on screen, and keep the model in step with it.
-      await updateProgram(programId, { name: finalName, description: description.trim() || undefined, structure: days });
-      const result = await assignProgramToClients(
-        { name: finalName, description: description.trim() || undefined, structure: days },
-        team.members,
-        startDate || null
-      );
-      setTeamResult(t("teamAssigned", { team: team.groupName, count: result.created + result.updated }));
-      setTeamOpen(false);
-    } finally {
-      setAssigningTeam(false);
-    }
-  }
-
-  if (!program) {
+  if (!program || !origin) {
     return (
       <div className="flex justify-center p-10">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
       </div>
     );
   }
 
+  const category = programCategory(program, PROGRAM_TEMPLATES);
+  const weeks = planWeeks(days);
+  const calendar = programWeek(program, today);
+  const progress = programProgress(program, workouts);
+  // A coach looking at a client's copy does not train it.
+  const forSomeoneElse = !!program.assignedToUserId && program.assignedToUserId !== getCurrentUserIdSync();
+  const next = days.length && !forSomeoneElse ? nextDayIndex(program, workouts, today) : null;
+  const running = workouts.find((w) => w.date === today && findWorkoutProgramDay([program], w));
+  const perWeek = weeks ? Math.round(days.length / weeks) : days.length;
+
+  async function start() {
+    if (running?.id) return router.push(`/log/${running.id}`);
+    if (next === null || !program) return;
+    setBusy(true);
+    try {
+      const deload = profile?.deloadWeek === mondayOfDate(today);
+      const id = await startWorkoutFromDay(program, next, exercises, today, { deload });
+      router.push(`/log/${id}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function customise() {
+    // Renamed, it is no longer the ready-made program: one's own, to edit.
+    // The sessions done stay linked to it.
+    await updateProgram(programId, { name: customisedName(program!.name, t("customSuffix")) });
+    router.push(`/programs/${programId}/edit`);
+  }
+
+  async function leave() {
+    await deleteProgram(programId);
+    router.push("/programs");
+  }
+
+  // Days grouped by week for a plan; one group for a program that repeats.
+  const groups: { week: number | null; items: { d: ProgramDay; index: number }[] }[] = [];
+  days.forEach((d, index) => {
+    const week = d.week ?? null;
+    const group = groups.find((g) => g.week === week) ?? (groups.push({ week, items: [] }), groups[groups.length - 1]);
+    group.items.push({ d, index });
+  });
+  const currentWeek = next !== null ? (days[next]?.week ?? null) : null;
+
   return (
     <>
       <PageHeader
-        title={t("edit")}
+        title={program.name}
         showBack
         actions={
-          <Button size="sm" onClick={save} disabled={saving}>
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="mr-1 h-4 w-4" />{t("save")}</>}
-          </Button>
+          origin === "mine" ? (
+            <Button size="sm" variant="outline" onClick={() => router.push(`/programs/${programId}/edit`)}>
+              <Pencil className="mr-1 h-4 w-4" aria-hidden="true" />
+              {t("edit")}
+            </Button>
+          ) : undefined
         }
       />
       <div className="space-y-5 p-4 pb-28">
-        <div className="space-y-2">
-          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("name")} />
-          <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("description")} />
-        </div>
-
-        {teamResult && <p role="status" className="text-sm font-medium text-success-text">{teamResult}</p>}
-
-        {/* Assignment */}
-        <Card>
-          <CardContent className="flex items-center gap-3 py-3">
-            <UserCheck className="h-5 w-5 text-green-600" />
-            <div className="flex-1">
-              <p className="text-sm font-medium">{t("assignTo")}</p>
-              <p className="text-xs text-muted-foreground">
-                {assignedClient ? assignedClient.displayName : t("notAssigned")}
-              </p>
+        <section className="t-hero space-y-3 rounded-3xl p-4">
+          <div className="flex items-center gap-3">
+            <CategoryIcon category={category ?? "custom"} size="lg" />
+            <div className="min-w-0">
+              {category && <p className="text-sm font-semibold">{tc(`cat_${category}`)}</p>}
+              <p className={category ? "text-xs text-muted-foreground" : "text-sm font-semibold"}>{t(`origin_${origin}`)}</p>
             </div>
-            <div className="flex flex-col gap-2">
-              <Button size="sm" variant="outline" onClick={() => setAssignOpen(true)}>
-                {t("assign")}
-              </Button>
-              {!assignedTo && teams.length > 0 && (
-                <Button size="sm" variant="outline" onClick={() => setTeamOpen(true)}>
-                  <Users className="mr-1 h-4 w-4" aria-hidden="true" />
-                  {t("assignTeam")}
-                </Button>
+          </div>
+          {program.description && <p className="text-sm text-muted-foreground">{program.description}</p>}
+          <div className="flex flex-wrap gap-1.5">
+            {weeks && <Tag>{tc("weeks", { count: weeks })}</Tag>}
+            <Tag>{tc("perWeek", { count: perWeek })}</Tag>
+            <Tag>{t("sessionsDone", { count: progress.sessions })}</Tag>
+          </div>
+          {progress.share !== null && (
+            <div className="h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={Math.round(progress.share * 100)} aria-valuemin={0} aria-valuemax={100} aria-label={program.name}>
+              <div className="h-full rounded-full bg-accent-500" style={{ width: `${Math.max(3, progress.share * 100)}%` }} />
+            </div>
+          )}
+          {next !== null && (
+            <Button size="lg" className="w-full rounded-full" onClick={start} disabled={busy}>
+              {busy ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <>
+                  {running ? t("continue") : t("start", { name: days[next].name })}
+                  <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
+                </>
               )}
-            </div>
-          </CardContent>
-        </Card>
+            </Button>
+          )}
+        </section>
 
-        {/* Start date */}
-        <Card>
-          <CardContent className="space-y-2 py-3">
+        {/* Start date: a plan in weeks follows the calendar from it. */}
+        {weeks && (
+          <section className="t-surface space-y-2 rounded-2xl p-3">
             <div className="flex items-center gap-3">
               <CalendarDays className="h-5 w-5 text-accent-text" aria-hidden="true" />
-              <label htmlFor="program-start" className="flex-1 text-sm font-medium">{t("startDate")}</label>
-              <Input
-                id="program-start"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-auto"
-              />
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="outline" onClick={() => setStartDate(nextMonday(localDate()))}>
-                {t("startNextMonday")}
-              </Button>
-              {startDate && (
-                <Button size="sm" variant="ghost" onClick={() => setStartDate("")}>
-                  {t("startNone")}
-                </Button>
+              <label htmlFor="program-start" className="flex-1 text-sm font-medium">{tp("startDate")}</label>
+              {origin === "coach" ? (
+                <span className="text-sm">{program.startDate ? day(program.startDate) : "—"}</span>
+              ) : (
+                <Input
+                  id="program-start"
+                  type="date"
+                  value={program.startDate ?? ""}
+                  onChange={(e) => updateProgram(programId, { startDate: e.target.value || null })}
+                  className="w-auto"
+                />
               )}
             </div>
+            {origin !== "coach" && !program.startDate && (
+              <Button size="sm" variant="outline" onClick={() => updateProgram(programId, { startDate: nextMonday(today) })}>
+                {tp("startNextMonday")}
+              </Button>
+            )}
             <p className="text-xs text-muted-foreground">
-              {startDate && weekInfo
-                ? weekInfo.started
-                  ? weekInfo.total
-                    ? t("weekOf", { week: weekInfo.week, total: weekInfo.total })
-                    : t("weekSince", { week: weekInfo.week })
-                  : t("startsOn", { date: day(startDate) })
-                : t("startHint")}
+              {calendar
+                ? calendar.started
+                  ? calendar.total
+                    ? tp("weekOf", { week: calendar.week, total: calendar.total })
+                    : tp("weekSince", { week: calendar.week })
+                  : tp("startsOn", { date: day(program.startDate!) })
+                : tp("startHint")}
             </p>
-          </CardContent>
-        </Card>
+          </section>
+        )}
 
-        <ProgramDaysEditor days={days} setDays={setDays} injuries={injuries} />
+        {/* The sessions, week by week. */}
+        <section className="space-y-2">
+          <h2 className="text-lg font-semibold tracking-tight">{t("sessions")}</h2>
+          {groups.map((g) => {
+            const list = (
+              <ul className="mt-1 space-y-1.5">
+                {g.items.map(({ d, index }) => (
+                  <li key={index} className={cn("flex items-start gap-2.5 rounded-xl p-2 text-sm", index === next && "bg-accent-500/10 ring-1 ring-accent-500/40")}>
+                    <span
+                      className={cn(
+                        "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full",
+                        done.has(index) ? "bg-green-500 text-white" : "ring-1 ring-border"
+                      )}
+                    >
+                      {done.has(index) && <Check className="size-3.5" aria-hidden="true" />}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-medium">{d.name}</span>
+                      <span className="block text-xs text-muted-foreground">
+                        {d.cardio
+                          ? describeTarget(d.cardio)
+                          : d.exercises.map((e) => xl(e.exerciseName)).join(" · ") || t("noExercises")}
+                      </span>
+                    </span>
+                    {index === next && <span className="shrink-0 text-xs font-semibold text-accent-text">{t("next")}</span>}
+                  </li>
+                ))}
+              </ul>
+            );
+            // A program that repeats: its days as they are. A plan: one fold per week, this week open.
+            return g.week === null ? (
+              <div key="all" className="t-surface rounded-2xl p-3">{list}</div>
+            ) : (
+              <details key={g.week} open={g.week === currentWeek} className="t-surface rounded-2xl p-3">
+                <summary className="flex min-h-9 cursor-pointer items-center justify-between text-sm font-semibold">
+                  {t("week", { week: g.week })}
+                  <span className="text-xs font-normal text-muted-foreground">
+                    {t("doneOf", { done: g.items.filter((x) => done.has(x.index)).length, total: g.items.length })}
+                  </span>
+                </summary>
+                {list}
+              </details>
+            );
+          })}
+        </section>
 
-        <Button variant="ghost" className="w-full text-destructive" onClick={handleDelete}>
-          <Trash2 className="mr-1 h-4 w-4" />
-          {t("deleteProgram")}
-        </Button>
+        {origin === "followed" && (
+          <section className="space-y-2">
+            <Button variant="outline" className="w-full" onClick={customise}>
+              <Wand2 className="mr-1 h-4 w-4" aria-hidden="true" />
+              {t("customise")}
+            </Button>
+            <p className="text-xs text-muted-foreground">{t("customiseHint")}</p>
+            <Button variant="ghost" className="w-full text-destructive" onClick={() => setLeaving(true)}>
+              <LogOut className="mr-1 h-4 w-4" aria-hidden="true" />
+              {t("leave")}
+            </Button>
+          </section>
+        )}
+
+        {origin === "coach" && (
+          <p className="flex items-center gap-2 rounded-xl bg-muted p-3 text-sm text-muted-foreground">
+            <UserCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
+            {t("coachHint")}
+          </p>
+        )}
       </div>
 
-      <Dialog open={teamOpen} onOpenChange={setTeamOpen}>
+      <Dialog open={leaving} onOpenChange={setLeaving}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("assignTeam")}</DialogTitle>
+            <DialogTitle className="pr-8">{t("leaveTitle", { name: program.name })}</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">{t("assignTeamHint")}</p>
-          <div className="space-y-2">
-            {teams.map((team) => (
-              <DetailRow
-                key={team.groupId}
-                onClick={() => assignToTeam(team)}
-                disabled={assigningTeam}
-                icon={Users}
-                title={team.groupName}
-                subtitle={t("teamMembers", { count: team.members.length })}
-              />
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Assign client */}
-      <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
-        <DialogContent className="max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{t("assignTo")}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-1">
-            <button
-              onClick={() => assignClient(null, null)}
-              className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent"
-            >
-              {t("notAssigned")}
-            </button>
-            {clients.map((c) => (
-              <button
-                key={c.userId}
-                onClick={() => assignClient(c.userId, c.groupId)}
-                className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent"
-              >
-                <UserCheck className="h-4 w-4 text-green-600" />
-                <span className="flex-1">{c.displayName}</span>
-                <span className="text-xs text-muted-foreground">{c.groupName}</span>
-              </button>
-            ))}
-            {clients.length === 0 && (
-              <p className="px-2 py-2 text-xs text-muted-foreground">{t("noClients")}</p>
-            )}
+          <p className="text-sm text-muted-foreground">{t("leaveText")}</p>
+          <div className="grid gap-2">
+            <Button variant="destructive" onClick={leave}>{t("leave")}</Button>
+            <Button variant="outline" onClick={() => setLeaving(false)}>{t("cancel")}</Button>
           </div>
         </DialogContent>
       </Dialog>
     </>
   );
+}
+
+function Tag({ children }: { children: React.ReactNode }) {
+  return <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{children}</span>;
 }

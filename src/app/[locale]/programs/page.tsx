@@ -25,7 +25,8 @@ import { Plus, ClipboardList, Loader2, UserCheck, Sparkles } from "lucide-react"
 import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
 import { DetailRow } from "@/components/ui/detail-row";
 import { useClients } from "@/hooks/useClients";
-import { useProgramTemplates } from "@/lib/templateService";
+import { useProgramTemplates, useReadyMadeNames } from "@/lib/templateService";
+import { programOrigin } from "@/lib/programOrigin";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
 
 export default function ProgramsPage() {
@@ -74,7 +75,7 @@ export default function ProgramsPage() {
   async function handleCreate() {
     setBusy(true);
     const id = await createProgram({ name: t("untitled"), structure: [{ name: t("day") + " 1", exercises: [] }] });
-    router.push(`/programs/${id}`);
+    router.push(`/programs/${id}/edit`);
   }
 
   function openAi() {
@@ -109,7 +110,7 @@ export default function ProgramsPage() {
         structure: result.structure,
       });
       setAiOpen(false);
-      router.push(`/programs/${id}`);
+      router.push(`/programs/${id}/edit`);
     } catch (e) {
       const code = e instanceof Error ? e.message : "";
       setAiError(
@@ -127,7 +128,9 @@ export default function ProgramsPage() {
   const mine = programs.filter((p) => !p.assignedToUserId || p.assignedToUserId === user?.id);
   const toClients = programs.filter((p) => p.assignedToUserId && p.assignedToUserId !== user?.id);
   const clientName = (id?: string | null) => clients.find((c) => c.userId === id)?.displayName ?? "—";
-  const assignedToMe = programs.filter((p) => p.assignedToUserId === user?.id && p.ownerUserId !== user?.id);
+  const readyMade = useReadyMadeNames();
+  const followed = mine.filter((p) => programOrigin(p, user?.id, readyMade) !== "mine");
+  const created = mine.filter((p) => programOrigin(p, user?.id, readyMade) === "mine");
 
   return (
     <>
@@ -151,27 +154,33 @@ export default function ProgramsPage() {
       <div className="space-y-6 p-4 pb-24">
         <ProgramCatalog templates={catalogue} level={profile?.fitnessLevel} busy={busy} onUse={applyTemplate} favorite={prefs.sport} />
 
-        {assignedToMe.length > 0 && (
+        {/* Programs followed as they are: ready-made ones and a coach's. */}
+        {followed.length > 0 && (
           <section className="space-y-2">
-            <SectionHeading>{t("assignedToMe")}</SectionHeading>
-            {assignedToMe.map((p) => (
-              <DetailRow
-                key={p.id}
-                icon={UserCheck}
-                tone="success"
-                title={p.name}
-                subtitle={`${(p.structure ?? []).length} ${t("days")}`}
-              />
-            ))}
+            <SectionHeading>{t("followed")}</SectionHeading>
+            {followed.map((p) => {
+              const { category, subtitle } = describe(p);
+              const origin = programOrigin(p, user?.id, readyMade);
+              return (
+                <DetailRow
+                  key={p.id}
+                  onClick={() => router.push(`/programs/${p.id}`)}
+                  leading={<CategoryIcon category={category ?? "custom"} />}
+                  title={p.name}
+                  subtitle={`${subtitle} · ${t(origin === "coach" ? "byCoach" : "readyMade")}`}
+                />
+              );
+            })}
           </section>
         )}
 
+        {/* Programs one built: edited freely. */}
         <section className="space-y-2">
-          <SectionHeading>{t("myPrograms")}</SectionHeading>
-          {mine.length === 0 ? (
-            <EmptyState icon={ClipboardList} title={t("noPrograms")} />
+          <SectionHeading>{t("myCreations")}</SectionHeading>
+          {created.length === 0 ? (
+            <EmptyState icon={ClipboardList} title={t("noCreations")} />
           ) : (
-            mine.map((p) => {
+            created.map((p) => {
               const { category, subtitle } = describe(p);
               return (
                 <DetailRow
@@ -179,7 +188,7 @@ export default function ProgramsPage() {
                   onClick={() => router.push(`/programs/${p.id}`)}
                   leading={<CategoryIcon category={category ?? "custom"} />}
                   title={p.name}
-                  subtitle={`${subtitle}${p.assignedToUserId ? ` · ${t("assigned")}` : ""}`}
+                  subtitle={subtitle}
                 />
               );
             })

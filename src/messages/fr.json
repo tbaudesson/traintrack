@@ -443,7 +443,12 @@
     "assignTeamHint": "Chaque client reçoit sa propre copie. Réassigner met à jour les copies existantes.",
     "teamMembers": "{count, plural, one {# client} other {# clients}}",
     "teamAssigned": "Programme assigné à {team} ({count} clients).",
-    "assignedToClients": "Assignés à mes clients"
+    "assignedToClients": "Assignés à mes clients",
+    "followed": "Programmes suivis",
+    "myCreations": "Mes créations",
+    "noCreations": "Créez votre propre programme avec « Nouveau programme ».",
+    "byCoach": "par votre coach",
+    "readyMade": "tout fait"
   },
   "readiness": {
     "title": "Forme du jour",
@@ -978,7 +983,9 @@
     "discover": "Découvrir",
     "startsOn": "Commence le {date}",
     "week": "Semaine {week}",
-    "sessions": "{count, plural, =0 {Pas encore commencé} one {# séance} other {# séances}}"
+    "sessions": "{count, plural, =0 {Pas encore commencé} one {# séance} other {# séances}}",
+    "add": "Ajouter un programme",
+    "addHint": "Tout fait ou le vôtre"
   },
   "guided": {
     "start": "Lancer le mode guidé",
@@ -1179,5 +1186,27 @@
   "demo": {
     "watch": "Voir la démo",
     "none": "Pas encore de vidéo pour ce mouvement."
+  },
+  "programView": {
+    "origin_followed": "Programme tout fait que vous suivez",
+    "origin_coach": "Proposé par votre coach",
+    "origin_mine": "Créé par vous",
+    "sessionsDone": "{count, plural, =0 {Pas encore commencé} one {# séance faite} other {# séances faites}}",
+    "start": "Commencer : {name}",
+    "continue": "Reprendre la séance du jour",
+    "sessions": "Les séances",
+    "week": "Semaine {week}",
+    "doneOf": "{done} / {total} faites",
+    "next": "Prochaine",
+    "noExercises": "Pas encore d'exercices",
+    "edit": "Modifier",
+    "customise": "Personnaliser ce programme",
+    "customiseHint": "Il devient le vôtre : vous pourrez changer les séances et les exercices. Les séances déjà faites restent comptées.",
+    "customSuffix": "perso",
+    "leave": "Me désinscrire",
+    "leaveTitle": "Quitter « {name} » ?",
+    "leaveText": "Le programme disparaît de vos entraînements. Les séances déjà faites restent dans votre historique, et vous pourrez le reprendre depuis les programmes tout faits.",
+    "cancel": "Annuler",
+    "coachHint": "Votre coach a préparé ce programme pour vous : demandez-lui s'il faut le changer."
   }
 }

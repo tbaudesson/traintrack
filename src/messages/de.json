@@ -443,7 +443,12 @@
     "assignTeamHint": "Jeder Kunde erhält eine eigene Kopie. Erneutes Zuweisen aktualisiert vorhandene Kopien.",
     "teamMembers": "{count, plural, one {# Kunde} other {# Kunden}}",
     "teamAssigned": "Programm {team} zugewiesen ({count} Kunden).",
-    "assignedToClients": "Meinen Kunden zugewiesen"
+    "assignedToClients": "Meinen Kunden zugewiesen",
+    "followed": "Programme, denen ich folge",
+    "myCreations": "Meine Programme",
+    "noCreations": "Erstelle dein eigenes Programm mit „Neues Programm“.",
+    "byCoach": "von deinem Coach",
+    "readyMade": "fertig"
   },
   "readiness": {
     "title": "Tagesform",
@@ -978,7 +983,9 @@
     "discover": "Entdecken",
     "startsOn": "Beginnt am {date}",
     "week": "Woche {week}",
-    "sessions": "{count, plural, =0 {Noch nicht begonnen} one {# Einheit} other {# Einheiten}}"
+    "sessions": "{count, plural, =0 {Noch nicht begonnen} one {# Einheit} other {# Einheiten}}",
+    "add": "Programm hinzufügen",
+    "addHint": "Fertig oder eigenes"
   },
   "guided": {
     "start": "Geführten Modus starten",
@@ -1179,5 +1186,27 @@
   "demo": {
     "watch": "Demo ansehen",
     "none": "Noch kein Video für diese Übung."
+  },
+  "programView": {
+    "origin_followed": "Fertiges Programm, dem du folgst",
+    "origin_coach": "Von deinem Coach",
+    "origin_mine": "Von dir erstellt",
+    "sessionsDone": "{count, plural, =0 {Noch nicht begonnen} one {# Einheit erledigt} other {# Einheiten erledigt}}",
+    "start": "Starten: {name}",
+    "continue": "Heutige Einheit fortsetzen",
+    "sessions": "Die Einheiten",
+    "week": "Woche {week}",
+    "doneOf": "{done} / {total} erledigt",
+    "next": "Nächste",
+    "noExercises": "Noch keine Übungen",
+    "edit": "Bearbeiten",
+    "customise": "Programm anpassen",
+    "customiseHint": "Es wird deins: Du kannst Einheiten und Übungen ändern. Erledigte Einheiten zählen weiter.",
+    "customSuffix": "angepasst",
+    "leave": "Abmelden",
+    "leaveTitle": "„{name}“ verlassen?",
+    "leaveText": "Das Programm verschwindet aus deinem Training. Erledigte Einheiten bleiben im Verlauf, und du kannst es bei den fertigen Programmen wieder aufnehmen.",
+    "cancel": "Abbrechen",
+    "coachHint": "Dein Coach hat dieses Programm für dich erstellt: Frag ihn, wenn es geändert werden soll."
   }
 }

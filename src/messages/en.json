@@ -443,7 +443,12 @@
     "assignTeamHint": "Each client gets their own copy. Assigning again updates existing copies.",
     "teamMembers": "{count, plural, one {# client} other {# clients}}",
     "teamAssigned": "Program assigned to {team} ({count} clients).",
-    "assignedToClients": "Assigned to my clients"
+    "assignedToClients": "Assigned to my clients",
+    "followed": "Programs I follow",
+    "myCreations": "My creations",
+    "noCreations": "Build your own program with “New program”.",
+    "byCoach": "by your coach",
+    "readyMade": "ready-made"
   },
   "readiness": {
     "title": "Daily readiness",
@@ -978,7 +983,9 @@
     "discover": "Discover",
     "startsOn": "Starts on {date}",
     "week": "Week {week}",
-    "sessions": "{count, plural, =0 {Not started yet} one {# session} other {# sessions}}"
+    "sessions": "{count, plural, =0 {Not started yet} one {# session} other {# sessions}}",
+    "add": "Add a program",
+    "addHint": "Ready-made or your own"
   },
   "guided": {
     "start": "Start guided mode",
@@ -1179,5 +1186,27 @@
   "demo": {
     "watch": "Watch the demo",
     "none": "No video for this move yet."
+  },
+  "programView": {
+    "origin_followed": "Ready-made program you follow",
+    "origin_coach": "Set by your coach",
+    "origin_mine": "Made by you",
+    "sessionsDone": "{count, plural, =0 {Not started yet} one {# session done} other {# sessions done}}",
+    "start": "Start: {name}",
+    "continue": "Resume today's session",
+    "sessions": "The sessions",
+    "week": "Week {week}",
+    "doneOf": "{done} / {total} done",
+    "next": "Next",
+    "noExercises": "No exercises yet",
+    "edit": "Edit",
+    "customise": "Customise this program",
+    "customiseHint": "It becomes yours: you can change its sessions and exercises. The sessions already done still count.",
+    "customSuffix": "custom",
+    "leave": "Unsubscribe",
+    "leaveTitle": "Leave “{name}”?",
+    "leaveText": "The program leaves your training. The sessions already done stay in your history, and you can take it up again from the ready-made programs.",
+    "cancel": "Cancel",
+    "coachHint": "Your coach prepared this program for you: ask them if it needs changing."
   }
 }
