@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Pause, Play, SkipForward, Square } from "lucide-react";
+import { Pause, Play, PlayCircle, SkipForward, Square } from "lucide-react";
 import { GET_READY_SEC } from "@/lib/intervals";
 import { beep } from "@/lib/beep";
 import { useExerciseLabel } from "@/lib/exerciseNames";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { DemoDialog } from "@/components/domain/DemoDialog";
 
 export interface IntervalResult {
   /** Indexes of the effort steps carried out to the end. */
@@ -18,7 +19,12 @@ export interface IntervalResult {
 
 /** What the timer plays: an exercise (or one side of it), or a rest. */
 export type PlayerStep =
-  | { type: "work"; exercise: { name: string; sides?: boolean; cue?: string }; seconds: number; side?: "left" | "right" }
+  | {
+      type: "work";
+      exercise: { name: string; sides?: boolean; cue?: string; demo?: { video: string | null; cue?: string } };
+      seconds: number;
+      side?: "left" | "right";
+    }
   | { type: "rest"; seconds: number; recovery?: boolean };
 
 const clock = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
@@ -50,6 +56,27 @@ export function IntervalPlayer({
   const elapsed = useRef(0);
   const ended = useRef(false);
   const lastBeep = useRef<number | null>(null);
+  const [demo, setDemo] = useState<{ name: string; video: string | null; cue?: string } | null>(null);
+  const pausedForDemo = useRef(false);
+
+  /** Watching a demo pauses the clock, which starts again when it is closed. */
+  function showDemo(exercise: { name: string; demo?: { video: string | null; cue?: string } }) {
+    if (!exercise.demo) return;
+    if (pausedLeft === null) {
+      setPausedLeft(Math.max(0, endsAt - Date.now()));
+      pausedForDemo.current = true;
+    }
+    setDemo({ name: xl(exercise.name), ...exercise.demo });
+  }
+  function closeDemo() {
+    setDemo(null);
+    if (pausedForDemo.current && pausedLeft !== null) {
+      setEndsAt(Date.now() + pausedLeft);
+      setNow(Date.now());
+      setPausedLeft(null);
+    }
+    pausedForDemo.current = false;
+  }
 
   const step = index >= 0 ? steps[index] : null;
   const length = step ? step.seconds : GET_READY_SEC;
@@ -187,6 +214,12 @@ export function IntervalPlayer({
           </p>
         </div>
 
+        {step?.type === "work" && step.exercise.demo && (
+          <button type="button" onClick={() => showDemo(step.exercise)} className="flex min-h-10 items-center gap-1.5 text-sm font-semibold text-accent-text">
+            <PlayCircle className="h-5 w-5" aria-hidden="true" />
+            {t("demo")}
+          </button>
+        )}
         {step?.type === "work" && step.side && <p className="text-base font-semibold">{t(step.side === "left" ? "leftSide" : "rightSide")}</p>}
         {step?.type === "work" && step.exercise.cue && <p className="max-w-sm text-sm text-muted-foreground">{step.exercise.cue}</p>}
         {step?.type === "work" && step.exercise.sides && <p className="text-sm font-medium text-muted-foreground">{t("switchSides")}</p>}
@@ -196,7 +229,15 @@ export function IntervalPlayer({
             {next.side && ` · ${t(next.side === "left" ? "leftSide" : "rightSide")}`}
           </p>
         )}
+        {resting && next?.type === "work" && next.exercise.demo && (
+          <button type="button" onClick={() => showDemo(next.exercise)} className="flex min-h-10 items-center gap-1.5 text-sm font-semibold text-accent-text">
+            <PlayCircle className="h-5 w-5" aria-hidden="true" />
+            {t("demo")}
+          </button>
+        )}
       </div>
+
+      <DemoDialog demo={demo} onClose={closeDemo} />
 
       <div className="grid grid-cols-3 gap-3 px-5 pb-8">
         <Button variant="outline" size="lg" className="h-14 rounded-2xl" onClick={finish} aria-label={t("stop")}>

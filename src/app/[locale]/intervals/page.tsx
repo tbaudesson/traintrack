@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { Play, Shuffle, Timer } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { useAthleteProfileOrNull } from "@/hooks/useAthleteProfile";
@@ -17,13 +17,16 @@ import {
   defaultPattern,
   patternSeconds,
   type IntervalFocus,
+  type IntervalExercise,
   type IntervalPattern,
   type IntervalPlan,
 } from "@/lib/intervals";
 import { localDate } from "@/lib/dates";
 import { isAvoided } from "@/lib/injuries";
 import { unlockAudio } from "@/lib/beep";
-import { useExerciseLabel } from "@/lib/exerciseNames";
+import { exerciseDescription, useExerciseLabel } from "@/lib/exerciseNames";
+import { demoVideo } from "@/lib/demoVideos";
+import { DemoButton, DemoDialog } from "@/components/domain/DemoDialog";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SectionHeading } from "@/components/ui/page-parts";
 import { Button } from "@/components/ui/button";
@@ -72,6 +75,7 @@ export default function IntervalsPage() {
   const t = useTranslations("intervals");
   const tinj = useTranslations("injuries");
   const xl = useExerciseLabel();
+  const locale = useLocale();
   const router = useRouter();
   const athlete = useAthleteProfileOrNull();
   const exercises = useExercises();
@@ -97,6 +101,20 @@ export default function IntervalsPage() {
   const injuries = useMemo(() => athlete?.injuryAreas ?? [], [athlete]);
   const pool = useMemo(() => INTERVAL_EXERCISES.filter((e) => !isAvoided(e.name, injuries)), [injuries]);
   const session = useMemo(() => (plan ? buildIntervalSession(plan, pool) : null), [plan, pool]);
+
+  // Each exercise with its demo: the video, and the cue in the app's language.
+  const [demo, setDemo] = useState<{ name: string; video: string | null; cue?: string } | null>(null);
+  const demoOf = useCallback(
+    (e: IntervalExercise) => {
+      const row = exercises.find((x) => !x.isCustom && x.name === e.name);
+      return { video: demoVideo(e.name, row?.videoUrl), cue: exerciseDescription(row ?? { name: e.name, description: e.description || undefined }, locale) };
+    },
+    [exercises, locale]
+  );
+  const withDemos = useMemo(
+    () => session && { steps: session.steps.map((s) => (s.type === "work" ? { ...s, exercise: { ...s.exercise, demo: demoOf(s.exercise) } } : s)) },
+    [session, demoOf]
+  );
 
   function change(next: Partial<IntervalPlan>) {
     if (!plan) return;
@@ -141,7 +159,7 @@ export default function IntervalsPage() {
     router.push(`/log/${id}`);
   }
 
-  if (!plan || !session) return <PageHeader title={t("title")} showBack />;
+  if (!plan || !session || !withDemos) return <PageHeader title={t("title")} showBack />;
 
   const { work, rest } = patternSeconds(plan.pattern);
   const circuits = session.rounds.length > 1 && plan.minutes >= 30 ? session.rounds.slice(0, 2) : session.rounds.slice(0, 1);
@@ -217,10 +235,11 @@ export default function IntervalsPage() {
               )}
               <ol className="space-y-1">
                 {round.map((e, n) => (
-                  <li key={e.name} className="flex items-center gap-2 text-sm">
+                  <li key={e.name} className="flex min-h-9 items-center gap-2 text-sm">
                     <span className="w-5 text-right text-xs text-muted-foreground tabular-nums">{n + 1}</span>
                     <span className="flex-1">{xl(e.name)}</span>
                     {e.equipment === "dumbbell" && <span className="text-xs text-muted-foreground">{t("withDumbbells")}</span>}
+                    {demoOf(e).video && <DemoButton onClick={() => setDemo({ name: xl(e.name), ...demoOf(e) })} />}
                   </li>
                 ))}
               </ol>
@@ -246,7 +265,8 @@ export default function IntervalsPage() {
         </p>
       </div>
 
-      {playing && <IntervalPlayer session={session} onEnd={save} />}
+      {playing && <IntervalPlayer session={withDemos} onEnd={save} />}
+      <DemoDialog demo={demo} onClose={() => setDemo(null)} />
     </>
   );
 }

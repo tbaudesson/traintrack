@@ -1090,7 +1090,8 @@
     "delete": "Delete the session",
     "deleteConfirm": "Delete this session?",
     "leftSide": "Left side",
-    "rightSide": "Right side"
+    "rightSide": "Right side",
+    "demo": "Watch the demo"
   },
   "mobility": {
     "title": "Warm-up and stretching",
@@ -1158,5 +1159,9 @@
     "perWeek": "{count} sessions / wk",
     "weeks": "{count, plural, one {# week} other {# weeks}}",
     "home": "At home"
+  },
+  "demo": {
+    "watch": "Watch the demo",
+    "none": "No video for this move yet."
   }
 }

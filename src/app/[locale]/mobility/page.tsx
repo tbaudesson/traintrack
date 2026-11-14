@@ -20,6 +20,8 @@ import {
   type MobilityTarget,
 } from "@/lib/mobility";
 import { unlockAudio } from "@/lib/beep";
+import { mobilityDemo } from "@/lib/demoVideos";
+import { DemoButton, DemoDialog } from "@/components/domain/DemoDialog";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SectionHeading } from "@/components/ui/page-parts";
 import { Button } from "@/components/ui/button";
@@ -55,6 +57,7 @@ export default function MobilityPage() {
   const [minutes, setMinutes] = useState(5);
   const [playing, setPlaying] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [demo, setDemo] = useState<{ name: string; video: string | null; cue?: string } | null>(null);
 
   useEffect(() => {
     const read = fromLink();
@@ -154,7 +157,7 @@ export default function MobilityPage() {
           )}
           <ol className="t-surface space-y-2 rounded-2xl p-3 ring-1 ring-foreground/5">
             {session.exercises.map((e, n) => (
-              <li key={e.key} className="flex gap-2 text-sm">
+              <li key={e.key} className="flex items-start gap-2 text-sm">
                 <span className="w-5 shrink-0 text-right text-xs text-muted-foreground tabular-nums">{n + 1}</span>
                 <span className="flex-1">
                   <span className="font-medium">{e.name[locale as "fr" | "de" | "en"] ?? e.name.en}</span>
@@ -165,6 +168,11 @@ export default function MobilityPage() {
                     </span>
                   )}
                 </span>
+                {mobilityDemo(e.key) && (
+                  <DemoButton
+                    onClick={() => setDemo({ name: e.name[locale as "fr" | "de" | "en"] ?? e.name.en, video: mobilityDemo(e.key), cue: e.cue[locale as "fr" | "de" | "en"] ?? e.cue.en })}
+                  />
+                )}
               </li>
             ))}
           </ol>
@@ -182,6 +190,8 @@ export default function MobilityPage() {
           {t("start")}
         </Button>
       </div>
+
+      <DemoDialog demo={demo} onClose={() => setDemo(null)} />
 
       {playing && (
         <IntervalPlayer

@@ -1090,7 +1090,8 @@
     "delete": "Supprimer la séance",
     "deleteConfirm": "Supprimer cette séance ?",
     "leftSide": "Côté gauche",
-    "rightSide": "Côté droit"
+    "rightSide": "Côté droit",
+    "demo": "Voir la démo"
   },
   "mobility": {
     "title": "Échauffement et étirements",
@@ -1158,5 +1159,9 @@
     "perWeek": "{count} séances / sem.",
     "weeks": "{count, plural, one {# semaine} other {# semaines}}",
     "home": "À la maison"
+  },
+  "demo": {
+    "watch": "Voir la démo",
+    "none": "Pas encore de vidéo pour ce mouvement."
   }
 }

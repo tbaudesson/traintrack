@@ -1,6 +1,7 @@
 import type { MuscleGroup } from "@/db";
 import type { PainArea } from "./pain";
 import type { InjuryLevel } from "./injuries";
+import { mobilityDemo } from "./demoVideos";
 
 /** Before a session (moving, to warm up) or after (holding, to stretch). */
 export type MobilityMode = "warmup" | "stretch";
@@ -125,6 +126,7 @@ export interface MobilityMove {
   key: string;
   name: string;
   cue: string;
+  demo: { video: string | null; cue: string };
 }
 
 export type MobilityStep =
@@ -186,7 +188,7 @@ export function buildMobilitySession(
   const exercises = pickMobility(mode, minutes, muscles, injuries);
   const steps: MobilityStep[] = [];
   for (const e of exercises) {
-    const shown: MobilityMove = { key: e.key, name: e.name[lang], cue: e.cue[lang] };
+    const shown: MobilityMove = { key: e.key, name: e.name[lang], cue: e.cue[lang], demo: { video: mobilityDemo(e.key), cue: e.cue[lang] } };
     for (const side of e.sides ? (["left", "right"] as const) : [undefined]) {
       if (steps.length) steps.push({ type: "rest", seconds: timing.transition });
       steps.push({ type: "work", exercise: shown, seconds: e.sides ? timing.sideHold : timing.hold, side });

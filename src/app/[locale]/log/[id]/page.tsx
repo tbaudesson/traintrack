@@ -30,6 +30,7 @@ import { substitutes } from "@/lib/substitutes";
 import { chainedNext, linkGroup, restsAfter, supersetOf, unlinkAfter } from "@/lib/supersets";
 import { findWorkoutProgramDay } from "@/lib/startWorkout";
 import { VideoEmbed } from "@/components/domain/VideoEmbed";
+import { demoVideo } from "@/lib/demoVideos";
 import { PlateCalculator } from "@/components/domain/PlateCalculator";
 import { CardioLogger } from "@/components/domain/CardioLogger";
 import { formatDistance, formatDuration, formatPace, isCardio, isCardioDone, newCardioRecords } from "@/lib/cardio";
@@ -822,8 +823,8 @@ export default function SessionLoggerPage() {
                       </ul>
                     )}
                     {exerciseDescription(ex, locale) && <p className="text-sm text-muted-foreground">{exerciseDescription(ex, locale)}</p>}
-                    {ex?.videoUrl && <VideoEmbed url={ex.videoUrl} />}
-                    {!exerciseDescription(ex, locale) && !ex?.videoUrl && <p className="text-sm text-muted-foreground">{t("noGuide")}</p>}
+                    {(demoVideo(ex?.name ?? "", ex?.videoUrl) ?? ex?.videoUrl) && <VideoEmbed url={(demoVideo(ex?.name ?? "", ex?.videoUrl) ?? ex?.videoUrl)!} />}
+                    {!exerciseDescription(ex, locale) && !ex?.videoUrl && !demoVideo(ex?.name ?? "") && <p className="text-sm text-muted-foreground">{t("noGuide")}</p>}
                   </div>
                 )}
 

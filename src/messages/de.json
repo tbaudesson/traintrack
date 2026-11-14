@@ -1090,7 +1090,8 @@
     "delete": "Einheit löschen",
     "deleteConfirm": "Diese Einheit löschen?",
     "leftSide": "Linke Seite",
-    "rightSide": "Rechte Seite"
+    "rightSide": "Rechte Seite",
+    "demo": "Demo ansehen"
   },
   "mobility": {
     "title": "Aufwärmen und Dehnen",
@@ -1158,5 +1159,9 @@
     "perWeek": "{count} Einheiten / Woche",
     "weeks": "{count, plural, one {# Woche} other {# Wochen}}",
     "home": "Zu Hause"
+  },
+  "demo": {
+    "watch": "Demo ansehen",
+    "none": "Noch kein Video für diese Übung."
   }
 }
