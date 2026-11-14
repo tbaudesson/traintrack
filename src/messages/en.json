@@ -1062,16 +1062,14 @@
   },
   "wizard": {
     "step": "Step {step} of {total}",
-    "title0": "What is your goal?",
-    "hint0": "We use it to suggest a program that fits.",
-    "title1": "Tell us about you",
-    "hint1": "All optional, it helps adapt loads and nutrition.",
+    "title0": "Your sport and your goal",
+    "hint0": "They help us suggest the right programs. You can change them later.",
+    "title1": "Your level",
+    "hint1": "And what to spare: exercises to avoid will be flagged.",
     "title2": "What equipment?",
     "hint2": "Pick a shortcut or tick what you have.",
-    "title3": "Your program",
-    "hint3": "These fit your goal, level and equipment best.",
-    "title4": "Your week",
-    "hint4": "Your training days: the home screen will place your sessions on them.",
+    "title3": "Your program and your week",
+    "hint3": "Choose a program and your days: its sessions will show in “My week”.",
     "gym": "Gym",
     "home": "At home",
     "perWeek": "{count, plural, one {# day a week} other {# days a week}}",
@@ -1082,7 +1080,11 @@
     "start": "Program start",
     "back": "Back",
     "next": "Continue",
-    "nextOrSkip": "Continue"
+    "nextOrSkip": "Continue",
+    "goal": "Goal",
+    "injuries": "An injury or a weak spot?",
+    "injuriesHint": "Optional. Tap the areas concerned.",
+    "aboutMore": "More about you (optional)"
   },
   "nutritionCalc": {
     "open": "Work it out for me",
@@ -1508,5 +1510,16 @@
     "weekSince": "Week {week} since the start",
     "startsOn": "Starts on {date}",
     "hint": "Without a start date, the program counts from the day it was added."
+  },
+  "firstSteps": {
+    "title": "Your first steps",
+    "progress": "{done} of {total}",
+    "hide": "Hide",
+    "done": "done",
+    "plan": "Plan your sessions in the week",
+    "session": "Do your first session, in guided mode",
+    "readiness": "Log how you feel today",
+    "calendar": "Add your sessions to your calendar",
+    "look": "Choose how the app looks"
   }
 }

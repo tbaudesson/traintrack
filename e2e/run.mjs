@@ -78,7 +78,7 @@ await page.waitForLoadState("load");
 expect(await page.evaluate(() => !!navigator.serviceWorker.controller), "the service worker never took control");
 
 // What the background warm-up does once signed in: every page and its files.
-const PAGES = ["", "/log", "/log/session", "/programs", "/progress", "/intervals", "/mobility", "/exercises", "/competitions", "/report", "/settings", "/more", "/horses"];
+const PAGES = ["", "/log", "/log/session", "/programs", "/progress", "/intervals", "/mobility", "/exercises", "/competitions", "/report", "/settings", "/more", "/horses", "/onboarding", "/readiness"];
 const warmed = await page.evaluate(async (pages) => {
   const files = new Set();
   for (const p of pages) {
@@ -296,6 +296,28 @@ await test("two programs planned on their own days show together in the week and
 await test("the monthly report counts the sessions of the month", async () => {
   await page.goto(`${BASE}/fr/report`);
   await page.getByText(/Séances : \d+ muscu/).first().waitFor({ timeout: 10000 });
+});
+
+await test("sign-up: sport, injuries, a program of that sport put in the planning", async () => {
+  await page.goto(`${BASE}/fr/onboarding`);
+  await page.getByRole("button", { name: "Course à pied" }).click();
+  expect((await page.getByRole("button", { name: "Endurance", pressed: true }).count()) === 1, "the sport did not suggest its goal");
+  await page.getByRole("button", { name: "Continuer" }).click();
+  await page.getByRole("button", { name: "Genou" }).click();
+  await page.getByRole("button", { name: "Continuer" }).click();
+  await page.getByRole("button", { name: "Continuer" }).click();
+  // The programs of the sport come first: pick the first one.
+  const first = page.locator("button[aria-pressed]", { hasText: /course|km|marathon/i }).first();
+  const name = (await first.locator("p").first().innerText()).trim();
+  await first.click();
+  await page.getByText(/Consentement données de santé/).click();
+  await snap("onboarding-last-step");
+  await page.getByRole("button", { name: "Terminer la configuration" }).click();
+  await page.waitForURL(/\/fr\/?$/, { timeout: 10000 });
+  // The program is in the planning, and the week names it.
+  await page.locator("section", { hasText: "prochaines semaines à mon agenda" }).getByText(`· ${name}`).first().waitFor({ timeout: 10000 });
+  await page.getByRole("heading", { name: "Vos premiers pas" }).waitFor({ timeout: 5000 });
+  await snap("home-first-steps");
 });
 
 await test("no page threw an error", async () => {

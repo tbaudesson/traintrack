@@ -5,8 +5,10 @@ import { useSearchParams } from "next/navigation";
 import { SessionLogger } from "../[id]/SessionLogger";
 
 function ById() {
-  const id = Number(useSearchParams().get("id"));
-  return id > 0 ? <SessionLogger key={id} workoutId={id} /> : null;
+  const params = useSearchParams();
+  const id = Number(params.get("id"));
+  // ?guided=1: the session opens in guided mode (a beginner's first one).
+  return id > 0 ? <SessionLogger key={id} workoutId={id} startGuided={params.get("guided") === "1"} /> : null;
 }
 
 /**

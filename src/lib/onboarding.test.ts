@@ -18,6 +18,16 @@ describe("sign-up suggestions", () => {
     expect(picks[0].homeFriendly).toBe(true);
   });
 
+  it("put the programs of one's sport first, at one's level first", () => {
+    const running = recommendPrograms({ goal: "endurance", level: "beginner", equipment: [], sport: "running" }, fr);
+    expect(running.map((t) => t.level)[0]).toBe("beginner");
+    expect(running.every((t) => t.goal === "endurance" || /Renfo/.test(t.name))).toBe(true);
+    const calisthenics = recommendPrograms({ goal: "general_fitness", level: "intermediate", equipment: ["bodyweight"], sport: "callisthenics" }, fr);
+    expect(calisthenics[0].name).toBe("Callisthenics intermédiaire en 8 semaines");
+    const vaulting = recommendPrograms({ goal: "general_fitness", level: "beginner", equipment: [], sport: "vaulting" }, fr);
+    expect(vaulting.every((t) => /Voltige|voltigeur/.test(t.name))).toBe(true);
+  });
+
   it("spread the training days over the week", () => {
     expect(defaultTrainingDays(3)).toEqual([1, 3, 5]);
     expect(defaultTrainingDays(2)).toEqual([2, 5]);

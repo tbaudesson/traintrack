@@ -1062,16 +1062,14 @@
   },
   "wizard": {
     "step": "Schritt {step} von {total}",
-    "title0": "Was ist dein Ziel?",
-    "hint0": "Damit schlagen wir dir ein passendes Programm vor.",
-    "title1": "Erzähl uns von dir",
-    "hint1": "Alles optional, es hilft, Lasten und Ernährung anzupassen.",
-    "title2": "Welche Ausrüstung?",
-    "hint2": "Wähle eine Abkürzung oder kreuze an, was du hast.",
-    "title3": "Dein Programm",
-    "hint3": "Diese passen am besten zu deinem Ziel, Niveau und deiner Ausrüstung.",
-    "title4": "Deine Woche",
-    "hint4": "Deine Trainingstage: der Startbildschirm verteilt deine Einheiten darauf.",
+    "title0": "Dein Sport und dein Ziel",
+    "hint0": "Damit schlagen wir dir die passenden Programme vor. Du kannst sie später ändern.",
+    "title1": "Dein Niveau",
+    "hint1": "Und was geschont werden muss: Zu vermeidende Übungen werden markiert.",
+    "title2": "Mit welcher Ausrüstung?",
+    "hint2": "Wähle eine Abkürzung oder hake an, was du hast.",
+    "title3": "Dein Programm und deine Woche",
+    "hint3": "Wähle ein Programm und deine Tage: Seine Einheiten erscheinen in „Meine Woche“.",
     "gym": "Fitnessstudio",
     "home": "Zu Hause",
     "perWeek": "{count, plural, one {# Tag pro Woche} other {# Tage pro Woche}}",
@@ -1082,7 +1080,11 @@
     "start": "Programmstart",
     "back": "Zurück",
     "next": "Weiter",
-    "nextOrSkip": "Weiter"
+    "nextOrSkip": "Weiter",
+    "goal": "Ziel",
+    "injuries": "Eine Verletzung oder Schwachstelle?",
+    "injuriesHint": "Optional. Tippe auf die betroffenen Bereiche.",
+    "aboutMore": "Mehr über dich (optional)"
   },
   "nutritionCalc": {
     "open": "Für mich berechnen",
@@ -1508,5 +1510,16 @@
     "weekSince": "Woche {week} seit Beginn",
     "startsOn": "Beginnt am {date}",
     "hint": "Ohne Startdatum zählt das Programm ab dem Tag, an dem es hinzugefügt wurde."
+  },
+  "firstSteps": {
+    "title": "Deine ersten Schritte",
+    "progress": "{done} von {total}",
+    "hide": "Ausblenden",
+    "done": "erledigt",
+    "plan": "Deine Einheiten in der Woche planen",
+    "session": "Deine erste Einheit machen, im geführten Modus",
+    "readiness": "Deine Tagesform eintragen",
+    "calendar": "Deine Einheiten in den Kalender übernehmen",
+    "look": "Das Aussehen der App wählen"
   }
 }

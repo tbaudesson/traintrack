@@ -26,6 +26,7 @@ export async function createProgram(data: {
   assignedToUserId?: string | null;
   groupId?: string | null;
   startDate?: string | null;
+  weekdays?: number[] | null;
 }): Promise<number> {
   const now = new Date().toISOString();
   const uid = getCurrentUserIdSync();
@@ -37,6 +38,7 @@ export async function createProgram(data: {
     assignedToUserId: data.assignedToUserId ?? null,
     groupId: data.groupId ?? null,
     startDate: data.startDate ?? null,
+    weekdays: data.weekdays?.length ? data.weekdays : null,
     uuid: crypto.randomUUID(),
     userId: uid,
     _dirty: 1,

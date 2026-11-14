@@ -1062,16 +1062,14 @@
   },
   "wizard": {
     "step": "Étape {step} sur {total}",
-    "title0": "Quel est votre objectif ?",
-    "hint0": "Il nous sert à vous proposer un programme adapté.",
-    "title1": "Parlez-nous de vous",
-    "hint1": "Tout est facultatif, et sert à adapter les charges et la nutrition.",
+    "title0": "Votre sport et votre objectif",
+    "hint0": "Ils nous servent à vous proposer les bons programmes. Vous pourrez changer plus tard.",
+    "title1": "Votre niveau",
+    "hint1": "Et ce qu’il faut ménager : les exercices à éviter seront signalés.",
     "title2": "Avec quel matériel ?",
     "hint2": "Choisissez un raccourci ou cochez ce que vous avez.",
-    "title3": "Votre programme",
-    "hint3": "Voici ceux qui correspondent le mieux à votre objectif, votre niveau et votre matériel.",
-    "title4": "Votre semaine",
-    "hint4": "Vos jours d'entraînement : l'accueil y placera vos séances.",
+    "title3": "Votre programme et votre semaine",
+    "hint3": "Choisissez un programme et vos jours : ses séances s’afficheront dans « Ma semaine ».",
     "gym": "Salle de sport",
     "home": "À la maison",
     "perWeek": "{count, plural, one {# jour par semaine} other {# jours par semaine}}",
@@ -1082,7 +1080,11 @@
     "start": "Début du programme",
     "back": "Retour",
     "next": "Continuer",
-    "nextOrSkip": "Continuer"
+    "nextOrSkip": "Continuer",
+    "goal": "Objectif",
+    "injuries": "Une blessure ou une zone fragile ?",
+    "injuriesHint": "Facultatif. Touchez les zones concernées.",
+    "aboutMore": "Plus d’informations (facultatif)"
   },
   "nutritionCalc": {
     "open": "Calculer pour moi",
@@ -1508,5 +1510,16 @@
     "weekSince": "Semaine {week} depuis le début",
     "startsOn": "Commence le {date}",
     "hint": "Sans date de début, le programme compte depuis le jour où il a été ajouté."
+  },
+  "firstSteps": {
+    "title": "Vos premiers pas",
+    "progress": "{done} sur {total}",
+    "hide": "Masquer",
+    "done": "fait",
+    "plan": "Planifier vos séances dans la semaine",
+    "session": "Faire votre première séance, en mode guidé",
+    "readiness": "Noter votre forme du jour",
+    "calendar": "Ajouter vos séances à votre agenda",
+    "look": "Choisir l’apparence de l’app"
   }
 }

@@ -6,7 +6,11 @@ import { useRouter } from "@/i18n/navigation";
 import { saveAthleteProfile } from "@/hooks/useAthleteProfile";
 import { createProgram } from "@/hooks/usePrograms";
 import { useProgramTemplates } from "@/lib/templateService";
-import { defaultTrainingDays, recommendPrograms } from "@/lib/onboarding";
+import { defaultTrainingDays, GOAL_OF_SPORT, recommendPrograms } from "@/lib/onboarding";
+import { FAVORITE_SPORTS, savePrefs, type FavoriteSport } from "@/lib/appTheme";
+import { INJURY_AREAS } from "@/lib/injuries";
+import type { PainArea } from "@/lib/pain";
+import { CategoryIcon } from "@/components/domain/ProgramCatalog";
 import { nextMonday } from "@/lib/programWeek";
 import { localDate } from "@/lib/dates";
 import type { TrainingGoal, FitnessLevel, Sex, Equipment } from "@/db";
@@ -14,7 +18,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Loader2, Check, ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import { Loader2, Check, ArrowLeft, ArrowRight, Sparkles, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const GOALS: TrainingGoal[] = ["strength", "hypertrophy", "endurance", "fat_loss", "general_fitness"];
@@ -23,27 +27,32 @@ const SEXES: Sex[] = ["male", "female", "other", "undisclosed"];
 const EQUIPMENT: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "bodyweight", "kettlebell", "bands", "other"];
 const GYM_SET: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "bodyweight"];
 const HOME_SET: Equipment[] = ["dumbbell", "bodyweight", "bands"];
-const STEPS = 5;
+const STEPS = 4;
 
 const weekday = (locale: string, day: number) =>
   new Intl.DateTimeFormat(locale, { weekday: "narrow", timeZone: "UTC" }).format(new Date(Date.UTC(2024, 0, day)));
 
 /**
- * Sign-up in five short steps: goal and level, the athlete, their equipment,
- * a ready-made program suggested from all that, and their week. It ends with
- * the profile, the week plan and the program dated, so the home screen is
- * ready on the first visit.
+ * Sign-up in four short steps: sport and goal; level and injuries (the rest
+ * optional); equipment; a ready-made program of that sport and its week. It
+ * ends with the profile, the sport, and the program in the planning on its
+ * days, so the home screen is ready on the first visit.
  */
 export default function OnboardingPage() {
   const t = useTranslations("onboarding");
   const tw = useTranslations("wizard");
   const tl = useTranslations("templates");
+  const tcat = useTranslations("catalog");
+  const tpain = useTranslations("pain");
   const locale = useLocale();
   const router = useRouter();
   const catalogue = useProgramTemplates();
 
   const [step, setStep] = useState(0);
+  const [sport, setSport] = useState<FavoriteSport | null>(null);
   const [goal, setGoal] = useState<TrainingGoal | null>(null);
+  const [areas, setAreas] = useState<PainArea[]>([]);
+  const [more, setMore] = useState(false);
   const [level, setLevel] = useState<FitnessLevel>("beginner");
   const [sex, setSex] = useState<Sex | undefined>(undefined);
   const [heightCm, setHeightCm] = useState("");
@@ -58,13 +67,20 @@ export default function OnboardingPage() {
   const [saving, setSaving] = useState(false);
 
   const picks = useMemo(
-    () => (goal ? recommendPrograms({ goal, level, equipment }, catalogue) : []),
-    [goal, level, equipment, catalogue]
+    () => (goal ? recommendPrograms({ goal, level, equipment, sport }, catalogue) : []),
+    [goal, level, equipment, sport, catalogue]
   );
   const chosen = picks.find((p) => p.id === programId);
 
   function toggle<T>(arr: T[], v: T, set: (x: T[]) => void) {
     set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
+  }
+
+  /** A sport suggests its usual goal, which the athlete can change. */
+  function pickSport(next: FavoriteSport) {
+    setSport(next);
+    setGoal(GOAL_OF_SPORT[next]);
+    setProgramId(null);
   }
 
   function choose(id: string | null) {
@@ -84,6 +100,7 @@ export default function OnboardingPage() {
         heightCm: heightCm ? Number(heightCm) : undefined,
         birthDate: birthDate || undefined,
         injuries: injuries.trim() || undefined,
+        injuryAreas: areas.length ? areas.map((area) => ({ area, since: localDate() })) : null,
         equipment,
         trainingDays: [...days].sort(),
         trainingTime: time,
@@ -92,8 +109,10 @@ export default function OnboardingPage() {
         userId: undefined,
         deletedAt: null,
       });
+      if (sport) savePrefs({ sport });
+      // The program goes into the planning, on the days chosen.
       if (chosen) {
-        await createProgram({ name: chosen.name, description: chosen.description, structure: chosen.structure, startDate: start });
+        await createProgram({ name: chosen.name, description: chosen.description, structure: chosen.structure, startDate: start, weekdays: [...days].sort() });
       }
       router.replace("/");
     } finally {
@@ -108,7 +127,7 @@ export default function OnboardingPage() {
         ? "border-accent-500 bg-accent-50 font-medium text-accent-700 dark:bg-accent-950/40 dark:text-accent-300"
         : "border-border text-muted-foreground hover:bg-accent"
     );
-  const canNext = step === 0 ? goal !== null : step === 4 ? consent && days.length > 0 : true;
+  const canNext = step === 0 ? goal !== null : step === 3 ? consent && days.length > 0 : true;
 
   return (
     <>
@@ -129,19 +148,29 @@ export default function OnboardingPage() {
 
         {step === 0 && (
           <>
-            <div className="flex flex-wrap gap-2">
-              {GOALS.map((g) => (
-                <button key={g} onClick={() => setGoal(g)} aria-pressed={goal === g} className={chip(goal === g)}>
-                  {t(`goal_${g}`)}
+            <div className="grid grid-cols-2 gap-2">
+              {FAVORITE_SPORTS.map((sp) => (
+                <button
+                  key={sp}
+                  type="button"
+                  onClick={() => pickSport(sp)}
+                  aria-pressed={sport === sp}
+                  className={cn(
+                    "flex min-h-14 items-center gap-2.5 rounded-2xl border p-2.5 text-left text-sm font-medium transition-colors",
+                    sport === sp ? "border-accent-500 bg-accent-50 dark:bg-accent-950/40" : "border-border"
+                  )}
+                >
+                  <CategoryIcon category={sp} />
+                  {tcat(`cat_${sp}`)}
                 </button>
               ))}
             </div>
             <div className="space-y-2">
-              <p className="text-sm font-medium">{t("fitnessLevel")}</p>
+              <p className="text-sm font-medium">{tw("goal")}</p>
               <div className="flex flex-wrap gap-2">
-                {LEVELS.map((l) => (
-                  <button key={l} onClick={() => setLevel(l)} aria-pressed={level === l} className={chip(level === l)}>
-                    {t(`level_${l}`)}
+                {GOALS.map((g) => (
+                  <button key={g} onClick={() => setGoal(g)} aria-pressed={goal === g} className={chip(goal === g)}>
+                    {t(`goal_${g}`)}
                   </button>
                 ))}
               </div>
@@ -152,29 +181,63 @@ export default function OnboardingPage() {
         {step === 1 && (
           <>
             <div className="space-y-2">
-              <p className="text-sm font-medium">{t("sex")}</p>
+              <p className="text-sm font-medium">{t("fitnessLevel")}</p>
               <div className="flex flex-wrap gap-2">
-                {SEXES.map((s) => (
-                  <button key={s} onClick={() => setSex(s)} aria-pressed={sex === s} className={chip(sex === s)}>
-                    {t(`sex_${s}`)}
+                {LEVELS.map((l) => (
+                  <button key={l} onClick={() => setLevel(l)} aria-pressed={level === l} className={chip(level === l)}>
+                    {t(`level_${l}`)}
                   </button>
                 ))}
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="space-y-1 text-sm font-medium">
-                {t("height")}
-                <Input type="number" inputMode="numeric" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} />
-              </label>
-              <label className="space-y-1 text-sm font-medium">
-                {t("birthDate")}
-                <Input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
-              </label>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">{tw("injuries")}</p>
+              <p className="text-xs text-muted-foreground">{tw("injuriesHint")}</p>
+              <div className="flex flex-wrap gap-2">
+                {INJURY_AREAS.map((a) => (
+                  <button key={a} onClick={() => toggle(areas, a, setAreas)} aria-pressed={areas.includes(a)} className={chip(areas.includes(a))}>
+                    {tpain(`area_${a}`)}
+                  </button>
+                ))}
+              </div>
             </div>
-            <label className="block space-y-1 text-sm font-medium">
-              {t("injuries")}
-              <Input value={injuries} onChange={(e) => setInjuries(e.target.value)} placeholder={t("injuriesPlaceholder")} />
-            </label>
+            <button
+              type="button"
+              onClick={() => setMore((m) => !m)}
+              aria-expanded={more}
+              className="flex min-h-10 items-center gap-1 text-sm font-medium text-accent-text"
+            >
+              {tw("aboutMore")}
+              <ChevronDown className={cn("h-4 w-4 transition-transform", more && "rotate-180")} aria-hidden="true" />
+            </button>
+            {more && (
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">{t("sex")}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {SEXES.map((x) => (
+                      <button key={x} onClick={() => setSex(x)} aria-pressed={sex === x} className={chip(sex === x)}>
+                        {t(`sex_${x}`)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="space-y-1 text-sm font-medium">
+                    {t("height")}
+                    <Input type="number" inputMode="numeric" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} />
+                  </label>
+                  <label className="space-y-1 text-sm font-medium">
+                    {t("birthDate")}
+                    <Input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
+                  </label>
+                </div>
+                <label className="block space-y-1 text-sm font-medium">
+                  {t("injuries")}
+                  <Input value={injuries} onChange={(e) => setInjuries(e.target.value)} placeholder={t("injuriesPlaceholder")} />
+                </label>
+              </div>
+            )}
           </>
         )}
 
@@ -195,6 +258,7 @@ export default function OnboardingPage() {
         )}
 
         {step === 3 && (
+          <>
           <div className="space-y-2">
             {picks.map((p, i) => (
               <button
@@ -228,10 +292,7 @@ export default function OnboardingPage() {
               {tw("later")}
             </button>
           </div>
-        )}
 
-        {step === 4 && (
-          <>
             <div className="space-y-2">
               <p className="text-sm font-medium">{tw("days")}</p>
               <div className="grid grid-cols-7 gap-1.5">
@@ -295,7 +356,7 @@ export default function OnboardingPage() {
           )}
           {step < STEPS - 1 ? (
             <Button className="flex-1" onClick={() => setStep(step + 1)} disabled={!canNext}>
-              {step === 1 || step === 2 ? tw("nextOrSkip") : tw("next")}
+              {step === 2 ? tw("nextOrSkip") : tw("next")}
               <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
             </Button>
           ) : (

@@ -29,6 +29,7 @@ import { usePainReports } from "@/hooks/usePain";
 import { deloadAdvice } from "@/lib/deload";
 import { trainingLoad } from "@/lib/trainingLoad";
 import { TrainingLoadCard } from "@/components/domain/TrainingLoadCard";
+import { FirstSteps } from "@/components/domain/FirstSteps";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useTeams } from "@/hooks/useTeams";
 import { daysToOffer, findWorkoutProgramDay, lastRepeatable, nextDayIndex, repeatWorkout, startWorkoutFromDay } from "@/lib/startWorkout";
@@ -126,6 +127,7 @@ function OverviewTile({
 
 export default function HomePage() {
   const t = useTranslations("home");
+  const tf = useTranslations("firstSteps");
   const locale = useLocale();
   const tr = useTranslations("readiness");
   const tm = useTranslations("more");
@@ -147,6 +149,25 @@ export default function HomePage() {
       return null;
     }
   });
+  // Small flags of this device: the first steps hidden, the calendar exported, the look seen.
+  const [flags, setFlags] = useState<Record<string, boolean>>(() => {
+    const read = (k: string) => {
+      try {
+        return typeof window !== "undefined" && window.localStorage.getItem(`traintrack-${k}`) === "1";
+      } catch {
+        return false;
+      }
+    };
+    return { stepsClosed: read("first-steps-closed"), calendar: read("calendar-exported"), look: read("look-seen") };
+  });
+  const setFlag = (key: string, storageKey: string) => {
+    try {
+      window.localStorage.setItem(`traintrack-${storageKey}`, "1");
+    } catch {
+      // Private window: remembered until the page is closed.
+    }
+    setFlags((f) => ({ ...f, [key]: true }));
+  };
   const workouts = useWorkouts();
   const sets = useAllWorkoutSets();
   const programs = useTrainablePrograms();
@@ -307,6 +328,7 @@ export default function HomePage() {
       now: new Date(),
     });
     downloadFile(ics, "traintrack-seances.ics", "text/calendar");
+    setFlag("calendar", "calendar-exported");
   }
 
   const percent = useMemo(() => {
@@ -356,8 +378,10 @@ export default function HomePage() {
     setChoosing(false);
     setStarting(true);
     try {
+      // A beginner's very first session opens in guided mode.
+      const first = workouts.length === 0 && profile?.fitnessLevel === "beginner";
       const id = await startWorkoutFromDay(program, index, exercises, today, lighterToday.start);
-      router.push(sessionHref(id));
+      router.push(first && !program.structure[index]?.cardio ? `${sessionHref(id)}&guided=1` : sessionHref(id));
     } finally {
       setStarting(false);
     }
@@ -572,6 +596,20 @@ export default function HomePage() {
               {t("changeSession")}
             </button>
           </section>
+
+          {/* A new athlete's first steps, for a month, until done or hidden. */}
+          {profile && !flags.stepsClosed && Date.parse(profile.createdAt) > now - 30 * 86_400_000 && (
+            <FirstSteps
+              onDismiss={() => setFlag("stepsClosed", "first-steps-closed")}
+              steps={[
+                { key: "plan", done: programs.some((p) => (p.weekdays ?? []).length > 0), label: tf("plan"), href: "/programs" },
+                { key: "session", done: workouts.length > 0, label: tf("session"), onClick: start },
+                ...(hasFeature("readiness") ? [{ key: "readiness", done: readiness.length > 0, label: tf("readiness"), href: "/readiness" }] : []),
+                { key: "calendar", done: !!flags.calendar, label: tf("calendar"), onClick: exportCalendar },
+                { key: "look", done: !!flags.look || prefs.style !== "classic", label: tf("look"), href: "/settings", onClick: () => setFlag("look", "look-seen") },
+              ]}
+            />
+          )}
 
           <ReadinessBanner readiness={lighterToday.reason === "deload" ? null : lighterToday.readiness} keptNormal={lighterToday.keptNormal} onKeep={lighterToday.setKeptNormal} />
           <DeloadCard advice={deload} monday={thisMonday} active={deloading} hasProfile={!!profile} />

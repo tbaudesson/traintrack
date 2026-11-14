@@ -62,7 +62,7 @@ import { useExerciseLabel, exerciseDescription } from "@/lib/exerciseNames";
 import { useFormat } from "@/lib/format";
 
 /** A session being logged: shared by /log/session?id=… (works offline) and /log/[id]. */
-export function SessionLogger({ workoutId }: { workoutId: number }) {
+export function SessionLogger({ workoutId, startGuided = false }: { workoutId: number; startGuided?: boolean }) {
   const t = useTranslations("log");
   const tc = useTranslations("common");
   const to = useTranslations("onboarding");
@@ -81,7 +81,7 @@ export function SessionLogger({ workoutId }: { workoutId: number }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [swapFor, setSwapFor] = useState<number | null>(null);
   const [painFor, setPainFor] = useState<number | null>(null);
-  const [guided, setGuided] = useState(false);
+  const [guided, setGuided] = useState(startGuided);
   const tg = useTranslations("guided");
   const tm = useTranslations("mobility");
   const restPrefs = useAppPrefs().rest;
@@ -1077,7 +1077,7 @@ export function SessionLogger({ workoutId }: { workoutId: number }) {
         </div>
       )}
 
-      {guided && (
+      {guided && groups.length > 0 && (
         <GuidedSession
           steps={guidedSteps()}
           rest={rest}
