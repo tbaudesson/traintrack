@@ -1,6 +1,8 @@
 import type { StrengthGoal } from "@/lib/goals";
 import type { IntervalPlan } from "@/lib/intervals";
 import type { Injury } from "@/lib/injuries";
+import type { RunPaces } from "@/lib/runPaces";
+import type { MealPrefs } from "@/lib/mealCatalog";
 import Dexie, { type EntityTable } from "dexie";
 
 // ─── Sync metadata mixin ─────────────────────────────────────────────
@@ -76,6 +78,10 @@ export interface AthleteProfile extends SyncFields {
   injuryAreas?: Injury[] | null;
   /** Sessions moved to another day, see lib/schedule. */
   scheduleMoves?: ScheduleMove[] | null;
+  /** Running paces: the VMA and where it came from, see lib/runPaces. */
+  runPaces?: RunPaces | null;
+  /** Diet, foods left out and meals a day, for the meal ideas, see lib/mealCatalog. */
+  mealPrefs?: MealPrefs | null;
   /** Optional daily macro targets */
   nutritionTargets?: { calories?: number; protein?: number; carbs?: number; fat?: number; water?: number };
   /** GDPR Art. 9 explicit consent to process health/fitness data */

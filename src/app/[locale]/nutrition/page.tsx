@@ -11,6 +11,7 @@ import {
 } from "@/hooks/useNutrition";
 import { useAthleteProfile, updateNutritionTargets } from "@/hooks/useAthleteProfile";
 import { NutritionCalculator } from "@/components/domain/NutritionCalculator";
+import { MealPlanCard } from "@/components/domain/MealPlanCard";
 import { useBodyMetrics } from "@/hooks/useBodyMetrics";
 import { useTodayHydration, addWater, setWater } from "@/hooks/useHydration";
 import { useWorkouts } from "@/hooks/useWorkouts";
@@ -261,6 +262,9 @@ export default function NutritionPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Meal ideas for today, from the targets and the day's sessions. */}
+        <MealPlanCard targets={targets} entries={entries} onSetTargets={() => setEditTargets(true)} />
 
         {editTargets && (
           <Card>

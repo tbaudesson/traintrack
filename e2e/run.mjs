@@ -78,7 +78,7 @@ await page.waitForLoadState("load");
 expect(await page.evaluate(() => !!navigator.serviceWorker.controller), "the service worker never took control");
 
 // What the background warm-up does once signed in: every page and its files.
-const PAGES = ["", "/log", "/log/session", "/programs", "/progress", "/intervals", "/mobility", "/exercises", "/competitions", "/report", "/settings", "/more", "/horses", "/onboarding", "/readiness", "/join", "/tests"];
+const PAGES = ["", "/log", "/log/session", "/programs", "/progress", "/intervals", "/mobility", "/exercises", "/competitions", "/report", "/settings", "/more", "/horses", "/onboarding", "/readiness", "/join", "/tests", "/running"];
 const warmed = await page.evaluate(async (pages) => {
   const files = new Set();
   for (const p of pages) {
@@ -414,6 +414,32 @@ await test("level tests are set up, started, and wait for a first result", async
   const hero = page.locator("section", { hasText: "Changer de séance ou de programme" });
   await hero.getByRole("heading").first().waitFor({ timeout: 10000 });
   expect(!(await hero.getByText("Tests de niveau").count()), "the tests became the session of the day");
+});
+
+await test("running paces come from a race time, and an interval session plays at those paces", async () => {
+  await page.goto(`${BASE}/fr/more`);
+  await page.getByRole("link", { name: "Course à pied" }).click();
+  await page.getByRole("heading", { name: "Mes allures" }).waitFor({ timeout: 10000 });
+  await page.getByText(/Estimées pour votre niveau/).waitFor({ timeout: 5000 });
+  await page.getByRole("button", { name: "Définir" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("button", { name: "10 km" }).click();
+  await dialog.getByRole("textbox").fill("50:00");
+  await dialog.getByText("VMA : 13,3 km/h").waitFor({ timeout: 5000 });
+  await dialog.getByRole("button", { name: "Enregistrer" }).click();
+  await page.getByText(/VMA 13,3 km\/h, d’après votre course/).waitFor({ timeout: 5000 });
+  // 13.3 km/h: the VMA zone runs from 4:36 to 4:25 a kilometre.
+  await page.locator("dl", { hasText: "VMA" }).getByText("4:36–4:25").first().waitFor({ timeout: 5000 });
+  await snap("running");
+  const card = page.locator("li", { hasText: "Séries de 400 m" });
+  await card.getByText(/× 400 m/).waitFor({ timeout: 5000 });
+  await card.getByRole("button", { name: "Courir" }).click();
+  const player = page.getByRole("dialog");
+  await player.getByText(/Préparez-vous/).waitFor({ timeout: 5000 });
+  await player.getByRole("button", { name: /Passer/ }).click();
+  await player.getByText("Échauffement").first().waitFor({ timeout: 5000 });
+  await player.getByRole("button", { name: /Terminer la séance/ }).click();
+  expect(page.url().includes("/running"), "a session of a few seconds was saved");
 });
 
 await test("no page threw an error", async () => {

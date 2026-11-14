@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Gauge, Info, Play, Target, Upload } from "lucide-react";
+import { Footprints, Gauge, Info, Play, Target, Upload } from "lucide-react";
+import { Link } from "@/i18n/navigation";
+import { useRunVma } from "@/hooks/useRunVma";
+import { formatPace as formatKmPace, HR_ZONE_SHARE, hrZoneOf, paceAt } from "@/lib/runPaces";
 import { GpxImport } from "@/components/domain/GpxImport";
 import type { CardioTarget, Workout } from "@/db";
 import { updateWorkout } from "@/hooks/useWorkouts";
@@ -30,6 +33,16 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
   const pace = formatPace(workout.sport, distanceM, durationSec);
 
   const steps = (target?.steps ?? []).filter((step) => step.trim());
+
+  // A run: the pace of each zone, from the athlete's VMA.
+  const tr = useTranslations("running");
+  const { vma, guessed } = useRunVma();
+  const run = workout.sport === "run";
+  const zonePace = (zone: number) => {
+    const [slow, fast] = HR_ZONE_SHARE[zone];
+    return tr("paceRange", { from: formatKmPace(paceAt(vma, slow)), to: formatKmPace(paceAt(vma, fast)) });
+  };
+  const plannedZone = run ? hrZoneOf(target?.intensity) : null;
 
   const save = () => updateWorkout(workout.id!, { distanceM: distanceM || undefined, durationSec: durationSec || undefined });
 
@@ -61,6 +74,12 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
               <Target className="h-4 w-4 shrink-0" aria-hidden="true" />
               {t("planned", { target: describeTarget(target) })}
             </p>
+            {plannedZone && (
+              <p className="text-sm font-medium">
+                {tr("planPace", { pace: zonePace(plannedZone) })}
+                {guessed && <span className="text-muted-foreground"> · {tr("guessedShort")}</span>}
+              </p>
+            )}
             {target.purpose && <p className="text-sm text-muted-foreground">{target.purpose}</p>}
             {steps.length > 0 && (
               <ol className="mt-2 space-y-1.5">
@@ -96,11 +115,20 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
                 {[1, 2, 3, 4, 5].map((zone) => (
                   <div key={zone} className="flex gap-2">
                     <dt className="w-16 shrink-0 font-semibold">{t("zone", { zone })}</dt>
-                    <dd className="text-muted-foreground">{t(`zone${zone}`)}</dd>
+                    <dd className="text-muted-foreground">
+                      {t(`zone${zone}`)}
+                      {run && <span className="block font-medium text-foreground tabular-nums">{zonePace(zone)}</span>}
+                    </dd>
                   </div>
                 ))}
               </dl>
             </details>}
+            {run && (
+              <Link href="/running" className="flex min-h-10 items-center gap-1.5 text-sm font-medium text-accent-text">
+                <Footprints className="h-4 w-4 shrink-0" aria-hidden="true" />
+                {guessed ? tr("setPacesLink") : tr("pacesLink")}
+              </Link>
+            )}
           </CardContent>
         </Card>
       )}
