@@ -826,6 +826,7 @@
     "sport_swim": "Schwimmen",
     "sport_bike": "Radfahren",
     "sport_row": "Rudern",
+    "sport_vaulting": "Voltigieren",
     "sport_other": "Andere Ausdauer",
     "pickSport": "Welche Sportart?",
     "newSession": "Ausdauereinheit",
@@ -1119,7 +1120,8 @@
     "backToSession": "Zurück zur Einheit",
     "home": "Zur Startseite",
     "warmupButton": "Aufwärmen",
-    "stretchButton": "Dehnen"
+    "stretchButton": "Dehnen",
+    "leftOut": "{count, plural, one {# Übung} other {# Übungen}} wegen deiner Verletzung weggelassen."
   },
   "injuries": {
     "title": "Aktuelle Verletzungen",

@@ -1,9 +1,13 @@
 import type { CardioTarget, Program, ProgramDay, Sport, Workout } from "@/db";
 
-export const SPORTS: Sport[] = ["run", "swim", "bike", "row", "other"];
+export const SPORTS: Sport[] = ["run", "swim", "bike", "row", "vaulting", "other"];
+
+/** Sports measured in distance; vaulting is a time on the horse or the barrel only. */
+export const hasDistance = (sport: Sport | null | undefined) => sport !== "vaulting";
+export const DISTANCE_SPORTS: Sport[] = SPORTS.filter(hasDistance);
 
 /** Shorter than this and a pace is noise, not a performance. */
-const MIN_DISTANCE_FOR_PACE: Record<Sport, number> = { run: 1000, swim: 100, bike: 5000, row: 500, other: Infinity };
+const MIN_DISTANCE_FOR_PACE: Record<Sport, number> = { run: 1000, swim: 100, bike: 5000, row: 500, vaulting: Infinity, other: Infinity };
 
 type CardioFields = Pick<Workout, "id" | "kind" | "sport" | "distanceM" | "durationSec">;
 

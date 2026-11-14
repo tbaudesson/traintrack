@@ -8,10 +8,13 @@ import { Link } from "@/i18n/navigation";
 import { useWorkout } from "@/hooks/useWorkouts";
 import { useWorkoutSets } from "@/hooks/useWorkoutSets";
 import { useExercises } from "@/hooks/useExercises";
+import { useInjuries } from "@/hooks/useAthleteProfile";
 import {
+  MOBILITY_EXERCISES,
   MOBILITY_MINUTES,
   TARGET_MUSCLES,
   buildMobilitySession,
+  mobilityWarning,
   sessionMuscles,
   type MobilityMode,
   type MobilityTarget,
@@ -43,6 +46,8 @@ function fromLink(): { mode: MobilityMode; workoutId?: number } {
  */
 export default function MobilityPage() {
   const t = useTranslations("mobility");
+  const tinj = useTranslations("injuries");
+  const tpain = useTranslations("pain");
   const locale = useLocale();
   const [link, setLink] = useState<{ mode: MobilityMode; workoutId?: number } | null>(null);
   const [mode, setMode] = useState<MobilityMode>("warmup");
@@ -78,7 +83,10 @@ export default function MobilityPage() {
     () => (target === "session" ? (fromSession.length ? fromSession : TARGET_MUSCLES.full) : TARGET_MUSCLES[target]),
     [target, fromSession]
   );
-  const session = useMemo(() => buildMobilitySession(mode, minutes, muscles, locale), [mode, minutes, muscles, locale]);
+  const injuries = useInjuries();
+  const session = useMemo(() => buildMobilitySession(mode, minutes, muscles, locale, injuries), [mode, minutes, muscles, locale, injuries]);
+  const leftOut = MOBILITY_EXERCISES.filter((e) => e.mode === mode && mobilityWarning(e.key, injuries)?.level === "avoid").length;
+  const areaWords = (areas: string[]) => areas.map((a) => (locale === "de" ? tpain(`area_${a}`) : tpain(`area_${a}`).toLowerCase())).join(", ");
   const back = link?.workoutId ? `/log/${link.workoutId}` : "/";
 
   if (!link) return <PageHeader title={t("title")} showBack />;
@@ -141,6 +149,9 @@ export default function MobilityPage() {
 
         <section className="space-y-2">
           <SectionHeading>{t("moves", { count: session.exercises.length })}</SectionHeading>
+          {leftOut > 0 && (
+            <p className="rounded-lg bg-rose-50 p-2 text-xs text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">{t("leftOut", { count: leftOut })}</p>
+          )}
           <ol className="t-surface space-y-2 rounded-2xl p-3 ring-1 ring-foreground/5">
             {session.exercises.map((e, n) => (
               <li key={e.key} className="flex gap-2 text-sm">
@@ -148,6 +159,11 @@ export default function MobilityPage() {
                 <span className="flex-1">
                   <span className="font-medium">{e.name[locale as "fr" | "de" | "en"] ?? e.name.en}</span>
                   {e.sides && <span className="text-xs text-muted-foreground"> · {t("bothSides")}</span>}
+                  {mobilityWarning(e.key, injuries) && (
+                    <span className="mt-0.5 block text-xs font-medium text-amber-700 dark:text-amber-300">
+                      {tinj("caution", { areas: areaWords(mobilityWarning(e.key, injuries)!.areas) })}
+                    </span>
+                  )}
                 </span>
               </li>
             ))}

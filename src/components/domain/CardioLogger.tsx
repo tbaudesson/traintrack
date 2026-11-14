@@ -8,12 +8,14 @@ import type { CardioTarget, Workout } from "@/db";
 import { updateWorkout } from "@/hooks/useWorkouts";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { describeTarget, formatPace } from "@/lib/cardio";
+import { describeTarget, formatPace, hasDistance } from "@/lib/cardio";
 
 /** Log an endurance session: what was planned, then distance and time. */
 export function CardioLogger({ workout, target }: { workout: Workout; target?: CardioTarget }) {
   const t = useTranslations("cardio");
   const swim = workout.sport === "swim";
+  // Vaulting is timed only: no distance, no pace, no GPS track, no heart-rate zones.
+  const measured = hasDistance(workout.sport);
   const [distance, setDistance] = useState(
     workout.distanceM ? String(swim ? workout.distanceM : workout.distanceM / 1000) : ""
   );
@@ -51,7 +53,7 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
               </ol>
             )}
             {target.notes && <p className="pt-1 text-sm text-muted-foreground">{target.notes}</p>}
-            <details className="pt-1">
+            {measured && <details className="pt-1">
               <summary className="flex min-h-10 cursor-pointer items-center gap-1.5 text-sm font-medium text-accent-text">
                 <Info className="h-4 w-4 shrink-0" aria-hidden="true" />
                 {t("zoneGuide")}
@@ -64,7 +66,7 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
                   </div>
                 ))}
               </dl>
-            </details>
+            </details>}
           </CardContent>
         </Card>
       )}
@@ -72,10 +74,12 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
       <Card>
         <CardContent className="space-y-3 py-4">
           <h3 className="font-semibold">{workout.sport ? t(`sport_${workout.sport}`) : ""}</h3>
-          <label className="block text-sm font-medium">
-            {swim ? t("distanceM") : t("distanceKm")}
-            <Input type="text" inputMode="decimal" value={distance} onChange={(e) => setDistance(e.target.value)} onBlur={save} className="mt-1" />
-          </label>
+          {measured && (
+            <label className="block text-sm font-medium">
+              {swim ? t("distanceM") : t("distanceKm")}
+              <Input type="text" inputMode="decimal" value={distance} onChange={(e) => setDistance(e.target.value)} onBlur={save} className="mt-1" />
+            </label>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <label className="block text-sm font-medium">
               {t("minutes")}
@@ -86,7 +90,7 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
               <Input type="number" inputMode="numeric" min={0} max={59} value={seconds} onChange={(e) => setSeconds(e.target.value)} onBlur={save} className="mt-1" />
             </label>
           </div>
-          <GpxImport
+          {measured && <GpxImport
             workout={workout}
             onImported={({ activity }) => {
               setDistance(String(swim ? activity.distanceM : Math.round(activity.distanceM / 10) / 100));
@@ -103,7 +107,7 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
                 {t("importGpxFill")}
               </button>
             )}
-          />
+          />}
           {pace && (
             <p className="flex items-center gap-1.5 text-sm font-medium">
               <Gauge className="h-4 w-4 shrink-0 text-accent-text" aria-hidden="true" />

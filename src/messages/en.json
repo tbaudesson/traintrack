@@ -826,6 +826,7 @@
     "sport_swim": "Swimming",
     "sport_bike": "Cycling",
     "sport_row": "Rowing",
+    "sport_vaulting": "Vaulting",
     "sport_other": "Other endurance",
     "pickSport": "Which sport?",
     "newSession": "Endurance session",
@@ -1119,7 +1120,8 @@
     "backToSession": "Back to the session",
     "home": "Back to home",
     "warmupButton": "Warm up",
-    "stretchButton": "Stretch"
+    "stretchButton": "Stretch",
+    "leftOut": "{count, plural, one {# move left out} other {# moves left out}} because of your injury."
   },
   "injuries": {
     "title": "Injuries",

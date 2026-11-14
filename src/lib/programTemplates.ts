@@ -1,5 +1,6 @@
 import type { ProgramDay } from "@/db";
 import { ENDURANCE_TEMPLATES } from "./enduranceTemplates";
+import { VAULTING_TEMPLATES } from "./vaultingTemplates";
 import { PLAN_LOCALES, type PlanLocale } from "./enduranceText";
 import { STRENGTH_ORIGINAL, STRENGTH_TEXT } from "./strengthText";
 import { PERCENT_TEMPLATES } from "./percentTemplates";
@@ -249,7 +250,7 @@ export const STRENGTH_TEMPLATES: ProgramTemplate[] = PLAN_LOCALES.flatMap((local
   })
 );
 
-export const PROGRAM_TEMPLATES: ProgramTemplate[] = [...STRENGTH_TEMPLATES, ...PERCENT_TEMPLATES, ...ENDURANCE_TEMPLATES];
+export const PROGRAM_TEMPLATES: ProgramTemplate[] = [...STRENGTH_TEMPLATES, ...PERCENT_TEMPLATES, ...ENDURANCE_TEMPLATES, ...VAULTING_TEMPLATES];
 
 /** Rank templates by closeness to the user's goal / level / days-per-week. */
 export function rankTemplates(pref: {

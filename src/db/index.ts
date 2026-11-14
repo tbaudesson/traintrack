@@ -150,7 +150,7 @@ export interface ProgramExercise {
   percents?: number[];
 }
 
-export type Sport = "run" | "swim" | "bike" | "row" | "other";
+export type Sport = "run" | "swim" | "bike" | "row" | "vaulting" | "other";
 
 /** What an endurance day asks for, instead of a list of exercises. */
 export interface CardioTarget {

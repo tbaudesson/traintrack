@@ -8,7 +8,7 @@ import type { Sport, Workout } from "@/db";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { createWorkout, updateWorkout } from "@/hooks/useWorkouts";
-import { SPORTS, formatDistance, formatDuration, formatPace } from "@/lib/cardio";
+import { DISTANCE_SPORTS, formatDistance, formatDuration, formatPace } from "@/lib/cardio";
 import { localDate } from "@/lib/dates";
 import { parseGpx, type GpxActivity } from "@/lib/gpx";
 
@@ -134,7 +134,7 @@ export function GpxImport({
                     onChange={(e) => setSport(e.target.value as Sport)}
                     className="mt-1 h-11 w-full rounded-lg border border-input bg-card px-3 text-base"
                   >
-                    {SPORTS.map((s) => <option key={s} value={s}>{t(`sport_${s}`)}</option>)}
+                    {DISTANCE_SPORTS.map((s) => <option key={s} value={s}>{t(`sport_${s}`)}</option>)}
                   </select>
                 </label>
               )}

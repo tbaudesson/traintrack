@@ -83,6 +83,14 @@ export const NAMES: Record<string, { fr: string; de: string }> = {
   "Dumbbell Sumo Squat": { fr: "Squat sumo avec haltère", de: "Sumo-Kniebeuge mit Kurzhantel" },
   "Dumbbell Push Press": { fr: "Push press aux haltères", de: "Kurzhantel-Push-Press" },
   "Dumbbell Woodchop": { fr: "Bûcheron avec haltère", de: "Holzhacker mit Kurzhantel" },
+  "Handstand Hold": { fr: "Appui tendu renversé (ATR) au mur", de: "Handstand an der Wand" },
+  "Single-Leg Balance": { fr: "Équilibre sur une jambe", de: "Einbeinstand" },
+  "Arabesque Hold": { fr: "Arabesque (équilibre)", de: "Standwaage" },
+  "Superman Hold": { fr: "Superman (gainage dorsal)", de: "Superman" },
+  "Tuck Jump": { fr: "Sauts groupés", de: "Hocksprünge" },
+  "Bridge Hold": { fr: "Pont", de: "Brücke" },
+  "Front Split Stretch": { fr: "Grand écart avant (progressif)", de: "Spagat vorwärts (schrittweise)" },
+  "Pike Stretch": { fr: "Pince assise (jambes tendues)", de: "Hechtdehnung im Sitzen" },
 };
 
 export const DESCRIPTIONS: Record<string, { fr: string; de: string }> = {
@@ -225,6 +233,38 @@ export const DESCRIPTIONS: Record<string, { fr: string; de: string }> = {
   "Dumbbell Woodchop": {
     fr: "Un haltère à deux mains, le monter en diagonale de la hanche jusqu'au-dessus de l'épaule opposée.",
     de: "Eine Kurzhantel beidhändig diagonal von der Hüfte bis über die gegenüberliegende Schulter führen.",
+  },
+  "Handstand Hold": {
+    fr: "Face au mur ou dos au mur, mains largeur d’épaules, corps droit et gainé. Tenir.",
+    de: "Mit dem Gesicht oder dem Rücken zur Wand, Hände schulterbreit, Körper gerade und fest. Halten.",
+  },
+  "Single-Leg Balance": {
+    fr: "Sur une jambe, l’autre genou levé, le regard fixé sur un point. Plus dur les yeux fermés ou sur un coussin.",
+    de: "Auf einem Bein, das andere Knie angehoben, Blick auf einen Punkt. Schwerer mit geschlossenen Augen oder auf einem Kissen.",
+  },
+  "Arabesque Hold": {
+    fr: "Sur une jambe, pencher le buste et monter l’autre jambe derrière à hauteur de hanche, bras ouverts. Tenir, dos long.",
+    de: "Auf einem Bein den Oberkörper neigen und das andere Bein hinten auf Hüfthöhe heben, Arme seitlich. Halten, Rücken lang.",
+  },
+  "Superman Hold": {
+    fr: "Sur le ventre, décoller bras et jambes du sol, fessiers serrés, nuque longue. Tenir.",
+    de: "In Bauchlage Arme und Beine anheben, Gesäß angespannt, Nacken lang. Halten.",
+  },
+  "Tuck Jump": {
+    fr: "Sauter en ramenant les deux genoux vers la poitrine, puis se réceptionner en douceur sur l’avant des pieds.",
+    de: "Springen und beide Knie zur Brust ziehen, dann weich auf den Fußballen landen.",
+  },
+  "Bridge Hold": {
+    fr: "Sur le dos, mains près des oreilles, pousser jusqu’au pont, bras et jambes le plus tendus possible. Tenir.",
+    de: "In Rückenlage, Hände neben den Ohren, in die Brücke drücken, Arme und Beine möglichst gestreckt. Halten.",
+  },
+  "Front Split Stretch": {
+    fr: "Une jambe devant, l’autre derrière, bassin de face. Descendre doucement avec des cales sous les mains, sans jamais forcer.",
+    de: "Ein Bein vorne, eines hinten, Hüfte gerade. Langsam absenken, mit Blöcken unter den Händen, nie erzwingen.",
+  },
+  "Pike Stretch": {
+    fr: "Assis, jambes serrées et tendues, se pencher depuis les hanches, dos long. Respirer et relâcher.",
+    de: "Im Sitzen, Beine geschlossen und gestreckt, aus der Hüfte nach vorn beugen, Rücken lang. Atmen und lösen.",
   },
 };
 

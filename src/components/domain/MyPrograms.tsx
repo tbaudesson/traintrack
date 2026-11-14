@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { useFormat } from "@/lib/format";
-import { ArrowRight, Bike, ChevronRight, Dumbbell, Flame, Footprints, HeartPulse, Sparkles, Waves, type LucideIcon } from "lucide-react";
+import { ArrowRight, Award, Bike, ChevronRight, Dumbbell, Flame, Footprints, HeartPulse, Sparkles, Waves, type LucideIcon } from "lucide-react";
 import type { Program, Workout } from "@/db";
 import { Link } from "@/i18n/navigation";
 import { KIND_ORDER, programKind, programProgress, type ProgramKind } from "@/lib/programCards";
@@ -20,7 +20,7 @@ const STYLE: Record<ProgramGoal, { tone: string; bar: string }> = {
 };
 
 function iconOf({ kind, sport }: ProgramKind): LucideIcon {
-  if (kind === "endurance") return sport === "bike" ? Bike : sport === "swim" ? Waves : Footprints;
+  if (kind === "endurance") return sport === "bike" ? Bike : sport === "swim" ? Waves : sport === "vaulting" ? Award : Footprints;
   if (kind === "fat_loss") return Flame;
   if (kind === "general") return HeartPulse;
   if (kind === "hypertrophy") return Sparkles;

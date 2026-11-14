@@ -6,7 +6,9 @@ import { PROGRAM_TEMPLATES } from "./programTemplates";
 // every user who starts the program.
 const library =
   readFileSync("supabase/migrations/006_seed_exercises.sql", "utf8") +
-  readFileSync("supabase/migrations/024_endurance.sql", "utf8");
+  readFileSync("supabase/migrations/024_endurance.sql", "utf8") +
+  readFileSync("supabase/migrations/038_interval_sessions.sql", "utf8") +
+  readFileSync("supabase/migrations/040_vaulting.sql", "utf8").split("program_templates")[0];
 
 describe("built-in programs", () => {
   it("only use exercises from the seeded library", () => {

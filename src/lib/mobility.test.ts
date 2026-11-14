@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { MOBILITY_EXERCISES, MOBILITY_MINUTES, TARGET_MUSCLES, buildMobilitySession, pickMobility, sessionMuscles } from "./mobility";
+import {
+  MOBILITY_EXERCISES,
+  MOBILITY_INJURY_RULES,
+  MOBILITY_MINUTES,
+  TARGET_MUSCLES,
+  buildMobilitySession,
+  mobilityWarning,
+  pickMobility,
+  sessionMuscles,
+} from "./mobility";
 
 describe("buildMobilitySession", () => {
   it("fits in the minutes asked, and fills most of them", () => {
@@ -38,6 +47,23 @@ describe("pickMobility", () => {
 
   it("starts a warm-up by raising the heart rate", () => {
     for (const muscles of Object.values(TARGET_MUSCLES)) expect(pickMobility("warmup", 5, muscles)[0].key).toBe("jumping-jack");
+  });
+});
+
+describe("injuries", () => {
+  it("leaves out the moves that load an injured area too much", () => {
+    const shoulder = [{ area: "shoulder" as const }];
+    const keys = pickMobility("stretch", 15, ["chest", "shoulders", "arms"], shoulder).map((e) => e.key);
+    expect(keys).not.toContain("chest-doorway");
+    expect(keys).not.toContain("cross-shoulder");
+    expect(mobilityWarning("arm-circles", shoulder)?.level).toBe("caution");
+    const knee = pickMobility("stretch", 15, ["legs"], [{ area: "knee" }]).map((e) => e.key);
+    expect(knee).not.toContain("pigeon");
+    expect(knee).not.toContain("quad");
+  });
+
+  it("knows every move", () => {
+    for (const key of Object.keys(MOBILITY_INJURY_RULES)) expect(MOBILITY_EXERCISES.some((e) => e.key === key), key).toBe(true);
   });
 });
 

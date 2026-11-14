@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import type { Workout } from "@/db";
 import { Card, CardContent } from "@/components/ui/card";
 import { SectionHeading } from "@/components/ui/page-parts";
-import { SPORTS, cardioBests, formatDistance, formatPace, isCardioDone } from "@/lib/cardio";
+import { DISTANCE_SPORTS, cardioBests, formatDistance, formatPace, isCardioDone } from "@/lib/cardio";
 import { localDateIn } from "@/lib/dates";
 
 /** Endurance totals and bests, one card per sport practised. */
@@ -16,7 +16,7 @@ export function CardioProgress({ workouts }: { workouts: Workout[] }) {
   const rows = useMemo(() => {
     const done = workouts.filter(isCardioDone);
     const since = (days: number) => localDateIn(-days, now);
-    return SPORTS.flatMap((sport) => {
+    return DISTANCE_SPORTS.flatMap((sport) => {
       const own = done.filter((w) => w.sport === sport);
       if (own.length === 0) return [];
       const total = (from: string) => own.filter((w) => w.date >= from).reduce((sum, w) => sum + (w.distanceM ?? 0), 0);

@@ -826,6 +826,7 @@
     "sport_swim": "Natation",
     "sport_bike": "Vélo",
     "sport_row": "Rameur",
+    "sport_vaulting": "Voltige",
     "sport_other": "Autre endurance",
     "pickSport": "Quel sport ?",
     "newSession": "Sortie d'endurance",
@@ -1119,7 +1120,8 @@
     "backToSession": "Revenir à la séance",
     "home": "Retour à l'accueil",
     "warmupButton": "S'échauffer",
-    "stretchButton": "S'étirer"
+    "stretchButton": "S'étirer",
+    "leftOut": "{count, plural, one {# mouvement écarté} other {# mouvements écartés}} à cause de votre blessure."
   },
   "injuries": {
     "title": "Blessures en cours",

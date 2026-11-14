@@ -104,6 +104,15 @@ export const INJURY_RULES: Record<string, Rules> = {
   "Dumbbell Sumo Squat": { knee: C, hip: C },
   "Dumbbell Push Press": { shoulder: A, lower_back: C, wrist: C },
   "Dumbbell Woodchop": { lower_back: C, shoulder: C },
+  // Vaulting
+  "Handstand Hold": { shoulder: A, wrist: A, elbow: C, neck: C },
+  "Single-Leg Balance": { ankle: C, knee: C },
+  "Arabesque Hold": { ankle: C, hip: C, lower_back: C },
+  "Superman Hold": { lower_back: C, neck: C },
+  "Tuck Jump": { knee: A, ankle: A, lower_back: C },
+  "Bridge Hold": { lower_back: A, wrist: C, shoulder: C, neck: C },
+  "Front Split Stretch": { hip: C, knee: C },
+  "Pike Stretch": { lower_back: C },
 };
 
 export interface InjuryWarning {

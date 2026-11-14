@@ -1,4 +1,6 @@
 import type { MuscleGroup } from "@/db";
+import type { PainArea } from "./pain";
+import type { InjuryLevel } from "./injuries";
 
 /** Before a session (moving, to warm up) or after (holding, to stretch). */
 export type MobilityMode = "warmup" | "stretch";
@@ -64,6 +66,54 @@ export const MOBILITY_EXERCISES: MobilityExercise[] = [
   { key: "childs-pose", mode: "stretch", muscles: ["back", "shoulders", "full_body"], name: { en: "Child's pose", fr: "Posture de l'enfant", de: "Kindhaltung" }, cue: { en: "Sit back on the heels, arms long in front, breathe into the back.", fr: "Assis sur les talons, bras allongés devant, respirer dans le dos.", de: "Auf die Fersen setzen, Arme lang nach vorn, in den Rücken atmen." } },
 ];
 
+/**
+ * The moves that load an injured area: "avoid" ones are left out, "caution"
+ * ones are flagged. Same idea as the library's rules in injuries.ts.
+ */
+export const MOBILITY_INJURY_RULES: Record<string, Partial<Record<PainArea, InjuryLevel>>> = {
+  "jumping-jack": { knee: "caution", ankle: "caution", shoulder: "caution" },
+  "high-knees": { knee: "caution", ankle: "caution", hip: "caution" },
+  "arm-circles": { shoulder: "caution" },
+  "arm-swings": { shoulder: "caution" },
+  "torso-twists": { lower_back: "caution" },
+  "hip-circles": { hip: "caution", lower_back: "caution" },
+  "leg-swings": { hip: "caution" },
+  "knee-hug": { knee: "caution", hip: "caution" },
+  squat: { knee: "caution" },
+  "lunge-rotation": { knee: "avoid", lower_back: "caution" },
+  inchworm: { wrist: "caution", shoulder: "caution", lower_back: "caution" },
+  "worlds-greatest": { knee: "caution", hip: "caution", shoulder: "caution" },
+  "scapular-pushup": { shoulder: "caution", wrist: "avoid", elbow: "caution" },
+  "cat-cow": { wrist: "caution" },
+  "glute-bridge": { hip: "caution" },
+  "neck-side": { neck: "avoid" },
+  "chest-doorway": { shoulder: "avoid", elbow: "caution" },
+  "cross-shoulder": { shoulder: "avoid" },
+  triceps: { shoulder: "avoid", elbow: "caution" },
+  "biceps-wall": { shoulder: "caution", elbow: "avoid", wrist: "caution" },
+  "side-bend": { lower_back: "caution", shoulder: "caution" },
+  quad: { knee: "avoid", ankle: "caution" },
+  calf: { ankle: "caution" },
+  "hip-flexor": { knee: "caution", hip: "caution" },
+  hamstring: { lower_back: "caution" },
+  butterfly: { hip: "caution", knee: "caution" },
+  pigeon: { knee: "avoid", hip: "avoid" },
+  "spinal-twist": { lower_back: "caution" },
+  cobra: { lower_back: "caution", wrist: "caution" },
+  "childs-pose": { knee: "caution" },
+};
+
+/** The strongest warning for a move, given the injured areas. */
+export function mobilityWarning(key: string, injuries: { area: PainArea }[]): { level: InjuryLevel; areas: PainArea[] } | null {
+  const rules = MOBILITY_INJURY_RULES[key];
+  if (!rules || !injuries.length) return null;
+  for (const level of ["avoid", "caution"] as const) {
+    const areas = injuries.map((i) => i.area).filter((a) => rules[a] === level);
+    if (areas.length) return { level, areas };
+  }
+  return null;
+}
+
 /** Seconds per move or hold, and between two, by mode. */
 export const MOBILITY_TIMING: Record<MobilityMode, { hold: number; sideHold: number; transition: number }> = {
   warmup: { hold: 40, sideHold: 25, transition: 5 },
@@ -96,10 +146,17 @@ function relevance(e: MobilityExercise, muscles: MuscleGroup[]): number {
 /**
  * The moves for a mobility session: those that work the muscles aimed at
  * first, as many as fit in the minutes asked, then put back in their natural
- * order. A warm-up always starts with something that raises the heart rate.
+ * order. A warm-up starts with something that raises the heart rate, the
+ * first that the injuries allow.
  */
-export function pickMobility(mode: MobilityMode, minutes: number, muscles: MuscleGroup[]): MobilityExercise[] {
-  const all = MOBILITY_EXERCISES.filter((e) => e.mode === mode);
+export function pickMobility(
+  mode: MobilityMode,
+  minutes: number,
+  muscles: MuscleGroup[],
+  injuries: { area: PainArea }[] = []
+): MobilityExercise[] {
+  // Moves that load an injured area too much are left out.
+  const all = MOBILITY_EXERCISES.filter((e) => e.mode === mode && mobilityWarning(e.key, injuries)?.level !== "avoid");
   const budget = minutes * 60;
   const ranked = [...all].sort((a, b) => relevance(b, muscles) - relevance(a, muscles));
   const chosen = new Set<MobilityExercise>();
@@ -121,11 +178,12 @@ export function buildMobilitySession(
   mode: MobilityMode,
   minutes: number,
   muscles: MuscleGroup[],
-  locale: string
+  locale: string,
+  injuries: { area: PainArea }[] = []
 ): { exercises: MobilityExercise[]; steps: MobilityStep[]; totalSec: number } {
   const lang = (locale === "fr" || locale === "de" ? locale : "en") as keyof Text;
   const timing = MOBILITY_TIMING[mode];
-  const exercises = pickMobility(mode, minutes, muscles);
+  const exercises = pickMobility(mode, minutes, muscles, injuries);
   const steps: MobilityStep[] = [];
   for (const e of exercises) {
     const shown: MobilityMove = { key: e.key, name: e.name[lang], cue: e.cue[lang] };
