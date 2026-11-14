@@ -17,6 +17,7 @@ import {
   User, Shield, Newspaper, Flag, MessageCircle, Activity,
   Award,
   PawPrint,
+  Gauge,
 } from "lucide-react";
 
 export default function MorePage() {
@@ -38,6 +39,7 @@ export default function MorePage() {
       : []),
     { href: "/exercises", icon: ListChecks, label: t("exercises") },
     { href: "/programs", icon: ClipboardList, label: t("programs") },
+    { href: "/tests", icon: Gauge, label: t("tests") },
     { href: "/teams", icon: Users, label: t("teams") },
     ...(hasFeature("coaching") ? [{ href: "/activity", icon: Newspaper, label: t("activity") }] : []),
     { href: "/challenges", icon: Flag, label: t("challenges") },

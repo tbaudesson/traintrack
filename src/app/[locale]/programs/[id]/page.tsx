@@ -28,6 +28,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { CategoryIcon } from "@/components/domain/ProgramCatalog";
 import { SeasonTarget } from "@/components/domain/SeasonTarget";
 import { ProgramPlanning } from "@/components/domain/ProgramPlanning";
+import { ProgramReviewCard } from "@/components/domain/ProgramReviewCard";
+import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
 
 /**
  * A program as one follows it: what it is, how far one is, its sessions week
@@ -44,6 +46,7 @@ export default function ProgramPage() {
   const program = useProgram(programId);
   const workouts = useWorkouts();
   const exercises = useExercises();
+  const sets = useAllWorkoutSets();
   const readyMade = useReadyMadeNames();
   const lighterToday = useLighterToday();
   const [busy, setBusy] = useState(false);
@@ -179,6 +182,11 @@ export default function ProgramPage() {
             </Button>
           )}
         </section>
+
+        {/* What it brought so far, and once over, what to follow next. */}
+        {!forSomeoneElse && (
+          <ProgramReviewCard program={program} workouts={workouts} sets={sets} exercises={exercises} today={today} canFollow={origin !== "coach"} />
+        )}
 
         {/* In the planning: on which days, from when. */}
         <ProgramPlanning program={program} today={today} readOnly={origin === "coach"} />

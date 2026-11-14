@@ -153,7 +153,14 @@
     "welcomeStart": "Start the guide",
     "weekStreak": "{weeks} weeks in a row",
     "weekStreakHint": "Weeks in a row with every planned session done",
-    "moveHint": "Tap a day to move or catch up its session."
+    "moveHint": "Tap a day to move or catch up its session.",
+    "express": "Short on time? Short version",
+    "programDone": "“{name}” is over",
+    "programDoneText": "Well done! See what improved, and choose what comes next.",
+    "programDoneAction": "See the review",
+    "testsDue": "Time to test again",
+    "testsDueText": "Your last tests were on {date}: six weeks have passed.",
+    "testsDueAction": "Do my tests"
   },
   "onboarding": {
     "title": "Your athlete profile",
@@ -596,7 +603,8 @@
     "health": "Health & wearables",
     "activity": "Activity",
     "competitions": "Competitions",
-    "horses": "Horses"
+    "horses": "Horses",
+    "tests": "Level tests"
   },
   "health": {
     "title": "Health & wearables",
@@ -1622,5 +1630,49 @@
     "letGo": "Don’t catch it up",
     "unskip": "Put it back in the program",
     "hint": "The next sessions shift on their own. A program in weeks keeps its sessions within their week."
+  },
+  "express": {
+    "title": "Express session",
+    "intro": "This session takes about {minutes} min. How much time do you have?",
+    "time": "Time available",
+    "minutes": "{minutes} min",
+    "superset": "superset",
+    "dropped": "Left out: {names}",
+    "about": "About {minutes} min, warm-up included. It counts as the planned session.",
+    "start": "Start the short version"
+  },
+  "review": {
+    "title": "Program review",
+    "finishedTitle": "Program over: the review",
+    "sessions": "sessions",
+    "volume": "lifted",
+    "since": "since",
+    "reps": "{n} reps",
+    "seconds": "{n} s",
+    "noProgress": "Not enough sessions yet to compare.",
+    "loadHint": "For loads: estimated 1RM (the most you could lift once), from the first session to the best.",
+    "nextTitle": "What next",
+    "nextHint": "The same kind of program, a level up first. It starts on Monday, on the same days.",
+    "follow": "Follow",
+    "perWeek": "{count, plural, one {# session a week} other {# sessions a week}}",
+    "level_beginner": "Beginner",
+    "level_intermediate": "Intermediate",
+    "level_advanced": "Advanced"
+  },
+  "tests": {
+    "title": "Level tests",
+    "intro": "Measure your level, then test again every {weeks} weeks to see your progress.",
+    "create": "Set up my tests",
+    "programName": "Level tests",
+    "programDescription": "The main lifts and the bodyweight basics, to do again every six weeks.",
+    "dayStrength": "Strength",
+    "dayBodyweight": "Bodyweight",
+    "start": "{name} test",
+    "how": "Strength: work up to a heavy set of 1 to 5 clean reps. Bodyweight: the most in one set, and the longest plank you can hold.",
+    "dueNow": "Last tests on {date}: time to do them again.",
+    "dueOn": "Next tests advised on {date}.",
+    "results": "Results",
+    "noResults": "No result yet: do a first test.",
+    "loadHint": "For loads: estimated 1RM. Programs in percentages use it for your loads."
   }
 }

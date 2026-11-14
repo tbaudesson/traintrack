@@ -43,6 +43,9 @@ import { planCalendar } from "@/lib/ics";
 import { plannedPrograms, scheduleSessions, scheduleWeek, sessionChoices, sessionsPerWeek, type SessionChoice } from "@/lib/schedule";
 import { weekStreak } from "@/lib/weekStreak";
 import { MoveSessionDialog } from "@/components/domain/MoveSessionDialog";
+import { ExpressDialog } from "@/components/domain/ExpressDialog";
+import { dayMinutes } from "@/lib/express";
+import { isTestProgram, testsDue } from "@/lib/levelTests";
 import { downloadFile } from "@/lib/exportService";
 import { useCompetitions } from "@/hooks/useCompetitions";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -59,6 +62,9 @@ import {
   Activity, Upload, RotateCcw, ArrowRight, Check, ListChecks, MessageSquare, Plus, Sparkles, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
   Timer,
   PersonStanding,
+  PartyPopper,
+  Gauge,
+  X,
 } from "lucide-react";
 import { localDate, localDateIn } from "@/lib/dates";
 import { useFormat } from "@/lib/format";
@@ -127,6 +133,27 @@ function OverviewTile({
   );
 }
 
+/** A note on the home screen: something worth a look, with a link, until closed. */
+function HomeNote({ icon: Icon, title, text, href, action, onClose }: { icon: LucideIcon; title: string; text: string; href: string; action: string; onClose: () => void }) {
+  const tc = useTranslations("common");
+  return (
+    <section className="t-surface relative space-y-1.5 rounded-2xl p-4 pr-12 ring-1 ring-accent-500/30">
+      <h2 className="flex items-center gap-2 text-sm font-semibold">
+        <Icon className="size-4 shrink-0 text-accent-text" aria-hidden="true" />
+        {title}
+      </h2>
+      <p className="text-sm text-muted-foreground">{text}</p>
+      <Link href={href} className="inline-flex min-h-10 items-center gap-1 text-sm font-semibold text-accent-text">
+        {action}
+        <ChevronRight className="size-4" aria-hidden="true" />
+      </Link>
+      <button type="button" onClick={onClose} aria-label={tc("close")} className="absolute top-2 right-2 flex size-10 items-center justify-center rounded-full text-muted-foreground hover:bg-muted">
+        <X className="size-4" aria-hidden="true" />
+      </button>
+    </section>
+  );
+}
+
 export default function HomePage() {
   const t = useTranslations("home");
   const tf = useTranslations("firstSteps");
@@ -184,6 +211,24 @@ export default function HomePage() {
   const [now] = useState(() => Date.now());
   const [starting, setStarting] = useState(false);
   const [choosing, setChoosing] = useState(false);
+  const [expressOpen, setExpressOpen] = useState(false);
+  // Cards closed on this device: a program's review, a round of tests due.
+  const [closedCards, setClosedCards] = useState<string[]>(() => {
+    try {
+      return typeof window === "undefined" ? [] : (JSON.parse(window.localStorage.getItem("traintrack-closed-cards") ?? "[]") as string[]);
+    } catch {
+      return [];
+    }
+  });
+  const closeCard = (key: string) => {
+    const next = [...closedCards.filter((k) => k !== key), key].slice(-50);
+    try {
+      window.localStorage.setItem("traintrack-closed-cards", JSON.stringify(next));
+    } catch {
+      // Private window: closed until the page is left.
+    }
+    setClosedCards(next);
+  };
   const [sportOpen, setSportOpen] = useState(false);
   const pickerTop = useRef<HTMLDivElement>(null);
 
@@ -206,7 +251,8 @@ export default function HomePage() {
   // With several sessions on the day shown, the one picked by the athlete.
   const [pickKey, setPickKey] = useState<string | null>(null);
   const session = useMemo(() => {
-    const usable = programs.filter((p) => (p.structure ?? []).length > 0);
+    // The level tests are done from their own page, never as the session of the day.
+    const usable = programs.filter((p) => (p.structure ?? []).length > 0 && !isTestProgram(p));
     const linked = workouts.map((w) => ({ w, at: findWorkoutProgramDay(usable, w) }));
     const lastDone = linked.find((x) => x.at && x.w.date < today);
     const choose = (date: string, options: SessionChoice[]) => {
@@ -314,6 +360,20 @@ export default function HomePage() {
   }, [session, today, profile, workouts, planned, shownWeek]);
 
   const sessionWeek = session ? programWeek(session.program, today) : null;
+  // Pressed for time: a shorter version of a strength session not begun, when it is long enough to shorten.
+  const canExpress = !!session && !session.workoutId && !session.day.cardio && session.day.exercises.length > 1 && dayMinutes(session.day) > 25;
+  // A plan just over (trained in the last four weeks): its review, until closed.
+  const finishedProgram = programs.find(
+    (p) =>
+      !!p.startDate &&
+      !isTestProgram(p) &&
+      !closedCards.includes(`review-${p.uuid}`) &&
+      !!programWeek(p, today)?.finished &&
+      workouts.some((w) => w.date >= localDateIn(-28, now) && findWorkoutProgramDay([p], w))
+  );
+  // The level tests, once done, again every six weeks.
+  const testProgram = programs.find((p) => isTestProgram(p) && !p.assignedToUserId);
+  const tests = testProgram ? testsDue({ program: testProgram, workouts, today }) : null;
   // The next sessions of the planning, over two weeks: a plan starting next Monday shows already.
   const upcoming = useMemo(
     () =>
@@ -401,13 +461,16 @@ export default function HomePage() {
     await startDay(session.program, session.index);
   }
 
-  async function startDay(program: Program, index: number) {
+  /** Start a program day; a shorter version of it when given (still that day of the program). */
+  async function startDay(program: Program, index: number, shorter?: ProgramDay) {
     setChoosing(false);
+    setExpressOpen(false);
     setStarting(true);
     try {
       // A beginner's very first session opens in guided mode.
       const first = workouts.length === 0 && profile?.fitnessLevel === "beginner";
-      const id = await startWorkoutFromDay(program, index, exercises, today, lighterToday.start);
+      const source = shorter ? { ...program, structure: program.structure.map((d, i) => (i === index ? shorter : d)) } : program;
+      const id = await startWorkoutFromDay(source, index, exercises, today, lighterToday.start);
       router.push(first && !program.structure[index]?.cardio ? `${sessionHref(id)}&guided=1` : sessionHref(id));
     } finally {
       setStarting(false);
@@ -624,6 +687,16 @@ export default function HomePage() {
                 </Link>
               )}
             </div>
+            {canExpress && (
+              <button
+                type="button"
+                onClick={() => setExpressOpen(true)}
+                className="relative mt-2 flex min-h-11 w-full items-center justify-center gap-1.5 rounded-full text-sm font-semibold text-accent-text ring-1 ring-accent-500/30"
+              >
+                <Timer className="size-4" aria-hidden="true" />
+                {t("express")}
+              </button>
+            )}
             <button
               type="button"
               onClick={() => setChoosing(true)}
@@ -651,6 +724,27 @@ export default function HomePage() {
           <ReadinessBanner readiness={lighterToday.reason === "deload" ? null : lighterToday.readiness} keptNormal={lighterToday.keptNormal} onKeep={lighterToday.setKeptNormal} />
           <DeloadCard advice={deload} monday={thisMonday} active={deloading} hasProfile={!!profile} />
           {load && (load.zone === "caution" || load.zone === "danger") && <TrainingLoadCard load={load} />}
+
+          {finishedProgram && (
+            <HomeNote
+              icon={PartyPopper}
+              title={t("programDone", { name: finishedProgram.name })}
+              text={t("programDoneText")}
+              href={`/programs/${finishedProgram.id}#bilan`}
+              action={t("programDoneAction")}
+              onClose={() => closeCard(`review-${finishedProgram.uuid}`)}
+            />
+          )}
+          {tests?.due && !closedCards.includes(`tests-${tests.next}`) && (
+            <HomeNote
+              icon={Gauge}
+              title={t("testsDue")}
+              text={t("testsDueText", { date: short(tests.last) })}
+              href="/tests"
+              action={t("testsDueAction")}
+              onClose={() => closeCard(`tests-${tests.next}`)}
+            />
+          )}
 
           {showReport && (
             <WeeklyReportCard
@@ -683,6 +777,15 @@ export default function HomePage() {
             movable={profile ? movable : undefined}
             onPickDay={setMoveDate}
           />
+          {canExpress && (
+            <ExpressDialog
+              key={`${session!.program.id}-${session!.index}`}
+              day={session!.day}
+              open={expressOpen}
+              onOpenChange={setExpressOpen}
+              onStart={(shorter) => startDay(session!.program, session!.index, shorter)}
+            />
+          )}
           <MoveSessionDialog
             date={moveDay ? moveDate : null}
             sessions={moveDay?.sessions.filter((x) => x.status === "planned" || x.status === "missed") ?? []}

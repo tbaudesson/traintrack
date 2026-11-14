@@ -78,7 +78,7 @@ await page.waitForLoadState("load");
 expect(await page.evaluate(() => !!navigator.serviceWorker.controller), "the service worker never took control");
 
 // What the background warm-up does once signed in: every page and its files.
-const PAGES = ["", "/log", "/log/session", "/programs", "/progress", "/intervals", "/mobility", "/exercises", "/competitions", "/report", "/settings", "/more", "/horses", "/onboarding", "/readiness", "/join"];
+const PAGES = ["", "/log", "/log/session", "/programs", "/progress", "/intervals", "/mobility", "/exercises", "/competitions", "/report", "/settings", "/more", "/horses", "/onboarding", "/readiness", "/join", "/tests"];
 const warmed = await page.evaluate(async (pages) => {
   const files = new Set();
   for (const p of pages) {
@@ -171,6 +171,20 @@ await test("a sharp rise of the training load is flagged on the home screen", as
   await card.getByText(/Hausse trop brutale|Hausse marquée/).waitFor({ timeout: 10000 });
   await card.scrollIntoViewIfNeeded();
   await snap("load-card");
+});
+
+await test("pressed for time, the session of the day has a short version", async () => {
+  await page.goto(`${BASE}/fr`);
+  await page.getByRole("button", { name: /Pas le temps \? Version courte/ }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("heading", { name: "Séance express" }).waitFor({ timeout: 5000 });
+  const first = dialog.getByRole("group", { name: "Temps disponible" }).getByRole("button").first();
+  expect((await first.getAttribute("aria-pressed")) === "true", "no time chosen by default");
+  expect((await dialog.locator("li").count()) >= 1, "the short version has no exercise");
+  await dialog.getByText(/Environ \d+ min, échauffement compris/).waitFor({ timeout: 5000 });
+  await snap("express");
+  await page.keyboard.press("Escape");
+  await dialog.waitFor({ state: "hidden", timeout: 5000 });
 });
 
 await test("its first session starts, with its sets ready, at the fixed session address", async () => {
@@ -384,6 +398,22 @@ await test("an invitation link is kept, out of the address bar, and asks for a c
   await page.getByRole("button", { name: "Aller à l’accueil" }).click();
   await page.waitForURL(/\/fr\/?$/, { timeout: 10000 });
   expect((await page.evaluate(() => localStorage.getItem("traintrack-join"))) === null, "the token was not forgotten");
+});
+
+await test("level tests are set up, started, and wait for a first result", async () => {
+  await page.goto(`${BASE}/fr/more`);
+  await page.getByRole("link", { name: "Tests de niveau" }).click();
+  await page.getByRole("button", { name: "Préparer mes tests" }).click();
+  await page.getByRole("button", { name: /Test Poids du corps/ }).waitFor({ timeout: 10000 });
+  await page.getByText("Pas encore de résultat : faites un premier test.").waitFor({ timeout: 5000 });
+  await snap("tests");
+  await page.getByRole("button", { name: /Test Force/ }).click();
+  await page.waitForURL(/\/fr\/log\/session\?id=\d+/, { timeout: 10000 });
+  // The tests are never put forward as the session of the day.
+  await page.goto(`${BASE}/fr`);
+  const hero = page.locator("section", { hasText: "Changer de séance ou de programme" });
+  await hero.getByRole("heading").first().waitFor({ timeout: 10000 });
+  expect(!(await hero.getByText("Tests de niveau").count()), "the tests became the session of the day");
 });
 
 await test("no page threw an error", async () => {

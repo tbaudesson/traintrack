@@ -153,7 +153,14 @@
     "welcomeStart": "Assistent starten",
     "weekStreak": "{weeks} Wochen am Stück",
     "weekStreakHint": "Wochen am Stück mit allen geplanten Einheiten",
-    "moveHint": "Tippe auf einen Tag, um seine Einheit zu verschieben oder nachzuholen."
+    "moveHint": "Tippe auf einen Tag, um seine Einheit zu verschieben oder nachzuholen.",
+    "express": "Keine Zeit? Kurzversion",
+    "programDone": "„{name}“ ist abgeschlossen",
+    "programDoneText": "Stark! Sieh dir an, was besser wurde, und wähle, wie es weitergeht.",
+    "programDoneAction": "Bilanz ansehen",
+    "testsDue": "Zeit für neue Tests",
+    "testsDueText": "Deine letzten Tests waren am {date}: sechs Wochen sind vorbei.",
+    "testsDueAction": "Tests machen"
   },
   "onboarding": {
     "title": "Dein Athletenprofil",
@@ -596,7 +603,8 @@
     "health": "Gesundheit & Wearables",
     "activity": "Aktivität",
     "competitions": "Turniere",
-    "horses": "Pferde"
+    "horses": "Pferde",
+    "tests": "Leistungstests"
   },
   "health": {
     "title": "Gesundheit & Wearables",
@@ -1622,5 +1630,49 @@
     "letGo": "Nicht nachholen",
     "unskip": "Wieder einplanen",
     "hint": "Die nächsten Einheiten verschieben sich von selbst. Ein Programm in Wochen behält seine Einheiten in ihrer Woche."
+  },
+  "express": {
+    "title": "Express-Einheit",
+    "intro": "Diese Einheit dauert etwa {minutes} Min. Wie viel Zeit hast du?",
+    "time": "Verfügbare Zeit",
+    "minutes": "{minutes} Min.",
+    "superset": "Supersatz",
+    "dropped": "Weggelassen: {names}",
+    "about": "Etwa {minutes} Min., Aufwärmen inklusive. Sie zählt als geplante Einheit.",
+    "start": "Kurzversion starten"
+  },
+  "review": {
+    "title": "Bilanz des Programms",
+    "finishedTitle": "Programm abgeschlossen: die Bilanz",
+    "sessions": "Einheiten",
+    "volume": "bewegt",
+    "since": "seit",
+    "reps": "{n} Wdh.",
+    "seconds": "{n} s",
+    "noProgress": "Noch nicht genug Einheiten für einen Vergleich.",
+    "loadHint": "Bei Gewichten: geschätztes 1RM (das Maximum für eine Wiederholung), von der ersten bis zur besten Einheit.",
+    "nextTitle": "Wie es weitergeht",
+    "nextHint": "Dieselbe Art Programm, zuerst eine Stufe höher. Es startet am Montag, an denselben Tagen.",
+    "follow": "Folgen",
+    "perWeek": "{count, plural, one {# Einheit pro Woche} other {# Einheiten pro Woche}}",
+    "level_beginner": "Anfänger",
+    "level_intermediate": "Fortgeschritten",
+    "level_advanced": "Profi"
+  },
+  "tests": {
+    "title": "Leistungstests",
+    "intro": "Miss dein Niveau und wiederhole die Tests alle {weeks} Wochen, um deine Fortschritte zu sehen.",
+    "create": "Meine Tests anlegen",
+    "programName": "Leistungstests",
+    "programDescription": "Die Grundübungen und die Basics mit Körpergewicht, alle sechs Wochen zu wiederholen.",
+    "dayStrength": "Kraft",
+    "dayBodyweight": "Körpergewicht",
+    "start": "Test {name}",
+    "how": "Kraft: steigere dich bis zu einem schweren, sauberen Satz mit 1 bis 5 Wiederholungen. Körpergewicht: das Maximum in einem Satz und die längste Plank, die du halten kannst.",
+    "dueNow": "Letzte Tests am {date}: Zeit, sie zu wiederholen.",
+    "dueOn": "Nächste Tests empfohlen am {date}.",
+    "results": "Ergebnisse",
+    "noResults": "Noch kein Ergebnis: mach einen ersten Test.",
+    "loadHint": "Bei Gewichten: geschätztes 1RM. Programme in Prozent nutzen es für deine Gewichte."
   }
 }

@@ -153,7 +153,14 @@
     "welcomeStart": "Lancer l’assistant",
     "weekStreak": "{weeks} semaines d’affilée",
     "weekStreakHint": "Semaines de suite où toutes les séances prévues ont été faites",
-    "moveHint": "Touchez un jour pour déplacer ou rattraper sa séance."
+    "moveHint": "Touchez un jour pour déplacer ou rattraper sa séance.",
+    "express": "Pas le temps ? Version courte",
+    "programDone": "« {name} » est terminé",
+    "programDoneText": "Bravo ! Voyez ce qui a progressé, et choisissez la suite.",
+    "programDoneAction": "Voir le bilan",
+    "testsDue": "C’est l’heure de refaire vos tests",
+    "testsDueText": "Vos derniers tests datent du {date} : six semaines ont passé.",
+    "testsDueAction": "Faire mes tests"
   },
   "onboarding": {
     "title": "Votre profil athlète",
@@ -596,7 +603,8 @@
     "health": "Santé et objets connectés",
     "activity": "Activité",
     "competitions": "Compétitions",
-    "horses": "Chevaux"
+    "horses": "Chevaux",
+    "tests": "Tests de niveau"
   },
   "health": {
     "title": "Santé et objets connectés",
@@ -1622,5 +1630,49 @@
     "letGo": "Ne pas la rattraper",
     "unskip": "La remettre au programme",
     "hint": "Les séances suivantes se décalent d’elles-mêmes. Un programme en semaines garde ses séances dans leur semaine."
+  },
+  "express": {
+    "title": "Séance express",
+    "intro": "Cette séance prend environ {minutes} min. Combien de temps avez-vous ?",
+    "time": "Temps disponible",
+    "minutes": "{minutes} min",
+    "superset": "superset",
+    "dropped": "Laissés de côté : {names}",
+    "about": "Environ {minutes} min, échauffement compris. Elle compte comme la séance prévue.",
+    "start": "Commencer la version courte"
+  },
+  "review": {
+    "title": "Bilan du programme",
+    "finishedTitle": "Programme terminé : le bilan",
+    "sessions": "séances",
+    "volume": "soulevées",
+    "since": "depuis le",
+    "reps": "{n} rép.",
+    "seconds": "{n} s",
+    "noProgress": "Pas encore assez de séances pour comparer.",
+    "loadHint": "Pour les charges : 1RM estimé (la charge maximale pour une répétition), de la première séance à la meilleure.",
+    "nextTitle": "Pour la suite",
+    "nextHint": "Même type de programme, un niveau au-dessus d’abord. Il démarre lundi, sur les mêmes jours.",
+    "follow": "Suivre",
+    "perWeek": "{count, plural, one {# séance par semaine} other {# séances par semaine}}",
+    "level_beginner": "Débutant",
+    "level_intermediate": "Intermédiaire",
+    "level_advanced": "Avancé"
+  },
+  "tests": {
+    "title": "Tests de niveau",
+    "intro": "Mesurez votre niveau, puis refaites les tests toutes les {weeks} semaines pour voir vos progrès.",
+    "create": "Préparer mes tests",
+    "programName": "Tests de niveau",
+    "programDescription": "Les grands mouvements et les bases au poids du corps, à refaire toutes les six semaines.",
+    "dayStrength": "Force",
+    "dayBodyweight": "Poids du corps",
+    "start": "Test {name}",
+    "how": "Force : montez jusqu’à une série lourde de 1 à 5 répétitions, bien exécutée. Poids du corps : le maximum en une série, et le gainage le plus long possible.",
+    "dueNow": "Derniers tests le {date} : c’est le moment de les refaire.",
+    "dueOn": "Prochains tests conseillés le {date}.",
+    "results": "Résultats",
+    "noResults": "Pas encore de résultat : faites un premier test.",
+    "loadHint": "Pour les charges : 1RM estimé. Les programmes en pourcentages s’en servent pour vos charges."
   }
 }
