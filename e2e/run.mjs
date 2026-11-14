@@ -271,8 +271,19 @@ await test("two programs planned on their own days show together in the week and
   await page.waitForURL(/\/fr\/programs\/\d+$/, { timeout: 10000 });
   await page.getByRole("button", { name: "Ajouter à mon planning" }).click();
   await page.getByRole("heading", { name: "Mon planning", exact: true }).waitFor({ timeout: 5000 });
-  // Home: the week lists the sessions of both, each with its program.
+  // Home: the session card names its day, and offers each session of that day.
   await page.goto(`${BASE}/fr`);
+  const hero = page.locator("section", { hasText: "Changer de séance ou de programme" });
+  await hero.getByText(/Séance du jour|Prochaine séance · /).first().waitFor({ timeout: 10000 });
+  const choices = hero.getByRole("group", { name: "Séances prévues ce jour-là" }).getByRole("button");
+  if ((await choices.count()) > 1) {
+    const second = choices.nth(1);
+    await second.click();
+    expect((await second.getAttribute("aria-pressed")) === "true", "the session picked is not shown");
+    const [name] = (await second.innerText()).replace("✓ ", "").split(" · ");
+    await hero.getByRole("heading", { name, exact: true }).waitFor({ timeout: 5000 });
+  }
+  // The week lists the sessions of both, each with its program.
   const week = page.locator("section", { hasText: "prochaines semaines à mon agenda" });
   await week.getByText("· Full Body — Débutant").first().waitFor({ timeout: 10000 });
   await week.getByText("· program fr").first().waitFor({ timeout: 10000 });

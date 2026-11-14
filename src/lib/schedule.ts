@@ -168,3 +168,32 @@ export function scheduleWeek(input: { monday: string; today: string; planned: Pl
     return { date, weekday: i + 1, today: date === input.today, status, sessions, others };
   });
 }
+
+export interface SessionChoice {
+  key: string;
+  program: Program;
+  index: number;
+  /** A session of today already begun. */
+  workoutId?: number;
+}
+
+/**
+ * The day the session card shows, and its sessions: today when something is
+ * begun or planned today (begun ones first), otherwise the next day planned
+ * within two weeks. Null without any.
+ */
+export function sessionChoices(input: { planned: PlannedProgram[]; programs: Program[]; workouts: W[]; today: string }): { date: string; options: SessionChoice[] } | null {
+  const { today } = input;
+  const begun: SessionChoice[] = input.workouts
+    .filter((w) => w.date === today)
+    .map((w) => ({ w, at: findWorkoutProgramDay(input.programs, w) }))
+    .filter((x) => x.at)
+    .map((x) => ({ key: `w${x.w.id}`, program: x.at!.program, index: x.at!.index, workoutId: x.w.id }));
+  const ahead = input.planned.length
+    ? scheduleSessions({ planned: input.planned, workouts: input.workouts, from: today, to: addDays(today, 13), today }).filter((x) => x.status === "planned")
+    : [];
+  const date = begun.length || ahead[0]?.date === today ? today : ahead[0]?.date;
+  if (!date) return null;
+  const options = [...begun, ...ahead.filter((x) => x.date === date).map((x) => ({ key: `p${x.program.id}-${x.index}`, program: x.program, index: x.index }))];
+  return options.length ? { date, options } : null;
+}

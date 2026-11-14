@@ -142,7 +142,9 @@
     "weekLast": "Semaine dernière",
     "weekOf": "Semaine du {date}",
     "weekPrevious": "Semaine précédente",
-    "weekFollowing": "Semaine suivante"
+    "weekFollowing": "Semaine suivante",
+    "sameDay": "Séances prévues ce jour-là",
+    "nextSessionOn": "Prochaine séance · {date}"
   },
   "onboarding": {
     "title": "Votre profil athlète",

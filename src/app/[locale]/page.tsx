@@ -2,7 +2,8 @@
 
 import { sessionHref } from "@/lib/routes";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAthleteProfile } from "@/hooks/useAthleteProfile";
@@ -38,7 +39,7 @@ import { WeekStrip } from "@/components/domain/WeekStrip";
 import { GpxImport } from "@/components/domain/GpxImport";
 import { mondayOfDate, plannedSessions, upcomingSessions, weekPlan } from "@/lib/weekPlan";
 import { planCalendar } from "@/lib/ics";
-import { plannedPrograms, scheduleSessions, scheduleWeek } from "@/lib/schedule";
+import { plannedPrograms, scheduleSessions, scheduleWeek, sessionChoices, type SessionChoice } from "@/lib/schedule";
 import { downloadFile } from "@/lib/exportService";
 import { useCompetitions } from "@/hooks/useCompetitions";
 import { Button } from "@/components/ui/button";
@@ -125,6 +126,7 @@ function OverviewTile({
 
 export default function HomePage() {
   const t = useTranslations("home");
+  const locale = useLocale();
   const tr = useTranslations("readiness");
   const tm = useTranslations("more");
   const tl = useTranslations("log");
@@ -178,18 +180,19 @@ export default function HomePage() {
   // Today's session already begun; otherwise the next one of the planning;
   // without a planning, the program most recently trained, or the first one
   // with days. A program started since (a coach's new plan) takes over.
+  // With several sessions on the day shown, the one picked by the athlete.
+  const [pickKey, setPickKey] = useState<string | null>(null);
   const session = useMemo(() => {
     const usable = programs.filter((p) => (p.structure ?? []).length > 0);
     const linked = workouts.map((w) => ({ w, at: findWorkoutProgramDay(usable, w) }));
     const lastDone = linked.find((x) => x.at && x.w.date < today);
-    const todays = linked.find((x) => x.at && x.w.date === today);
-    if (todays?.at) {
-      return { program: todays.at.program, index: todays.at.index, day: todays.at.program.structure[todays.at.index], workoutId: todays.w.id };
-    }
-    if (planned.length) {
-      const next = scheduleSessions({ planned, workouts, from: today, to: localDateIn(13, now), today }).find((x) => x.status === "planned");
-      if (next) return { program: next.program, index: next.index, day: next.program.structure[next.index], workoutId: undefined };
-    }
+    const choose = (date: string, options: SessionChoice[]) => {
+      const o = options.find((x) => x.key === pickKey) ?? options[0];
+      return { program: o.program, index: o.index, day: o.program.structure[o.index], workoutId: o.workoutId, date, options };
+    };
+    // Today's sessions begun and planned, or the next day planned.
+    const day = sessionChoices({ planned, programs: usable, workouts, today });
+    if (day) return choose(day.date, day.options);
     const newest = usable
       .filter((p) => p.startDate && p.startDate <= today && !programWeek(p, today)?.finished)
       .sort((a, b) => b.startDate!.localeCompare(a.startDate!))[0];
@@ -199,8 +202,8 @@ export default function HomePage() {
       newest && (!lastDone || newest.startDate! > lastDone.w.date) ? newest : (lastDone?.at?.program ?? favorite ?? usable[0]);
     if (!program) return null;
     const next = nextDayIndex(program, workouts, today);
-    return { program, index: next, day: program.structure[next], workoutId: undefined };
-  }, [programs, workouts, today, prefs.sport, catalogue, planned, now]);
+    return { program, index: next, day: program.structure[next], workoutId: undefined, date: today, options: [] as SessionChoice[] };
+  }, [programs, workouts, today, prefs.sport, catalogue, planned, pickKey]);
 
   // Deload: running this week, or suggested from the weeks in a row and fatigue.
   const thisMonday = mondayOfDate(today);
@@ -494,7 +497,11 @@ export default function HomePage() {
             )}
             <div className="relative flex items-start justify-between gap-3">
               <div className="max-w-[60%] min-w-0">
-                <p className="text-xs font-semibold tracking-widest text-accent-text uppercase">{t("todaySession")}</p>
+                <p className="text-xs font-semibold tracking-widest text-accent-text uppercase">
+                  {session && session.date !== today
+                    ? t("nextSessionOn", { date: new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", timeZone: "UTC" }).format(new Date(`${session.date}T00:00:00Z`)) })
+                    : t("todaySession")}
+                </p>
                 <h2 className="mt-1 truncate text-3xl font-bold tracking-tight">{session?.day.name ?? t("freeSession")}</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {session
@@ -513,6 +520,28 @@ export default function HomePage() {
               </div>
               <ProgressRing percent={percent} />
             </div>
+            {session && session.options.length > 1 && (
+              <div className="relative mt-3 flex flex-wrap gap-1.5" role="group" aria-label={t("sameDay")}>
+                {session.options.map((o) => {
+                  const on = o.program.id === session.program.id && o.index === session.index && o.workoutId === session.workoutId;
+                  return (
+                    <button
+                      key={o.key}
+                      type="button"
+                      onClick={() => setPickKey(o.key)}
+                      aria-pressed={on}
+                      className={cn(
+                        "min-h-9 rounded-full px-3 text-xs font-semibold",
+                        on ? "bg-accent-600 text-white" : "t-surface text-foreground ring-1 ring-foreground/10"
+                      )}
+                    >
+                      {o.workoutId ? "✓ " : ""}
+                      {o.program.structure[o.index]?.name} · {o.program.name}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             <div className="relative mt-4 flex items-center justify-between gap-2">
               <Button onClick={start} disabled={starting} className="rounded-full px-5">
                 {starting ? (

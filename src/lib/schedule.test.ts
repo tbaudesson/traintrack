@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Program } from "@/db";
-import { plannedPrograms, scheduleSessions, scheduleWeek, sessionsPerWeek, suggestDays, weekdayOf } from "./schedule";
+import { plannedPrograms, scheduleSessions, scheduleWeek, sessionChoices, sessionsPerWeek, suggestDays, weekdayOf } from "./schedule";
 
 const program = (p: Partial<Program> & { id: number; name: string }): Program => ({
   uuid: `u${p.id}`,
@@ -119,5 +119,29 @@ describe("days", () => {
 
   it("knows the day of the week", () => {
     expect(["2026-11-09", "2026-11-15"].map(weekdayOf)).toEqual([1, 7]);
+  });
+});
+
+describe("sessionChoices", () => {
+  // The rotation on Mondays and Saturdays too: Monday 16 then holds two sessions.
+  const both = plannedPrograms({ programs: [plan, { ...rotation, weekdays: [1, 6] }], me: "me", trainingDays: [], from: "2026-11-09" });
+  const programs = both.map((p) => p.program);
+  const label = (c: ReturnType<typeof sessionChoices>) => c && `${c.date} ${c.options.map((o) => `${o.program.name}:${o.program.structure[o.index].name}${o.workoutId ? "*" : ""}`).join(", ")}`;
+
+  it("on a day off, shows the next day planned with all its sessions", () => {
+    expect(label(sessionChoices({ planned: both, programs, workouts, today: "2026-11-15" }))).toBe("2026-11-16 Calisthenics:C3, Full Body:B");
+  });
+
+  it("on a planned day, offers each session of the day", () => {
+    expect(label(sessionChoices({ planned: both, programs, workouts, today: "2026-11-16" }))).toBe("2026-11-16 Calisthenics:C3, Full Body:B");
+  });
+
+  it("puts a session begun today first, and keeps the others still planned", () => {
+    const begun = [...workouts, { id: 20, date: "2026-11-16", title: "Full Body — B", programId: 2, programDayIndex: 1 }];
+    expect(label(sessionChoices({ planned: both, programs, workouts: begun, today: "2026-11-16" }))).toBe("2026-11-16 Full Body:B*, Calisthenics:C3");
+  });
+
+  it("offers nothing without a planning or a session begun", () => {
+    expect(sessionChoices({ planned: [], programs, workouts, today: "2026-11-16" })).toBeNull();
   });
 });
