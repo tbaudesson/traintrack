@@ -43,6 +43,7 @@ import {
   Activity, Upload, RotateCcw, ArrowRight, ListChecks, MessageSquare, Plus, Sparkles, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
 } from "lucide-react";
 import { localDate, localDateIn } from "@/lib/dates";
+import { useFormat } from "@/lib/format";
 
 const DAY_MS = 86400000;
 
@@ -119,6 +120,7 @@ export default function HomePage() {
   const { user, profile: account } = useAuth();
   const profile = useAthleteProfile();
   const readiness = useReadiness();
+  const { num } = useFormat();
   const pains = usePainReports();
   const [reportClosed, setReportClosed] = useState(() => {
     try {
@@ -556,9 +558,9 @@ export default function HomePage() {
             </div>
             <div className="grid grid-cols-3 gap-2">
               {hasFeature("nutrition") ? (
-                <OverviewTile icon={Flame} label={t("calories")} value={Math.round(sumMacros(nutritionToday).calories).toLocaleString()} hint={t("kcalToday")} tile="oklch(0.74 0.17 55)" />
+                <OverviewTile icon={Flame} label={t("calories")} value={num(Math.round(sumMacros(nutritionToday).calories), 0)} hint={t("kcalToday")} tile="oklch(0.74 0.17 55)" />
               ) : (
-                <OverviewTile icon={Flame} label={t("weeklyVolume")} value={week.volume.toLocaleString()} hint="kg" tile="oklch(0.74 0.17 55)" />
+                <OverviewTile icon={Flame} label={t("weeklyVolume")} value={num(week.volume, 0)} hint="kg" tile="oklch(0.74 0.17 55)" />
               )}
               <OverviewTile icon={Dumbbell} label={t("workouts")} value={week.workouts} hint={t("thisWeek")} tile="var(--accent-400)" />
               <OverviewTile

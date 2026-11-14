@@ -26,6 +26,7 @@ import {
 } from "recharts";
 import { localDate, localDateIn } from "@/lib/dates";
 import { useExerciseLabel } from "@/lib/exerciseNames";
+import { useFormat } from "@/lib/format";
 
 function epley1rm(weight: number, reps: number): number {
   return Math.round(weight * (1 + reps / 30));
@@ -35,6 +36,7 @@ type ExMetric = "e1rm" | "top" | "reps" | "vol";
 
 export default function ProgressPage() {
   const t = useTranslations("progress");
+  const { num, day } = useFormat();
   const xl = useExerciseLabel();
   const tex = useTranslations("exercises");
   const { hasFeature } = useFeatureAccess();
@@ -165,8 +167,8 @@ export default function ProgressPage() {
           <div className="grid grid-cols-2 gap-3">
             <StatCard icon={Dumbbell} value={stats.workouts} label={t("workouts")} />
             <StatCard icon={Layers} value={stats.sets} label={t("sets")} />
-            <StatCard icon={Flame} value={stats.totalVolume.toLocaleString()} label={`${t("totalVolume")} (kg)`} />
-            <StatCard icon={Flame} value={stats.weekVolume.toLocaleString()} label={`${t("thisWeek")} (kg)`} />
+            <StatCard icon={Flame} value={num(stats.totalVolume, 0)} label={`${t("totalVolume")} (kg)`} />
+            <StatCard icon={Flame} value={num(stats.weekVolume, 0)} label={`${t("thisWeek")} (kg)`} />
           </div>
         )}
 
@@ -216,8 +218,8 @@ export default function ProgressPage() {
           <ChartCard title={t("volume")}>
             <LineChart data={volumeData}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(120,120,120,0.15)" />
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} width={44} />
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(d: string) => day(d).slice(0, 5)} />
+              <YAxis tick={{ fontSize: 10 }} width={44} tickFormatter={(v: number) => num(v)} />
               <Tooltip />
               <Line type="monotone" dataKey="volume" stroke="#4F46E5" strokeWidth={2} dot={false} />
             </LineChart>
@@ -258,8 +260,8 @@ export default function ProgressPage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={exData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(120,120,120,0.15)" />
-                    <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                    <YAxis tick={{ fontSize: 10 }} width={44} />
+                    <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(d: string) => day(d).slice(0, 5)} />
+                    <YAxis tick={{ fontSize: 10 }} width={44} tickFormatter={(v: number) => num(v)} />
                     <Tooltip />
                     <Line type="monotone" dataKey={metric} stroke={METRIC_COLORS[metric]} strokeWidth={2} dot={false} />
                   </LineChart>
@@ -311,7 +313,7 @@ export default function ProgressPage() {
           <ChartCard title={t("bodyweight")}>
             <LineChart data={bwData}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(120,120,120,0.15)" />
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(d: string) => day(d).slice(0, 5)} />
               <YAxis tick={{ fontSize: 10 }} width={44} domain={["dataMin - 2", "dataMax + 2"]} />
               <Tooltip />
               <Line type="monotone" dataKey="weight" stroke="#EA580C" strokeWidth={2} dot={false} />

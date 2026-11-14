@@ -17,6 +17,7 @@ import { Flag, Plus, Loader2, Trophy, Trash2, ChevronDown, ChevronUp, Medal } fr
 import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/page-parts";
 import { localDateIn } from "@/lib/dates";
+import { useFormat } from "@/lib/format";
 
 const TYPES: ChallengeType[] = ["volume", "sessions", "consistency"];
 
@@ -86,6 +87,7 @@ function ChallengeCard({
   challenge, currentUserId, onDeleted,
 }: { challenge: Challenge; currentUserId?: string; onDeleted: () => void }) {
   const t = useTranslations("challenges");
+  const { num } = useFormat();
   const [open, setOpen] = useState(false);
   const [board, setBoard] = useState<LeaderboardRow[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -160,7 +162,7 @@ function ChallengeCard({
                     </span>
                     <span className="flex-1 truncate text-sm">{row.display_name}</span>
                     <span className="text-sm font-semibold tabular-nums">
-                      {Math.round(row.score).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">{unit}</span>
+                      {num(Math.round(row.score), 0)} <span className="text-xs font-normal text-muted-foreground">{unit}</span>
                     </span>
                   </li>
                 ))}

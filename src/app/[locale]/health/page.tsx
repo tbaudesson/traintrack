@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Activity, Footprints, HeartPulse, Moon, Upload, Heart, Loader2, Check } from "lucide-react";
 import { SectionHeading } from "@/components/ui/page-parts";
 import { localDate } from "@/lib/dates";
+import { useFormat } from "@/lib/format";
 
 function today() {
   return localDate();
@@ -20,6 +21,7 @@ function today() {
 
 export default function HealthPage() {
   const t = useTranslations("health");
+  const { num } = useFormat();
   const allHealth = useAllHealth();
   const todayMetric = useHealthForDate(today());
   const workouts = useWorkouts();
@@ -139,7 +141,7 @@ export default function HealthPage() {
                 <CardContent className="flex items-center gap-2 py-2.5 text-xs">
                   <span className="w-20 shrink-0 font-medium">{h.date}</span>
                   <span className="flex flex-1 flex-wrap gap-x-3 gap-y-0.5 text-muted-foreground">
-                    {h.steps != null && <span>{Math.round(h.steps).toLocaleString()} {t("stepsShort")}</span>}
+                    {h.steps != null && <span>{num(Math.round(h.steps), 0)} {t("stepsShort")}</span>}
                     {h.restingHr != null && <span>{Math.round(h.restingHr)} bpm</span>}
                     {h.hrv != null && <span>HRV {Math.round(h.hrv)}</span>}
                     {h.sleepHours != null && <span>{h.sleepHours}h</span>}

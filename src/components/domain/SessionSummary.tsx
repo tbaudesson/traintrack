@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { Clock, Dumbbell, Gauge, Layers, Route, Trophy, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useFormat } from "@/lib/format";
 
 export interface SessionSummaryData {
   durationMin: number | null;
@@ -29,6 +30,7 @@ function Tile({ icon: Icon, label, value }: { icon: LucideIcon; label: string; v
 
 export function SessionSummary({ data, onClose }: { data: SessionSummaryData | null; onClose: () => void }) {
   const t = useTranslations("log");
+  const { num } = useFormat();
   const tc = useTranslations("cardio");
   if (!data) return null;
   return (
@@ -56,7 +58,7 @@ export function SessionSummary({ data, onClose }: { data: SessionSummaryData | n
         <div className="grid grid-cols-2 gap-2">
           <Tile icon={Clock} label={t("summaryDuration")} value={data.durationMin !== null ? `${data.durationMin} min` : "—"} />
           <Tile icon={Layers} label={t("summarySets")} value={String(data.sets)} />
-          <Tile icon={Dumbbell} label={t("summaryVolume")} value={`${Math.round(data.volume).toLocaleString()} kg`} />
+          <Tile icon={Dumbbell} label={t("summaryVolume")} value={`${num(Math.round(data.volume), 0)} kg`} />
           <Tile icon={Trophy} label={t("summaryRecords")} value={String(data.records.length)} />
         </div>
         {data.change !== null && (
@@ -69,7 +71,7 @@ export function SessionSummary({ data, onClose }: { data: SessionSummaryData | n
             {data.records.map((r, i) => (
               <li key={i} className="flex items-center gap-2 text-sm">
                 <Trophy className="size-4 shrink-0 text-accent-text" aria-hidden="true" />
-                {r.exercise} · {r.weightKg} kg × {r.reps}
+                {r.exercise} · {num(r.weightKg)} kg × {r.reps}
               </li>
             ))}
           </ul>

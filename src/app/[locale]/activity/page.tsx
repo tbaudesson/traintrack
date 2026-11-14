@@ -14,6 +14,7 @@ import { BellRing, Dumbbell, Loader2, Newspaper, Trophy } from "lucide-react";
 import type { Workout, WorkoutSet } from "@/db";
 import { localDate } from "@/lib/dates";
 import { useExerciseLabel } from "@/lib/exerciseNames";
+import { useFormat } from "@/lib/format";
 
 const NO_WORKOUTS: Workout[] = [];
 const NO_SETS: WorkoutSet[] = [];
@@ -21,6 +22,7 @@ const NO_SETS: WorkoutSet[] = [];
 /** What the coach's clients have been up to. */
 export default function ActivityPage() {
   const t = useTranslations("activity");
+  const { num, day } = useFormat();
   const xl = useExerciseLabel();
   const { clients, loading } = useClients();
   const exercises = useExercises();
@@ -90,7 +92,7 @@ export default function ActivityPage() {
                       icon={Dumbbell}
                       tone="neutral"
                       title={t("sessionBy", { name: e.name })}
-                      subtitle={`${e.date} · ${e.cardio ?? t("sessionDetail", { sets: e.sets, volume: e.volume.toLocaleString() })}`}
+                      subtitle={`${day(e.date)} · ${e.cardio ?? t("sessionDetail", { sets: e.sets, volume: num(e.volume, 0) })}`}
                     />
                   )
                 )

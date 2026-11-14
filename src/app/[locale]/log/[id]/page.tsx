@@ -52,6 +52,7 @@ import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { connectHeartRate, isBluetoothSupported, type HeartRateMonitor } from "@/lib/bleHeartRate";
 import { EmptyState } from "@/components/ui/page-parts";
 import { useExerciseLabel, exerciseDescription } from "@/lib/exerciseNames";
+import { useFormat } from "@/lib/format";
 
 export default function SessionLoggerPage() {
   const t = useTranslations("log");
@@ -76,6 +77,7 @@ export default function SessionLoggerPage() {
   const [painFor, setPainFor] = useState<number | null>(null);
   const [guided, setGuided] = useState(false);
   const tg = useTranslations("guided");
+  const { num, day } = useFormat();
   const pains = usePainReports();
   const { profile: account } = useAuth();
   const [openGuide, setOpenGuide] = useState<number | null>(null);
@@ -725,7 +727,7 @@ export default function SessionLoggerPage() {
                 {previous.length > 0 && (
                   <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
                     <History className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    {t("lastTime", { value: formatPerformance(previous) })}
+                    {t("lastTime", { value: formatPerformance(previous, num) })}
                   </p>
                 )}
 
@@ -734,7 +736,7 @@ export default function SessionLoggerPage() {
                 {deloading && !percentPlan && (
                   <p className="flex items-start gap-1.5 text-sm font-medium text-accent-text">
                     <BatteryLow className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-                    {deloadKg ? t("deloadLoad", { kg: deloadKg }) : t("deloadNoLoad")}
+                    {deloadKg ? t("deloadLoad", { kg: num(deloadKg) }) : t("deloadNoLoad")}
                   </p>
                 )}
 
@@ -745,7 +747,7 @@ export default function SessionLoggerPage() {
                       ? t("percentPlan", {
                           percents: formatPercents(target.percents),
                           max: Math.round(percentPlan.max),
-                          weights: [...new Set(percentPlan.weights)].join(" / "),
+                          weights: [...new Set(percentPlan.weights)].map((w) => num(w)).join(" / "),
                         })
                       : t("percentNoMax", { percents: formatPercents(target.percents) })}
                   </p>
@@ -756,13 +758,13 @@ export default function SessionLoggerPage() {
                     {best && (
                       <p className="flex items-center gap-1.5 text-sm font-medium">
                         <Trophy className="h-4 w-4 shrink-0 text-accent-text" aria-hidden="true" />
-                        {t("bestLifts", { kg: best.weightKg, max: Math.round(best.oneRepMax) })}
+                        {t("bestLifts", { kg: num(best.weightKg), max: Math.round(best.oneRepMax) })}
                       </p>
                     )}
                     {records.length > 0 && (
                       <ul className="space-y-0.5 text-xs text-muted-foreground">
                         {records.map((r, i) => (
-                          <li key={i}>{r.date} · {r.weightKg} kg × {r.reps}</li>
+                          <li key={i}>{day(r.date)} · {num(r.weightKg)} kg × {r.reps}</li>
                         ))}
                       </ul>
                     )}
@@ -842,7 +844,7 @@ export default function SessionLoggerPage() {
                     className="flex min-h-10 w-full items-center justify-center gap-1.5 text-sm font-medium text-accent-text"
                   >
                     <Flame className="h-4 w-4" aria-hidden="true" />
-                    {t("addWarmup", { steps: warmupPlan.map((w) => w.weightKg).join(" · ") })}
+                    {t("addWarmup", { steps: warmupPlan.map((w) => num(w.weightKg)).join(" · ") })}
                   </button>
                 )}
 
@@ -944,7 +946,7 @@ export default function SessionLoggerPage() {
           <Trophy className="size-7 shrink-0 text-accent-text" aria-hidden="true" />
           <div className="min-w-0">
             <p className="font-bold">{t("newRecord")}</p>
-            <p className="truncate text-sm text-muted-foreground">{newRecord.exercise} · {newRecord.weightKg} kg × {newRecord.reps}</p>
+            <p className="truncate text-sm text-muted-foreground">{newRecord.exercise} · {num(newRecord.weightKg)} kg × {newRecord.reps}</p>
           </div>
         </div>
       )}
@@ -1066,14 +1068,14 @@ export default function SessionLoggerPage() {
 }
 
 /** "60 kg × 8, 8, 7", or "60×8, 62.5×7 kg" when the weight changed. */
-function formatPerformance(sets: { weightKg?: number; reps?: number }[]) {
+function formatPerformance(sets: { weightKg?: number; reps?: number }[], num: (n: number) => string) {
   const weights = new Set(sets.map((s) => s.weightKg ?? 0));
   const reps = sets.map((s) => s.reps).join(", ");
   if (weights.size === 1) {
     const [weight] = weights;
-    return weight > 0 ? `${weight} kg × ${reps}` : reps;
+    return weight > 0 ? `${num(weight)} kg × ${reps}` : reps;
   }
-  return `${sets.map((s) => `${s.weightKg ?? 0}×${s.reps}`).join(", ")} kg`;
+  return `${sets.map((s) => `${num(s.weightKg ?? 0)}×${s.reps}`).join(", ")} kg`;
 }
 
 function NumCell({ label, placeholder, value, onChange }: { label: string; placeholder?: string; value?: number; onChange: (v: number | undefined) => void }) {
@@ -1097,7 +1099,8 @@ function NumCell({ label, placeholder, value, onChange }: { label: string; place
 function AdviceLine({ advice }: { advice: Advice }) {
   const t = useTranslations("log");
   const { kind, weightKg: kg, fromKg, rpe } = advice;
-  const values = { kg, diff: Math.round((kg - fromKg) * 10) / 10, rpe: rpe ?? "" };
+  const { num } = useFormat();
+  const values = { kg: num(kg), diff: num(Math.round((kg - fromKg) * 10) / 10), rpe: rpe ?? "" };
   const text =
     kind === "jump" ? t("adviceJump", values)
     : kind === "up" ? (rpe === undefined ? t("suggestion", values) : t("adviceUp", values))

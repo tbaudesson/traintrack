@@ -13,9 +13,11 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dumbbell, TrendingUp, Flame, Trophy, Award, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useFormat } from "@/lib/format";
 
 export default function ProfilePage() {
   const t = useTranslations("profile");
+  const { num } = useFormat();
   const { user, profile } = useAuth();
   const workouts = useWorkouts();
   const sets = useAllWorkoutSets();
@@ -45,7 +47,7 @@ export default function ProfilePage() {
               <div className="flex-1">
                 <p className="text-lg font-bold">{name}</p>
                 <p className="text-xs text-muted-foreground">
-                  {t("level")} {g.level} · {g.xp.toLocaleString()} {t("xp")}
+                  {t("level")} {g.level} · {num(g.xp, 0)} {t("xp")}
                 </p>
                 <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
                   <div
@@ -54,7 +56,7 @@ export default function ProfilePage() {
                   />
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {t("toNext", { n: (g.xpForNextLevel - g.xpIntoLevel).toLocaleString() })}
+                  {t("toNext", { n: num(g.xpForNextLevel - g.xpIntoLevel, 0) })}
                 </p>
               </div>
             </div>
@@ -64,7 +66,7 @@ export default function ProfilePage() {
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
           <Stat icon={<Dumbbell className="h-5 w-5 text-accent-500" />} value={g.totalWorkouts} label={t("workouts")} />
-          <Stat icon={<TrendingUp className="h-5 w-5 text-emerald-500" />} value={g.totalVolume.toLocaleString()} label={t("volume")} />
+          <Stat icon={<TrendingUp className="h-5 w-5 text-emerald-500" />} value={num(g.totalVolume, 0)} label={t("volume")} />
           <Stat
             icon={<Flame className="h-5 w-5 text-orange-500" />}
             value={`${g.currentStreak}`}
