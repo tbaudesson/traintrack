@@ -130,7 +130,7 @@ export function lastRepeatable<W extends Pick<Workout, "id" | "date" | "kind">>(
 ): W | undefined {
   const withWork = new Set(sets.filter((s) => s.completed && !s.isWarmup).map((s) => s.workoutId));
   return [...workouts]
-    .filter((w) => w.kind !== "cardio" && w.date < today && w.id !== undefined && withWork.has(w.id))
+    .filter((w) => w.kind !== "cardio" && w.kind !== "interval" && w.date < today && w.id !== undefined && withWork.has(w.id))
     .sort((a, b) => b.date.localeCompare(a.date) || (b.id ?? 0) - (a.id ?? 0))[0];
 }
 

@@ -1,0 +1,204 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
+import { Pause, Play, SkipForward, Square } from "lucide-react";
+import { GET_READY_SEC, type IntervalSession } from "@/lib/intervals";
+import { beep } from "@/lib/beep";
+import { useExerciseLabel } from "@/lib/exerciseNames";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+
+export interface IntervalResult {
+  /** Indexes of the effort steps carried out to the end. */
+  done: number[];
+  /** Seconds actually spent, pauses left out. */
+  elapsedSec: number;
+}
+
+const clock = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+
+/**
+ * The timed session full screen: a countdown, then each effort and each rest
+ * with a big clock, a beep on the last three seconds and at each start, the
+ * next exercise shown during the rest. Pause, skip and stop at any time; what
+ * was done is handed back to be saved.
+ */
+export function IntervalPlayer({ session, onEnd }: { session: IntervalSession; onEnd: (result: IntervalResult) => void }) {
+  const t = useTranslations("intervals");
+  const xl = useExerciseLabel();
+  const { steps } = session;
+  const [index, setIndex] = useState(-1);
+  const [endsAt, setEndsAt] = useState(() => Date.now() + GET_READY_SEC * 1000);
+  const [pausedLeft, setPausedLeft] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+  const done = useRef<number[]>([]);
+  const elapsed = useRef(0);
+  const ended = useRef(false);
+  const lastBeep = useRef<number | null>(null);
+
+  const step = index >= 0 ? steps[index] : null;
+  const length = step ? step.seconds : GET_READY_SEC;
+  const leftMs = pausedLeft ?? Math.max(0, endsAt - now);
+  const left = Math.ceil(leftMs / 1000);
+
+  function finish() {
+    if (ended.current) return;
+    ended.current = true;
+    onEnd({ done: [...done.current], elapsedSec: Math.round(elapsed.current) });
+  }
+
+  function goTo(next: number, completed: boolean) {
+    if (step) elapsed.current += (length * 1000 - leftMs) / 1000;
+    if (completed && step?.type === "work") done.current.push(index);
+    if (next >= steps.length) return finish();
+    const target = steps[next];
+    beep(target.type === "work" ? "go" : "rest");
+    if (target.type === "work") navigator.vibrate?.(200);
+    lastBeep.current = null;
+    setIndex(next);
+    setEndsAt(Date.now() + target.seconds * 1000);
+    if (pausedLeft !== null) setPausedLeft(target.seconds * 1000);
+  }
+
+  // The end of each phase, and the beeps of the last three seconds: checked
+  // by the clock, with the latest state of the render.
+  const check = useRef<() => void>(() => {});
+  useEffect(() => {
+    check.current = () => {
+      if (pausedLeft !== null || ended.current) return;
+      const ms = Math.max(0, endsAt - Date.now());
+      const secs = Math.ceil(ms / 1000);
+      if (ms <= 0) return goTo(index + 1, true);
+      if (secs <= 3 && lastBeep.current !== secs) {
+        lastBeep.current = secs;
+        beep("tick");
+      }
+      // One side then the other: a beep halfway.
+      if (step?.type === "work" && step.exercise.sides && secs === Math.ceil(step.seconds / 2) && lastBeep.current !== -secs) {
+        lastBeep.current = -secs;
+        beep("rest");
+        navigator.vibrate?.(100);
+      }
+    };
+  });
+
+  // The clock: a quarter of a second is enough for whole seconds.
+  useEffect(() => {
+    const id = setInterval(() => {
+      setNow(Date.now());
+      check.current();
+    }, 250);
+    return () => clearInterval(id);
+  }, []);
+
+  // Keep the screen on: the phone lies on the floor, untouched.
+  useEffect(() => {
+    let lock: WakeLockSentinel | null = null;
+    const acquire = async () => {
+      try {
+        if (document.visibilityState === "visible") lock = await navigator.wakeLock?.request("screen");
+      } catch {
+        // Refused or unsupported: the session works without it.
+      }
+    };
+    acquire();
+    document.addEventListener("visibilitychange", acquire);
+    return () => {
+      document.removeEventListener("visibilitychange", acquire);
+      lock?.release().catch(() => {});
+    };
+  }, []);
+
+  const works = steps.filter((s) => s.type === "work").length;
+  const workNumber = steps.slice(0, index + 1).filter((s) => s.type === "work").length;
+  const next = steps.slice(index + 1).find((s) => s.type === "work");
+  const remaining = Math.round(leftMs / 1000) + steps.slice(index + 1).reduce((sum, s) => sum + s.seconds, 0);
+  const resting = !step || step.type === "rest";
+  const share = 1 - leftMs / (length * 1000);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={t("title")}
+      className={cn(
+        "fixed inset-0 z-[60] flex flex-col transition-colors duration-500",
+        !step ? "bg-background" : resting ? "bg-emerald-50 dark:bg-emerald-950" : "bg-accent-50 dark:bg-accent-950"
+      )}
+    >
+      <div className="flex items-center justify-between px-5 pt-5 text-sm font-medium text-muted-foreground tabular-nums">
+        <span>{t("intervalOf", { n: Math.max(1, workNumber), total: works })}</span>
+        <span>{t("remaining", { time: clock(remaining) })}</span>
+      </div>
+      <div className="mx-5 mt-2 h-1.5 overflow-hidden rounded-full bg-foreground/10">
+        <div className="h-full rounded-full bg-accent-500 transition-all" style={{ width: `${(Math.max(0, workNumber - (resting ? 0 : 1)) / works) * 100}%` }} />
+      </div>
+
+      <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+        <p
+          className={cn(
+            "text-sm font-bold tracking-[0.2em] uppercase",
+            !step ? "text-muted-foreground" : resting ? "text-emerald-700 dark:text-emerald-300" : "text-accent-text"
+          )}
+        >
+          {!step ? t("getReady") : step.type === "work" ? t("work") : step.recovery ? t("recovery") : t("rest")}
+        </p>
+        {step?.type === "work" && <h2 className="text-4xl font-bold tracking-tight">{xl(step.exercise.name)}</h2>}
+
+        <div className="relative flex size-64 items-center justify-center">
+          <svg viewBox="0 0 100 100" className="absolute inset-0 -rotate-90" aria-hidden="true">
+            <circle cx="50" cy="50" r="46" fill="none" strokeWidth="5" className="stroke-foreground/10" />
+            <circle
+              cx="50"
+              cy="50"
+              r="46"
+              fill="none"
+              strokeWidth="5"
+              strokeLinecap="round"
+              pathLength={100}
+              strokeDasharray="100"
+              strokeDashoffset={100 - share * 100}
+              className={cn("transition-[stroke-dashoffset] duration-300", resting ? "stroke-emerald-500" : "stroke-accent-500")}
+            />
+          </svg>
+          <p role="timer" aria-live="off" className="font-mono text-7xl font-bold tabular-nums">
+            {step ? clock(left) : left}
+          </p>
+        </div>
+
+        {step?.type === "work" && step.exercise.sides && <p className="text-sm font-medium text-muted-foreground">{t("switchSides")}</p>}
+        {resting && next?.type === "work" && (
+          <p className="text-base text-muted-foreground">
+            {t("next")} <span className="font-semibold text-foreground">{xl(next.exercise.name)}</span>
+          </p>
+        )}
+      </div>
+
+      <div className="grid grid-cols-3 gap-3 px-5 pb-8">
+        <Button variant="outline" size="lg" className="h-14 rounded-2xl" onClick={finish} aria-label={t("stop")}>
+          <Square className="h-5 w-5" aria-hidden="true" />
+        </Button>
+        <Button
+          size="lg"
+          className="h-14 rounded-2xl"
+          aria-label={pausedLeft !== null ? t("resume") : t("pause")}
+          onClick={() => {
+            if (pausedLeft !== null) {
+              setEndsAt(Date.now() + pausedLeft);
+              setNow(Date.now());
+              setPausedLeft(null);
+            } else {
+              setPausedLeft(Math.max(0, endsAt - Date.now()));
+            }
+          }}
+        >
+          {pausedLeft !== null ? <Play className="h-6 w-6" aria-hidden="true" /> : <Pause className="h-6 w-6" aria-hidden="true" />}
+        </Button>
+        <Button variant="outline" size="lg" className="h-14 rounded-2xl" onClick={() => goTo(index + 1, false)} aria-label={t("skip")}>
+          <SkipForward className="h-5 w-5" aria-hidden="true" />
+        </Button>
+      </div>
+    </div>
+  );
+}

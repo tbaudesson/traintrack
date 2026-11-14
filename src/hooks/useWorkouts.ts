@@ -2,6 +2,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import db, { type Sport, type Workout } from "@/db";
 import { getCurrentUserIdSync } from "@/db";
 import { schedulePush } from "@/lib/syncEngine";
+import type { IntervalPlan } from "@/lib/intervals";
 
 /** Workouts for a given user (defaults to the current user). */
 export function useWorkouts(userId?: string) {
@@ -22,9 +23,12 @@ export async function createWorkout(data: {
   title?: string;
   programId?: number | null;
   programDayIndex?: number | null;
-  kind?: "strength" | "cardio";
+  kind?: "strength" | "cardio" | "interval";
   sport?: Sport | null;
   notes?: string;
+  intervalPlan?: IntervalPlan | null;
+  durationSec?: number | null;
+  durationMin?: number;
 }): Promise<number> {
   const now = new Date().toISOString();
   const id = (await db.workouts.add({
@@ -35,6 +39,9 @@ export async function createWorkout(data: {
     kind: data.kind ?? "strength",
     sport: data.sport ?? null,
     notes: data.notes,
+    ...(data.intervalPlan ? { intervalPlan: data.intervalPlan } : {}),
+    ...(data.durationSec != null ? { durationSec: data.durationSec } : {}),
+    ...(data.durationMin != null ? { durationMin: data.durationMin } : {}),
     uuid: crypto.randomUUID(),
     userId: getCurrentUserIdSync(),
     _dirty: 1,

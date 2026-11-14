@@ -57,6 +57,32 @@ export const NAMES: Record<string, { fr: string; de: string }> = {
   "Single-Leg Romanian Deadlift": { fr: "Soulevé de terre roumain sur une jambe", de: "Einbeiniges rumänisches Kreuzheben" },
   "External Shoulder Rotation": { fr: "Rotation externe de l'épaule", de: "Schulter-Außenrotation" },
   "Straight-Arm Pulldown": { fr: "Pull-over à la poulie, bras tendus", de: "Latziehen mit gestreckten Armen" },
+  Burpee: { fr: "Burpee", de: "Burpee" },
+  "Bodyweight Squat": { fr: "Squat au poids du corps", de: "Kniebeuge ohne Gewicht" },
+  "Jump Squat": { fr: "Squat sauté", de: "Sprungkniebeuge" },
+  "Mountain Climber": { fr: "Mountain climber", de: "Bergsteiger" },
+  "Jumping Jack": { fr: "Jumping jack", de: "Hampelmann" },
+  "High Knees": { fr: "Montées de genoux", de: "Kniehebelauf" },
+  "Reverse Lunge": { fr: "Fente arrière", de: "Ausfallschritt rückwärts" },
+  "Jumping Lunge": { fr: "Fentes sautées", de: "Sprungausfallschritte" },
+  "Skater Jump": { fr: "Sauts de patineur", de: "Eisschnellläufer-Sprünge" },
+  "Wall Sit": { fr: "Chaise contre le mur", de: "Wandsitzen" },
+  Inchworm: { fr: "Chenille (inchworm)", de: "Raupe (Inchworm)" },
+  "Plank Shoulder Tap": { fr: "Planche avec touches d'épaule", de: "Plank mit Schulterberührung" },
+  "Bicycle Crunch": { fr: "Crunch vélo", de: "Fahrrad-Crunch" },
+  "Flutter Kicks": { fr: "Battements de jambes", de: "Flutter Kicks" },
+  Crunch: { fr: "Crunch", de: "Crunch" },
+  "Lying Leg Raise": { fr: "Relevés de jambes au sol", de: "Beinheben liegend" },
+  "Hollow Hold": { fr: "Hollow hold (position creuse)", de: "Hollow Hold" },
+  "Goblet Squat": { fr: "Goblet squat", de: "Goblet Squat" },
+  "Dumbbell Thruster": { fr: "Thruster aux haltères", de: "Kurzhantel-Thruster" },
+  "Dumbbell Swing": { fr: "Swing avec haltère", de: "Kurzhantel-Swing" },
+  "Renegade Row": { fr: "Rowing renegade", de: "Renegade Row" },
+  "Dumbbell Romanian Deadlift": { fr: "Soulevé de terre roumain aux haltères", de: "Rumänisches Kreuzheben mit Kurzhanteln" },
+  "Dumbbell Reverse Lunge": { fr: "Fente arrière aux haltères", de: "Ausfallschritt rückwärts mit Kurzhanteln" },
+  "Dumbbell Sumo Squat": { fr: "Squat sumo avec haltère", de: "Sumo-Kniebeuge mit Kurzhantel" },
+  "Dumbbell Push Press": { fr: "Push press aux haltères", de: "Kurzhantel-Push-Press" },
+  "Dumbbell Woodchop": { fr: "Bûcheron avec haltère", de: "Holzhacker mit Kurzhantel" },
 };
 
 export const DESCRIPTIONS: Record<string, { fr: string; de: string }> = {
@@ -95,6 +121,110 @@ export const DESCRIPTIONS: Record<string, { fr: string; de: string }> = {
   "Straight-Arm Pulldown": {
     fr: "Bras presque tendus, tirer la barre jusqu'aux cuisses avec les dorsaux.",
     de: "Mit fast gestreckten Armen die Stange mit dem Latissimus zu den Oberschenkeln ziehen.",
+  },
+  Burpee: {
+    fr: "Debout, mains au sol, sauter les pieds en arrière en planche, poitrine au sol, ramener les pieds et sauter.",
+    de: "Aus dem Stand Hände auf den Boden, Füße in den Stütz springen, Brust zum Boden, Füße zurück und hochspringen.",
+  },
+  "Bodyweight Squat": {
+    fr: "Pieds largeur d'épaules, s'asseoir en arrière jusqu'aux cuisses parallèles, buste droit, remonter.",
+    de: "Füße schulterbreit, nach hinten unten setzen bis die Oberschenkel parallel sind, Brust aufrecht, hochkommen.",
+  },
+  "Jump Squat": {
+    fr: "Descendre en squat, puis sauter le plus haut possible et se réceptionner en douceur dans le squat.",
+    de: "In die Kniebeuge gehen, so hoch wie möglich springen und weich in der Kniebeuge landen.",
+  },
+  "Mountain Climber": {
+    fr: "En planche bras tendus, ramener les genoux vers la poitrine l'un après l'autre, vite, hanches basses.",
+    de: "Im hohen Stütz die Knie abwechselnd schnell zur Brust ziehen, Hüfte tief.",
+  },
+  "Jumping Jack": {
+    fr: "Sauter pieds écartés en levant les bras au-dessus de la tête, puis revenir pieds joints.",
+    de: "Mit gegrätschten Beinen springen und die Arme über den Kopf heben, dann zurückspringen.",
+  },
+  "High Knees": {
+    fr: "Courir sur place en montant les genoux à hauteur des hanches, sur l'avant des pieds.",
+    de: "Auf der Stelle laufen, Knie auf Hüfthöhe, auf den Fußballen.",
+  },
+  "Reverse Lunge": {
+    fr: "Reculer d'un pas et descendre le genou arrière vers le sol, pousser sur le talon avant pour revenir. Alterner.",
+    de: "Einen Schritt zurück, hinteres Knie Richtung Boden, über die vordere Ferse zurückdrücken. Beine abwechseln.",
+  },
+  "Jumping Lunge": {
+    fr: "Depuis une fente, sauter et changer de jambe en l'air, se réceptionner en douceur en fente de l'autre côté.",
+    de: "Aus dem Ausfallschritt springen, in der Luft die Beine wechseln und weich auf der anderen Seite landen.",
+  },
+  "Skater Jump": {
+    fr: "Bondir latéralement d'un pied sur l'autre, la jambe arrière croisant derrière.",
+    de: "Seitlich von einem Fuß auf den anderen springen, das hintere Bein kreuzt dahinter.",
+  },
+  "Wall Sit": {
+    fr: "Dos au mur, descendre jusqu'aux genoux à 90 degrés et tenir.",
+    de: "Rücken an der Wand, hinabgleiten bis die Knie 90 Grad haben, und halten.",
+  },
+  Inchworm: {
+    fr: "Debout, avancer les mains jusqu'à la planche, puis ramener les pieds vers les mains et se redresser.",
+    de: "Aus dem Stand mit den Händen in den Stütz laufen, dann die Füße zu den Händen bringen und aufrichten.",
+  },
+  "Plank Shoulder Tap": {
+    fr: "En planche bras tendus, toucher chaque épaule avec la main opposée sans balancer les hanches.",
+    de: "Im hohen Stütz mit jeder Hand die gegenüberliegende Schulter berühren, ohne die Hüfte zu bewegen.",
+  },
+  "Bicycle Crunch": {
+    fr: "Sur le dos, amener chaque coude vers le genou opposé en tendant l'autre jambe.",
+    de: "In Rückenlage jeden Ellbogen zum gegenüberliegenden Knie führen und das andere Bein strecken.",
+  },
+  "Flutter Kicks": {
+    fr: "Sur le dos, jambes tendues décollées du sol, battre des jambes par petits mouvements rapides.",
+    de: "In Rückenlage die gestreckten Beine anheben und in kleinen, schnellen Bewegungen auf und ab schlagen.",
+  },
+  Crunch: {
+    fr: "Sur le dos, genoux fléchis, enrouler les épaules avec les abdos, puis redescendre lentement.",
+    de: "In Rückenlage mit gebeugten Knien die Schultern mit den Bauchmuskeln anheben, dann langsam absenken.",
+  },
+  "Lying Leg Raise": {
+    fr: "Sur le dos, jambes tendues, les monter à la verticale et redescendre lentement sans cambrer.",
+    de: "In Rückenlage die gestreckten Beine senkrecht heben und langsam senken, ohne ins Hohlkreuz zu gehen.",
+  },
+  "Hollow Hold": {
+    fr: "Sur le dos, bras et jambes tendus et décollés, le bas du dos plaqué au sol. Tenir.",
+    de: "In Rückenlage Arme und Beine gestreckt anheben, unterer Rücken am Boden. Halten.",
+  },
+  "Goblet Squat": {
+    fr: "Un haltère contre la poitrine, descendre en squat entre les genoux, buste droit, remonter.",
+    de: "Eine Kurzhantel vor der Brust, zwischen die Knie in die Hocke gehen, Brust aufrecht, hochkommen.",
+  },
+  "Dumbbell Thruster": {
+    fr: "Haltères aux épaules, squatter puis se relever en les poussant au-dessus de la tête d'un seul mouvement.",
+    de: "Kurzhanteln an den Schultern, Kniebeuge, dann in einer Bewegung aufstehen und über Kopf drücken.",
+  },
+  "Dumbbell Swing": {
+    fr: "Un haltère à deux mains, basculer des hanches et le lancer à hauteur de poitrine par une poussée des hanches.",
+    de: "Eine Kurzhantel beidhändig, aus der Hüfte beugen und sie mit einem Hüftstoß auf Brusthöhe schwingen.",
+  },
+  "Renegade Row": {
+    fr: "En planche sur deux haltères, tirer l'un vers la hanche puis l'autre, sans tourner les hanches.",
+    de: "Im hohen Stütz auf zwei Kurzhanteln abwechselnd eine zur Hüfte ziehen, ohne die Hüfte zu drehen.",
+  },
+  "Dumbbell Romanian Deadlift": {
+    fr: "Haltères devant les cuisses, basculer des hanches dos plat, puis se relever en serrant les fessiers.",
+    de: "Kurzhanteln vor den Oberschenkeln, mit geradem Rücken aus der Hüfte beugen, mit angespanntem Gesäß aufrichten.",
+  },
+  "Dumbbell Reverse Lunge": {
+    fr: "Un haltère dans chaque main, reculer en fente et pousser sur le talon avant pour revenir. Alterner.",
+    de: "Mit einer Kurzhantel in jeder Hand rückwärts in den Ausfallschritt und über die vordere Ferse zurück. Abwechseln.",
+  },
+  "Dumbbell Sumo Squat": {
+    fr: "Pieds écartés, pointes vers l'extérieur, un haltère entre les jambes, descendre genoux au-dessus des pieds.",
+    de: "Breiter Stand, Fußspitzen nach außen, Kurzhantel zwischen den Beinen, Knie über den Zehen absenken.",
+  },
+  "Dumbbell Push Press": {
+    fr: "Haltères aux épaules, fléchir légèrement les genoux puis les pousser au-dessus de la tête avec les jambes.",
+    de: "Kurzhanteln an den Schultern, leicht in die Knie, dann mit Beinschwung über Kopf drücken.",
+  },
+  "Dumbbell Woodchop": {
+    fr: "Un haltère à deux mains, le monter en diagonale de la hanche jusqu'au-dessus de l'épaule opposée.",
+    de: "Eine Kurzhantel beidhändig diagonal von der Hüfte bis über die gegenüberliegende Schulter führen.",
   },
 };
 

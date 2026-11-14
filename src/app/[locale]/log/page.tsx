@@ -11,7 +11,7 @@ import type { Program } from "@/db";
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Upload, Activity, Plus, Dumbbell, Calendar, Loader2, ClipboardList, RotateCcw } from "lucide-react";
+import { Upload, Activity, Plus, Dumbbell, Calendar, Loader2, ClipboardList, RotateCcw, Timer } from "lucide-react";
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
 import { useAthleteProfile } from "@/hooks/useAthleteProfile";
 import { mondayOfDate } from "@/lib/weekPlan";
@@ -35,6 +35,7 @@ export default function LogPage() {
   const [busy, setBusy] = useState(false);
   const [sportOpen, setSportOpen] = useState(false);
   const tc = useTranslations("cardio");
+  const ti = useTranslations("intervals");
 
   const today = localDate();
   const allSets = useAllWorkoutSets();
@@ -110,6 +111,12 @@ export default function LogPage() {
             </Button>
           )}
         />
+        <Link href="/intervals" className="-mt-2 block">
+          <Button variant="outline" className="w-full" disabled={busy}>
+            <Timer className="mr-1 h-4 w-4" aria-hidden="true" />
+            {ti("title")}
+          </Button>
+        </Link>
         <SportPicker open={sportOpen} onOpenChange={setSportOpen} onPick={startCardio} />
 
         {/* Start from a program */}
@@ -144,7 +151,13 @@ export default function LogPage() {
                 icon={Calendar}
                 tone="neutral"
                 title={w.title || t("title")}
-                subtitle={isCardio(w) && w.distanceM ? `${w.date} · ${formatDistance(w.distanceM, w.sport)}` : w.date}
+                subtitle={
+                  isCardio(w) && w.distanceM
+                    ? `${day(w.date)} · ${formatDistance(w.distanceM, w.sport)}`
+                    : w.kind === "interval" && w.durationMin
+                      ? `${day(w.date)} · ${w.durationMin} min`
+                      : day(w.date)
+                }
               />
             ))
           )}

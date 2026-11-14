@@ -1,4 +1,5 @@
 import type { StrengthGoal } from "@/lib/goals";
+import type { IntervalPlan } from "@/lib/intervals";
 import Dexie, { type EntityTable } from "dexie";
 
 // ─── Sync metadata mixin ─────────────────────────────────────────────
@@ -193,8 +194,10 @@ export interface Workout extends SyncFields {
   /** Which day of the program this workout was started from. */
   programDayIndex?: number | null;
   /** Absent on older workouts, which are all strength sessions. */
-  kind?: "strength" | "cardio";
+  kind?: "strength" | "cardio" | "interval";
   sport?: Sport | null;
+  /** A timed session: what it was built from (focus, dumbbells, rhythm, minutes). */
+  intervalPlan?: IntervalPlan | null;
   distanceM?: number | null;
   durationSec?: number | null;
   title?: string;

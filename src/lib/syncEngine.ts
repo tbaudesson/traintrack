@@ -72,6 +72,7 @@ const TABLE_CONFIGS: TableSyncConfig[] = [
   {
     dexieTable: "workouts",
     supabaseTable: "workouts",
+    jsonFields: ["intervalPlan"],
     fkMappings: {
       programId: { parentDexieTable: "programs", supabaseColumn: "program_id" },
     },

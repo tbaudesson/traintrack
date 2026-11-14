@@ -12,6 +12,15 @@ export function useAthleteProfile() {
   }, []);
 }
 
+/** The profile, or null when there is none; undefined only while it is read. */
+export function useAthleteProfileOrNull() {
+  return useLiveQuery(async () => {
+    const all = await db.athleteProfiles.filter((p) => !p.deletedAt).toArray();
+    const uid = getCurrentUserIdSync();
+    return all.find((p) => !uid || p.userId === uid || p.userId == null) ?? null;
+  }, []);
+}
+
 export async function saveAthleteProfile(
   data: Omit<AthleteProfile, "id" | "uuid" | "_dirty" | "createdAt" | "updatedAt">
 ): Promise<number> {
