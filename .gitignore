@@ -6,3 +6,6 @@ node_modules
 
 # Demo seed filled with real addresses: never committed
 supabase/demo/*.mine.sql
+
+# End-to-end test screenshots
+/e2e/artifacts/

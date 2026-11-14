@@ -16,7 +16,7 @@ what was sent, so nothing is sent twice even if a run is late or repeated.
 These steps are the same as for `send-compliance-alerts`; skip those already
 done.
 
-1. **Migration 043** (`supabase/migrations/043_reminders.sql`) applied.
+1. **Migrations 043 and 046** (`supabase/migrations/043_reminders.sql`, `046_security_review.sql`) applied.
 2. **VAPID keys**: `npx web-push generate-vapid-keys`, then in Vercel (and
    `.env.local`) set `NEXT_PUBLIC_VAPID_PUBLIC_KEY=<public key>` and redeploy.
    The Settings › Notifications section then offers to turn them on.

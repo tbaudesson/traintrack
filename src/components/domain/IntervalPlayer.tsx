@@ -181,21 +181,24 @@ export function IntervalPlayer({
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
-        <p
-          className={cn(
-            "text-sm font-bold tracking-[0.2em] uppercase",
-            !step ? "text-muted-foreground" : resting ? "text-emerald-700 dark:text-emerald-300" : "text-accent-text"
-          )}
-        >
-          {!step
-            ? t("getReady")
-            : step.type === "work"
-              ? (step.phase ?? labels?.work ?? t("work"))
-              : step.recovery
-                ? t("recovery")
-                : (labels?.rest ?? t("rest"))}
-        </p>
-        {step?.type === "work" && <h2 className="text-4xl font-bold tracking-tight">{xl(step.exercise.name)}</h2>}
+        {/* Read out at each change of step: what to do now, and on what. */}
+        <div aria-live="polite" aria-atomic="true" className="flex flex-col items-center gap-4">
+          <p
+            className={cn(
+              "text-sm font-bold tracking-[0.2em] uppercase",
+              !step ? "text-muted-foreground" : resting ? "text-emerald-700 dark:text-emerald-300" : "text-accent-text"
+            )}
+          >
+            {!step
+              ? t("getReady")
+              : step.type === "work"
+                ? (step.phase ?? labels?.work ?? t("work"))
+                : step.recovery
+                  ? t("recovery")
+                  : (labels?.rest ?? t("rest"))}
+          </p>
+          {step?.type === "work" && <h2 className="text-4xl font-bold tracking-tight">{xl(step.exercise.name)}</h2>}
+        </div>
 
         <div className="relative flex size-64 items-center justify-center">
           <svg viewBox="0 0 100 100" className="absolute inset-0 -rotate-90" aria-hidden="true">

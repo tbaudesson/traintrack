@@ -8,6 +8,9 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DetailRow } from "@/components/ui/detail-row";
+import { useAppPrefs } from "@/hooks/useAppPrefs";
+import { useCompetitions } from "@/hooks/useCompetitions";
+import { useHorses } from "@/hooks/useHorses";
 import { cn } from "@/lib/utils";
 import {
   ListChecks, ClipboardList, Users, HeartPulse, Settings,
@@ -24,6 +27,10 @@ export default function MorePage() {
   const name = profile?.display_name ?? user?.email?.split("@")[0] ?? "";
   const initials = name.slice(0, 2).toUpperCase();
 
+  const vaulting = useAppPrefs().sport === "vaulting";
+  const competitions = useCompetitions();
+  const horses = useHorses();
+
   // Functional destinations (profile/settings/admin live in the header).
   const items = [
     ...(hasFeature("readiness")
@@ -34,8 +41,9 @@ export default function MorePage() {
     { href: "/teams", icon: Users, label: t("teams") },
     ...(hasFeature("coaching") ? [{ href: "/activity", icon: Newspaper, label: t("activity") }] : []),
     { href: "/challenges", icon: Flag, label: t("challenges") },
-    { href: "/competitions", icon: Award, label: t("competitions") },
-    { href: "/horses", icon: PawPrint, label: t("horses") },
+    // Vaulting only: for a vaulter, or once there is something to see.
+    ...(vaulting || competitions.length ? [{ href: "/competitions", icon: Award, label: t("competitions") }] : []),
+    ...(vaulting || horses.length ? [{ href: "/horses", icon: PawPrint, label: t("horses") }] : []),
     { href: "/messages", icon: MessageCircle, label: t("messages") },
     { href: "/health", icon: Activity, label: t("health") },
   ];

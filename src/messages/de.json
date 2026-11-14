@@ -408,7 +408,11 @@
     "resyncDesc": "Erzwinge einen frischen Download aller Daten vom Server (behebt nicht Synchronisiertes, z. B. neue Übungsvideos).",
     "resyncBtn": "Vom Server aktualisieren",
     "resyncDone": "Aktuell",
-    "changePassword": "Mein Passwort ändern"
+    "changePassword": "Mein Passwort ändern",
+    "groupTraining": "Training",
+    "groupPersonal": "Personalisierung",
+    "groupAlerts": "Benachrichtigungen und Assistent",
+    "groupData": "Daten und Konto"
   },
   "programs": {
     "startDate": "Startdatum",
@@ -629,6 +633,7 @@
     "disable": "Benachrichtigungen deaktivieren",
     "denied": "Berechtigung verweigert. Erlaube Benachrichtigungen in den Browsereinstellungen.",
     "notConfigured": "Push-Benachrichtigungen sind für dieses Deployment noch nicht konfiguriert.",
+    "tooManyDevices": "Zu viele Geräte erhalten bereits Ihre Benachrichtigungen (höchstens 10). Deaktivieren Sie sie auf einem alten Gerät.",
     "unsupported": "Dieses Gerät unterstützt keine Push-Benachrichtigungen.",
     "error": "Benachrichtigungen konnten nicht aktualisiert werden.",
     "kind_reminder": "Trainingserinnerung",
@@ -1233,6 +1238,7 @@
     "shareText": "Hier ist mein Programm „{name}“ auf TrainTrack:",
     "linkCopied": "Link kopiert: in eine Nachricht einfügen.",
     "shareFailed": "Teilen hat nicht geklappt, bitte erneut versuchen.",
+    "tooManyShares": "Sie haben bereits 100 Programme geteilt: Das ist das Maximum.",
     "shareOffline": "Zum Teilen ist eine Verbindung nötig."
   },
   "exerciseHistory": {

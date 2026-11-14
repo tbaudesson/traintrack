@@ -288,6 +288,10 @@ html.accent-amber {
   --accent-600: #d97706; --accent-700: #b45309; --accent-800: #92400e;
   --accent-900: #78350f; --accent-950: #451a03;
 }
+/* Amber is light: its text needs one shade more to read on the light page. */
+html.accent-amber:not(.dark) {
+  --accent-text: var(--accent-800);
+}
 html.accent-slate {
   --accent-50: #f8fafc; --accent-100: #f1f5f9; --accent-200: #e2e8f0;
   --accent-300: #cbd5e1; --accent-400: #94a3b8; --accent-500: #64748b;
@@ -304,6 +308,8 @@ html.accent-slate {
 html.style-dynamic {
   --radius: 0.875rem;
   --glow: oklch(0.72 0.19 48);
+  /* The glow, deep enough under white text (4.6:1), for the buttons. */
+  --glow-deep: oklch(0.58 0.19 40);
   --glass-edge: color-mix(in oklab, var(--accent-500) 30%, transparent);
   --wave-1: color-mix(in oklab, var(--accent-500) 16%, transparent);
   --wave-2: color-mix(in oklab, var(--glow) 14%, transparent);
@@ -328,7 +334,7 @@ html.style-dynamic .t-hero {
     var(--glass-drop);
 }
 html.style-dynamic [data-slot="button"][data-variant="default"] {
-  background-image: linear-gradient(100deg, var(--accent-600), var(--glow));
+  background-image: linear-gradient(100deg, var(--accent-700), var(--glow-deep));
   color: oklch(1 0 0);
   font-weight: 700;
   box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.3), 0 8px 18px -6px color-mix(in oklab, var(--glow) 60%, transparent);

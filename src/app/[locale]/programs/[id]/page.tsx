@@ -115,8 +115,9 @@ export default function ProgramPage() {
         await navigator.clipboard.writeText(url);
         setShareMessage(t("linkCopied"));
       }
-    } catch {
-      setShareMessage(t(navigator.onLine ? "shareFailed" : "shareOffline"));
+    } catch (e) {
+      const tooMany = e instanceof Error && e.message.includes("TOO_MANY_SHARES");
+      setShareMessage(t(tooMany ? "tooManyShares" : navigator.onLine ? "shareFailed" : "shareOffline"));
     } finally {
       setSharing(false);
     }

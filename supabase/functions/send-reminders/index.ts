@@ -25,6 +25,21 @@ interface Sub {
   locale: string | null;
 }
 
+/**
+ * The server key: the new secret key when the project has one, else the
+ * legacy service role key (deprecated, but still injected).
+ */
+function serverKey(): string {
+  try {
+    const keys = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}") as Record<string, unknown>;
+    const key = keys.default ?? Object.values(keys)[0];
+    if (typeof key === "string" && key) return key;
+  } catch {
+    // Not set or not JSON: fall back to the legacy key.
+  }
+  return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+}
+
 function isAuthorized(req: Request): boolean {
   const secret = Deno.env.get("CRON_SECRET");
   if (!secret) return false; // unconfigured means closed, not open
@@ -51,15 +66,29 @@ Deno.serve(async (req) => {
     Deno.env.get("VAPID_PUBLIC_KEY")!,
     Deno.env.get("VAPID_PRIVATE_KEY")!
   );
-  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, serverKey());
 
-  const { data: subsData, error } = await supabase
-    .from("push_subscriptions")
-    .select("user_id, endpoint, p256dh, auth, notify_prefs, time_zone, locale");
-  if (error) return new Response(error.message, { status: 500 });
-  const subs = (subsData ?? []) as Sub[];
+  // A run never outlives its window: whatever is left waits for the next one.
+  const deadline = Date.now() + 50_000;
+  const outOfTime = () => Date.now() > deadline;
+
+  // Every subscription, page by page (a query returns 1000 rows at most).
+  const subs: Sub[] = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await supabase
+      .from("push_subscriptions")
+      .select("user_id, endpoint, p256dh, auth, notify_prefs, time_zone, locale")
+      .order("endpoint")
+      .range(from, from + 999);
+    if (error) return new Response(error.message, { status: 500 });
+    subs.push(...((data ?? []) as Sub[]));
+    if (!data || data.length < 1000) break;
+  }
+  // Pending or deactivated accounts get nothing.
+  const { data: inactive } = await supabase.from("profiles").select("user_id").neq("status", "active");
+  const blocked = new Set((inactive ?? []).map((p) => p.user_id as string));
   const byUser = new Map<string, Sub[]>();
-  for (const s of subs) byUser.set(s.user_id, [...(byUser.get(s.user_id) ?? []), s]);
+  for (const s of subs) if (!blocked.has(s.user_id)) byUser.set(s.user_id, [...(byUser.get(s.user_id) ?? []), s]);
 
   /** Record the event; false when it was already sent. */
   async function firstTime(key: string, userId: string): Promise<boolean> {
@@ -68,18 +97,23 @@ Deno.serve(async (req) => {
   }
 
   let sent = 0;
-  /** Send to every device of the user that wants this kind of notification. */
+  /**
+   * Send to every device of the user that wants this kind of notification,
+   * all at once, each given 5 seconds: a dead endpoint cannot hold up the run.
+   */
   async function notify(userId: string, kind: NotifyKind, name: string) {
-    for (const s of byUser.get(userId) ?? []) {
-      if (!wants(s.notify_prefs, kind)) continue;
-      try {
-        await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify(notification(kind, s.locale, name)));
-        sent++;
-      } catch (e) {
-        const status = (e as { statusCode?: number })?.statusCode;
-        if (status === 404 || status === 410) await supabase.from("push_subscriptions").delete().eq("endpoint", s.endpoint);
-      }
-    }
+    const devices = (byUser.get(userId) ?? []).filter((s) => wants(s.notify_prefs, kind));
+    await Promise.allSettled(
+      devices.map(async (s) => {
+        try {
+          await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify(notification(kind, s.locale, name)), { timeout: 5000 });
+          sent++;
+        } catch (e) {
+          const status = (e as { statusCode?: number })?.statusCode;
+          if (status === 404 || status === 410) await supabase.from("push_subscriptions").delete().eq("endpoint", s.endpoint);
+        }
+      })
+    );
   }
 
   const users = [...byUser.keys()];
@@ -92,6 +126,8 @@ Deno.serve(async (req) => {
     .in("user_id", users)
     .is("deleted_at", null);
   for (const p of profiles ?? []) {
+    // Out of time: stop before logging anything, so the next run sends it.
+    if (outOfTime()) break;
     const device = (byUser.get(p.user_id) ?? []).find((s) => wants(s.notify_prefs, "reminder"));
     if (!device) continue;
     const clock = localClock(device.time_zone, now);
@@ -118,6 +154,7 @@ Deno.serve(async (req) => {
     const { data: owners } = await supabase.from("workouts").select("id, user_id").in("id", [...new Set(notes.map((n) => n.workout_id))]);
     const ownerOf = new Map((owners ?? []).map((w) => [w.id, w.user_id as string]));
     for (const n of notes) {
+      if (outOfTime()) break;
       const owner = ownerOf.get(n.workout_id);
       if (!owner || owner === n.user_id || !byUser.has(owner)) continue;
       if (await firstTime(`comment:${n.id}`, owner)) await notify(owner, "comment", await nameOf(n.user_id));
@@ -132,6 +169,7 @@ Deno.serve(async (req) => {
     .not("assigned_to_user_id", "is", null)
     .is("deleted_at", null);
   for (const p of programs ?? []) {
+    if (outOfTime()) break;
     if (p.assigned_to_user_id === p.user_id || !byUser.has(p.assigned_to_user_id)) continue;
     if (await firstTime(`program:${p.id}`, p.assigned_to_user_id)) await notify(p.assigned_to_user_id, "program", await nameOf(p.user_id));
   }
@@ -144,6 +182,7 @@ Deno.serve(async (req) => {
     .is("read_at", null)
     .is("deleted_at", null);
   for (const m of messages ?? []) {
+    if (outOfTime()) break;
     if (!byUser.has(m.recipient_id)) continue;
     if (await firstTime(`message:${m.id}`, m.recipient_id)) await notify(m.recipient_id, "message", await nameOf(m.user_id));
   }

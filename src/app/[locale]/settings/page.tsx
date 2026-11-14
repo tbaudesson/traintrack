@@ -190,6 +190,7 @@ export default function SettingsPage() {
         code === "PERMISSION_DENIED" ? tn("denied")
           : code === "PUSH_NOT_CONFIGURED" ? tn("notConfigured")
           : code === "PUSH_UNSUPPORTED" ? tn("unsupported")
+          : code.includes("TOO_MANY_DEVICES") ? tn("tooManyDevices")
           : code || tn("error")
       );
     } finally {
@@ -306,6 +307,8 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
+        <h2 className="px-1 pt-3 text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("groupTraining")}</h2>
+
         {/* Training level */}
         <Section icon={Gauge} title={t("level")}>
           <p className="mb-2 text-xs text-muted-foreground">{t("levelHint")}</p>
@@ -333,42 +336,6 @@ export default function SettingsPage() {
             </Link>
           )}
         </Section>
-
-        {/* Injuries in progress */}
-        {athlete && (
-          <Section icon={Bandage} title={tinj("title")}>
-            <p className="mb-2 text-xs text-muted-foreground">{tinj("settingsHint")}</p>
-            <div className="flex flex-wrap gap-2">
-              {INJURY_AREAS.map((area) => {
-                const injuries = athlete.injuryAreas ?? [];
-                const injury = injuries.find((i) => i.area === area);
-                const state = injuryState(injuries, area, localDate());
-                const phase = state === "returning" ? returnPhases([injury!], localDate())[0] : null;
-                return (
-                  <button
-                    key={area}
-                    type="button"
-                    onClick={() => updateTrainingSchedule({ injuryAreas: toggleInjury(injuries, area, localDate()) })}
-                    aria-pressed={state !== "none"}
-                    className={cn(
-                      "min-h-10 rounded-full border px-3 text-sm transition-colors",
-                      state === "injured"
-                        ? "border-rose-500 bg-rose-500 font-semibold text-white"
-                        : state === "returning"
-                          ? "border-amber-500 bg-amber-500 font-semibold text-white"
-                          : "border-border text-muted-foreground hover:border-rose-300"
-                    )}
-                  >
-                    {tpain(`area_${area}`)}
-                    {state === "injured" && <span className="ml-1 text-xs font-normal opacity-90">· {tinj("since", { date: short(injury!.since) })}</span>}
-                    {phase && <span className="ml-1 text-xs font-normal opacity-90">· {tinj("returningChip", { week: phase.week })}</span>}
-                  </button>
-                );
-              })}
-            </div>
-            <p className="mt-2 text-xs text-muted-foreground">{tinj("stepsHint")}</p>
-          </Section>
-        )}
 
         {/* Week plan */}
         <Section icon={CalendarDays} title={t("plan")}>
@@ -447,6 +414,109 @@ export default function SettingsPage() {
           )}
         </Section>
 
+        {/* Injuries in progress */}
+        {athlete && (
+          <Section icon={Bandage} title={tinj("title")}>
+            <p className="mb-2 text-xs text-muted-foreground">{tinj("settingsHint")}</p>
+            <div className="flex flex-wrap gap-2">
+              {INJURY_AREAS.map((area) => {
+                const injuries = athlete.injuryAreas ?? [];
+                const injury = injuries.find((i) => i.area === area);
+                const state = injuryState(injuries, area, localDate());
+                const phase = state === "returning" ? returnPhases([injury!], localDate())[0] : null;
+                return (
+                  <button
+                    key={area}
+                    type="button"
+                    onClick={() => updateTrainingSchedule({ injuryAreas: toggleInjury(injuries, area, localDate()) })}
+                    aria-pressed={state !== "none"}
+                    className={cn(
+                      "min-h-10 rounded-full border px-3 text-sm transition-colors",
+                      state === "injured"
+                        ? "border-rose-500 bg-rose-500 font-semibold text-white"
+                        : state === "returning"
+                          ? "border-amber-500 bg-amber-500 font-semibold text-white"
+                          : "border-border text-muted-foreground hover:border-rose-300"
+                    )}
+                  >
+                    {tpain(`area_${area}`)}
+                    {state === "injured" && <span className="ml-1 text-xs font-normal opacity-90">· {tinj("since", { date: short(injury!.since) })}</span>}
+                    {phase && <span className="ml-1 text-xs font-normal opacity-90">· {tinj("returningChip", { week: phase.week })}</span>}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">{tinj("stepsHint")}</p>
+          </Section>
+        )}
+
+        {/* The rest timer between sets */}
+        <Section icon={Timer} title={trest("title")}>
+          <p className="mb-2 text-xs text-muted-foreground">{trest("default")}</p>
+          <div className="mb-3 flex flex-wrap gap-2">
+            {REST_DEFAULTS.map((sec) => (
+              <Choice key={sec} on={prefs.rest.defaultSec === sec} onClick={() => savePrefs({ rest: { ...prefs.rest, defaultSec: sec } })}>
+                {restLabel(sec)}
+              </Choice>
+            ))}
+          </div>
+          <p className="mb-2 text-xs text-muted-foreground">{trest("warmup")}</p>
+          <div className="mb-3 flex flex-wrap gap-2">
+            {REST_WARMUPS.map((sec) => (
+              <Choice key={sec} on={prefs.rest.warmupSec === sec} onClick={() => savePrefs({ rest: { ...prefs.rest, warmupSec: sec } })}>
+                {restLabel(sec)}
+              </Choice>
+            ))}
+          </div>
+          <div className="space-y-1">
+            {(["sound", "vibrate", "notify"] as const).map((key) => (
+              <label key={key} className="flex min-h-11 items-center gap-3 text-sm">
+                <input
+                  type="checkbox"
+                  checked={prefs.rest[key]}
+                  onChange={async (e) => {
+                    const on = e.target.checked;
+                    if (key === "sound" && on) unlockAudio();
+                    if (key === "notify" && on && !(await allowRestNotifications())) {
+                      setRestError(trest("notifyDenied"));
+                      return;
+                    }
+                    setRestError(null);
+                    savePrefs({ rest: { ...prefs.rest, [key]: on } });
+                  }}
+                  className="size-5 accent-accent-600"
+                />
+                <span className="flex-1">
+                  {trest(key)}
+                  <span className="block text-xs text-muted-foreground">{trest(`${key}Hint`)}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+          {restError && <p className="mt-1 text-xs text-destructive">{restError}</p>}
+        </Section>
+
+        <h2 className="px-1 pt-3 text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("groupPersonal")}</h2>
+
+        {/* My sport and the picture of the home screen */}
+        <Section icon={Medal} title={ta("sport")}>
+          <p className="mb-2 text-xs text-muted-foreground">{ta("sportHint")}</p>
+          <div className="mb-4 flex flex-wrap gap-2">
+            <Choice on={prefs.sport === null} onClick={() => savePrefs({ sport: null })}>{ta("sport_none")}</Choice>
+            {FAVORITE_SPORTS.map((sport) => (
+              <Choice key={sport} on={prefs.sport === sport} onClick={() => savePrefs({ sport })}>
+                {tcat(sport === "callisthenics" ? "cat_timed" : `cat_${sport}`)}
+              </Choice>
+            ))}
+          </div>
+          <p className="mb-2 text-xs text-muted-foreground">{ta("silhouette")}</p>
+          <div className="flex gap-2">
+            {(["female", "male"] as Silhouette[]).map((s) => (
+              <Choice key={s} on={prefs.silhouette === s} onClick={() => savePrefs({ silhouette: s })}>{ta(`silhouette_${s}`)}</Choice>
+            ))}
+          </div>
+        </Section>
+
         {/* Theme mode */}
         <Section icon={Palette} title={ta("section")}>
           <p className="mb-2 text-xs text-muted-foreground">{ta("mode")}</p>
@@ -520,71 +590,6 @@ export default function SettingsPage() {
               </button>
             ))}
           </div>
-        </Section>
-
-        {/* My sport and the picture of the home screen */}
-        <Section icon={Medal} title={ta("sport")}>
-          <p className="mb-2 text-xs text-muted-foreground">{ta("sportHint")}</p>
-          <div className="mb-4 flex flex-wrap gap-2">
-            <Choice on={prefs.sport === null} onClick={() => savePrefs({ sport: null })}>{ta("sport_none")}</Choice>
-            {FAVORITE_SPORTS.map((sport) => (
-              <Choice key={sport} on={prefs.sport === sport} onClick={() => savePrefs({ sport })}>
-                {tcat(sport === "callisthenics" ? "cat_timed" : `cat_${sport}`)}
-              </Choice>
-            ))}
-          </div>
-          <p className="mb-2 text-xs text-muted-foreground">{ta("silhouette")}</p>
-          <div className="flex gap-2">
-            {(["female", "male"] as Silhouette[]).map((s) => (
-              <Choice key={s} on={prefs.silhouette === s} onClick={() => savePrefs({ silhouette: s })}>{ta(`silhouette_${s}`)}</Choice>
-            ))}
-          </div>
-        </Section>
-
-        {/* The rest timer between sets */}
-        <Section icon={Timer} title={trest("title")}>
-          <p className="mb-2 text-xs text-muted-foreground">{trest("default")}</p>
-          <div className="mb-3 flex flex-wrap gap-2">
-            {REST_DEFAULTS.map((sec) => (
-              <Choice key={sec} on={prefs.rest.defaultSec === sec} onClick={() => savePrefs({ rest: { ...prefs.rest, defaultSec: sec } })}>
-                {restLabel(sec)}
-              </Choice>
-            ))}
-          </div>
-          <p className="mb-2 text-xs text-muted-foreground">{trest("warmup")}</p>
-          <div className="mb-3 flex flex-wrap gap-2">
-            {REST_WARMUPS.map((sec) => (
-              <Choice key={sec} on={prefs.rest.warmupSec === sec} onClick={() => savePrefs({ rest: { ...prefs.rest, warmupSec: sec } })}>
-                {restLabel(sec)}
-              </Choice>
-            ))}
-          </div>
-          <div className="space-y-1">
-            {(["sound", "vibrate", "notify"] as const).map((key) => (
-              <label key={key} className="flex min-h-11 items-center gap-3 text-sm">
-                <input
-                  type="checkbox"
-                  checked={prefs.rest[key]}
-                  onChange={async (e) => {
-                    const on = e.target.checked;
-                    if (key === "sound" && on) unlockAudio();
-                    if (key === "notify" && on && !(await allowRestNotifications())) {
-                      setRestError(trest("notifyDenied"));
-                      return;
-                    }
-                    setRestError(null);
-                    savePrefs({ rest: { ...prefs.rest, [key]: on } });
-                  }}
-                  className="size-5 accent-accent-600"
-                />
-                <span className="flex-1">
-                  {trest(key)}
-                  <span className="block text-xs text-muted-foreground">{trest(`${key}Hint`)}</span>
-                </span>
-              </label>
-            ))}
-          </div>
-          {restError && <p className="mt-1 text-xs text-destructive">{restError}</p>}
         </Section>
 
         {/* Accessibility — text size */}
@@ -680,28 +685,7 @@ export default function SettingsPage() {
           </div>
         </Section>
 
-        {/* AI program builder key */}
-        <Section icon={Sparkles} title={tai("section")}>
-          <p className="mb-2 text-xs text-muted-foreground">{tai("keyDesc")}</p>
-          {keyIsSet && (
-            <p className="mb-2 flex items-center gap-1.5 text-sm text-green-600">
-              <Check className="h-4 w-4" /> {tai("keySet")}
-            </p>
-          )}
-          <Input
-            type="password"
-            aria-label={tc("apiKey")}
-            value={apiKeyInput}
-            onChange={(e) => setApiKeyInput(e.target.value)}
-            placeholder={tai("keyPlaceholder")}
-          />
-          <div className="mt-2 flex gap-2">
-            <Button onClick={saveKey} disabled={!apiKeyInput.trim()} className="flex-1">
-              {keySavedFlag ? <><Check className="mr-1 h-4 w-4" />{tai("keySaved")}</> : tai("saveKey")}
-            </Button>
-            {keyIsSet && <Button variant="outline" onClick={removeKey}>{tai("clearKey")}</Button>}
-          </div>
-        </Section>
+        <h2 className="px-1 pt-3 text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("groupAlerts")}</h2>
 
         {/* Push notifications */}
         {isPushSupported() && (
@@ -750,6 +734,31 @@ export default function SettingsPage() {
             )}
           </Section>
         )}
+
+        {/* AI program builder key */}
+        <Section icon={Sparkles} title={tai("section")}>
+          <p className="mb-2 text-xs text-muted-foreground">{tai("keyDesc")}</p>
+          {keyIsSet && (
+            <p className="mb-2 flex items-center gap-1.5 text-sm text-green-600">
+              <Check className="h-4 w-4" /> {tai("keySet")}
+            </p>
+          )}
+          <Input
+            type="password"
+            aria-label={tc("apiKey")}
+            value={apiKeyInput}
+            onChange={(e) => setApiKeyInput(e.target.value)}
+            placeholder={tai("keyPlaceholder")}
+          />
+          <div className="mt-2 flex gap-2">
+            <Button onClick={saveKey} disabled={!apiKeyInput.trim()} className="flex-1">
+              {keySavedFlag ? <><Check className="mr-1 h-4 w-4" />{tai("keySaved")}</> : tai("saveKey")}
+            </Button>
+            {keyIsSet && <Button variant="outline" onClick={removeKey}>{tai("clearKey")}</Button>}
+          </div>
+        </Section>
+
+        <h2 className="px-1 pt-3 text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("groupData")}</h2>
 
         {/* Refresh from server */}
         <Section icon={RotateCcw} title={t("resyncTitle")}>

@@ -59,7 +59,7 @@ export function GuidedSession({
   return (
     <div role="dialog" aria-modal="true" aria-label={t("title")} className="fixed inset-0 z-[60] flex flex-col bg-background">
       <div className="flex items-center gap-2 border-b border-border px-4 py-3">
-        <p className="flex-1 text-sm font-medium text-muted-foreground tabular-nums">
+        <p aria-live="polite" className="flex-1 text-sm font-medium text-muted-foreground tabular-nums">
           {t("progress", { done: completed.size, total: steps.length })}
         </p>
         <button type="button" onClick={onClose} aria-label={t("close")} className="flex size-11 items-center justify-center rounded-full hover:bg-muted">

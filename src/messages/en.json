@@ -408,7 +408,11 @@
     "resyncDesc": "Force a fresh download of all your data from the server (fixes anything that didn't sync, e.g. new exercise videos).",
     "resyncBtn": "Refresh from server",
     "resyncDone": "Up to date",
-    "changePassword": "Change my password"
+    "changePassword": "Change my password",
+    "groupTraining": "Training",
+    "groupPersonal": "Personalisation",
+    "groupAlerts": "Notifications and assistant",
+    "groupData": "Data and account"
   },
   "programs": {
     "startDate": "Start date",
@@ -629,6 +633,7 @@
     "disable": "Disable notifications",
     "denied": "Permission was denied. Allow notifications in your browser settings.",
     "notConfigured": "Push notifications are not configured for this deployment yet.",
+    "tooManyDevices": "Too many devices already receive your notifications (10 at most). Turn them off on an old device.",
     "unsupported": "This device doesn't support push notifications.",
     "error": "Could not update notifications.",
     "kind_reminder": "Session reminder",
@@ -1233,6 +1238,7 @@
     "shareText": "Here's my program “{name}” on TrainTrack:",
     "linkCopied": "Link copied: paste it in a message.",
     "shareFailed": "Sharing didn't work, try again.",
+    "tooManyShares": "You have already shared 100 programs: that is the limit.",
     "shareOffline": "Sharing needs a connection."
   },
   "exerciseHistory": {

@@ -336,5 +336,33 @@ begin
   perform _root();
 end $$;
 
+-- ─── Security review 046 ────────────────────────────────────
+do $$
+declare
+  cl uuid := 'a0000000-0000-4000-8000-000000000007';
+  i int;
+begin
+  perform _t('a share cannot be opened signed out',
+    not has_function_privilege('anon', 'get_shared_program(uuid)', 'execute'));
+  perform _t('compliance alerts stay with the server',
+    not has_function_privilege('anon', 'get_all_compliance_alerts(int)', 'execute')
+    and not has_function_privilege('authenticated', 'get_all_compliance_alerts(int)', 'execute'));
+  perform _as(cl);
+  perform _denied('a push endpoint must be https',
+    format('insert into push_subscriptions (user_id, endpoint, p256dh, auth) values (%L, %L, %L, %L)', cl, 'http://169.254.169.254/x', 'k', 'a'));
+  perform _denied('push preferences stay small',
+    format('insert into push_subscriptions (user_id, endpoint, p256dh, auth, notify_prefs) values (%L, %L, %L, %L, %L::jsonb)', cl, 'https://push.example/big', 'k', 'a', '{"x":"' || repeat('a', 2000) || '"}'));
+  for i in 1..10 loop
+    execute format('insert into push_subscriptions (user_id, endpoint, p256dh, auth) values (%L, %L, %L, %L)', cl, 'https://push.example/' || i, 'k', 'a');
+  end loop;
+  perform _denied('no more than ten devices per user',
+    format('insert into push_subscriptions (user_id, endpoint, p256dh, auth) values (%L, %L, %L, %L)', cl, 'https://push.example/11', 'k', 'a'));
+  perform _denied('a huge shared program is refused',
+    format('insert into shared_programs (user_id, name, structure) values (%L, %L, %L::jsonb)', cl, 'Big', '[{"name":"' || repeat('a', 400000) || '","exercises":[]}]'));
+  perform _denied('a huge timed-session plan is refused',
+    format('insert into workouts (user_id, date, interval_plan) values (%L, %L, %L::jsonb)', cl, '2026-11-14', '{"x":"' || repeat('a', 5000) || '"}'));
+  perform _root();
+end $$;
+
 select ' FAIL ' || name from _r where not ok;
 select count(*) filter (where ok) as passed, count(*) filter (where not ok) as failed from _r;

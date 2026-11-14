@@ -8,10 +8,26 @@
 // Required function secrets:
 //   VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT (e.g. mailto:you@app.com)
 //   CRON_SECRET (the scheduler sends it as a bearer token)
-// SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are injected automatically.
+// SUPABASE_URL and the server keys (SUPABASE_SECRET_KEYS, or the legacy
+// SUPABASE_SERVICE_ROLE_KEY) are injected automatically.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import webpush from "npm:web-push@3";
+
+/**
+ * The server key: the new secret key when the project has one, else the
+ * legacy service role key (deprecated, but still injected).
+ */
+function serverKey(): string {
+  try {
+    const keys = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}") as Record<string, unknown>;
+    const key = keys.default ?? Object.values(keys)[0];
+    if (typeof key === "string" && key) return key;
+  } catch {
+    // Not set or not JSON: fall back to the legacy key.
+  }
+  return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+}
 
 function isAuthorized(req: Request): boolean {
   const secret = Deno.env.get("CRON_SECRET");
@@ -28,7 +44,7 @@ Deno.serve(async (req) => {
   if (!isAuthorized(req)) return new Response("Unauthorized", { status: 401 });
 
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-  const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const SERVICE_KEY = serverKey();
   const VAPID_PUBLIC = Deno.env.get("VAPID_PUBLIC_KEY")!;
   const VAPID_PRIVATE = Deno.env.get("VAPID_PRIVATE_KEY")!;
   const VAPID_SUBJECT = Deno.env.get("VAPID_SUBJECT") ?? "mailto:admin@traintrack.app";
