@@ -768,7 +768,22 @@
     "acc_slate": "Ardoise",
     "acc_slate_d": "Calme & minimal",
     "acc_violet": "Violet",
-    "acc_violet_d": "Le nouveau look"
+    "acc_violet_d": "Le nouveau look",
+    "look": "Style",
+    "look_classic": "Classique",
+    "look_classic_d": "Épuré, verre dépoli",
+    "look_dynamic": "Dynamique",
+    "look_dynamic_d": "Dégradés, néons, énergie",
+    "look_soft": "Doux",
+    "look_soft_d": "Pastel, tout en rondeur",
+    "look_contrast": "Contraste",
+    "look_contrast_d": "Lisible en salle et au soleil",
+    "sport": "Mon sport",
+    "sportHint": "Ses programmes passent en premier, sur l'accueil comme dans Programmes.",
+    "sport_none": "Aucun",
+    "silhouette": "Image d'accueil",
+    "silhouette_female": "Femme",
+    "silhouette_male": "Homme"
   },
   "activity": {
     "title": "Activité",
@@ -1158,7 +1173,8 @@
     "allLevels": "Tous niveaux",
     "perWeek": "{count} séances / sem.",
     "weeks": "{count, plural, one {# semaine} other {# semaines}}",
-    "home": "À la maison"
+    "home": "À la maison",
+    "mySport": "Mon sport"
   },
   "demo": {
     "watch": "Voir la démo",

@@ -23,7 +23,12 @@ import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useAthleteProfile, updateFitnessLevel, updateTrainingSchedule } from "@/hooks/useAthleteProfile";
 import { trainingCalendar } from "@/lib/ics";
 import type { FitnessLevel } from "@/db";
-import { getMode, applyMode, getAccent, applyAccent, ACCENTS, type ThemeMode, type Accent } from "@/lib/appTheme";
+import {
+  getMode, applyMode, getAccent, applyAccent, ACCENTS, APP_STYLES, FAVORITE_SPORTS, savePrefs,
+  type AppStyle, type ThemeMode, type Accent, type Silhouette,
+} from "@/lib/appTheme";
+import { useAppPrefs } from "@/hooks/useAppPrefs";
+import { Choice } from "@/components/ui/choice";
 import {
   WHEEL_CATALOG, getNavItemIds, setNavItemIds, resetNavItemIds, LOCKED_NAV_ID,
 } from "@/lib/navConfig";
@@ -31,12 +36,24 @@ import {
   Download, Shield, LogOut, Trash2, Loader2, Sparkles, Check, Type, ShieldCheck,
   Palette, LayoutGrid, Monitor, Sun, Moon, Globe, RotateCcw, User, Trophy,
   Home, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse,
-  Pencil, X, Bell, BellOff, KeyRound, Newspaper, Gauge, CalendarDays, CalendarPlus, FileUp, Flag, Activity, Bandage,
+  Pencil, X, Bell, BellOff, KeyRound, Newspaper, Gauge, CalendarDays, CalendarPlus, FileUp, Flag, Activity, Bandage, Medal,
   type LucideIcon,
 } from "lucide-react";
 import { localDate } from "@/lib/dates";
 import { useFormat } from "@/lib/format";
 import { INJURY_AREAS, toggleInjury } from "@/lib/injuries";
+
+/** A thumbnail of each style: its background, a card and a button. */
+const STYLE_PREVIEW: Record<AppStyle, { frame: string; card: string; button: string }> = {
+  classic: { frame: "bg-violet-50 dark:bg-violet-950/60", card: "rounded-md bg-white/90 shadow-sm dark:bg-white/15", button: "rounded-md bg-violet-600" },
+  dynamic: {
+    frame: "bg-linear-to-br from-violet-950 via-violet-800 to-orange-600",
+    card: "rounded-lg bg-white/15 ring-1 ring-orange-400/80",
+    button: "rounded-lg bg-linear-to-r from-violet-500 to-orange-500",
+  },
+  soft: { frame: "bg-linear-to-br from-pink-50 to-indigo-50 dark:from-pink-950/40 dark:to-indigo-950/40", card: "rounded-2xl bg-white/90 dark:bg-white/15", button: "rounded-full bg-violet-400" },
+  contrast: { frame: "bg-white dark:bg-black", card: "rounded-sm border-2 border-black dark:border-white", button: "rounded-sm bg-violet-700" },
+};
 
 const LOCALES = [
   { id: "fr", label: "Français", flag: "🇫🇷" },
@@ -111,6 +128,8 @@ export default function SettingsPage() {
   const [textSize, setTextSize] = useState<TextSize>(() => getTextSize());
   const [mode, setMode] = useState<ThemeMode>(() => getMode());
   const [accent, setAccent] = useState<Accent>(() => getAccent());
+  const prefs = useAppPrefs();
+  const tcat = useTranslations("catalog");
   const [navIds, setNavIds] = useState<string[]>(() => getNavItemIds());
   const [editName, setEditName] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
@@ -426,8 +445,34 @@ export default function SettingsPage() {
             ))}
           </div>
 
-          {/* Visual style / accent */}
-          <p className="mb-2 text-xs text-muted-foreground">{ta("style")}</p>
+          {/* The look of the whole app */}
+          <p className="mb-2 text-xs text-muted-foreground">{ta("look")}</p>
+          <div className="mb-4 grid grid-cols-2 gap-2">
+            {APP_STYLES.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => savePrefs({ style: s })}
+                aria-pressed={prefs.style === s}
+                className={cn(
+                  "overflow-hidden rounded-lg border text-left transition-all",
+                  prefs.style === s ? "border-accent-500 ring-1 ring-accent-500" : "border-border hover:border-accent-300"
+                )}
+              >
+                <span className={cn("flex h-14 items-end gap-1.5 p-2", STYLE_PREVIEW[s].frame)}>
+                  <span className={cn("h-7 flex-1", STYLE_PREVIEW[s].card)} />
+                  <span className={cn("h-4 w-10", STYLE_PREVIEW[s].button)} />
+                </span>
+                <span className="block p-2.5">
+                  <span className="block text-sm font-medium">{ta(`look_${s}`)}</span>
+                  <span className="block text-xs text-muted-foreground">{ta(`look_${s}_d`)}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Accent colour */}
+          <p className="mb-2 text-xs text-muted-foreground">{ta("accent")}</p>
           <div className="grid grid-cols-2 gap-2">
             {ACCENTS.map((a) => (
               <button
@@ -446,6 +491,25 @@ export default function SettingsPage() {
                   <p className="mt-0.5 text-xs text-muted-foreground">{ta(`acc_${a}_d`)}</p>
                 </div>
               </button>
+            ))}
+          </div>
+        </Section>
+
+        {/* My sport and the picture of the home screen */}
+        <Section icon={Medal} title={ta("sport")}>
+          <p className="mb-2 text-xs text-muted-foreground">{ta("sportHint")}</p>
+          <div className="mb-4 flex flex-wrap gap-2">
+            <Choice on={prefs.sport === null} onClick={() => savePrefs({ sport: null })}>{ta("sport_none")}</Choice>
+            {FAVORITE_SPORTS.map((sport) => (
+              <Choice key={sport} on={prefs.sport === sport} onClick={() => savePrefs({ sport })}>
+                {tcat(sport === "callisthenics" ? "cat_timed" : `cat_${sport}`)}
+              </Choice>
+            ))}
+          </div>
+          <p className="mb-2 text-xs text-muted-foreground">{ta("silhouette")}</p>
+          <div className="flex gap-2">
+            {(["female", "male"] as Silhouette[]).map((s) => (
+              <Choice key={s} on={prefs.silhouette === s} onClick={() => savePrefs({ silhouette: s })}>{ta(`silhouette_${s}`)}</Choice>
             ))}
           </div>
         </Section>

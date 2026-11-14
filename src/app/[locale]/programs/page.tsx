@@ -26,6 +26,7 @@ import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
 import { DetailRow } from "@/components/ui/detail-row";
 import { useClients } from "@/hooks/useClients";
 import { useProgramTemplates } from "@/lib/templateService";
+import { useAppPrefs } from "@/hooks/useAppPrefs";
 
 export default function ProgramsPage() {
   const { clients } = useClients();
@@ -40,6 +41,7 @@ export default function ProgramsPage() {
   const [busy, setBusy] = useState(false);
 
   const catalogue = useProgramTemplates();
+  const prefs = useAppPrefs();
 
   async function applyTemplate(tpl: ProgramTemplate) {
     setBusy(true);
@@ -147,7 +149,7 @@ export default function ProgramsPage() {
         }
       />
       <div className="space-y-6 p-4 pb-24">
-        <ProgramCatalog templates={catalogue} level={profile?.fitnessLevel} busy={busy} onUse={applyTemplate} />
+        <ProgramCatalog templates={catalogue} level={profile?.fitnessLevel} busy={busy} onUse={applyTemplate} favorite={prefs.sport} />
 
         {assignedToMe.length > 0 && (
           <section className="space-y-2">

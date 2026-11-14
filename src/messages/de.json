@@ -768,7 +768,22 @@
     "acc_slate": "Schiefer",
     "acc_slate_d": "Ruhig & minimal",
     "acc_violet": "Violett",
-    "acc_violet_d": "Der neue Look"
+    "acc_violet_d": "Der neue Look",
+    "look": "Stil",
+    "look_classic": "Klassisch",
+    "look_classic_d": "Schlicht, Milchglas",
+    "look_dynamic": "Dynamisch",
+    "look_dynamic_d": "Verläufe, Leuchten, Energie",
+    "look_soft": "Sanft",
+    "look_soft_d": "Pastell und rund",
+    "look_contrast": "Kontrast",
+    "look_contrast_d": "Gut lesbar im Studio und in der Sonne",
+    "sport": "Mein Sport",
+    "sportHint": "Seine Programme kommen zuerst, auf der Startseite und unter Programme.",
+    "sport_none": "Keiner",
+    "silhouette": "Startbild",
+    "silhouette_female": "Frau",
+    "silhouette_male": "Mann"
   },
   "activity": {
     "title": "Aktivität",
@@ -1158,7 +1173,8 @@
     "allLevels": "Alle Niveaus",
     "perWeek": "{count} Einheiten / Woche",
     "weeks": "{count, plural, one {# Woche} other {# Wochen}}",
-    "home": "Zu Hause"
+    "home": "Zu Hause",
+    "mySport": "Mein Sport"
   },
   "demo": {
     "watch": "Demo ansehen",

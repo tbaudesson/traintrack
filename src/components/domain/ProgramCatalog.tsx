@@ -38,17 +38,37 @@ export function CategoryIcon({ category, size = "md" }: { category: keyof typeof
   );
 }
 
-function Tile({ category, label, detail, onClick, href }: { category: keyof typeof CATEGORY_STYLE; label: string; detail: string; onClick?: () => void; href?: string }) {
+const isMine = (tile: string, favorite?: string | null) => !!favorite && (tile === favorite || (tile === "timed" && favorite === "callisthenics"));
+
+function Tile({
+  category,
+  label,
+  detail,
+  onClick,
+  href,
+  mine,
+}: {
+  category: keyof typeof CATEGORY_STYLE;
+  label: string;
+  detail: string;
+  onClick?: () => void;
+  href?: string;
+  mine?: boolean;
+}) {
+  const t = useTranslations("catalog");
   const body = (
     <>
-      <CategoryIcon category={category} size="lg" />
+      <span className="flex w-full items-start justify-between gap-2">
+        <CategoryIcon category={category} size="lg" />
+        {mine && <span className="rounded-full bg-accent-500 px-2 py-0.5 text-[0.7rem] font-semibold text-white">{t("mySport")}</span>}
+      </span>
       <span className="mt-auto block">
         <span className="block font-semibold leading-tight">{label}</span>
         <span className="block text-xs text-muted-foreground">{detail}</span>
       </span>
     </>
   );
-  const className = "t-surface flex min-h-32 flex-col items-start gap-3 rounded-2xl p-4 text-left ring-1 ring-foreground/5 transition-transform active:scale-[0.98]";
+  const className = cn("t-surface flex min-h-32 flex-col items-start gap-3 rounded-2xl p-4 text-left ring-1 ring-foreground/5 transition-transform active:scale-[0.98]", mine && "ring-2 ring-accent-500");
   return href ? (
     <Link href={href} className={className}>{body}</Link>
   ) : (
@@ -66,9 +86,12 @@ export function ProgramCatalog({
   level,
   busy,
   onUse,
+  favorite,
 }: {
   templates: ProgramTemplate[];
   level?: string;
+  /** The athlete's favourite sport: its tile comes first. */
+  favorite?: string | null;
   busy: boolean;
   onUse: (template: ProgramTemplate) => void;
 }) {
@@ -77,26 +100,37 @@ export function ProgramCatalog({
   const [open, setOpen] = useState<ProgramCategory | null>(null);
   const [filter, setFilter] = useState<ProgramLevel | null>(null);
   const byShelf = useMemo(() => shelves(templates, level), [templates, level]);
+  // The favourite sport's tile first, the others in their usual order.
+  const tiles = [
+    ...CATEGORY_ORDER.filter((c) => (byShelf.get(c)?.length ?? 0) > 0),
+    "timed" as const,
+    "mobility" as const,
+  ].sort((a, b) => Number(isMine(b, favorite)) - Number(isMine(a, favorite)));
   const shown = open ? (byShelf.get(open) ?? []).filter((tpl) => !filter || tpl.level === filter) : [];
 
   return (
     <section className="space-y-3">
       <h2 className="text-lg font-semibold tracking-tight">{t("title")}</h2>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {CATEGORY_ORDER.filter((c) => (byShelf.get(c)?.length ?? 0) > 0).map((c) => (
-          <Tile
-            key={c}
-            category={c}
-            label={t(`cat_${c}`)}
-            detail={t("count", { count: byShelf.get(c)!.length })}
-            onClick={() => {
-              setFilter(null);
-              setOpen(c);
-            }}
-          />
-        ))}
-        <Tile category="timed" label={t("cat_timed")} detail={t("timedHint")} href="/intervals" />
-        <Tile category="mobility" label={t("cat_mobility")} detail={t("mobilityHint")} href="/mobility" />
+        {tiles.map((c) =>
+          c === "timed" ? (
+            <Tile key={c} category="timed" label={t("cat_timed")} detail={t("timedHint")} href="/intervals" mine={favorite === "callisthenics"} />
+          ) : c === "mobility" ? (
+            <Tile key={c} category="mobility" label={t("cat_mobility")} detail={t("mobilityHint")} href="/mobility" />
+          ) : (
+            <Tile
+              key={c}
+              category={c}
+              label={t(`cat_${c}`)}
+              detail={t("count", { count: byShelf.get(c)!.length })}
+              mine={favorite === c}
+              onClick={() => {
+                setFilter(null);
+                setOpen(c);
+              }}
+            />
+          )
+        )}
       </div>
 
       <Dialog open={open !== null} onOpenChange={(o) => !o && setOpen(null)}>

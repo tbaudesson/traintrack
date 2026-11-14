@@ -9,6 +9,7 @@ import { Link } from "@/i18n/navigation";
 import { KIND_ORDER, programKind, programProgress, type ProgramKind } from "@/lib/programCards";
 import type { ProgramGoal } from "@/lib/programTemplates";
 import { programWeek } from "@/lib/programWeek";
+import { programCategory } from "@/lib/programCategories";
 import { cn } from "@/lib/utils";
 
 const STYLE: Record<ProgramGoal, { tone: string; bar: string }> = {
@@ -36,12 +37,15 @@ export function MyPrograms({
   workouts,
   catalogue,
   today,
+  favorite,
   onContinue,
 }: {
   programs: Program[];
   workouts: Pick<Workout, "date" | "title" | "programId" | "programDayIndex">[];
   catalogue: { name: string; goal: ProgramGoal }[];
   today: string;
+  /** The athlete's favourite sport: its programs come first. */
+  favorite?: string | null;
   onContinue: (program: Program) => void;
 }) {
   const t = useTranslations("myPrograms");
@@ -51,9 +55,19 @@ export function MyPrograms({
     () =>
       programs
         .filter((p) => (p.structure ?? []).length > 0)
-        .map((program) => ({ program, kind: programKind(program, catalogue), progress: programProgress(program, workouts) }))
-        .sort((a, b) => KIND_ORDER.indexOf(a.kind.kind) - KIND_ORDER.indexOf(b.kind.kind) || a.program.name.localeCompare(b.program.name)),
-    [programs, workouts, catalogue]
+        .map((program) => ({
+          program,
+          kind: programKind(program, catalogue),
+          progress: programProgress(program, workouts),
+          mine: !!favorite && programCategory(program) === favorite,
+        }))
+        .sort(
+          (a, b) =>
+            Number(b.mine) - Number(a.mine) ||
+            KIND_ORDER.indexOf(a.kind.kind) - KIND_ORDER.indexOf(b.kind.kind) ||
+            a.program.name.localeCompare(b.program.name)
+        ),
+    [programs, workouts, catalogue, favorite]
   );
   if (!cards.length) return null;
 

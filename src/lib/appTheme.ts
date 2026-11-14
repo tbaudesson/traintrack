@@ -44,4 +44,107 @@ export function applyAccent(accent: Accent): void {
 export function initAppTheme(): void {
   applyMode(getMode());
   applyAccent(getAccent());
+  applyStyle(getPrefs().style);
+}
+
+// ─── Style, favourite sport and silhouette ────────────────────────────
+
+/** The look of the whole app, on top of the mode and the accent. */
+export type AppStyle = "classic" | "dynamic" | "soft" | "contrast";
+export const APP_STYLES: AppStyle[] = ["classic", "dynamic", "soft", "contrast"];
+
+/** The sport put first: its programs, its session, its picture. */
+export type FavoriteSport = "bodybuilding" | "strength" | "fitness" | "running" | "swimming" | "cycling" | "vaulting" | "callisthenics";
+export const FAVORITE_SPORTS: FavoriteSport[] = ["bodybuilding", "strength", "fitness", "running", "swimming", "cycling", "vaulting", "callisthenics"];
+
+/** Whose picture the home screen shows. */
+export type Silhouette = "male" | "female";
+
+export interface AppPrefs {
+  style: AppStyle;
+  sport: FavoriteSport | null;
+  silhouette: Silhouette;
+}
+
+const PREFS_KEY = "traintrack.prefs";
+const PREFS_EVENT = "traintrack-prefs";
+const DEFAULT_PREFS: AppPrefs = { style: "classic", sport: null, silhouette: "male" };
+
+let cached: { raw: string | null; prefs: AppPrefs } | null = null;
+
+/** The saved preferences, the same object while they do not change (for useSyncExternalStore). */
+export function getPrefs(): AppPrefs {
+  if (typeof window === "undefined") return DEFAULT_PREFS;
+  let raw: string | null = null;
+  try {
+    raw = window.localStorage.getItem(PREFS_KEY);
+  } catch {
+    return DEFAULT_PREFS;
+  }
+  if (cached && cached.raw === raw) return cached.prefs;
+  let parsed: Partial<AppPrefs> = {};
+  try {
+    parsed = raw ? JSON.parse(raw) : {};
+  } catch {
+    parsed = {};
+  }
+  const prefs: AppPrefs = {
+    style: APP_STYLES.includes(parsed.style as AppStyle) ? (parsed.style as AppStyle) : "classic",
+    sport: FAVORITE_SPORTS.includes(parsed.sport as FavoriteSport) ? (parsed.sport as FavoriteSport) : null,
+    silhouette: parsed.silhouette === "female" ? "female" : "male",
+  };
+  cached = { raw, prefs };
+  return prefs;
+}
+
+export const getServerPrefs = () => DEFAULT_PREFS;
+
+export function subscribePrefs(callback: () => void): () => void {
+  window.addEventListener(PREFS_EVENT, callback);
+  window.addEventListener("storage", callback);
+  return () => {
+    window.removeEventListener(PREFS_EVENT, callback);
+    window.removeEventListener("storage", callback);
+  };
+}
+
+/** Put the style's class on <html>; the classic look has none. */
+export function applyStyle(style: AppStyle): void {
+  if (typeof document === "undefined") return;
+  const el = document.documentElement;
+  APP_STYLES.forEach((s) => el.classList.remove(`style-${s}`));
+  if (style !== "classic") el.classList.add(`style-${style}`);
+}
+
+export function savePrefs(change: Partial<AppPrefs>): void {
+  const next = { ...getPrefs(), ...change };
+  try {
+    window.localStorage.setItem(PREFS_KEY, JSON.stringify(next));
+  } catch {
+    // Private window: the choice lasts until the page is closed.
+  }
+  applyStyle(next.style);
+  window.dispatchEvent(new Event(PREFS_EVENT));
+}
+
+/** The home picture for a sport and a silhouette: the runner when the sport has none yet. */
+export interface Picture {
+  src: string;
+  width: number;
+  height: number;
+  /** A whole illustration with its own background, shown behind the card rather than cut out. */
+  scene?: boolean;
+}
+
+const PICTURES: Partial<Record<`${FavoriteSport}-${Silhouette}` | `default-${Silhouette}`, Picture>> = {
+  "default-male": { src: "/images/athlete.webp", width: 521, height: 620 },
+  "default-female": { src: "/images/runner-female.webp", width: 420, height: 620 },
+  "swimming-female": { src: "/images/swim-female.webp", width: 900, height: 600, scene: true },
+  "swimming-male": { src: "/images/swim-male.webp", width: 900, height: 600, scene: true },
+  "vaulting-female": { src: "/images/vaulting-female.webp", width: 417, height: 620 },
+  "vaulting-male": { src: "/images/vaulting-male.webp", width: 413, height: 620 },
+};
+
+export function homePicture(prefs: Pick<AppPrefs, "sport" | "silhouette">): Picture {
+  return (prefs.sport && PICTURES[`${prefs.sport}-${prefs.silhouette}`]) || PICTURES[`default-${prefs.silhouette}`]!;
 }

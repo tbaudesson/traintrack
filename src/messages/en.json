@@ -768,7 +768,22 @@
     "acc_slate": "Slate",
     "acc_slate_d": "Calm & minimal",
     "acc_violet": "Violet",
-    "acc_violet_d": "The new look"
+    "acc_violet_d": "The new look",
+    "look": "Style",
+    "look_classic": "Classic",
+    "look_classic_d": "Clean, frosted glass",
+    "look_dynamic": "Dynamic",
+    "look_dynamic_d": "Gradients, glow, energy",
+    "look_soft": "Soft",
+    "look_soft_d": "Pastel and rounded",
+    "look_contrast": "Contrast",
+    "look_contrast_d": "Easy to read at the gym and in the sun",
+    "sport": "My sport",
+    "sportHint": "Its programs come first, on the home screen and in Programs.",
+    "sport_none": "None",
+    "silhouette": "Home picture",
+    "silhouette_female": "Woman",
+    "silhouette_male": "Man"
   },
   "activity": {
     "title": "Activity",
@@ -1158,7 +1173,8 @@
     "allLevels": "All levels",
     "perWeek": "{count} sessions / wk",
     "weeks": "{count, plural, one {# week} other {# weeks}}",
-    "home": "At home"
+    "home": "At home",
+    "mySport": "My sport"
   },
   "demo": {
     "watch": "Watch the demo",

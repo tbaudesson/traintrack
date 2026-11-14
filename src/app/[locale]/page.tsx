@@ -18,6 +18,9 @@ import { DeloadCard } from "@/components/domain/DeloadCard";
 import { WeeklyReportCard } from "@/components/domain/WeeklyReportCard";
 import { MyPrograms } from "@/components/domain/MyPrograms";
 import { PROGRAM_TEMPLATES } from "@/lib/programTemplates";
+import { programCategory } from "@/lib/programCategories";
+import { homePicture } from "@/lib/appTheme";
+import { useAppPrefs } from "@/hooks/useAppPrefs";
 import { usePainReports } from "@/hooks/usePain";
 import { deloadAdvice } from "@/lib/deload";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
@@ -138,6 +141,8 @@ export default function HomePage() {
   const programs = useTrainablePrograms();
   const comments = useUnreadComments();
   const catalogue = useProgramTemplates();
+  const prefs = useAppPrefs();
+  const picture = homePicture(prefs);
   const exercises = useExercises();
   const todayReadiness = useTodayReadiness();
   const { hasFeature } = useFeatureAccess();
@@ -167,12 +172,14 @@ export default function HomePage() {
     const newest = usable
       .filter((p) => p.startDate && p.startDate <= today && !programWeek(p, today)?.finished)
       .sort((a, b) => b.startDate!.localeCompare(a.startDate!))[0];
+    // With nothing going on, the program of one's favourite sport comes first.
+    const favorite = prefs.sport ? usable.find((p) => programCategory(p, [...catalogue, ...PROGRAM_TEMPLATES]) === prefs.sport) : undefined;
     const program =
-      newest && (!lastDone || newest.startDate! > lastDone.w.date) ? newest : (lastDone?.at?.program ?? usable[0]);
+      newest && (!lastDone || newest.startDate! > lastDone.w.date) ? newest : (lastDone?.at?.program ?? favorite ?? usable[0]);
     if (!program) return null;
     const next = nextDayIndex(program, workouts, today);
     return { program, index: next, day: program.structure[next], workoutId: undefined };
-  }, [programs, workouts, today]);
+  }, [programs, workouts, today, prefs.sport, catalogue]);
 
   // Deload: running this week, or suggested from the weeks in a row and fatigue.
   const thisMonday = mondayOfDate(today);
@@ -373,14 +380,28 @@ export default function HomePage() {
       ) : (
         <>
           <section className="t-hero relative overflow-hidden rounded-3xl p-5">
-            <Image
-              src="/images/athlete.webp"
-              alt=""
-              width={176}
-              height={209}
-              unoptimized
-              className="pointer-events-none absolute top-2 left-[33%] opacity-55 [mask-image:linear-gradient(to_right,transparent_8%,black_45%)] dark:opacity-50"
-            />
+            {picture.scene ? (
+              <>
+                {/* A whole illustration: behind the card, faded on the side of the text. */}
+                <Image
+                  src={picture.src}
+                  alt=""
+                  fill
+                  unoptimized
+                  className="pointer-events-none object-cover object-right opacity-90 [mask-image:linear-gradient(to_right,transparent_15%,black_70%)]"
+                />
+                <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-linear-to-r from-background/70 via-background/25 to-transparent" />
+              </>
+            ) : (
+              <Image
+                src={picture.src}
+                alt=""
+                width={Math.round((picture.width * 209) / picture.height)}
+                height={209}
+                unoptimized
+                className="pointer-events-none absolute top-2 left-[33%] opacity-55 [mask-image:linear-gradient(to_right,transparent_8%,black_45%)] dark:opacity-50"
+              />
+            )}
             <div className="relative flex items-start justify-between gap-3">
               <div className="max-w-[60%] min-w-0">
                 <p className="text-xs font-semibold tracking-widest text-accent-text uppercase">{t("todaySession")}</p>
@@ -462,6 +483,7 @@ export default function HomePage() {
             workouts={workouts}
             catalogue={[...catalogue, ...PROGRAM_TEMPLATES]}
             today={today}
+            favorite={prefs.sport}
             onContinue={(program) => {
               const running = workouts.find((w) => w.date === today && findWorkoutProgramDay([program], w));
               if (running?.id) router.push(`/log/${running.id}`);
