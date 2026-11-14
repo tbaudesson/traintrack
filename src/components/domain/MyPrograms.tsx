@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
+import { useFormat } from "@/lib/format";
 import { ArrowRight, Bike, ChevronRight, Dumbbell, Flame, Footprints, HeartPulse, Sparkles, Waves, type LucideIcon } from "lucide-react";
 import type { Program, Workout } from "@/db";
 import { Link } from "@/i18n/navigation";
@@ -45,6 +46,7 @@ export function MyPrograms({
 }) {
   const t = useTranslations("myPrograms");
   const tg = useTranslations("templates");
+  const { short } = useFormat();
   const cards = useMemo(
     () =>
       programs
@@ -73,7 +75,7 @@ export function MyPrograms({
           const started = progress.sessions > 0;
           const detail =
             week && !week.started
-              ? t("startsOn", { date: program.startDate!.split("-").reverse().slice(0, 2).join("/") })
+              ? t("startsOn", { date: short(program.startDate!) })
               : progress.share !== null
                 ? `${Math.round(progress.share * 100)} %`
                 : week

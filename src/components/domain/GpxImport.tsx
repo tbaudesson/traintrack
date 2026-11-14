@@ -2,6 +2,7 @@
 
 import { useId, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
+import { useFormat } from "@/lib/format";
 import { Loader2 } from "lucide-react";
 import type { Sport, Workout } from "@/db";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ export function GpxImport({
   trigger: (open: () => void) => ReactNode;
 }) {
   const t = useTranslations("cardio");
+  const { day } = useFormat();
   const inputId = useId();
   const [activity, setActivity] = useState<GpxActivity | null>(null);
   const [sport, setSport] = useState<Sport>("run");
@@ -114,7 +116,7 @@ export function GpxImport({
           {activity && (
             <div className="space-y-3">
               <dl className="grid grid-cols-2 gap-3 text-sm">
-                <Fact label={t("gpxDate")} value={date.split("-").reverse().join("/")} />
+                <Fact label={t("gpxDate")} value={day(date)} />
                 <Fact label={t("distance")} value={formatDistance(activity.distanceM, sport)} />
                 {activity.durationSec > 0 && <Fact label={t("gpxMoving")} value={formatDuration(activity.durationSec)} />}
                 {formatPace(sport, activity.distanceM, activity.durationSec) && (

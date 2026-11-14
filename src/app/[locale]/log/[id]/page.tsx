@@ -77,7 +77,7 @@ export default function SessionLoggerPage() {
   const [painFor, setPainFor] = useState<number | null>(null);
   const [guided, setGuided] = useState(false);
   const tg = useTranslations("guided");
-  const { num, day } = useFormat();
+  const { num, day, short } = useFormat();
   const pains = usePainReports();
   const { profile: account } = useAuth();
   const [openGuide, setOpenGuide] = useState<number | null>(null);
@@ -699,7 +699,7 @@ export default function SessionLoggerPage() {
                     {t(pain.level >= SEVERE_PAIN ? "painSevere" : "painRecent", {
                       area: tpain(`area_${pain.area}`),
                       level: pain.level,
-                      date: pain.date.split("-").reverse().slice(0, 2).join("/"),
+                      date: short(pain.date),
                     })}
                   </p>
                 )}

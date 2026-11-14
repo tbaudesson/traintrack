@@ -63,7 +63,7 @@ export default function ClientDetailPage() {
   );
   const targets = clientProfile?.nutritionTargets;
   const tpr = useTranslations("programs");
-  const { num, day } = useFormat();
+  const { num, day, short } = useFormat();
   const xl = useExerciseLabel();
   const assigned = useLiveQuery(
     async () => (await db.programs.toArray()).filter((p) => !p.deletedAt && p.assignedToUserId === userId),
@@ -143,7 +143,7 @@ export default function ClientDetailPage() {
                         <span className="text-xs text-muted-foreground tabular-nums">
                           {week.done}{week.planned !== null ? `/${week.planned}` : ""}
                         </span>
-                        <span className="text-xs text-muted-foreground">{week.monday.slice(8)}/{week.monday.slice(5, 7)}</span>
+                        <span className="text-xs text-muted-foreground">{short(week.monday)}</span>
                       </div>
                     );
                   })}
@@ -178,7 +178,7 @@ export default function ClientDetailPage() {
                         {p.level}/10
                       </span>
                       <span className="font-medium">{tpain(`area_${p.area}`)}</span>
-                      <span className="text-muted-foreground">· {xl(p.exerciseName)} · {p.date.split("-").reverse().join("/")}</span>
+                      <span className="text-muted-foreground">· {xl(p.exerciseName)} · {day(p.date)}</span>
                     </p>
                     {p.note && <p className="mt-0.5 text-xs text-muted-foreground">{p.note}</p>}
                   </div>
@@ -200,7 +200,7 @@ export default function ClientDetailPage() {
                     {!w
                       ? tpr("startNone")
                       : !w.started
-                        ? tpr("startsOn", { date: p.startDate!.split("-").reverse().join("/") })
+                        ? tpr("startsOn", { date: day(p.startDate!) })
                         : w.finished
                           ? tpr("finished")
                           : w.total

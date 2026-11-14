@@ -19,7 +19,6 @@ import { EmptyState } from "@/components/ui/page-parts";
 import { cn } from "@/lib/utils";
 import { useFormat } from "@/lib/format";
 
-const frDate = (date: string) => date.split("-").reverse().slice(0, 2).join("/");
 
 /**
  * The coach's dashboard: every athlete of every team on one page, those who
@@ -30,7 +29,7 @@ export default function CoachDashboardPage() {
   const tt = useTranslations("teams");
   const tpain = useTranslations("pain");
   const xl = useExerciseLabel();
-  const { num } = useFormat();
+  const { num, short } = useFormat();
   const { clients, loading } = useClients();
   const exercises = useExercises();
 
@@ -109,7 +108,7 @@ export default function CoachDashboardPage() {
                 return (
                   <Row key={a.userId} userId={a.userId} name={a.name} teams={a.teams}>
                     <span className={cn("text-xs font-semibold", pain.level >= SEVERE_PAIN ? "text-rose-600 dark:text-rose-400" : "text-amber-600 dark:text-amber-400")}>
-                      {tpain(`area_${pain.area}`)} {pain.level}/10 · {xl(pain.exerciseName)} · {frDate(pain.date)}
+                      {tpain(`area_${pain.area}`)} {pain.level}/10 · {xl(pain.exerciseName)} · {short(pain.date)}
                     </span>
                   </Row>
                 );
@@ -136,7 +135,7 @@ export default function CoachDashboardPage() {
                   <span className="text-xs font-medium text-success-text">
                     {digest!
                       .get(a.userId)!
-                      .goalsReached.map(({ goal, on }) => `${xl(goal.exerciseName)} ${num(goal.targetKg)} kg · ${frDate(on)}`)
+                      .goalsReached.map(({ goal, on }) => `${xl(goal.exerciseName)} ${num(goal.targetKg)} kg · ${short(on)}`)
                       .join(" · ")}
                   </span>
                 </Row>

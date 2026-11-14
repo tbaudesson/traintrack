@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { useFormat } from "@/lib/format";
 import { useRouter } from "@/i18n/navigation";
 import { useWorkouts, createWorkout } from "@/hooks/useWorkouts";
 import { useTrainablePrograms } from "@/hooks/usePrograms";
@@ -26,6 +27,7 @@ import { localDate } from "@/lib/dates";
 export default function LogPage() {
   const t = useTranslations("log");
   const tPrograms = useTranslations("programs");
+  const { day } = useFormat();
   const router = useRouter();
   const workouts = useWorkouts();
   const programs = useTrainablePrograms();
@@ -90,7 +92,7 @@ export default function LogPage() {
             disabled={busy}
             icon={RotateCcw}
             title={t("repeatLast")}
-            subtitle={`${repeatable.title || t("newWorkout")} · ${repeatable.date.split("-").reverse().join("/")}`}
+            subtitle={`${repeatable.title || t("newWorkout")} · ${day(repeatable.date)}`}
           />
         )}
 

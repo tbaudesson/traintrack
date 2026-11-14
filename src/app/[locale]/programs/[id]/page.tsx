@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useFormat } from "@/lib/format";
 import { useRouter } from "@/i18n/navigation";
 import { useProgram, updateProgram, deleteProgram, assignProgramToClients } from "@/hooks/usePrograms";
 import { DetailRow } from "@/components/ui/detail-row";
@@ -25,6 +26,7 @@ import { localDate } from "@/lib/dates";
 
 export default function ProgramEditorPage() {
   const t = useTranslations("programs");
+  const { day } = useFormat();
   const params = useParams();
   const router = useRouter();
   const programId = Number(params.id);
@@ -191,7 +193,7 @@ export default function ProgramEditorPage() {
                   ? weekInfo.total
                     ? t("weekOf", { week: weekInfo.week, total: weekInfo.total })
                     : t("weekSince", { week: weekInfo.week })
-                  : t("startsOn", { date: startDate.split("-").reverse().join("/") })
+                  : t("startsOn", { date: day(startDate) })
                 : t("startHint")}
             </p>
           </CardContent>

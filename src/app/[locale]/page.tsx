@@ -120,7 +120,7 @@ export default function HomePage() {
   const { user, profile: account } = useAuth();
   const profile = useAthleteProfile();
   const readiness = useReadiness();
-  const { num } = useFormat();
+  const { num, day, short } = useFormat();
   const pains = usePainReports();
   const [reportClosed, setReportClosed] = useState(() => {
     try {
@@ -388,7 +388,7 @@ export default function HomePage() {
                   {sessionWeek && (
                     <span className="mt-0.5 block text-xs font-semibold text-accent-text">
                       {!sessionWeek.started
-                        ? t("programStarts", { date: session!.program.startDate!.split("-").reverse().slice(0, 2).join("/") })
+                        ? t("programStarts", { date: short(session!.program.startDate!) })
                         : sessionWeek.total
                           ? t("programWeekOf", { week: sessionWeek.week, total: sessionWeek.total })
                           : t("programWeek", { week: sessionWeek.week })}
@@ -503,7 +503,7 @@ export default function HomePage() {
                       icon={RotateCcw}
                       tone="neutral"
                       title={t("repeatLast")}
-                      subtitle={`${repeatable.title || t("freeSession")} · ${repeatable.date.split("-").reverse().join("/")}`}
+                      subtitle={`${repeatable.title || t("freeSession")} · ${day(repeatable.date)}`}
                     />
                   )}
                   <DetailRow onClick={startFree} disabled={starting} icon={Plus} tone="neutral" title={t("freeSession")} subtitle={t("freeSessionHint")} />

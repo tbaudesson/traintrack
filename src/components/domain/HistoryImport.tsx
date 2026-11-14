@@ -2,6 +2,7 @@
 
 import { useId, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useFormat } from "@/lib/format";
 import { FileUp, Loader2 } from "lucide-react";
 import { parseHistory, type ParsedHistory } from "@/lib/importCsv";
 import { planImport, runImport, type ImportPlan } from "@/lib/importHistory";
@@ -10,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const MAX_BYTES = 30 * 1024 * 1024;
-const frDate = (date: string) => date.split("-").reverse().join("/");
 
 /**
  * Bring a history from Strong or Hevy: pick the CSV they export, check what
@@ -18,6 +18,7 @@ const frDate = (date: string) => date.split("-").reverse().join("/");
  */
 export function HistoryImport() {
   const t = useTranslations("importHistory");
+  const { day } = useFormat();
   const inputId = useId();
   const [text, setText] = useState<string | null>(null);
   const [unit, setUnit] = useState<"kg" | "lb">("kg");
@@ -98,7 +99,7 @@ export function HistoryImport() {
               {plan.workouts.length > 0 ? (
                 <p>
                   {t("summary", { workouts: plan.workouts.length, sets: plan.sets })}
-                  {first && last && ` · ${t("period", { from: frDate(first), to: frDate(last) })}`}
+                  {first && last && ` · ${t("period", { from: day(first), to: day(last) })}`}
                 </p>
               ) : (
                 <p>{t("nothingNew")}</p>

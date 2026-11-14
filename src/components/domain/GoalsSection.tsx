@@ -17,7 +17,6 @@ import { useExerciseLabel } from "@/lib/exerciseNames";
 import { useFormat } from "@/lib/format";
 
 const SELECT = "mt-1 h-11 w-full rounded-lg border border-input bg-card px-3 text-base";
-const frDate = (date: string) => date.split("-").reverse().join("/");
 
 /**
  * The athlete's strength goals: how far along each one is, when it was
@@ -38,7 +37,7 @@ export function GoalsSection({
   editable: boolean;
 }) {
   const t = useTranslations("goals");
-  const { num } = useFormat();
+  const { num, day } = useFormat();
   const xl = useExerciseLabel();
   const [adding, setAdding] = useState(false);
   const [exerciseId, setExerciseId] = useState<number | "">("");
@@ -111,7 +110,7 @@ export function GoalsSection({
                   <p className="font-medium">{xl(resolve(goal)?.name ?? goal.exerciseName)}</p>
                   <p className="text-xs text-muted-foreground">
                     {t("target", { kg: num(goal.targetKg) })}
-                    {goal.deadline && ` · ${t("deadline", { date: frDate(goal.deadline) })}`}
+                    {goal.deadline && ` · ${t("deadline", { date: day(goal.deadline) })}`}
                   </p>
                 </div>
                 {editable && (
@@ -139,14 +138,14 @@ export function GoalsSection({
                 {progress.achievedOn ? (
                   <>
                     <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    {t("achieved", { date: frDate(progress.achievedOn) })}
+                    {t("achieved", { date: day(progress.achievedOn) })}
                   </>
                 ) : (
                   <>
                     {t("current", { kg: num(progress.currentKg) })}
                     {" · "}
                     {progress.projectedOn
-                      ? t(late ? "projectedLate" : "projected", { date: frDate(progress.projectedOn) })
+                      ? t(late ? "projectedLate" : "projected", { date: day(progress.projectedOn) })
                       : t("notEnough")}
                   </>
                 )}

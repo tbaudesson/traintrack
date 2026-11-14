@@ -15,7 +15,6 @@ const addDays = (date: string, days: number) => {
   const [y, m, d] = date.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
 };
-const short = (date: string) => `${date.slice(8)}/${date.slice(5, 7)}`;
 
 /**
  * A week at a glance: days trained against the plan, volume and its change,
@@ -44,7 +43,7 @@ export function WeeklyReportCard({
 }) {
   const t = useTranslations("report");
   const tpain = useTranslations("pain");
-  const { num } = useFormat();
+  const { num, short } = useFormat();
   const xl = useExerciseLabel();
   const [monday, setMonday] = useState(lastMonday);
   const report = useMemo(
