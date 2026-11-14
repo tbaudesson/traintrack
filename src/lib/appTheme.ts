@@ -60,15 +60,32 @@ export const FAVORITE_SPORTS: FavoriteSport[] = ["bodybuilding", "strength", "fi
 /** Whose picture the home screen shows. */
 export type Silhouette = "male" | "female";
 
+/** The rest timer between sets. */
+export interface RestPrefs {
+  /** After a working set, when the program gives no rest. */
+  defaultSec: number;
+  /** After a warm-up set. */
+  warmupSec: number;
+  /** Beeps on the last three seconds and at the end. */
+  sound: boolean;
+  vibrate: boolean;
+  /** A system notification at the end, for a phone left locked. */
+  notify: boolean;
+}
+export const REST_DEFAULTS = [60, 90, 120, 180] as const;
+export const REST_WARMUPS = [30, 45, 60, 90] as const;
+
 export interface AppPrefs {
   style: AppStyle;
   sport: FavoriteSport | null;
   silhouette: Silhouette;
+  rest: RestPrefs;
 }
 
 const PREFS_KEY = "traintrack.prefs";
 const PREFS_EVENT = "traintrack-prefs";
-const DEFAULT_PREFS: AppPrefs = { style: "classic", sport: null, silhouette: "male" };
+const DEFAULT_REST: RestPrefs = { defaultSec: 90, warmupSec: 60, sound: false, vibrate: true, notify: false };
+const DEFAULT_PREFS: AppPrefs = { style: "classic", sport: null, silhouette: "male", rest: DEFAULT_REST };
 
 let cached: { raw: string | null; prefs: AppPrefs } | null = null;
 
@@ -92,6 +109,13 @@ export function getPrefs(): AppPrefs {
     style: APP_STYLES.includes(parsed.style as AppStyle) ? (parsed.style as AppStyle) : "classic",
     sport: FAVORITE_SPORTS.includes(parsed.sport as FavoriteSport) ? (parsed.sport as FavoriteSport) : null,
     silhouette: parsed.silhouette === "female" ? "female" : "male",
+    rest: {
+      defaultSec: (REST_DEFAULTS as readonly number[]).includes(parsed.rest?.defaultSec ?? 0) ? parsed.rest!.defaultSec : DEFAULT_REST.defaultSec,
+      warmupSec: (REST_WARMUPS as readonly number[]).includes(parsed.rest?.warmupSec ?? 0) ? parsed.rest!.warmupSec : DEFAULT_REST.warmupSec,
+      sound: typeof parsed.rest?.sound === "boolean" ? parsed.rest.sound : DEFAULT_REST.sound,
+      vibrate: typeof parsed.rest?.vibrate === "boolean" ? parsed.rest.vibrate : DEFAULT_REST.vibrate,
+      notify: typeof parsed.rest?.notify === "boolean" ? parsed.rest.notify : DEFAULT_REST.notify,
+    },
   };
   cached = { raw, prefs };
   return prefs;

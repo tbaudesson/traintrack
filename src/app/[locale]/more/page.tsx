@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import {
   ListChecks, ClipboardList, Users, HeartPulse, Settings,
   User, Shield, Newspaper, Flag, MessageCircle, Activity,
+  Award,
 } from "lucide-react";
 
 export default function MorePage() {
@@ -32,6 +33,7 @@ export default function MorePage() {
     { href: "/teams", icon: Users, label: t("teams") },
     ...(hasFeature("coaching") ? [{ href: "/activity", icon: Newspaper, label: t("activity") }] : []),
     { href: "/challenges", icon: Flag, label: t("challenges") },
+    { href: "/competitions", icon: Award, label: t("competitions") },
     { href: "/messages", icon: MessageCircle, label: t("messages") },
     { href: "/health", icon: Activity, label: t("health") },
   ];

@@ -16,6 +16,7 @@ import {
 import { useTeamAdherence } from "@/hooks/useClientActivity";
 import { byAttention, type Adherence } from "@/lib/adherence";
 import { NudgeButton } from "@/components/domain/NudgeButton";
+import { TeamMessage } from "@/components/domain/TeamMessage";
 import { useTeamPain } from "@/hooks/usePain";
 import { SEVERE_PAIN } from "@/lib/pain";
 import { cn } from "@/lib/utils";
@@ -331,6 +332,7 @@ function TeamCard({
               </Button>
             </div>
             {err && <p className="text-xs text-red-600">{err}</p>}
+            <TeamMessage team={name} members={members} onSent={(count) => showToast(t("teamMessageSent", { count }))} />
 
             {loadingMembers ? (
               <Loader2 className="mx-auto my-3 h-4 w-4 animate-spin text-muted-foreground" />

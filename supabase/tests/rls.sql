@@ -264,5 +264,37 @@ begin
   perform _root();
 end $$;
 
+-- ─── Competition results 042 ────────────────────────────────
+do $$
+declare
+  tr uuid := 'a0000000-0000-4000-8000-000000000003';
+  cl uuid := 'a0000000-0000-4000-8000-000000000007';
+  atk uuid := 'a0000000-0000-4000-8000-000000000001';
+  pend uuid := 'a0000000-0000-4000-8000-000000000004';
+begin
+  perform _as(cl);
+  perform _allowed('an athlete logs a competition',
+    format('insert into competition_results (user_id, date, event, compulsory, freestyle) values (%L, %L, %L, 6.5, 7.25)', cl, '2026-10-01', 'Regional'));
+  perform _denied('a score above 10 is refused',
+    format('insert into competition_results (user_id, date, event, compulsory) values (%L, %L, %L, 11)', cl, '2026-10-01', 'Bad'));
+  perform _denied('a competition cannot be logged for someone else',
+    format('insert into competition_results (user_id, date, event) values (%L, %L, %L)', atk, '2026-10-01', 'Fake'));
+  perform _root();
+  perform _as(tr);
+  perform _t('the coach reads the athlete''s competitions',
+    _count('select 1 from competition_results where user_id = ''' || cl || '''') = 1);
+  perform _denied('the coach cannot log a competition for the athlete',
+    format('insert into competition_results (user_id, date, event) values (%L, %L, %L)', cl, '2026-10-01', 'Coach'));
+  perform _root();
+  perform _as(atk);
+  perform _t('a stranger cannot read the athlete''s competitions',
+    _count('select 1 from competition_results where user_id = ''' || cl || '''') = 0);
+  perform _root();
+  perform _as(pend);
+  perform _denied('a pending account cannot log a competition',
+    format('insert into competition_results (user_id, date, event) values (%L, %L, %L)', pend, '2026-10-01', 'Pending'));
+  perform _root();
+end $$;
+
 select ' FAIL ' || name from _r where not ok;
 select count(*) filter (where ok) as passed, count(*) filter (where not ok) as failed from _r;

@@ -17,6 +17,7 @@ import { getApiKey, setApiKey, clearApiKey } from "@/lib/aiService";
 import { forceFullResync } from "@/lib/syncEngine";
 import {
   isPushSupported, isPushConfigured, getPushSubscription, subscribeToPush, unsubscribeFromPush,
+  getPushPrefs, savePushPrefs, type NotifyPrefs,
 } from "@/lib/pushService";
 import { getTextSize, applyTextSize, type TextSize } from "@/lib/textSize";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
@@ -24,10 +25,12 @@ import { useAthleteProfile, updateFitnessLevel, updateTrainingSchedule } from "@
 import { trainingCalendar } from "@/lib/ics";
 import type { FitnessLevel } from "@/db";
 import {
-  getMode, applyMode, getAccent, applyAccent, ACCENTS, APP_STYLES, FAVORITE_SPORTS, savePrefs,
+  getMode, applyMode, getAccent, applyAccent, ACCENTS, APP_STYLES, FAVORITE_SPORTS, REST_DEFAULTS, REST_WARMUPS, savePrefs,
   type AppStyle, type ThemeMode, type Accent, type Silhouette,
 } from "@/lib/appTheme";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
+import { unlockAudio } from "@/lib/beep";
+import { allowRestNotifications } from "@/lib/restAlerts";
 import { Choice } from "@/components/ui/choice";
 import {
   WHEEL_CATALOG, getNavItemIds, setNavItemIds, resetNavItemIds, LOCKED_NAV_ID,
@@ -36,7 +39,7 @@ import {
   Download, Shield, LogOut, Trash2, Loader2, Sparkles, Check, Type, ShieldCheck,
   Palette, LayoutGrid, Monitor, Sun, Moon, Globe, RotateCcw, User, Trophy,
   Home, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse,
-  Pencil, X, Bell, BellOff, KeyRound, Newspaper, Gauge, CalendarDays, CalendarPlus, FileUp, Flag, Activity, Bandage, Medal,
+  Pencil, X, Bell, BellOff, KeyRound, Newspaper, Gauge, CalendarDays, CalendarPlus, FileUp, Flag, Activity, Bandage, Medal, Timer,
   type LucideIcon,
 } from "lucide-react";
 import { localDate } from "@/lib/dates";
@@ -129,6 +132,9 @@ export default function SettingsPage() {
   const [mode, setMode] = useState<ThemeMode>(() => getMode());
   const [accent, setAccent] = useState<Accent>(() => getAccent());
   const prefs = useAppPrefs();
+  const trest = useTranslations("restTimer");
+  const [restError, setRestError] = useState<string | null>(null);
+  const restLabel = (sec: number) => (sec % 60 === 0 ? `${sec / 60} min` : sec > 60 ? `${Math.floor(sec / 60)} min ${sec % 60}` : `${sec} s`);
   const tcat = useTranslations("catalog");
   const [navIds, setNavIds] = useState<string[]>(() => getNavItemIds());
   const [editName, setEditName] = useState(false);
@@ -137,6 +143,7 @@ export default function SettingsPage() {
   const [pushOn, setPushOn] = useState(false);
   const [pushBusy, setPushBusy] = useState(false);
   const [pushError, setPushError] = useState<string | null>(null);
+  const [notifyPrefs, setNotifyPrefs] = useState<NotifyPrefs>({});
   const [resyncState, setResyncState] = useState<"idle" | "busy" | "done">("idle");
 
   async function handleResync() {
@@ -151,8 +158,20 @@ export default function SettingsPage() {
   }
 
   useEffect(() => {
-    if (isPushSupported()) getPushSubscription().then((s) => setPushOn(!!s)).catch(() => {});
+    if (!isPushSupported()) return;
+    getPushSubscription().then((s) => setPushOn(!!s)).catch(() => {});
+    getPushPrefs().then((p) => p && setNotifyPrefs(p)).catch(() => {});
   }, []);
+
+  async function toggleNotify(kind: keyof NotifyPrefs, on: boolean) {
+    const next = { ...notifyPrefs, [kind]: on };
+    setNotifyPrefs(next);
+    try {
+      await savePushPrefs(next, locale);
+    } catch {
+      setPushError(tn("error"));
+    }
+  }
 
   async function togglePush() {
     setPushBusy(true);
@@ -162,7 +181,7 @@ export default function SettingsPage() {
         await unsubscribeFromPush();
         setPushOn(false);
       } else {
-        await subscribeToPush();
+        await subscribeToPush(locale);
         setPushOn(true);
       }
     } catch (e) {
@@ -514,6 +533,52 @@ export default function SettingsPage() {
           </div>
         </Section>
 
+        {/* The rest timer between sets */}
+        <Section icon={Timer} title={trest("title")}>
+          <p className="mb-2 text-xs text-muted-foreground">{trest("default")}</p>
+          <div className="mb-3 flex flex-wrap gap-2">
+            {REST_DEFAULTS.map((sec) => (
+              <Choice key={sec} on={prefs.rest.defaultSec === sec} onClick={() => savePrefs({ rest: { ...prefs.rest, defaultSec: sec } })}>
+                {restLabel(sec)}
+              </Choice>
+            ))}
+          </div>
+          <p className="mb-2 text-xs text-muted-foreground">{trest("warmup")}</p>
+          <div className="mb-3 flex flex-wrap gap-2">
+            {REST_WARMUPS.map((sec) => (
+              <Choice key={sec} on={prefs.rest.warmupSec === sec} onClick={() => savePrefs({ rest: { ...prefs.rest, warmupSec: sec } })}>
+                {restLabel(sec)}
+              </Choice>
+            ))}
+          </div>
+          <div className="space-y-1">
+            {(["sound", "vibrate", "notify"] as const).map((key) => (
+              <label key={key} className="flex min-h-11 items-center gap-3 text-sm">
+                <input
+                  type="checkbox"
+                  checked={prefs.rest[key]}
+                  onChange={async (e) => {
+                    const on = e.target.checked;
+                    if (key === "sound" && on) unlockAudio();
+                    if (key === "notify" && on && !(await allowRestNotifications())) {
+                      setRestError(trest("notifyDenied"));
+                      return;
+                    }
+                    setRestError(null);
+                    savePrefs({ rest: { ...prefs.rest, [key]: on } });
+                  }}
+                  className="size-5 accent-accent-600"
+                />
+                <span className="flex-1">
+                  {trest(key)}
+                  <span className="block text-xs text-muted-foreground">{trest(`${key}Hint`)}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+          {restError && <p className="mt-1 text-xs text-destructive">{restError}</p>}
+        </Section>
+
         {/* Accessibility — text size */}
         <Section icon={Type} title={ta11y("section")}>
           <p className="mb-2 text-xs text-muted-foreground">{ta11y("textSize")}</p>
@@ -648,6 +713,30 @@ export default function SettingsPage() {
                     : pushOn ? <BellOff className="mr-1 h-4 w-4" /> : <Bell className="mr-1 h-4 w-4" />}
                   {pushOn ? tn("disable") : tn("enable")}
                 </Button>
+                {pushOn && (
+                  <div className="mt-3 space-y-1">
+                    {(["reminder", "comment", "program", "message"] as const).map((kind) => (
+                      <label key={kind} className="flex min-h-11 items-center gap-3 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={notifyPrefs[kind] !== false}
+                          onChange={(e) => toggleNotify(kind, e.target.checked)}
+                          className="size-5 accent-accent-600"
+                        />
+                        <span className="flex-1">
+                          {tn(`kind_${kind}`)}
+                          <span className="block text-xs text-muted-foreground">
+                            {kind === "reminder"
+                              ? athlete?.trainingTime && athlete.trainingDays?.length
+                                ? tn("reminderAt", { time: athlete.trainingTime })
+                                : tn("reminderNeedsPlan")
+                              : tn(`kind_${kind}_d`)}
+                          </span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                )}
                 {pushError && <p className="mt-2 text-xs text-destructive">{pushError}</p>}
               </>
             )}

@@ -17,7 +17,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Dumbbell, Layers, Flame, Trophy, TrendingUp } from "lucide-react";
+import { Dumbbell, Layers, Flame, Trophy, TrendingUp, ChevronRight } from "lucide-react";
+import { Link } from "@/i18n/navigation";
+import { useCompetitions } from "@/hooks/useCompetitions";
+import { useAppPrefs } from "@/hooks/useAppPrefs";
+import { CompetitionResults } from "@/components/domain/CompetitionResults";
 import { EmptyState } from "@/components/ui/page-parts";
 import { CardioProgress } from "@/components/domain/CardioProgress";
 import { isCardioDone } from "@/lib/cardio";
@@ -36,6 +40,9 @@ type ExMetric = "e1rm" | "top" | "reps" | "vol";
 
 export default function ProgressPage() {
   const t = useTranslations("progress");
+  const tcomp = useTranslations("competitions");
+  const competitions = useCompetitions();
+  const prefs = useAppPrefs();
   const { num, day } = useFormat();
   const xl = useExerciseLabel();
   const tex = useTranslations("exercises");
@@ -200,6 +207,24 @@ export default function ProgressPage() {
         </Card>
 
         <CardioProgress workouts={workouts} />
+
+        {/* Vaulting competitions: shown once there is one, or for a vaulter. */}
+        {(competitions.length > 0 || prefs.sport === "vaulting") && (
+          <section className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold tracking-tight">{tcomp("title")}</h2>
+              <Link href="/competitions" className="flex min-h-10 items-center gap-1 text-sm font-medium text-accent-text">
+                {competitions.length ? tcomp("seeAll") : tcomp("add")}
+                <ChevronRight className="size-4" aria-hidden="true" />
+              </Link>
+            </div>
+            {competitions.length > 0 ? (
+              <CompetitionResults results={competitions.slice(0, 3)} />
+            ) : (
+              <p className="text-sm text-muted-foreground">{tcomp("empty")}</p>
+            )}
+          </section>
+        )}
 
         {!hasData && !workouts.some(isCardioDone) && (
           <EmptyState icon={TrendingUp} title={t("noData")} />

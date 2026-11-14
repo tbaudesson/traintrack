@@ -12,7 +12,9 @@ import { VideoEmbed } from "@/components/domain/VideoEmbed";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Loader2, Dumbbell, ChevronDown, ChevronUp, Pencil, Trash2, Check, X } from "lucide-react";
+import { Plus, Search, Loader2, Dumbbell, ChevronDown, ChevronUp, Pencil, Trash2, Check, X, History } from "lucide-react";
+import { Link } from "@/i18n/navigation";
+import { demoVideo } from "@/lib/demoVideos";
 import { cn } from "@/lib/utils";
 import { SectionHeading } from "@/components/ui/page-parts";
 import { useExerciseLabel, exerciseDescription, NAMES, DESCRIPTIONS } from "@/lib/exerciseNames";
@@ -260,7 +262,11 @@ function ExerciseRow({ ex }: { ex: Exercise }) {
             ) : (
               <>
                 {exerciseDescription(ex, locale) && <p className="text-sm text-muted-foreground">{exerciseDescription(ex, locale)}</p>}
-                {ex.videoUrl && <VideoEmbed url={ex.videoUrl} />}
+                {(demoVideo(ex.name, ex.videoUrl) ?? ex.videoUrl) && <VideoEmbed url={(demoVideo(ex.name, ex.videoUrl) ?? ex.videoUrl)!} />}
+                <Link href={`/exercises/${ex.id}`} className="flex min-h-10 items-center gap-1.5 text-sm font-semibold text-accent-text">
+                  <History className="h-4 w-4" aria-hidden="true" />
+                  {t("myHistory")}
+                </Link>
                 {!hasDetail && !ex.isCustom && (
                   <p className="text-xs text-muted-foreground">{ex.equipment ?? ""}</p>
                 )}

@@ -163,7 +163,21 @@ export interface CardioTarget {
   purpose?: string;
   /** Ordered steps: warm-up, main set, cool-down. */
   steps?: string[];
+  /** A guided indoor-cycling session: the blocks the timer plays one by one. */
+  blocks?: SpinBlock[];
 }
+
+/** One block of an indoor-cycling session: how, how long, how fast, how hard. */
+export interface SpinBlock {
+  kind: SpinKind;
+  sec: number;
+  /** Cadence, revolutions per minute: [from, to]. */
+  rpm: [number, number];
+  /** Resistance, 1 (none) to 10 (hardly turns). */
+  resistance: number;
+}
+
+export type SpinKind = "warmup" | "seated" | "fast" | "climb" | "standing" | "sprint" | "recovery" | "cooldown";
 
 export interface ProgramDay {
   name: string; // e.g. "Push", "Pull", "Legs"
@@ -268,6 +282,23 @@ export interface HealthMetric extends SyncFields {
 }
 
 /** A direct message. user_id = sender; recipientId = the other party. */
+/** A vaulting competition: the scores of each test, out of 10, and the ranking. */
+export interface CompetitionResult extends SyncFields {
+  id?: number;
+  date: string;
+  event: string;
+  category?: string | null;
+  horse?: string | null;
+  compulsory?: number | null;
+  technical?: number | null;
+  freestyle?: number | null;
+  rank?: number | null;
+  participants?: number | null;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Message extends SyncFields {
   id?: number;
   recipientId: string;
@@ -313,6 +344,7 @@ const db = new Dexie("TrainTrack") as Dexie & {
   hydrationLogs: EntityTable<HydrationLog, "id">;
   messages: EntityTable<Message, "id">;
   healthMetrics: EntityTable<HealthMetric, "id">;
+  competitionResults: EntityTable<CompetitionResult, "id">;
   formDrafts: EntityTable<FormDraft, "id">;
   syncMeta: EntityTable<SyncMeta, "tableName">;
   authMeta: EntityTable<AuthMeta, "key">;
@@ -408,6 +440,11 @@ db.version(6).stores({
   formDrafts: "++id, &formKey, updatedAt",
   syncMeta: "tableName",
   authMeta: "&key",
+});
+
+// v7: vaulting competition results.
+db.version(7).stores({
+  competitionResults: "++id, date, uuid, _dirty",
 });
 
 export { db };

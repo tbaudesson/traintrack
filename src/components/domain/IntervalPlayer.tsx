@@ -24,6 +24,10 @@ export type PlayerStep =
       exercise: { name: string; sides?: boolean; cue?: string; demo?: { video: string | null; cue?: string } };
       seconds: number;
       side?: "left" | "right";
+      /** An easy block (warm-up, recovery): shown green, like a rest, with the next block. */
+      easy?: boolean;
+      /** What the block is called above its name: "Seated", "Sprint"… */
+      phase?: string;
     }
   | { type: "rest"; seconds: number; recovery?: boolean };
 
@@ -43,7 +47,7 @@ export function IntervalPlayer({
   session: { steps: PlayerStep[] };
   onEnd: (result: IntervalResult) => void;
   /** What an effort and a rest are called: "Stretch" and "Next" for a stretching session. */
-  labels?: { work: string; rest: string };
+  labels?: { work: string; rest: string; counter?: (n: number, total: number) => string };
 }) {
   const t = useTranslations("intervals");
   const xl = useExerciseLabel();
@@ -155,7 +159,7 @@ export function IntervalPlayer({
   const workNumber = steps.slice(0, index + 1).filter((s) => s.type === "work").length;
   const next = steps.slice(index + 1).find((s) => s.type === "work");
   const remaining = Math.round(leftMs / 1000) + steps.slice(index + 1).reduce((sum, s) => sum + s.seconds, 0);
-  const resting = !step || step.type === "rest";
+  const resting = !step || step.type === "rest" || !!step.easy;
   const share = 1 - leftMs / (length * 1000);
 
   return (
@@ -169,7 +173,7 @@ export function IntervalPlayer({
       )}
     >
       <div className="flex items-center justify-between px-5 pt-5 text-sm font-medium text-muted-foreground tabular-nums">
-        <span>{t("intervalOf", { n: Math.max(1, workNumber), total: works })}</span>
+        <span>{labels?.counter ? labels.counter(Math.max(1, workNumber), works) : t("intervalOf", { n: Math.max(1, workNumber), total: works })}</span>
         <span>{t("remaining", { time: clock(remaining) })}</span>
       </div>
       <div className="mx-5 mt-2 h-1.5 overflow-hidden rounded-full bg-foreground/10">
@@ -186,7 +190,7 @@ export function IntervalPlayer({
           {!step
             ? t("getReady")
             : step.type === "work"
-              ? (labels?.work ?? t("work"))
+              ? (step.phase ?? labels?.work ?? t("work"))
               : step.recovery
                 ? t("recovery")
                 : (labels?.rest ?? t("rest"))}

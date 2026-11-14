@@ -259,7 +259,10 @@
     "effortOfSet": "Satz {set}",
     "finishSet": "Fertig",
     "secondsShort": "Sek.",
-    "summaryStretch": "Ein paar Minuten dehnen"
+    "summaryStretch": "Ein paar Minuten dehnen",
+    "fullHistory": "Gesamter Verlauf der Übung",
+    "restOverTitle": "Pause vorbei",
+    "restOverBody": "Weiter mit dem nächsten Satz."
   },
   "progress": {
     "title": "Fortschritt",
@@ -316,7 +319,8 @@
     "delete": "Löschen",
     "descPlaceholder": "Ausführung…",
     "videoPlaceholder": "https://…",
-    "videoEmbedHint": "Füge einen YouTube- oder Vimeo-Link ein, um ihn in der App abzuspielen. Ein Suchlink öffnet YouTube."
+    "videoEmbedHint": "Füge einen YouTube- oder Vimeo-Link ein, um ihn in der App abzuspielen. Ein Suchlink öffnet YouTube.",
+    "myHistory": "Mein Verlauf"
   },
   "teams": {
     "dashboard": "Übersicht",
@@ -369,7 +373,8 @@
     "never": "Nie",
     "complianceTip": "Hat kürzlich nicht trainiert — vielleicht ein Anstoß nötig.",
     "noActivity": "Keine Aktivität",
-    "daysAgo": "vor {days}T"
+    "daysAgo": "vor {days}T",
+    "teamMessageSent": "Nachricht an {count, plural, one {# Athleten} other {# Athleten}} gesendet."
   },
   "settings": {
     "importTitle": "Verlauf importieren (Strong, Hevy)",
@@ -553,7 +558,8 @@
     "challenges": "Challenges",
     "messages": "Nachrichten",
     "health": "Gesundheit & Wearables",
-    "activity": "Aktivität"
+    "activity": "Aktivität",
+    "competitions": "Turniere"
   },
   "health": {
     "title": "Gesundheit & Wearables",
@@ -616,13 +622,22 @@
   },
   "notifications": {
     "section": "Benachrichtigungen",
-    "desc": "Erhalte eine Push-Warnung, wenn ein Klient aufhört zu trainieren. Funktioniert auf Android/Desktop und installierten iOS-16.4+-Apps.",
+    "desc": "Trainingserinnerungen und Hinweise: Kommentar des Coachs, neues Programm, neue Nachricht, und für Coachs die Athleten, die nicht mehr trainieren. Auf Android, Computer und iPhone (installierte App, iOS 16.4+).",
     "enable": "Benachrichtigungen aktivieren",
     "disable": "Benachrichtigungen deaktivieren",
     "denied": "Berechtigung verweigert. Erlaube Benachrichtigungen in den Browsereinstellungen.",
     "notConfigured": "Push-Benachrichtigungen sind für dieses Deployment noch nicht konfiguriert.",
     "unsupported": "Dieses Gerät unterstützt keine Push-Benachrichtigungen.",
-    "error": "Benachrichtigungen konnten nicht aktualisiert werden."
+    "error": "Benachrichtigungen konnten nicht aktualisiert werden.",
+    "kind_reminder": "Trainingserinnerung",
+    "reminderAt": "Eine Stunde vor {time}, an Trainingstagen ohne erledigte Einheit",
+    "reminderNeedsPlan": "Wähle Tage und Uhrzeit unter „Wochenplan“, um sie zu erhalten",
+    "kind_comment": "Kommentar des Coachs",
+    "kind_comment_d": "Wenn dein Coach eine Einheit kommentiert",
+    "kind_program": "Neues Programm",
+    "kind_program_d": "Wenn dein Coach dir ein Programm zuweist",
+    "kind_message": "Neue Nachricht",
+    "kind_message_d": "Wenn dir jemand eine Nachricht schreibt"
   },
   "notes": {
     "title": "Notizen",
@@ -1208,5 +1223,86 @@
     "leaveText": "Das Programm verschwindet aus deinem Training. Erledigte Einheiten bleiben im Verlauf, und du kannst es bei den fertigen Programmen wieder aufnehmen.",
     "cancel": "Abbrechen",
     "coachHint": "Dein Coach hat dieses Programm für dich erstellt: Frag ihn, wenn es geändert werden soll."
+  },
+  "exerciseHistory": {
+    "empty": "Noch keine Einheit mit dieser Übung.",
+    "heaviest": "Höchstes Gewicht",
+    "oneRepMax": "Geschätztes 1RM",
+    "volume": "Bestes Volumen",
+    "reps": "Meiste Wiederholungen",
+    "metric_oneRepMax": "Geschätztes 1RM",
+    "metric_topKg": "Höchstes Gewicht",
+    "metric_volume": "Volumen",
+    "metric_bestReps": "Wiederholungen",
+    "sessions": "{count, plural, one {# Einheit} other {# Einheiten}}",
+    "estimated": "1RM ≈ {kg} kg",
+    "howTo": "So geht's"
+  },
+  "restTimer": {
+    "title": "Pausen-Timer",
+    "default": "Pause nach einem Satz (wenn das Programm keine vorgibt)",
+    "warmup": "Pause nach einem Aufwärmsatz",
+    "sound": "Ton",
+    "soundHint": "Pieptöne in den letzten 3 Sekunden und am Ende",
+    "vibrate": "Vibration",
+    "vibrateHint": "Am Ende der Pause",
+    "notify": "Benachrichtigung",
+    "notifyHint": "Am Ende der Pause, auch bei gesperrtem Bildschirm",
+    "notifyDenied": "Benachrichtigungen sind für TrainTrack blockiert: in den Browsereinstellungen erlauben."
+  },
+  "teamMessage": {
+    "button": "Nachricht an das Team",
+    "title": "Nachricht an „{team}“",
+    "hint": "{count, plural, one {# Athlet erhält sie} other {# Athleten erhalten sie}} im Gespräch mit dir und kann privat antworten.",
+    "placeholder": "Z. B. Training am Donnerstag erst um 19 Uhr, Schuhe nicht vergessen.",
+    "send": "An {count, plural, one {# Athleten} other {# Athleten}} senden"
+  },
+  "competitions": {
+    "title": "Voltigier-Turniere",
+    "add": "Hinzufügen",
+    "seeAll": "Alle ansehen",
+    "edit": "Turnier bearbeiten",
+    "delete": "Turnier löschen",
+    "save": "Speichern",
+    "empty": "Trage deine Turniere ein, um deine Pflicht- und Kürnoten über die Saison zu verfolgen.",
+    "event": "Turnier",
+    "eventPlaceholder": "Z. B. Landesmeisterschaft",
+    "date": "Datum",
+    "category": "Prüfung",
+    "categoryPlaceholder": "Z. B. Einzel, Gruppe",
+    "horse": "Pferd",
+    "test_compulsory": "Pflicht",
+    "test_technical": "Technik",
+    "test_freestyle": "Kür",
+    "test_final": "Endnote",
+    "scoreHint": "Noten von 0 bis 10, bei Bedarf mit drei Nachkommastellen. Eine Prüfung ohne Wertung leer lassen.",
+    "finalIs": "Endnote: {score} (Mittel der Prüfungen)",
+    "rankLabel": "Platzierung",
+    "participants": "Teilnehmer",
+    "notes": "Notizen",
+    "notesPlaceholder": "Anmerkungen der Richter, Woran arbeiten…",
+    "rank": "{rank}.",
+    "rankOf": "{rank}. / {total}",
+    "onHorse": "auf {horse}",
+    "bestFinal": "Beste Endnote",
+    "bestCompulsory": "Beste Pflicht",
+    "bestFreestyle": "Beste Kür",
+    "progressUp": "+{points} Punkte Endnote seit dem ersten deiner {count} Turniere.",
+    "progressDown": "−{points} Punkte Endnote seit dem ersten deiner {count} Turniere."
+  },
+  "spinning": {
+    "start": "Geführte Einheit starten ({count} Blöcke)",
+    "block": "Block",
+    "counter": "Block {n} / {total}",
+    "resistance": "Widerstand {level}",
+    "rpm": "{from}–{to} U/min",
+    "kind_warmup": "Aufwärmen",
+    "kind_seated": "Im Sitzen",
+    "kind_fast": "Schnell",
+    "kind_climb": "Berg im Sitzen",
+    "kind_standing": "Wiegetritt",
+    "kind_sprint": "Sprint",
+    "kind_recovery": "Erholung",
+    "kind_cooldown": "Ausklang"
   }
 }

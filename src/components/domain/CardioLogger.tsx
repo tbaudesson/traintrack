@@ -2,13 +2,16 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Gauge, Info, Target, Upload } from "lucide-react";
+import { Gauge, Info, Play, Target, Upload } from "lucide-react";
 import { GpxImport } from "@/components/domain/GpxImport";
 import type { CardioTarget, Workout } from "@/db";
 import { updateWorkout } from "@/hooks/useWorkouts";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { describeTarget, formatPace, hasDistance } from "@/lib/cardio";
+import { unlockAudio } from "@/lib/beep";
+import { Button } from "@/components/ui/button";
+import { IntervalPlayer, type IntervalResult, type PlayerStep } from "@/components/domain/IntervalPlayer";
 
 /** Log an endurance session: what was planned, then distance and time. */
 export function CardioLogger({ workout, target }: { workout: Workout; target?: CardioTarget }) {
@@ -29,6 +32,25 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
   const steps = (target?.steps ?? []).filter((step) => step.trim());
 
   const save = () => updateWorkout(workout.id!, { distanceM: distanceM || undefined, durationSec: durationSec || undefined });
+
+  // An indoor-cycling session played block by block; its time fills the log.
+  const ts = useTranslations("spinning");
+  const [guided, setGuided] = useState(false);
+  const blocks = target?.blocks ?? [];
+  const guidedSteps: PlayerStep[] = blocks.map((b) => ({
+    type: "work",
+    exercise: { name: ts("resistance", { level: b.resistance }), cue: ts("rpm", { from: b.rpm[0], to: b.rpm[1] }) },
+    seconds: b.sec,
+    phase: ts(`kind_${b.kind}`),
+    easy: b.kind === "warmup" || b.kind === "recovery" || b.kind === "cooldown",
+  }));
+  function endGuided({ elapsedSec }: IntervalResult) {
+    setGuided(false);
+    if (elapsedSec < 60) return;
+    setMinutes(String(Math.floor(elapsedSec / 60)));
+    setSeconds(String(elapsedSec % 60));
+    updateWorkout(workout.id!, { durationSec: elapsedSec });
+  }
 
   return (
     <>
@@ -53,6 +75,18 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
               </ol>
             )}
             {target.notes && <p className="pt-1 text-sm text-muted-foreground">{target.notes}</p>}
+            {blocks.length > 0 && (
+              <Button
+                className="mt-2 h-12 w-full rounded-full"
+                onClick={() => {
+                  unlockAudio();
+                  setGuided(true);
+                }}
+              >
+                <Play className="mr-1 h-5 w-5" aria-hidden="true" />
+                {ts("start", { count: blocks.length })}
+              </Button>
+            )}
             {measured && <details className="pt-1">
               <summary className="flex min-h-10 cursor-pointer items-center gap-1.5 text-sm font-medium text-accent-text">
                 <Info className="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -116,6 +150,13 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
           )}
         </CardContent>
       </Card>
+      {guided && (
+        <IntervalPlayer
+          session={{ steps: guidedSteps }}
+          onEnd={endGuided}
+          labels={{ work: ts("block"), rest: ts("block"), counter: (n, total) => ts("counter", { n, total }) }}
+        />
+      )}
     </>
   );
 }

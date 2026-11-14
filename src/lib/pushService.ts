@@ -33,8 +33,11 @@ export async function getPushSubscription(): Promise<PushSubscription | null> {
   return reg.pushManager.getSubscription();
 }
 
-/** Subscribe to push and persist the subscription server-side. */
-export async function subscribeToPush(): Promise<void> {
+/** What this device wants to be told: reminders, comments, programs, messages. */
+export type NotifyPrefs = Partial<Record<"reminder" | "comment" | "program" | "message", boolean>>;
+
+/** Subscribe to push and persist the subscription server-side, with the device's time zone and language. */
+export async function subscribeToPush(locale?: string): Promise<void> {
   if (!isPushSupported()) throw new Error("PUSH_UNSUPPORTED");
   if (!VAPID_PUBLIC_KEY) throw new Error("PUSH_NOT_CONFIGURED");
 
@@ -61,9 +64,30 @@ export async function subscribeToPush(): Promise<void> {
       p256dh: json.keys?.p256dh,
       auth: json.keys?.auth,
       user_agent: navigator.userAgent,
+      time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      ...(locale ? { locale } : {}),
     },
     { onConflict: "endpoint" }
   );
+  if (error) throw new Error(error.message);
+}
+
+/** This device's notification choices, as saved server-side. */
+export async function getPushPrefs(): Promise<NotifyPrefs | null> {
+  const sub = await getPushSubscription();
+  if (!sub) return null;
+  const { data } = await supabase.from("push_subscriptions").select("notify_prefs").eq("endpoint", sub.endpoint).maybeSingle();
+  return (data?.notify_prefs as NotifyPrefs | null) ?? {};
+}
+
+/** Save this device's choices, with its current time zone and language. */
+export async function savePushPrefs(prefs: NotifyPrefs, locale: string): Promise<void> {
+  const sub = await getPushSubscription();
+  if (!sub) return;
+  const { error } = await supabase
+    .from("push_subscriptions")
+    .update({ notify_prefs: prefs, time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone, locale })
+    .eq("endpoint", sub.endpoint);
   if (error) throw new Error(error.message);
 }
 

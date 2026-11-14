@@ -259,7 +259,10 @@
     "effortOfSet": "Set {set}",
     "finishSet": "Finish",
     "secondsShort": "Sec.",
-    "summaryStretch": "Stretch for a few minutes"
+    "summaryStretch": "Stretch for a few minutes",
+    "fullHistory": "The exercise's full history",
+    "restOverTitle": "Rest over",
+    "restOverBody": "On to the next set."
   },
   "progress": {
     "title": "Progress",
@@ -316,7 +319,8 @@
     "delete": "Delete",
     "descPlaceholder": "How to perform it…",
     "videoPlaceholder": "https://…",
-    "videoEmbedHint": "Paste a YouTube or Vimeo link to play it inside the app. A search link opens YouTube instead."
+    "videoEmbedHint": "Paste a YouTube or Vimeo link to play it inside the app. A search link opens YouTube instead.",
+    "myHistory": "My history"
   },
   "teams": {
     "dashboard": "Dashboard",
@@ -369,7 +373,8 @@
     "never": "Never",
     "complianceTip": "Hasn't trained recently — may need a nudge.",
     "noActivity": "No activity",
-    "daysAgo": "{days}d ago"
+    "daysAgo": "{days}d ago",
+    "teamMessageSent": "Message sent to {count, plural, one {# athlete} other {# athletes}}."
   },
   "settings": {
     "importTitle": "Import my history (Strong, Hevy)",
@@ -553,7 +558,8 @@
     "challenges": "Challenges",
     "messages": "Messages",
     "health": "Health & wearables",
-    "activity": "Activity"
+    "activity": "Activity",
+    "competitions": "Competitions"
   },
   "health": {
     "title": "Health & wearables",
@@ -616,13 +622,22 @@
   },
   "notifications": {
     "section": "Notifications",
-    "desc": "Get a push alert when a client stops training. Works on Android/desktop and installed iOS 16.4+ apps.",
+    "desc": "Session reminders and alerts: a coach's comment, a new program, a new message, and for coaches the athletes who stopped training. On Android, desktop and iPhone (installed app, iOS 16.4+).",
     "enable": "Enable notifications",
     "disable": "Disable notifications",
     "denied": "Permission was denied. Allow notifications in your browser settings.",
     "notConfigured": "Push notifications are not configured for this deployment yet.",
     "unsupported": "This device doesn't support push notifications.",
-    "error": "Could not update notifications."
+    "error": "Could not update notifications.",
+    "kind_reminder": "Session reminder",
+    "reminderAt": "An hour before {time}, on training days with no session done yet",
+    "reminderNeedsPlan": "Choose your days and time in “Week plan” to get it",
+    "kind_comment": "Coach's comment",
+    "kind_comment_d": "When your coach comments on one of your sessions",
+    "kind_program": "New program",
+    "kind_program_d": "When your coach assigns you a program",
+    "kind_message": "New message",
+    "kind_message_d": "When someone writes to you in the messages"
   },
   "notes": {
     "title": "Notes",
@@ -1208,5 +1223,86 @@
     "leaveText": "The program leaves your training. The sessions already done stay in your history, and you can take it up again from the ready-made programs.",
     "cancel": "Cancel",
     "coachHint": "Your coach prepared this program for you: ask them if it needs changing."
+  },
+  "exerciseHistory": {
+    "empty": "No session with this exercise yet.",
+    "heaviest": "Heaviest",
+    "oneRepMax": "Estimated 1RM",
+    "volume": "Best volume",
+    "reps": "Most reps",
+    "metric_oneRepMax": "Estimated 1RM",
+    "metric_topKg": "Heaviest",
+    "metric_volume": "Volume",
+    "metric_bestReps": "Reps",
+    "sessions": "{count, plural, one {# session} other {# sessions}}",
+    "estimated": "1RM ≈ {kg} kg",
+    "howTo": "How to do it"
+  },
+  "restTimer": {
+    "title": "Rest timer",
+    "default": "Rest after a set (when the program sets none)",
+    "warmup": "Rest after a warm-up set",
+    "sound": "Sound",
+    "soundHint": "Beeps on the last 3 seconds and at the end",
+    "vibrate": "Vibration",
+    "vibrateHint": "At the end of the rest",
+    "notify": "Notification",
+    "notifyHint": "At the end of the rest, even with the screen locked",
+    "notifyDenied": "Notifications are blocked for TrainTrack: allow them in the browser's settings."
+  },
+  "teamMessage": {
+    "button": "Message the team",
+    "title": "Message to “{team}”",
+    "hint": "{count, plural, one {# athlete gets it} other {# athletes get it}} in their conversation with you, and can answer you privately.",
+    "placeholder": "E.g. Thursday's session moves to 7 pm, bring your shoes.",
+    "send": "Send to {count, plural, one {# athlete} other {# athletes}}"
+  },
+  "competitions": {
+    "title": "Vaulting competitions",
+    "add": "Add",
+    "seeAll": "See all",
+    "edit": "Edit the competition",
+    "delete": "Delete the competition",
+    "save": "Save",
+    "empty": "Log your competitions to follow your compulsory and freestyle scores over the season.",
+    "event": "Competition",
+    "eventPlaceholder": "E.g. Regional championship",
+    "date": "Date",
+    "category": "Class",
+    "categoryPlaceholder": "E.g. individual, club",
+    "horse": "Horse",
+    "test_compulsory": "Compulsory",
+    "test_technical": "Technical",
+    "test_freestyle": "Freestyle",
+    "test_final": "Final score",
+    "scoreHint": "Scores out of 10, with three decimals if needed. Leave a test empty if it did not take place.",
+    "finalIs": "Final score: {score} (mean of the tests)",
+    "rankLabel": "Ranking",
+    "participants": "Entrants",
+    "notes": "Notes",
+    "notesPlaceholder": "Judges' remarks, things to work on…",
+    "rank": "#{rank}",
+    "rankOf": "#{rank} / {total}",
+    "onHorse": "on {horse}",
+    "bestFinal": "Best score",
+    "bestCompulsory": "Best compulsory",
+    "bestFreestyle": "Best freestyle",
+    "progressUp": "+{points} points of final score since the first of your {count} competitions.",
+    "progressDown": "−{points} points of final score since the first of your {count} competitions."
+  },
+  "spinning": {
+    "start": "Start the guided session ({count} blocks)",
+    "block": "Block",
+    "counter": "Block {n} / {total}",
+    "resistance": "Resistance {level}",
+    "rpm": "{from}–{to} rpm",
+    "kind_warmup": "Warm-up",
+    "kind_seated": "Seated",
+    "kind_fast": "Fast spin",
+    "kind_climb": "Seated climb",
+    "kind_standing": "Standing",
+    "kind_sprint": "Sprint",
+    "kind_recovery": "Recovery",
+    "kind_cooldown": "Cool-down"
   }
 }

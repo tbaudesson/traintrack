@@ -259,7 +259,10 @@
     "effortOfSet": "Série {set}",
     "finishSet": "Terminer",
     "secondsShort": "Sec.",
-    "summaryStretch": "S'étirer quelques minutes"
+    "summaryStretch": "S'étirer quelques minutes",
+    "fullHistory": "Tout l'historique de l'exercice",
+    "restOverTitle": "Repos terminé",
+    "restOverBody": "C'est reparti pour la série suivante."
   },
   "progress": {
     "title": "Progrès",
@@ -316,7 +319,8 @@
     "delete": "Supprimer",
     "descPlaceholder": "Comment l'exécuter…",
     "videoPlaceholder": "https://…",
-    "videoEmbedHint": "Collez un lien YouTube ou Vimeo pour le lire dans l'application. Un lien de recherche ouvre YouTube."
+    "videoEmbedHint": "Collez un lien YouTube ou Vimeo pour le lire dans l'application. Un lien de recherche ouvre YouTube.",
+    "myHistory": "Mon historique"
   },
   "teams": {
     "dashboard": "Tableau de bord",
@@ -369,7 +373,8 @@
     "never": "Jamais",
     "complianceTip": "Ne s'est pas entraîné récemment — une relance s'impose peut-être.",
     "noActivity": "Aucune activité",
-    "daysAgo": "il y a {days}j"
+    "daysAgo": "il y a {days}j",
+    "teamMessageSent": "Message envoyé à {count, plural, one {# athlète} other {# athlètes}}."
   },
   "settings": {
     "importTitle": "Importer mon historique (Strong, Hevy)",
@@ -553,7 +558,8 @@
     "challenges": "Défis",
     "messages": "Messages",
     "health": "Santé et objets connectés",
-    "activity": "Activité"
+    "activity": "Activité",
+    "competitions": "Compétitions"
   },
   "health": {
     "title": "Santé et objets connectés",
@@ -616,13 +622,22 @@
   },
   "notifications": {
     "section": "Notifications",
-    "desc": "Recevez une alerte push lorsqu'un client cesse de s'entraîner. Fonctionne sur Android/ordinateur et les apps iOS 16.4+ installées.",
+    "desc": "Rappels de séance et alertes : commentaire du coach, nouveau programme, nouveau message, et pour les coachs les athlètes qui ne s'entraînent plus. Sur Android, ordinateur et iPhone (app installée, iOS 16.4+).",
     "enable": "Activer les notifications",
     "disable": "Désactiver les notifications",
     "denied": "Autorisation refusée. Activez les notifications dans les réglages du navigateur.",
     "notConfigured": "Les notifications push ne sont pas encore configurées pour ce déploiement.",
     "unsupported": "Cet appareil ne prend pas en charge les notifications push.",
-    "error": "Impossible de mettre à jour les notifications."
+    "error": "Impossible de mettre à jour les notifications.",
+    "kind_reminder": "Rappel de séance",
+    "reminderAt": "Une heure avant {time}, les jours d'entraînement où vous n'avez pas encore fait de séance",
+    "reminderNeedsPlan": "Choisissez vos jours et votre heure dans « Planning de la semaine » pour le recevoir",
+    "kind_comment": "Commentaire du coach",
+    "kind_comment_d": "Quand votre coach commente une de vos séances",
+    "kind_program": "Nouveau programme",
+    "kind_program_d": "Quand votre coach vous assigne un programme",
+    "kind_message": "Nouveau message",
+    "kind_message_d": "Quand on vous écrit dans la messagerie"
   },
   "notes": {
     "title": "Notes",
@@ -1208,5 +1223,86 @@
     "leaveText": "Le programme disparaît de vos entraînements. Les séances déjà faites restent dans votre historique, et vous pourrez le reprendre depuis les programmes tout faits.",
     "cancel": "Annuler",
     "coachHint": "Votre coach a préparé ce programme pour vous : demandez-lui s'il faut le changer."
+  },
+  "exerciseHistory": {
+    "empty": "Pas encore de séance avec cet exercice.",
+    "heaviest": "Charge max",
+    "oneRepMax": "1RM estimé",
+    "volume": "Volume max",
+    "reps": "Max de répétitions",
+    "metric_oneRepMax": "1RM estimé",
+    "metric_topKg": "Charge max",
+    "metric_volume": "Volume",
+    "metric_bestReps": "Répétitions",
+    "sessions": "{count, plural, one {# séance} other {# séances}}",
+    "estimated": "1RM ≈ {kg} kg",
+    "howTo": "Comment le faire"
+  },
+  "restTimer": {
+    "title": "Minuteur de repos",
+    "default": "Repos après une série (quand le programme n'en fixe pas)",
+    "warmup": "Repos après une série d'échauffement",
+    "sound": "Son",
+    "soundHint": "Bips sur les 3 dernières secondes et à la fin",
+    "vibrate": "Vibration",
+    "vibrateHint": "À la fin du repos",
+    "notify": "Notification",
+    "notifyHint": "À la fin du repos, même écran verrouillé",
+    "notifyDenied": "Les notifications sont bloquées pour TrainTrack : autorisez-les dans les réglages du navigateur."
+  },
+  "teamMessage": {
+    "button": "Message à l'équipe",
+    "title": "Message à « {team} »",
+    "hint": "{count, plural, one {# athlète le recevra} other {# athlètes le recevront}} dans sa conversation avec vous, et pourra vous répondre en privé.",
+    "placeholder": "Ex. : séance de jeudi décalée à 19 h, pensez à vos chaussons.",
+    "send": "Envoyer à {count, plural, one {# athlète} other {# athlètes}}"
+  },
+  "competitions": {
+    "title": "Compétitions de voltige",
+    "add": "Ajouter",
+    "seeAll": "Tout voir",
+    "edit": "Modifier la compétition",
+    "delete": "Supprimer la compétition",
+    "save": "Enregistrer",
+    "empty": "Notez vos compétitions pour suivre vos notes d'imposés et de libre au fil de la saison.",
+    "event": "Compétition",
+    "eventPlaceholder": "Ex. : Championnat régional",
+    "date": "Date",
+    "category": "Épreuve",
+    "categoryPlaceholder": "Ex. : individuel, club",
+    "horse": "Cheval",
+    "test_compulsory": "Imposés",
+    "test_technical": "Technique",
+    "test_freestyle": "Libre",
+    "test_final": "Note finale",
+    "scoreHint": "Notes sur 10, avec trois décimales si besoin. Laissez vide une épreuve qui n'a pas eu lieu.",
+    "finalIs": "Note finale : {score} (moyenne des épreuves)",
+    "rankLabel": "Classement",
+    "participants": "Participants",
+    "notes": "Notes",
+    "notesPlaceholder": "Remarques des juges, à travailler…",
+    "rank": "{rank}ᵉ",
+    "rankOf": "{rank}ᵉ / {total}",
+    "onHorse": "sur {horse}",
+    "bestFinal": "Meilleure note",
+    "bestCompulsory": "Meilleurs imposés",
+    "bestFreestyle": "Meilleur libre",
+    "progressUp": "+{points} points de note finale depuis la première de vos {count} compétitions.",
+    "progressDown": "−{points} points de note finale depuis la première de vos {count} compétitions."
+  },
+  "spinning": {
+    "start": "Lancer la séance guidée ({count} blocs)",
+    "block": "Bloc",
+    "counter": "Bloc {n} / {total}",
+    "resistance": "Résistance {level}",
+    "rpm": "{from}–{to} tr/min",
+    "kind_warmup": "Échauffement",
+    "kind_seated": "Assis",
+    "kind_fast": "Rapide",
+    "kind_climb": "Côte assis",
+    "kind_standing": "En danseuse",
+    "kind_sprint": "Sprint",
+    "kind_recovery": "Récupération",
+    "kind_cooldown": "Retour au calme"
   }
 }

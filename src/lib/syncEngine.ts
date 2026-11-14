@@ -137,6 +137,12 @@ const TABLE_CONFIGS: TableSyncConfig[] = [
     hasUpdatedAt: true,
     trainerVisible: true,
   },
+  {
+    dexieTable: "competitionResults",
+    supabaseTable: "competition_results",
+    hasUpdatedAt: true,
+    trainerVisible: true,
+  },
 ];
 
 // Sync order: parents first, then children
@@ -153,6 +159,7 @@ const SYNC_ORDER = [
   "hydrationLogs",
   "messages",
   "healthMetrics",
+  "competitionResults",
 ];
 
 // ─── Retry with exponential backoff ───────────────────────────────────

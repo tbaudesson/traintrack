@@ -31,6 +31,9 @@ import { chainedNext, linkGroup, restsAfter, supersetOf, unlinkAfter } from "@/l
 import { findWorkoutProgramDay } from "@/lib/startWorkout";
 import { VideoEmbed } from "@/components/domain/VideoEmbed";
 import { demoVideo } from "@/lib/demoVideos";
+import { useAppPrefs } from "@/hooks/useAppPrefs";
+import { beep, unlockAudio } from "@/lib/beep";
+import { cancelRestEnd, scheduleRestEnd } from "@/lib/restAlerts";
 import { PlateCalculator } from "@/components/domain/PlateCalculator";
 import { CardioLogger } from "@/components/domain/CardioLogger";
 import { formatDistance, formatDuration, formatPace, isCardio, isCardioDone, newCardioRecords } from "@/lib/cardio";
@@ -83,6 +86,7 @@ export default function SessionLoggerPage() {
   const [guided, setGuided] = useState(false);
   const tg = useTranslations("guided");
   const tm = useTranslations("mobility");
+  const restPrefs = useAppPrefs().rest;
   const tinj = useTranslations("injuries");
   const injuries = useInjuries();
   const { num, day, short } = useFormat();
@@ -382,15 +386,22 @@ export default function SessionLoggerPage() {
     setRest(seconds);
     // Against the clock rather than counting ticks: a locked phone skips ticks.
     restEndsAt.current = timestampIn(seconds);
+    let lastBeep = 0;
+    if (restPrefs.notify) scheduleRestEnd(restEndsAt.current, t("restOverTitle"), t("restOverBody"));
     timerRef.current = setInterval(() => {
       const left = Math.ceil((restEndsAt.current - Date.now()) / 1000);
       if (left > 0) {
         setRest(left);
+        if (restPrefs.sound && left <= 3 && left !== lastBeep) {
+          lastBeep = left;
+          beep("tick");
+        }
         return;
       }
       if (timerRef.current) clearInterval(timerRef.current);
       setRest(null);
-      navigator.vibrate?.([300, 120, 300]);
+      if (restPrefs.sound) beep("go");
+      if (restPrefs.vibrate) navigator.vibrate?.([300, 120, 300]);
     }, 500);
   }
 
@@ -398,6 +409,7 @@ export default function SessionLoggerPage() {
   function stopRest() {
     if (timerRef.current) clearInterval(timerRef.current);
     setRest(null);
+    cancelRestEnd();
   }
 
   function startEffort(next: { setId: number; setNumber: number; restSec?: number; timed: boolean; hint: { weightKg?: number | null; targetReps?: string } }) {
@@ -427,6 +439,7 @@ export default function SessionLoggerPage() {
   function extendRest(seconds: number) {
     restEndsAt.current += seconds * 1000;
     setRest((r) => (r === null ? r : r + seconds));
+    if (restPrefs.notify) scheduleRestEnd(restEndsAt.current, t("restOverTitle"), t("restOverBody"));
   }
 
   function nextWeightFor(exerciseId: number) {
@@ -501,12 +514,14 @@ export default function SessionLoggerPage() {
     const filled = !completed && current && hint ? valuesForTick(current, hint) : {};
     await updateWorkoutSet(setId, { ...filled, completed: !completed });
     if (completed) return;
+    // The tap that ticks the set lets the page play the end-of-rest beep.
+    if (restPrefs.sound) unlockAudio();
     if (current?.isWarmup) {
-      startRest(60);
+      startRest(restPrefs.warmupSec);
       return;
     }
     // In a superset, go straight to the next exercise: the rest comes after the last one.
-    if (!current || restsAfter(current.exerciseId, slots)) startRest(restSec && restSec > 0 ? restSec : 90);
+    if (!current || restsAfter(current.exerciseId, slots)) startRest(restSec && restSec > 0 ? restSec : restPrefs.defaultSec);
     else navigator.vibrate?.(60);
 
     // Read back: the weight typed just before this tap may not be in `sets` yet.
@@ -825,6 +840,10 @@ export default function SessionLoggerPage() {
                     {exerciseDescription(ex, locale) && <p className="text-sm text-muted-foreground">{exerciseDescription(ex, locale)}</p>}
                     {(demoVideo(ex?.name ?? "", ex?.videoUrl) ?? ex?.videoUrl) && <VideoEmbed url={(demoVideo(ex?.name ?? "", ex?.videoUrl) ?? ex?.videoUrl)!} />}
                     {!exerciseDescription(ex, locale) && !ex?.videoUrl && !demoVideo(ex?.name ?? "") && <p className="text-sm text-muted-foreground">{t("noGuide")}</p>}
+                    <Link href={`/exercises/${exerciseId}`} className="flex min-h-10 items-center gap-1.5 text-sm font-semibold text-accent-text">
+                      <History className="h-4 w-4" aria-hidden="true" />
+                      {t("fullHistory")}
+                    </Link>
                   </div>
                 )}
 

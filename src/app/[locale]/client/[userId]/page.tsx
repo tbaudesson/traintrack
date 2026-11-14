@@ -13,6 +13,8 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, TrendingUp, CheckCircle, HeartPulse, Apple, ChevronDown, ChevronUp, Bandage } from "lucide-react";
 import { useInjuriesOf } from "@/hooks/useAthleteProfile";
+import { useCompetitions } from "@/hooks/useCompetitions";
+import { CompetitionResults } from "@/components/domain/CompetitionResults";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
@@ -78,6 +80,8 @@ export default function ClientDetailPage() {
   const painHistory = usePainReports(userId);
   const pains = painHistory.filter((p) => p.date >= localDateIn(-30));
   const injuries = useInjuriesOf(userId);
+  const competitions = useCompetitions(userId);
+  const tcomp = useTranslations("competitions");
   const tinj = useTranslations("injuries");
   const thisWeek = adherence?.weeks.at(-1);
 
@@ -245,6 +249,13 @@ export default function ClientDetailPage() {
         />
 
         <GoalsSection profile={clientProfile} workouts={workouts} sets={sets} exercises={exercises} editable={false} />
+
+        {competitions.length > 0 && (
+          <section className="space-y-2">
+            <h2 className="text-sm font-semibold text-muted-foreground">{tcomp("title")}</h2>
+            <CompetitionResults results={competitions} />
+          </section>
+        )}
 
         {/* Readiness */}
         {readiness.length > 0 && (
