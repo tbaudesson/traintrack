@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Program } from "@/db";
-import { plannedPrograms, scheduleSessions, scheduleWeek, sessionChoices, sessionsPerWeek, suggestDays, weekdayOf } from "./schedule";
+import { moveTargets, plannedPrograms, scheduleSessions, scheduleWeek, sessionChoices, sessionsPerWeek, suggestDays, weekdayOf, withMove, withoutMove } from "./schedule";
 
 const program = (p: Partial<Program> & { id: number; name: string }): Program => ({
   uuid: `u${p.id}`,
@@ -143,5 +143,66 @@ describe("sessionChoices", () => {
 
   it("offers nothing without a planning or a session begun", () => {
     expect(sessionChoices({ planned: [], programs, workouts, today: "2026-11-16" })).toBeNull();
+  });
+});
+
+describe("moved sessions", () => {
+  const withMoves = (moves: { program: string; from: string; to: string | null }[]) =>
+    plannedPrograms({ programs: [plan, rotation], me: "me", trainingDays: [], from: "2026-11-09", moves });
+  const on = (p: ReturnType<typeof withMoves>, date: string) =>
+    scheduleSessions({ planned: p, workouts, from: "2026-11-09", to: "2026-11-22", today })
+      .filter((s) => s.date === date)
+      .map((s) => `${s.program.name}:${s.label}:${s.status}${s.movedFrom ? `<${s.movedFrom}` : ""}`);
+
+  it("keeps a move with its program only", () => {
+    const p = withMoves([{ program: "u1", from: "2026-11-13", to: "2026-11-14" }]);
+    expect(p[0].moves).toHaveLength(1);
+    expect(p[1].moves).toBeUndefined();
+  });
+
+  it("puts a session on the day it was moved to", () => {
+    const p = withMoves([{ program: "u1", from: "2026-11-13", to: "2026-11-14" }]);
+    expect(on(p, "2026-11-13")).toEqual([]);
+    expect(on(p, "2026-11-14")).toEqual(["Calisthenics:C2:planned<2026-11-13", "Full Body:B:planned"]);
+  });
+
+  it("catches up a missed session today: no longer missed", () => {
+    const p = withMoves([{ program: "u1", from: "2026-11-11", to: "2026-11-12" }]);
+    expect(on(p, "2026-11-11")).toEqual([]);
+    expect(on(p, "2026-11-12")).toEqual(["Calisthenics:C2:planned<2026-11-11"]);
+    expect(on(p, "2026-11-13")).toEqual([]);
+  });
+
+  it("a rotation's skipped day passes its session to the next one", () => {
+    const p = withMoves([{ program: "u2", from: "2026-11-14", to: null }]);
+    expect(on(p, "2026-11-14")).toEqual([]);
+    expect(on(p, "2026-11-17")).toEqual(["Full Body:B:planned"]);
+  });
+
+  it("offers the days ahead not trained, in the same week for a plan", () => {
+    const p = withMoves([]);
+    expect(moveTargets({ planned: p[0], date: "2026-11-13", today })).toEqual(["2026-11-12", "2026-11-14", "2026-11-15"]);
+    expect(moveTargets({ planned: p[1], date: "2026-11-14", today })).toEqual(["2026-11-12", "2026-11-13", "2026-11-15", "2026-11-16", "2026-11-18", "2026-11-19"]);
+  });
+
+  it("not before the program starts, nor on a day it was trained", () => {
+    const p = withMoves([]);
+    const late = { ...p[0], start: "2026-11-16" };
+    expect(moveTargets({ planned: late, date: "2026-11-16", today })).toEqual(["2026-11-17", "2026-11-19"]);
+    const trainedToday = [...workouts, { id: 13, date: today, title: "Full Body — B", programId: 2, programDayIndex: 1 }];
+    expect(moveTargets({ planned: p[1], date: "2026-11-14", today, workouts: trainedToday })[0]).toBe("2026-11-13");
+  });
+
+  it("moved again, a session keeps its first day; moved back, the move is gone", () => {
+    const once = withMove([], { program: "u1", from: "2026-11-13", to: "2026-11-14" }, today);
+    const twice = withMove(once, { program: "u1", from: "2026-11-14", to: "2026-11-15" }, today);
+    expect(twice).toEqual([{ program: "u1", from: "2026-11-13", to: "2026-11-15" }]);
+    expect(withMove(twice, { program: "u1", from: "2026-11-15", to: "2026-11-13" }, today)).toEqual([]);
+    expect(withoutMove(twice, "u1", "2026-11-15")).toEqual([]);
+  });
+
+  it("forgets moves over a month old", () => {
+    const old = [{ program: "u1", from: "2026-09-01", to: "2026-09-02" }];
+    expect(withMove(old, { program: "u2", from: "2026-11-14", to: null }, today)).toEqual([{ program: "u2", from: "2026-11-14", to: null }]);
   });
 });

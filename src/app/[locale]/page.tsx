@@ -40,7 +40,9 @@ import { WeekStrip } from "@/components/domain/WeekStrip";
 import { GpxImport } from "@/components/domain/GpxImport";
 import { mondayOfDate, plannedSessions, upcomingSessions, weekPlan } from "@/lib/weekPlan";
 import { planCalendar } from "@/lib/ics";
-import { plannedPrograms, scheduleSessions, scheduleWeek, sessionChoices, type SessionChoice } from "@/lib/schedule";
+import { plannedPrograms, scheduleSessions, scheduleWeek, sessionChoices, sessionsPerWeek, type SessionChoice } from "@/lib/schedule";
+import { weekStreak } from "@/lib/weekStreak";
+import { MoveSessionDialog } from "@/components/domain/MoveSessionDialog";
 import { downloadFile } from "@/lib/exportService";
 import { useCompetitions } from "@/hooks/useCompetitions";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -194,8 +196,8 @@ export default function HomePage() {
   // The programs in the planning (given days), all shown together in the week.
   const weekStart = mondayOfDate(today);
   const planned = useMemo(
-    () => plannedPrograms({ programs, me: user?.id, trainingDays: profile?.trainingDays ?? [], from: weekStart }),
-    [programs, user?.id, profile?.trainingDays, weekStart]
+    () => plannedPrograms({ programs, me: user?.id, trainingDays: profile?.trainingDays ?? [], from: weekStart, moves: profile?.scheduleMoves }),
+    [programs, user?.id, profile?.trainingDays, profile?.scheduleMoves, weekStart]
   );
 
   // Today's session already begun; otherwise the next one of the planning;
@@ -269,9 +271,30 @@ export default function HomePage() {
     return scheduleOf(weekStart).some((d) => d.status === "planned") ? 0 : 1;
   }, [planned, weekChoice, scheduleOf, weekStart]);
 
+  // The week shown, with its sessions: a session there can be moved.
+  const shownWeek = useMemo(
+    () => (planned.length ? scheduleOf(shiftDays(weekStart, weekOffset * 7)) : []),
+    [planned, scheduleOf, weekStart, weekOffset]
+  );
+  const [moveDate, setMoveDate] = useState<string | null>(null);
+  const moves = profile?.scheduleMoves ?? [];
+  const skippedOn = (date: string) =>
+    planned.filter((p) => (p.moves ?? []).some((m) => m.from === date && m.to === null)).map((p) => p.program);
+  const movable = shownWeek
+    .filter((d) => d.sessions.some((x) => x.status === "planned" || x.status === "missed") || skippedOn(d.date).length > 0)
+    .map((d) => d.date);
+  const moveDay = shownWeek.find((d) => d.date === moveDate);
+  // Weeks kept in a row: as many sessions as the planning asks for.
+  const streak = useMemo(() => {
+    const target = planned.length
+      ? planned.reduce((sum, p) => sum + Math.min(p.days.length, sessionsPerWeek(p.program) || p.days.length), 0)
+      : (profile?.trainingDays ?? []).length;
+    return target ? weekStreak({ today, workouts, target }) : null;
+  }, [planned, profile?.trainingDays, today, workouts]);
+
   const plan = useMemo(() => {
     if (planned.length) {
-      return scheduleOf(shiftDays(weekStart, weekOffset * 7)).map((d) => ({
+      return shownWeek.map((d) => ({
         date: d.date,
         weekday: d.weekday,
         today: d.today,
@@ -288,7 +311,7 @@ export default function HomePage() {
       workouts,
       upcoming: session ? upcomingSessions(session.program, from, 7) : [],
     });
-  }, [session, today, profile, workouts, planned, weekStart, weekOffset, scheduleOf]);
+  }, [session, today, profile, workouts, planned, shownWeek]);
 
   const sessionWeek = session ? programWeek(session.program, today) : null;
   // The next sessions of the planning, over two weeks: a plan starting next Monday shows already.
@@ -656,6 +679,19 @@ export default function HomePage() {
             upcoming={upcoming}
             offset={planned.length ? weekOffset : undefined}
             onOffset={(n) => setWeekChoice(Math.max(-4, Math.min(8, n)))}
+            streak={streak?.weeks}
+            movable={profile ? movable : undefined}
+            onPickDay={setMoveDate}
+          />
+          <MoveSessionDialog
+            date={moveDay ? moveDate : null}
+            sessions={moveDay?.sessions.filter((x) => x.status === "planned" || x.status === "missed") ?? []}
+            skipped={moveDate ? skippedOn(moveDate) : []}
+            planned={planned}
+            moves={moves}
+            today={today}
+            workouts={workouts}
+            onClose={() => setMoveDate(null)}
           />
 
           <MyPrograms

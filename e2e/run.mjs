@@ -296,6 +296,53 @@ await test("two programs planned on their own days show together in the week and
   expect(ics.includes("DESCRIPTION:program fr") && ics.includes("DESCRIPTION:Full Body — Débutant"), "the calendar misses a program");
 });
 
+await test("a session of the week moves to another day, and back", async () => {
+  await page.goto(`${BASE}/fr`);
+  const week = page.locator("section", { hasText: "prochaines semaines à mon agenda" });
+  await week.getByText("Touchez un jour pour déplacer ou rattraper sa séance.").waitFor({ timeout: 10000 });
+  const day = week.locator("button[data-date]").first();
+  const from = await day.getAttribute("data-date");
+  await day.evaluate((el) => el.scrollIntoView({ block: "center" }));
+  await day.click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByText(/La déplacer au :|La rattraper le :/).first().waitFor({ timeout: 5000 });
+  await snap("move-session");
+  const target = dialog.locator("button[data-date]").first();
+  const to = await target.getAttribute("data-date");
+  await target.click();
+  await dialog.waitFor({ state: "hidden", timeout: 5000 });
+  const moves = () =>
+    page.evaluate(
+      () =>
+        new Promise((resolve, reject) => {
+          const open = indexedDB.open("TrainTrack");
+          open.onerror = reject;
+          open.onsuccess = () => {
+            const all = open.result.transaction("athleteProfiles").objectStore("athleteProfiles").getAll();
+            all.onerror = reject;
+            all.onsuccess = () => {
+              resolve(all.result.flatMap((p) => p.scheduleMoves ?? []));
+              open.result.close();
+            };
+          };
+        })
+    );
+  const saved = await moves();
+  expect(saved.length === 1 && saved[0].from === from && saved[0].to === to, `the move kept is ${JSON.stringify(saved)}`);
+  // Back from the day it went to, in the week that shows it.
+  const moved = week.locator(`button[data-date="${to}"]`);
+  for (const arrow of ["Semaine précédente", "Semaine suivante", "Semaine suivante"]) {
+    if (await moved.count()) break;
+    await week.getByRole("button", { name: arrow }).click();
+  }
+  await moved.evaluate((el) => el.scrollIntoView({ block: "center" }));
+  await moved.click();
+  await dialog.getByRole("button", { name: /La remettre au/ }).click();
+  await dialog.waitFor({ state: "hidden", timeout: 5000 });
+  const after = await moves();
+  expect(after.length === 0, `the move is still there: ${JSON.stringify(after)}`);
+});
+
 await test("the monthly report counts the sessions of the month", async () => {
   await page.goto(`${BASE}/fr/report`);
   await page.getByText(/Séances : \d+ muscu/).first().waitFor({ timeout: 10000 });

@@ -150,7 +150,10 @@
     "welcomeStep1": "ein Programm für deinen Sport und dein Niveau",
     "welcomeStep2": "deine Einheiten in der Woche verteilt",
     "welcomeStep3": "die Übungen, die du bei Verletzungen meiden solltest",
-    "welcomeStart": "Assistent starten"
+    "welcomeStart": "Assistent starten",
+    "weekStreak": "{weeks} Wochen am Stück",
+    "weekStreakHint": "Wochen am Stück mit allen geplanten Einheiten",
+    "moveHint": "Tippe auf einen Tag, um seine Einheit zu verschieben oder nachzuholen."
   },
   "onboarding": {
     "title": "Dein Athletenprofil",
@@ -1075,7 +1078,13 @@
     "recordsEmpty": "Diese Woche noch kein Rekord.",
     "goals": "Erreichte Ziele (14 Tage)",
     "goalsEmpty": "Zuletzt kein Ziel erreicht.",
-    "deload": "In Entlastungswoche"
+    "deload": "In Entlastungswoche",
+    "load": "Belastung steigt stark",
+    "loadEmpty": "Kein starker Anstieg der Belastung.",
+    "loadValue": "Belastung ×{ratio} gegenüber üblich",
+    "form": "Schwache Form (7 Tage)",
+    "formEmpty": "Niemand ist schwach in Form.",
+    "formValue": "Form {score}/100"
   },
   "wizard": {
     "step": "Schritt {step} von {total}",
@@ -1599,5 +1608,19 @@
     "plan": "Einladungen erfordern das Coaching-Abo.",
     "failed": "Der Link konnte nicht erstellt werden, versuch es erneut.",
     "offline": "Zum Erstellen eines Links brauchst du eine Verbindung."
+  },
+  "move": {
+    "title": "Einheiten am {day}",
+    "missed": "verpasst",
+    "skipped": "ausgelassen",
+    "moveTo": "Verschieben auf:",
+    "catchUp": "Nachholen am:",
+    "today": "Heute",
+    "noDay": "Diese Woche ist kein Tag mehr frei für dieses Programm.",
+    "back": "Zurück auf {day}",
+    "skip": "Diese Einheit auslassen",
+    "letGo": "Nicht nachholen",
+    "unskip": "Wieder einplanen",
+    "hint": "Die nächsten Einheiten verschieben sich von selbst. Ein Programm in Wochen behält seine Einheiten in ihrer Woche."
   }
 }

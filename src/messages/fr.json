@@ -150,7 +150,10 @@
     "welcomeStep1": "un programme adapté à votre sport et votre niveau",
     "welcomeStep2": "vos séances placées dans la semaine",
     "welcomeStep3": "les exercices à éviter selon vos blessures",
-    "welcomeStart": "Lancer l’assistant"
+    "welcomeStart": "Lancer l’assistant",
+    "weekStreak": "{weeks} semaines d’affilée",
+    "weekStreakHint": "Semaines de suite où toutes les séances prévues ont été faites",
+    "moveHint": "Touchez un jour pour déplacer ou rattraper sa séance."
   },
   "onboarding": {
     "title": "Votre profil athlète",
@@ -1075,7 +1078,13 @@
     "recordsEmpty": "Pas encore de record cette semaine.",
     "goals": "Objectifs atteints (14 jours)",
     "goalsEmpty": "Aucun objectif atteint récemment.",
-    "deload": "En semaine de décharge"
+    "deload": "En semaine de décharge",
+    "load": "Charge en forte hausse",
+    "loadEmpty": "Aucune hausse brutale de la charge.",
+    "loadValue": "Charge ×{ratio} par rapport à l’habitude",
+    "form": "Forme basse (7 jours)",
+    "formEmpty": "Personne n’est en petite forme.",
+    "formValue": "Forme {score}/100"
   },
   "wizard": {
     "step": "Étape {step} sur {total}",
@@ -1599,5 +1608,19 @@
     "plan": "Les invitations demandent l’offre Coaching.",
     "failed": "Le lien n’a pas pu être créé, réessayez.",
     "offline": "Créer un lien demande une connexion."
+  },
+  "move": {
+    "title": "Séances du {day}",
+    "missed": "manquée",
+    "skipped": "passée",
+    "moveTo": "La déplacer au :",
+    "catchUp": "La rattraper le :",
+    "today": "Aujourd’hui",
+    "noDay": "Plus de jour libre cette semaine pour ce programme.",
+    "back": "La remettre au {day}",
+    "skip": "Passer cette séance",
+    "letGo": "Ne pas la rattraper",
+    "unskip": "La remettre au programme",
+    "hint": "Les séances suivantes se décalent d’elles-mêmes. Un programme en semaines garde ses séances dans leur semaine."
   }
 }

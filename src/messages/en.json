@@ -150,7 +150,10 @@
     "welcomeStep1": "a program for your sport and your level",
     "welcomeStep2": "your sessions placed in the week",
     "welcomeStep3": "the exercises to avoid with your injuries",
-    "welcomeStart": "Start the guide"
+    "welcomeStart": "Start the guide",
+    "weekStreak": "{weeks} weeks in a row",
+    "weekStreakHint": "Weeks in a row with every planned session done",
+    "moveHint": "Tap a day to move or catch up its session."
   },
   "onboarding": {
     "title": "Your athlete profile",
@@ -1075,7 +1078,13 @@
     "recordsEmpty": "No record yet this week.",
     "goals": "Goals reached (14 days)",
     "goalsEmpty": "No goal reached lately.",
-    "deload": "On a deload week"
+    "deload": "On a deload week",
+    "load": "Load rising sharply",
+    "loadEmpty": "No sharp rise of the load.",
+    "loadValue": "Load ×{ratio} over the usual",
+    "form": "Low form (7 days)",
+    "formEmpty": "Nobody is low on form.",
+    "formValue": "Form {score}/100"
   },
   "wizard": {
     "step": "Step {step} of {total}",
@@ -1599,5 +1608,19 @@
     "plan": "Invitations need the Coaching plan.",
     "failed": "The link could not be created, try again.",
     "offline": "Creating a link needs a connection."
+  },
+  "move": {
+    "title": "Sessions of {day}",
+    "missed": "missed",
+    "skipped": "skipped",
+    "moveTo": "Move it to:",
+    "catchUp": "Catch it up on:",
+    "today": "Today",
+    "noDay": "No free day left this week for this program.",
+    "back": "Put it back on {day}",
+    "skip": "Skip this session",
+    "letGo": "Don’t catch it up",
+    "unskip": "Put it back in the program",
+    "hint": "The next sessions shift on their own. A program in weeks keeps its sessions within their week."
   }
 }

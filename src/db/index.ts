@@ -47,6 +47,14 @@ export type Equipment =
 
 // ─── Entity interfaces ───────────────────────────────────────────────
 
+/** A program's session moved from its day to another (null: skipped). */
+export interface ScheduleMove {
+  /** The program's uuid. */
+  program: string;
+  from: string;
+  to: string | null;
+}
+
 export interface AthleteProfile extends SyncFields {
   id?: number;
   goals: TrainingGoal[];
@@ -66,6 +74,8 @@ export interface AthleteProfile extends SyncFields {
   deloadWeek?: string | null;
   /** Injuries in progress: the exercises loading these areas are flagged. */
   injuryAreas?: Injury[] | null;
+  /** Sessions moved to another day, see lib/schedule. */
+  scheduleMoves?: ScheduleMove[] | null;
   /** Optional daily macro targets */
   nutritionTargets?: { calories?: number; protein?: number; carbs?: number; fat?: number; water?: number };
   /** GDPR Art. 9 explicit consent to process health/fitness data */

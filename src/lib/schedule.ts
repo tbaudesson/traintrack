@@ -6,7 +6,7 @@
  * sessions; a rotation (A, B, C…) goes on from the next session due. A day
  * missed does not lose its session: it moves to the next planned day. Pure.
  */
-import type { Program, Workout } from "@/db";
+import type { Program, ScheduleMove, Workout } from "@/db";
 import { findWorkoutProgramDay, nextDayIndex } from "./startWorkout";
 
 export interface PlannedProgram {
@@ -15,6 +15,8 @@ export interface PlannedProgram {
   days: number[];
   /** YYYY-MM-DD */
   start: string;
+  /** Sessions moved by the athlete, for this program. */
+  moves?: ScheduleMove[];
 }
 
 export interface ScheduledSession {
@@ -24,6 +26,8 @@ export interface ScheduledSession {
   index: number;
   label: string;
   status: "done" | "missed" | "planned";
+  /** A session moved here by the athlete: the day it was planned on. */
+  movedFrom?: string;
 }
 
 type W = Pick<Workout, "id" | "date" | "title" | "programId" | "programDayIndex">;
@@ -64,7 +68,13 @@ export function suggestDays(count: number, trainingDays: number[]): number[] {
  * dated by the coach (on the athlete's training days). A plan over before
  * `from` is left out.
  */
-export function plannedPrograms(input: { programs: Program[]; me: string | null | undefined; trainingDays: number[]; from: string }): PlannedProgram[] {
+export function plannedPrograms(input: {
+  programs: Program[];
+  me: string | null | undefined;
+  trainingDays: number[];
+  from: string;
+  moves?: ScheduleMove[] | null;
+}): PlannedProgram[] {
   const out: PlannedProgram[] = [];
   for (const program of input.programs) {
     if (!(program.structure ?? []).length) continue;
@@ -75,7 +85,8 @@ export function plannedPrograms(input: { programs: Program[]; me: string | null 
     const start = program.startDate ?? program.createdAt.slice(0, 10);
     const weeks = planLength(program);
     if (weeks !== null && toDay(input.from) >= toDay(start) + weeks * 7) continue;
-    out.push({ program, days, start });
+    const moves = (input.moves ?? []).filter((m) => m.program === program.uuid);
+    out.push({ program, days, start, ...(moves.length ? { moves } : {}) });
   }
   return out;
 }
@@ -84,7 +95,7 @@ export function plannedPrograms(input: { programs: Program[]; me: string | null 
 export function scheduleSessions(input: { planned: PlannedProgram[]; workouts: W[]; from: string; to: string; today: string }): ScheduledSession[] {
   const { from, to, today } = input;
   const out: ScheduledSession[] = [];
-  for (const { program, days, start } of input.planned) {
+  for (const { program, days, start, moves } of input.planned) {
     const structure = program.structure ?? [];
     const name = (index: number) => structure[index]?.name ?? "";
     // What was done of this program, by date.
@@ -98,6 +109,10 @@ export function scheduleSessions(input: { planned: PlannedProgram[]; workouts: W
     }
     const weeks = planLength(program);
     const weekOf = (date: string) => Math.floor((toDay(date) - toDay(start)) / 7) + 1;
+    // A day a session was moved away from is off; the day it went to is on.
+    const away = new Set((moves ?? []).map((m) => m.from));
+    const movedTo = new Map((moves ?? []).filter((m) => m.to).map((m) => [m.to!, m.from]));
+    const trains = (date: string) => !away.has(date) && (movedTo.has(date) || days.includes(weekdayOf(date)));
     // A rotation goes on from the next session due.
     let next = weeks === null ? nextDayIndex(program, input.workouts, today) : 0;
     // A plan's sessions not yet done, by week.
@@ -115,7 +130,8 @@ export function scheduleSessions(input: { planned: PlannedProgram[]; workouts: W
         if (show) for (const index of done) out.push({ date, program, index, label: name(index), status: "done" });
         continue;
       }
-      if (!days.includes(weekdayOf(date))) continue;
+      if (!trains(date)) continue;
+      const moved = movedTo.get(date);
       if (date < today) {
         // A plan's day is missed only while its week still has sessions to do.
         const behind = weeks === null || (left.get(week)?.length ?? 0) > 0;
@@ -125,10 +141,10 @@ export function scheduleSessions(input: { planned: PlannedProgram[]; workouts: W
       if (weeks === null) {
         const index = next;
         next = (next + 1) % structure.length;
-        if (show) out.push({ date, program, index, label: name(index), status: "planned" });
+        if (show) out.push({ date, program, index, label: name(index), status: "planned", ...(moved ? { movedFrom: moved } : {}) });
       } else {
         const index = left.get(week)?.shift();
-        if (index !== undefined && show) out.push({ date, program, index, label: name(index), status: "planned" });
+        if (index !== undefined && show) out.push({ date, program, index, label: name(index), status: "planned", ...(moved ? { movedFrom: moved } : {}) });
       }
     }
   }
@@ -196,4 +212,50 @@ export function sessionChoices(input: { planned: PlannedProgram[]; programs: Pro
   if (!date) return null;
   const options = [...begun, ...ahead.filter((x) => x.date === date).map((x) => ({ key: `p${x.program.id}-${x.index}`, program: x.program, index: x.index }))];
   return options.length ? { date, options } : null;
+}
+
+// ─── Moving a session ────────────────────────────────────────────
+
+/**
+ * The days a session of a program can be moved to: from today, over the next
+ * week, not on a day the program is already trained. A plan made of weeks
+ * keeps its sessions in their week, so only the days left of that week.
+ * Not before the program starts, nor on a day it was already trained.
+ */
+export function moveTargets(input: { planned: PlannedProgram; date: string; today: string; workouts?: W[] }): string[] {
+  const { program, days, start, moves } = input.planned;
+  const weeks = planLength(program);
+  const weekOf = (date: string) => Math.floor((toDay(date) - toDay(start)) / 7);
+  const away = new Set((moves ?? []).map((m) => m.from));
+  const taken = new Set((moves ?? []).filter((m) => m.to).map((m) => m.to!));
+  const done = new Set((input.workouts ?? []).filter((w) => findWorkoutProgramDay([program], w)).map((w) => w.date));
+  const out: string[] = [];
+  for (let i = 0; i <= 7; i++) {
+    const day = addDays(input.today, i);
+    if (day === input.date || day < start || done.has(day)) continue;
+    if (weeks !== null && weekOf(day) !== weekOf(input.date)) continue;
+    const trained = taken.has(day) || (!away.has(day) && days.includes(weekdayOf(day)));
+    if (!trained) out.push(day);
+  }
+  return out;
+}
+
+/**
+ * The moves once a session on `from` goes to `to` (null: skipped). A session
+ * moved before keeps the day it was first planned on; moved back there, the
+ * move is gone. Moves over a month old are dropped, 40 kept at most.
+ */
+export function withMove(moves: ScheduleMove[] | null | undefined, move: ScheduleMove, today: string): ScheduleMove[] {
+  const list = [...(moves ?? [])];
+  const earlier = list.find((m) => m.program === move.program && m.to === move.from);
+  const origin = earlier ? earlier.from : move.from;
+  const rest = list.filter((m) => m !== earlier && !(m.program === move.program && m.from === origin));
+  const next = origin === move.to ? rest : [...rest, { program: move.program, from: origin, to: move.to }];
+  const cutoff = addDays(today, -31);
+  return next.filter((m) => m.from >= cutoff || (m.to !== null && m.to >= cutoff)).slice(-40);
+}
+
+/** The moves once a session moved here goes back to its first day. */
+export function withoutMove(moves: ScheduleMove[] | null | undefined, program: string, to: string): ScheduleMove[] {
+  return (moves ?? []).filter((m) => !(m.program === program && m.to === to));
 }

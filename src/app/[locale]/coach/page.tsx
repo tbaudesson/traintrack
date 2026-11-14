@@ -2,12 +2,12 @@
 
 import { useMemo, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { AlertTriangle, Bandage, BatteryLow, Goal, Loader2, Trophy, Users } from "lucide-react";
+import { Activity, AlertTriangle, Bandage, BatteryLow, Goal, HeartPulse, Loader2, Trophy, Users } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useClients } from "@/hooks/useClients";
 import { useTeamAdherence } from "@/hooks/useClientActivity";
 import { useTeamPain } from "@/hooks/usePain";
-import { useCoachDigest } from "@/hooks/useCoachDigest";
+import { LOW_FORM, useCoachDigest } from "@/hooks/useCoachDigest";
 import { useExercises } from "@/hooks/useExercises";
 import { byAttention } from "@/lib/adherence";
 import { useExerciseLabel } from "@/lib/exerciseNames";
@@ -66,6 +66,17 @@ export default function CoachDashboardPage() {
   const reached = athletes.filter((a) => (digest?.get(a.userId)?.goalsReached.length ?? 0) > 0);
   const trained = athletes.filter((a) => (digest?.get(a.userId)?.daysThisWeek ?? 0) > 0).length;
   const deloading = athletes.filter((a) => digest?.get(a.userId)?.deloading);
+  // A load rising too fast, then a low form over the week: most worrying first.
+  const overloaded = athletes
+    .filter((a) => {
+      const zone = digest?.get(a.userId)?.load?.zone;
+      return zone === "caution" || zone === "danger";
+    })
+    .sort((a, b) => digest!.get(b.userId)!.load!.ratio - digest!.get(a.userId)!.load!.ratio);
+  const lowForm = athletes
+    .filter((a) => (digest?.get(a.userId)?.form ?? 100) < LOW_FORM)
+    .sort((a, b) => digest!.get(a.userId)!.form! - digest!.get(b.userId)!.form!);
+  const watched = new Set([...toCheck, ...hurting, ...overloaded, ...lowForm].map((a) => a.userId)).size;
 
   return (
     <>
@@ -78,7 +89,7 @@ export default function CoachDashboardPage() {
             <div className="grid grid-cols-3 gap-2">
               <Stat value={athletes.length} label={t("athletes")} />
               <Stat value={`${trained}/${athletes.length}`} label={t("trainedThisWeek")} />
-              <Stat value={toCheck.length + hurting.length} label={t("toWatch")} tone={toCheck.length + hurting.length > 0 ? "warn" : undefined} />
+              <Stat value={watched} label={t("toWatch")} tone={watched > 0 ? "warn" : undefined} />
             </div>
 
             <Section icon={AlertTriangle} title={t("checkIn")} empty={t("checkInEmpty")} count={toCheck.length}>
@@ -109,6 +120,32 @@ export default function CoachDashboardPage() {
                   <Row key={a.userId} userId={a.userId} name={a.name} teams={a.teams}>
                     <span className={cn("text-xs font-semibold", pain.level >= SEVERE_PAIN ? "text-rose-600 dark:text-rose-400" : "text-amber-600 dark:text-amber-400")}>
                       {tpain(`area_${pain.area}`)} {pain.level}/10 · {xl(pain.exerciseName)} · {short(pain.date)}
+                    </span>
+                  </Row>
+                );
+              })}
+            </Section>
+
+            <Section icon={Activity} title={t("load")} empty={t("loadEmpty")} count={overloaded.length}>
+              {overloaded.map((a) => {
+                const load = digest!.get(a.userId)!.load!;
+                return (
+                  <Row key={a.userId} userId={a.userId} name={a.name} teams={a.teams}>
+                    <span className={cn("text-xs font-semibold", load.zone === "danger" ? "text-rose-600 dark:text-rose-400" : "text-amber-600 dark:text-amber-400")}>
+                      {t("loadValue", { ratio: num(load.ratio) })}
+                    </span>
+                  </Row>
+                );
+              })}
+            </Section>
+
+            <Section icon={HeartPulse} title={t("form")} empty={t("formEmpty")} count={lowForm.length}>
+              {lowForm.map((a) => {
+                const form = digest!.get(a.userId)!.form!;
+                return (
+                  <Row key={a.userId} userId={a.userId} name={a.name} teams={a.teams}>
+                    <span className={cn("text-xs font-semibold", form < 35 ? "text-rose-600 dark:text-rose-400" : "text-amber-600 dark:text-amber-400")}>
+                      {t("formValue", { score: form })}
                     </span>
                   </Row>
                 );
