@@ -199,6 +199,8 @@ export interface Program extends SyncFields {
   groupId?: string | null;
   /** First day of the program (YYYY-MM-DD): a plan in weeks follows the calendar from it. */
   startDate?: string | null;
+  /** Days of the week it is trained on (1 = Monday … 7 = Sunday): it is then in the planning. */
+  weekdays?: number[] | null;
   structure: ProgramDay[];
   createdAt: string;
   updatedAt: string;

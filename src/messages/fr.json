@@ -1481,5 +1481,25 @@
     "errorTooBig": "Ce fichier est trop lourd pour un programme (5 Mo au plus).",
     "errorHeader": "Aucune colonne « Exercice » dans les premières lignes. Partez du modèle pour les noms de colonnes.",
     "errorEmpty": "Aucun exercice trouvé sous les en-têtes."
+  },
+  "planning": {
+    "title": "Mon planning",
+    "notPlannedTitle": "Pas encore dans mon planning",
+    "notPlannedText": "{count, plural, one {Ce programme prévoit # séance par semaine} other {Ce programme prévoit # séances par semaine}}. Choisissez vos jours : ses séances apparaîtront dans « Ma semaine » et dans votre agenda, avec celles de vos autres programmes.",
+    "add": "Ajouter à mon planning",
+    "remove": "Retirer du planning",
+    "days": "Jours d’entraînement",
+    "mismatch": "{count, plural, one {Ce programme prévoit # séance par semaine} other {Ce programme prévoit # séances par semaine}} : vous avez choisi {chosen, plural, =0 {aucun jour} one {# jour} other {# jours}}.",
+    "coachDays": "Jours choisis par votre coach.",
+    "coachTrainingDays": "Votre coach a daté ce programme : il suit vos jours d’entraînement (Réglages).",
+    "coachNotYet": "Votre coach n’a pas encore planifié ce programme : il apparaîtra dans « Ma semaine » une fois daté.",
+    "start": "Début",
+    "today": "Aujourd’hui",
+    "nextMonday": "Lundi prochain",
+    "finished": "Programme terminé : il ne compte plus dans le planning.",
+    "weekOf": "Semaine {week} sur {total}",
+    "weekSince": "Semaine {week} depuis le début",
+    "startsOn": "Commence le {date}",
+    "hint": "Sans date de début, le programme compte depuis le jour où il a été ajouté."
   }
 }

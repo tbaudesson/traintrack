@@ -259,6 +259,29 @@ await test("a program is imported from an Excel file, after a preview", async ()
   await page.getByText("Haut du corps").first().waitFor({ timeout: 10000 });
 });
 
+await test("two programs planned on their own days show together in the week and the calendar", async () => {
+  // The imported plan, still open: into the planning, on suggested days.
+  await page.getByRole("button", { name: "Ajouter à mon planning" }).click();
+  const days = page.locator('fieldset button[aria-pressed="true"]');
+  await page.getByRole("heading", { name: "Mon planning", exact: true }).waitFor({ timeout: 5000 });
+  expect((await days.count()) === 2, `the plan asks for 2 days a week, ${await days.count()} chosen`);
+  // The ready-made program too.
+  await page.goto(`${BASE}/fr/programs`);
+  await page.getByText("Full Body — Débutant").first().click();
+  await page.waitForURL(/\/fr\/programs\/\d+$/, { timeout: 10000 });
+  await page.getByRole("button", { name: "Ajouter à mon planning" }).click();
+  await page.getByRole("heading", { name: "Mon planning", exact: true }).waitFor({ timeout: 5000 });
+  // Home: the week lists the sessions of both, each with its program.
+  await page.goto(`${BASE}/fr`);
+  const week = page.locator("section", { hasText: "Ma semaine" });
+  await week.getByText("· Full Body — Débutant").first().waitFor({ timeout: 10000 });
+  await week.getByText("· program fr").first().waitFor({ timeout: 10000 });
+  await snap("week-planning");
+  const [download] = await Promise.all([page.waitForEvent("download"), week.getByRole("button", { name: /Ajouter les 8 prochaines semaines/ }).click()]);
+  const ics = readFileSync(await download.path(), "utf8");
+  expect(ics.includes("DESCRIPTION:program fr") && ics.includes("DESCRIPTION:Full Body — Débutant"), "the calendar misses a program");
+});
+
 await test("the monthly report counts the sessions of the month", async () => {
   await page.goto(`${BASE}/fr/report`);
   await page.getByText(/Séances : \d+ muscu/).first().waitFor({ timeout: 10000 });

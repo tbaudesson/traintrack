@@ -4,7 +4,7 @@ import { sessionHref } from "@/lib/routes";
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { ArrowRight, CalendarDays, Check, LogOut, Loader2, Pencil, Share2, UserCheck, Wand2 } from "lucide-react";
+import { ArrowRight, Check, LogOut, Loader2, Pencil, Share2, UserCheck, Wand2 } from "lucide-react";
 import { shareLink, shareProgram } from "@/lib/shareService";
 import { getCurrentUserIdSync, type ProgramDay } from "@/db";
 import { useRouter } from "@/i18n/navigation";
@@ -15,21 +15,19 @@ import { useExercises } from "@/hooks/useExercises";
 import { describeTarget } from "@/lib/cardio";
 import { localDate } from "@/lib/dates";
 import { useExerciseLabel } from "@/lib/exerciseNames";
-import { useFormat } from "@/lib/format";
 import { planWeeks, programCategory } from "@/lib/programCategories";
 import { customisedName, programOrigin } from "@/lib/programOrigin";
 import { programProgress } from "@/lib/programCards";
 import { PROGRAM_TEMPLATES } from "@/lib/programTemplates";
-import { nextMonday, programWeek } from "@/lib/programWeek";
 import { findWorkoutProgramDay, nextDayIndex, startWorkoutFromDay } from "@/lib/startWorkout";
 import { useReadyMadeNames } from "@/lib/templateService";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CategoryIcon } from "@/components/domain/ProgramCatalog";
 import { SeasonTarget } from "@/components/domain/SeasonTarget";
+import { ProgramPlanning } from "@/components/domain/ProgramPlanning";
 
 /**
  * A program as one follows it: what it is, how far one is, its sessions week
@@ -39,10 +37,8 @@ import { SeasonTarget } from "@/components/domain/SeasonTarget";
  */
 export default function ProgramPage() {
   const t = useTranslations("programView");
-  const tp = useTranslations("programs");
   const tc = useTranslations("catalog");
   const xl = useExerciseLabel();
-  const { day } = useFormat();
   const router = useRouter();
   const programId = Number(useParams().id);
   const program = useProgram(programId);
@@ -74,7 +70,6 @@ export default function ProgramPage() {
 
   const category = programCategory(program, PROGRAM_TEMPLATES);
   const weeks = planWeeks(days);
-  const calendar = programWeek(program, today);
   const progress = programProgress(program, workouts);
   // A coach looking at a client's copy does not train it.
   const forSomeoneElse = !!program.assignedToUserId && program.assignedToUserId !== getCurrentUserIdSync();
@@ -185,40 +180,8 @@ export default function ProgramPage() {
           )}
         </section>
 
-        {/* Start date: a plan in weeks follows the calendar from it. */}
-        {weeks && (
-          <section className="t-surface space-y-2 rounded-2xl p-3">
-            <div className="flex items-center gap-3">
-              <CalendarDays className="h-5 w-5 text-accent-text" aria-hidden="true" />
-              <label htmlFor="program-start" className="flex-1 text-sm font-medium">{tp("startDate")}</label>
-              {origin === "coach" ? (
-                <span className="text-sm">{program.startDate ? day(program.startDate) : "—"}</span>
-              ) : (
-                <Input
-                  id="program-start"
-                  type="date"
-                  value={program.startDate ?? ""}
-                  onChange={(e) => updateProgram(programId, { startDate: e.target.value || null })}
-                  className="w-auto"
-                />
-              )}
-            </div>
-            {origin !== "coach" && !program.startDate && (
-              <Button size="sm" variant="outline" onClick={() => updateProgram(programId, { startDate: nextMonday(today) })}>
-                {tp("startNextMonday")}
-              </Button>
-            )}
-            <p className="text-xs text-muted-foreground">
-              {calendar
-                ? calendar.started
-                  ? calendar.total
-                    ? tp("weekOf", { week: calendar.week, total: calendar.total })
-                    : tp("weekSince", { week: calendar.week })
-                  : tp("startsOn", { date: day(program.startDate!) })
-                : tp("startHint")}
-            </p>
-          </section>
-        )}
+        {/* In the planning: on which days, from when. */}
+        <ProgramPlanning program={program} today={today} readOnly={origin === "coach"} />
 
         {/* A competition or a race to peak for: the plan ends on its week. */}
         {weeks && origin !== "coach" && (

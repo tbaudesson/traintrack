@@ -1481,5 +1481,25 @@
     "errorTooBig": "This file is too large for a program (5 MB at most).",
     "errorHeader": "No “Exercise” column in the first rows. Start from the template for the column names.",
     "errorEmpty": "No exercise found under the headers."
+  },
+  "planning": {
+    "title": "My planning",
+    "notPlannedTitle": "Not in my planning yet",
+    "notPlannedText": "{count, plural, one {This program asks for # session a week} other {This program asks for # sessions a week}}. Choose your days: its sessions will show in “My week” and in your calendar, with those of your other programs.",
+    "add": "Add to my planning",
+    "remove": "Remove from planning",
+    "days": "Training days",
+    "mismatch": "{count, plural, one {This program asks for # session a week} other {This program asks for # sessions a week}}: you chose {chosen, plural, =0 {no day} one {# day} other {# days}}.",
+    "coachDays": "Days chosen by your coach.",
+    "coachTrainingDays": "Your coach dated this program: it follows your training days (Settings).",
+    "coachNotYet": "Your coach has not planned this program yet: it will show in “My week” once dated.",
+    "start": "Start",
+    "today": "Today",
+    "nextMonday": "Next Monday",
+    "finished": "Program over: it no longer counts in the planning.",
+    "weekOf": "Week {week} of {total}",
+    "weekSince": "Week {week} since the start",
+    "startsOn": "Starts on {date}",
+    "hint": "Without a start date, the program counts from the day it was added."
   }
 }

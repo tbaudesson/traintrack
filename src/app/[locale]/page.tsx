@@ -38,6 +38,7 @@ import { WeekStrip } from "@/components/domain/WeekStrip";
 import { GpxImport } from "@/components/domain/GpxImport";
 import { mondayOfDate, plannedSessions, upcomingSessions, weekPlan } from "@/lib/weekPlan";
 import { planCalendar } from "@/lib/ics";
+import { plannedPrograms, scheduleSessions, scheduleWeek } from "@/lib/schedule";
 import { downloadFile } from "@/lib/exportService";
 import { useCompetitions } from "@/hooks/useCompetitions";
 import { Button } from "@/components/ui/button";
@@ -167,8 +168,16 @@ export default function HomePage() {
   const name = account?.display_name ?? user?.email?.split("@")[0] ?? "";
   const readyScore = todayReadiness ? readinessScore(todayReadiness) : null;
 
-  // The program most recently trained, otherwise the first one with days. A
-  // program started since (a coach's new plan) takes over from the old one.
+  // The programs in the planning (given days), all shown together in the week.
+  const weekStart = mondayOfDate(today);
+  const planned = useMemo(
+    () => plannedPrograms({ programs, me: user?.id, trainingDays: profile?.trainingDays ?? [], from: weekStart }),
+    [programs, user?.id, profile?.trainingDays, weekStart]
+  );
+
+  // Today's session already begun; otherwise the next one of the planning;
+  // without a planning, the program most recently trained, or the first one
+  // with days. A program started since (a coach's new plan) takes over.
   const session = useMemo(() => {
     const usable = programs.filter((p) => (p.structure ?? []).length > 0);
     const linked = workouts.map((w) => ({ w, at: findWorkoutProgramDay(usable, w) }));
@@ -176,6 +185,10 @@ export default function HomePage() {
     const todays = linked.find((x) => x.at && x.w.date === today);
     if (todays?.at) {
       return { program: todays.at.program, index: todays.at.index, day: todays.at.program.structure[todays.at.index], workoutId: todays.w.id };
+    }
+    if (planned.length) {
+      const next = scheduleSessions({ planned, workouts, from: today, to: localDateIn(13, now), today }).find((x) => x.status === "planned");
+      if (next) return { program: next.program, index: next.index, day: next.program.structure[next.index], workoutId: undefined };
     }
     const newest = usable
       .filter((p) => p.startDate && p.startDate <= today && !programWeek(p, today)?.finished)
@@ -187,7 +200,7 @@ export default function HomePage() {
     if (!program) return null;
     const next = nextDayIndex(program, workouts, today);
     return { program, index: next, day: program.structure[next], workoutId: undefined };
-  }, [programs, workouts, today, prefs.sport, catalogue]);
+  }, [programs, workouts, today, prefs.sport, catalogue, planned, now]);
 
   // Deload: running this week, or suggested from the weeks in a row and fatigue.
   const thisMonday = mondayOfDate(today);
@@ -216,6 +229,17 @@ export default function HomePage() {
 
   // The week: done, missed, and the next sessions placed on the training days ahead.
   const plan = useMemo(() => {
+    if (planned.length) {
+      const sessions = scheduleSessions({ planned, workouts, from: weekStart, to: localDateIn(6, Date.parse(`${weekStart}T12:00:00`)), today });
+      return scheduleWeek({ monday: weekStart, today, planned, sessions, workouts }).map((d) => ({
+        date: d.date,
+        weekday: d.weekday,
+        today: d.today,
+        status: d.status,
+        label: d.sessions.filter((x) => x.status !== "missed").map((x) => x.label).concat(d.others).join(" + ") || undefined,
+        sessions: d.sessions.filter((x) => x.status === "planned").map((x) => ({ label: x.label, program: x.program.name })),
+      }));
+    }
     const from = session ? (session.workoutId ? session.index + 1 : session.index) : 0;
     return weekPlan({
       monday: mondayOfDate(today),
@@ -224,23 +248,37 @@ export default function HomePage() {
       workouts,
       upcoming: session ? upcomingSessions(session.program, from, 7) : [],
     });
-  }, [session, today, profile, workouts]);
+  }, [session, today, profile, workouts, planned, weekStart]);
 
   const sessionWeek = session ? programWeek(session.program, today) : null;
+  // The next sessions of the planning, over two weeks: a plan starting next Monday shows already.
+  const upcoming = useMemo(
+    () =>
+      planned.length
+        ? scheduleSessions({ planned, workouts, from: today, to: localDateIn(13, now), today })
+            .filter((x) => x.status === "planned")
+            .map((x) => ({ date: x.date, label: x.label, program: x.program.name }))
+        : undefined,
+    [planned, workouts, today, now]
+  );
   const competitions = useCompetitions();
 
   /** The next eight weeks of sessions, and the competitions ahead, as a calendar file. */
   function exportCalendar() {
     const from = session ? (session.workoutId ? session.index + 1 : session.index) : 0;
-    const sessions = plannedSessions({
+    const sessions = planned.length
+      ? scheduleSessions({ planned, workouts, from: today, to: localDateIn(55, now), today })
+          .filter((x) => x.status === "planned")
+          .map((x) => ({ date: x.date, label: x.label, program: x.program.name }))
+      : plannedSessions({
       today,
       trainingDays: profile?.trainingDays ?? [],
       workouts,
-      upcoming: session ? upcomingSessions(session.program, from, 8 * 7) : [],
-      weeks: 8,
-    });
+          upcoming: session ? upcomingSessions(session.program, from, 8 * 7) : [],
+          weeks: 8,
+        }).map((x) => ({ ...x, program: session?.program.name }));
     const ics = planCalendar({
-      sessions: sessions.map((s) => ({ date: s.date, title: t("calendarSession", { name: s.label }), description: session?.program.name })),
+      sessions: sessions.map((s) => ({ date: s.date, title: t("calendarSession", { name: s.label }), description: s.program })),
       competitions: competitions
         .filter((c) => c.date >= today)
         .map((c) => ({ date: c.date, title: t("calendarCompetition", { name: c.event }), description: c.category ?? undefined })),
@@ -514,7 +552,7 @@ export default function HomePage() {
             />
           )}
 
-          <WeekStrip plan={plan} planned={(profile?.trainingDays ?? []).length > 0} onExport={exportCalendar} />
+          <WeekStrip plan={plan} planned={planned.length > 0 || (profile?.trainingDays ?? []).length > 0} onExport={exportCalendar} upcoming={upcoming} />
 
           <MyPrograms
             programs={programs}

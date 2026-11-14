@@ -13,16 +13,40 @@ const weekday = (locale: string, day: number, width: "narrow" | "short") =>
  * The week at a glance: done, missed, planned and rest days, then what comes
  * next, and a way to put the weeks ahead in the phone's calendar.
  */
-export function WeekStrip({ plan, planned, onExport }: { plan: PlanDay[]; planned: boolean; onExport?: () => void }) {
+export function WeekStrip({
+  plan,
+  planned,
+  onExport,
+  upcoming,
+}: {
+  plan: PlanDay[];
+  planned: boolean;
+  onExport?: () => void;
+  /** With a planning: the next sessions, beyond this week too. */
+  upcoming?: { date: string; label: string; program: string }[];
+}) {
   const t = useTranslations("home");
   const locale = useLocale();
-  const next = plan.filter((d) => d.status === "planned" && d.label).slice(0, 3);
+  // What comes next: each session with its program when several are planned.
+  const today = plan.find((d) => d.today)?.date;
+  const fromPlanning = upcoming?.map((u) => {
+    const [y, m, dd] = u.date.split("-").map(Number);
+    const wd = ((new Date(Date.UTC(y, m - 1, dd)).getUTCDay() + 6) % 7) + 1;
+    return { date: u.date, weekday: wd, today: u.date === today, status: "planned" as const, label: u.label, program: u.program };
+  });
+  const next = fromPlanning?.slice(0, 4) ?? plan
+    .filter((d) => d.status === "planned")
+    .flatMap((d): (PlanDay & { label: string; program?: string })[] =>
+      d.sessions ? d.sessions.map((x) => ({ ...d, label: x.label, program: x.program })) : d.label ? [{ ...d, label: d.label }] : []
+    )
+    .slice(0, 4);
 
   return (
     <section className="t-surface space-y-3 rounded-2xl p-4 ring-1 ring-foreground/5">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold">{t("weekPlan")}</h2>
-        <Link href="/settings" className="flex min-h-10 items-center text-sm font-medium text-accent-text">
+        {/* With a planning, the days are set program by program. */}
+        <Link href={upcoming ? "/programs" : "/settings"} className="flex min-h-10 items-center text-sm font-medium text-accent-text">
           {planned ? t("weekPlanEdit") : t("weekPlanSetup")}
         </Link>
       </div>
@@ -55,12 +79,15 @@ export function WeekStrip({ plan, planned, onExport }: { plan: PlanDay[]; planne
 
       {next.length > 0 && (
         <ul className="space-y-1 text-sm">
-          {next.map((d) => (
-            <li key={d.date} className="flex gap-2">
+          {next.map((d, i) => (
+            <li key={`${d.date}-${i}`} className="flex gap-2">
               <span className="w-24 shrink-0 text-muted-foreground">
                 {d.today ? t("planToday") : `${weekday(locale, d.weekday, "short")} ${Number(d.date.slice(8))}`}
               </span>
-              <span className="min-w-0 truncate font-medium">{d.label}</span>
+              <span className="min-w-0 truncate">
+                <span className="font-medium">{d.label}</span>
+                {d.program && <span className="text-muted-foreground"> · {d.program}</span>}
+              </span>
             </li>
           ))}
         </ul>

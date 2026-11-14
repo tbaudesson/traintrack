@@ -364,5 +364,31 @@ begin
   perform _root();
 end $$;
 
+-- ─── Program weekdays 048 ───────────────────────────────────
+do $$
+declare
+  cl uuid := 'a0000000-0000-4000-8000-000000000007';
+  tr uuid := 'a0000000-0000-4000-8000-000000000003';
+  mine uuid;
+begin
+  perform _as(cl);
+  insert into programs (user_id, name) values (cl, 'Mine') returning id into mine;
+  perform _allowed('an athlete plans the days of their own program',
+    format('update programs set weekdays = %L::jsonb where id = %L', '[1,3,5]', mine));
+  perform _denied('a day of the week is between 1 and 7',
+    format('update programs set weekdays = %L::jsonb where id = %L', '[0,8]', mine));
+  perform _denied('the days are a list',
+    format('update programs set weekdays = %L::jsonb where id = %L', '{"mon":true}', mine));
+  -- A coach's program is read-only for the athlete: the update reaches no row.
+  update programs set weekdays = '[2]'::jsonb where id = 'f0000000-0000-4000-8000-000000000001';
+  perform _root();
+  perform _t('an athlete cannot change the days of a coach''s program',
+    _count('select 1 from programs where id = ''f0000000-0000-4000-8000-000000000001'' and weekdays is not null') = 0);
+  perform _as(tr);
+  perform _allowed('a coach plans the days of a program given to an athlete',
+    format('update programs set weekdays = %L::jsonb where id = %L', '[2,4]', 'f0000000-0000-4000-8000-000000000001'));
+  perform _root();
+end $$;
+
 select ' FAIL ' || name from _r where not ok;
 select count(*) filter (where ok) as passed, count(*) filter (where not ok) as failed from _r;

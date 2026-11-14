@@ -1481,5 +1481,25 @@
     "errorTooBig": "Diese Datei ist zu groß für ein Programm (höchstens 5 MB).",
     "errorHeader": "Keine Spalte „Übung“ in den ersten Zeilen. Geh von der Vorlage aus, um die Spaltennamen zu übernehmen.",
     "errorEmpty": "Unter den Überschriften wurde keine Übung gefunden."
+  },
+  "planning": {
+    "title": "Mein Plan",
+    "notPlannedTitle": "Noch nicht in meinem Plan",
+    "notPlannedText": "{count, plural, one {Dieses Programm sieht # Einheit pro Woche vor} other {Dieses Programm sieht # Einheiten pro Woche vor}}. Wähle deine Tage: Seine Einheiten erscheinen in „Meine Woche“ und in deinem Kalender, zusammen mit denen deiner anderen Programme.",
+    "add": "Zu meinem Plan hinzufügen",
+    "remove": "Aus dem Plan nehmen",
+    "days": "Trainingstage",
+    "mismatch": "{count, plural, one {Dieses Programm sieht # Einheit pro Woche vor} other {Dieses Programm sieht # Einheiten pro Woche vor}}: Du hast {chosen, plural, =0 {keinen Tag} one {# Tag} other {# Tage}} gewählt.",
+    "coachDays": "Von deinem Coach gewählte Tage.",
+    "coachTrainingDays": "Dein Coach hat dieses Programm datiert: Es folgt deinen Trainingstagen (Einstellungen).",
+    "coachNotYet": "Dein Coach hat dieses Programm noch nicht geplant: Es erscheint in „Meine Woche“, sobald es datiert ist.",
+    "start": "Beginn",
+    "today": "Heute",
+    "nextMonday": "Nächster Montag",
+    "finished": "Programm beendet: Es zählt nicht mehr im Plan.",
+    "weekOf": "Woche {week} von {total}",
+    "weekSince": "Woche {week} seit Beginn",
+    "startsOn": "Beginnt am {date}",
+    "hint": "Ohne Startdatum zählt das Programm ab dem Tag, an dem es hinzugefügt wurde."
   }
 }

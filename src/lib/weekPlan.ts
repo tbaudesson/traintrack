@@ -11,6 +11,8 @@ export interface PlanDay {
   today: boolean;
   /** What was done, or what is planned. */
   label?: string;
+  /** With a planning of several programs: the sessions to come that day, and of which program. */
+  sessions?: { label: string; program: string }[];
 }
 
 const addDays = (date: string, days: number) => {
