@@ -871,11 +871,14 @@
     "look_contrast_d": "Lisible en salle et au soleil",
     "sport": "Mon sport",
     "sportHint": "Ses programmes passent en premier, sur l'accueil comme dans Programmes.",
-    "sport_none": "Aucun",
+    "sport_none": "Automatique",
     "silhouette": "Image d'accueil",
     "silhouette_female": "Femme",
     "silhouette_male": "Homme",
-    "sport2Hint": "Un deuxième sport pratiqué à côté ? Ses séances et ses chiffres viennent ensuite."
+    "sport2Hint": "Un deuxième sport pratiqué à côté ? Ses séances et ses chiffres viennent ensuite.",
+    "sport_all": "Tous les sports",
+    "sportAutoHint": "L’app met en avant le sport que montrent vos séances des 4 dernières semaines.",
+    "sportAllHint": "Rien n’est mis en avant : volume en kg sur l’accueil, ordre habituel partout."
   },
   "activity": {
     "title": "Activité",

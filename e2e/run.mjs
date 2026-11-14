@@ -468,6 +468,17 @@ await test("the home screen follows the sport practised, and offers it when anot
   await page.getByText("Vous pratiquez surtout : Course à pied ?").waitFor({ state: "hidden", timeout: 5000 });
   const prefs = await page.evaluate(() => JSON.parse(localStorage.getItem("traintrack.prefs") ?? "{}"));
   expect(prefs.sport === "running" && prefs.sport2 === "bodybuilding", `prefs ${JSON.stringify(prefs)}`);
+  // "All sports": nothing guessed, the app as it was, kilos and the usual order.
+  await page.goto(`${BASE}/fr/settings`);
+  await page.getByRole("button", { name: "Tous les sports", exact: true }).click();
+  await page.getByText("Rien n’est mis en avant").waitFor({ timeout: 5000 });
+  await page.goto(`${BASE}/fr`);
+  await page.locator("section", { hasText: "Vue d'ensemble" }).getByText("Volume").first().waitFor({ timeout: 10000 });
+  await page.getByText("Changer de séance ou de programme").click();
+  const rows = page.getByRole("dialog").locator("section", { hasText: "Sans programme" });
+  await rows.getByText("Séance libre").waitFor({ timeout: 5000 });
+  expect(!(await rows.getByText("Fractionnés guidés").count()), "the guided intervals are put forward in all-sports mode");
+  await page.keyboard.press("Escape");
 });
 
 await test("no page threw an error", async () => {

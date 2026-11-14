@@ -80,6 +80,8 @@ export interface AppPrefs {
   sport: FavoriteSport | null;
   /** A second sport, practised alongside: its sessions and figures come second. */
   sport2: FavoriteSport | null;
+  /** "All sports": nothing put first, nothing guessed from the sessions; the app as it was. */
+  allSports: boolean;
   silhouette: Silhouette;
   rest: RestPrefs;
   /** The voice coach of the timed sessions. */
@@ -89,7 +91,7 @@ export interface AppPrefs {
 const PREFS_KEY = "traintrack.prefs";
 const PREFS_EVENT = "traintrack-prefs";
 const DEFAULT_REST: RestPrefs = { defaultSec: 90, warmupSec: 60, sound: false, vibrate: true, notify: false };
-const DEFAULT_PREFS: AppPrefs = { style: "classic", sport: null, sport2: null, silhouette: "male", rest: DEFAULT_REST, voice: true };
+const DEFAULT_PREFS: AppPrefs = { style: "classic", sport: null, sport2: null, allSports: false, silhouette: "male", rest: DEFAULT_REST, voice: true };
 
 let cached: { raw: string | null; prefs: AppPrefs } | null = null;
 
@@ -114,6 +116,8 @@ export function getPrefs(): AppPrefs {
     sport: FAVORITE_SPORTS.includes(parsed.sport as FavoriteSport) ? (parsed.sport as FavoriteSport) : null,
     sport2:
       FAVORITE_SPORTS.includes(parsed.sport2 as FavoriteSport) && parsed.sport2 !== parsed.sport ? (parsed.sport2 as FavoriteSport) : null,
+    // A sport chosen wins over "all sports".
+    allSports: parsed.allSports === true && !FAVORITE_SPORTS.includes(parsed.sport as FavoriteSport),
     silhouette: parsed.silhouette === "female" ? "female" : "male",
     rest: {
       defaultSec: (REST_DEFAULTS as readonly number[]).includes(parsed.rest?.defaultSec ?? 0) ? parsed.rest!.defaultSec : DEFAULT_REST.defaultSec,

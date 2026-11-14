@@ -383,7 +383,8 @@ export default function HomePage() {
 
   const sessionWeek = session ? programWeek(session.program, today) : null;
   // The sport practised: the one chosen, else the one the last weeks show.
-  const detected = useMemo(() => detectSport({ today, workouts, sets }), [today, workouts, sets]);
+  // "All sports": nothing guessed, the app as it was before it followed the sport.
+  const detected = useMemo(() => (prefs.allSports ? null : detectSport({ today, workouts, sets })), [prefs.allSports, today, workouts, sets]);
   const mainSport = prefs.sport ?? detected;
   const activity = kindOf(mainSport) ?? "strength";
   const overview = useMemo(
@@ -551,13 +552,13 @@ export default function HomePage() {
   // The sessions without a program, those of one's sports first.
   const runner = prefs.sport === "running" || prefs.sport2 === "running" || detected === "running";
   const freeRows = [
-    { key: "free", rank: activity === "strength" ? 0 : 3, node: <DetailRow key="free" onClick={startFree} disabled={starting} icon={Plus} tone="neutral" title={t("freeSession")} subtitle={t("freeSessionHint")} /> },
-    { key: "intervals", rank: activity === "bodyweight" ? 0 : 4, node: <DetailRow key="intervals" href="/intervals" icon={Timer} tone="neutral" title={ti("title")} subtitle={ti("hint")} /> },
+    { key: "free", rank: prefs.allSports ? 0 : activity === "strength" ? 0 : 3, node: <DetailRow key="free" onClick={startFree} disabled={starting} icon={Plus} tone="neutral" title={t("freeSession")} subtitle={t("freeSessionHint")} /> },
+    { key: "intervals", rank: prefs.allSports ? 1 : activity === "bodyweight" ? 0 : 4, node: <DetailRow key="intervals" href="/intervals" icon={Timer} tone="neutral" title={ti("title")} subtitle={ti("hint")} /> },
     ...(runner ? [{ key: "running", rank: 1, node: <DetailRow key="running" href="/running" icon={Footprints} tone="neutral" title={t("runIntervals")} subtitle={t("runIntervalsHint")} /> }] : []),
-    { key: "mobility", rank: 5, node: <DetailRow key="mobility" href="/mobility" icon={PersonStanding} tone="neutral" title={tmo("title")} subtitle={tmo("hint")} /> },
+    { key: "mobility", rank: prefs.allSports ? 2 : 5, node: <DetailRow key="mobility" href="/mobility" icon={PersonStanding} tone="neutral" title={tmo("title")} subtitle={tmo("hint")} /> },
     {
       key: "endurance",
-      rank: activity === "endurance" || activity === "vaulting" ? 0 : 2,
+      rank: prefs.allSports ? 3 : activity === "endurance" || activity === "vaulting" ? 0 : 2,
       node: <DetailRow key="endurance" onClick={() => { setChoosing(false); setSportOpen(true); }} disabled={starting} icon={Activity} tone="neutral" title={tc("newSession")} subtitle={tc("newSessionHint")} />,
     },
   ].sort((a, b) => a.rank - b.rank);

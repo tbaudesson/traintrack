@@ -871,11 +871,14 @@
     "look_contrast_d": "Gut lesbar im Studio und in der Sonne",
     "sport": "Mein Sport",
     "sportHint": "Seine Programme kommen zuerst, auf der Startseite und unter Programme.",
-    "sport_none": "Keiner",
+    "sport_none": "Automatisch",
     "silhouette": "Startbild",
     "silhouette_female": "Frau",
     "silhouette_male": "Mann",
-    "sport2Hint": "Ein zweiter Sport nebenbei? Seine Einheiten und Zahlen kommen danach."
+    "sport2Hint": "Ein zweiter Sport nebenbei? Seine Einheiten und Zahlen kommen danach.",
+    "sport_all": "Alle Sportarten",
+    "sportAutoHint": "Die App stellt den Sport nach vorne, den deine Einheiten der letzten 4 Wochen zeigen.",
+    "sportAllHint": "Nichts wird hervorgehoben: Volumen in kg auf der Startseite, die gewohnte Reihenfolge überall."
   },
   "activity": {
     "title": "Aktivität",

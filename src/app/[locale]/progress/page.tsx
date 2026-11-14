@@ -65,7 +65,7 @@ export default function ProgressPage() {
 
   // The sport practised decides what comes first.
   const today = localDate();
-  const activity = kindOf(prefs.sport ?? detectSport({ today, workouts, sets })) ?? "strength";
+  const activity = kindOf(prefs.sport ?? (prefs.allSports ? null : detectSport({ today, workouts, sets }))) ?? "strength";
 
   // ── Bodyweight exercises: the most repetitions (or seconds) of a session ──
   const bodyweightSets = useMemo(() => sets.filter((s) => s.completed && !s.isWarmup && (s.reps ?? 0) > 0 && !(s.weightKg && s.weightKg > 0)), [sets]);

@@ -871,11 +871,14 @@
     "look_contrast_d": "Easy to read at the gym and in the sun",
     "sport": "My sport",
     "sportHint": "Its programs come first, on the home screen and in Programs.",
-    "sport_none": "None",
+    "sport_none": "Automatic",
     "silhouette": "Home picture",
     "silhouette_female": "Woman",
     "silhouette_male": "Man",
-    "sport2Hint": "A second sport on the side? Its sessions and figures come next."
+    "sport2Hint": "A second sport on the side? Its sessions and figures come next.",
+    "sport_all": "All sports",
+    "sportAutoHint": "The app puts first the sport your sessions of the last 4 weeks show.",
+    "sportAllHint": "Nothing put first: volume in kg on the home screen, the usual order everywhere."
   },
   "activity": {
     "title": "Activity",
