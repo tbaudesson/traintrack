@@ -31,6 +31,7 @@ import { Link } from "@/i18n/navigation";
 import { usePainReports } from "@/hooks/usePain";
 import { SEVERE_PAIN } from "@/lib/pain";
 import { useExerciseLabel } from "@/lib/exerciseNames";
+import { useFormat } from "@/lib/format";
 
 function scoreColor(s: number) {
   if (s >= 75) return "text-green-600";
@@ -62,6 +63,7 @@ export default function ClientDetailPage() {
   );
   const targets = clientProfile?.nutritionTargets;
   const tpr = useTranslations("programs");
+  const { num, day } = useFormat();
   const xl = useExerciseLabel();
   const assigned = useLiveQuery(
     async () => (await db.programs.toArray()).filter((p) => !p.deletedAt && p.assignedToUserId === userId),
@@ -99,14 +101,14 @@ export default function ClientDetailPage() {
           <Card>
             <CardContent className="flex flex-col items-center gap-1 py-4 text-center">
               <TrendingUp className="h-5 w-5 text-accent-500" />
-              <p className="text-lg font-bold">{totalVolume.toLocaleString()}</p>
+              <p className="text-lg font-bold">{num(totalVolume, 0)}</p>
               <p className="text-xs text-muted-foreground">{tp("volume")}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="flex flex-col items-center gap-1 py-4 text-center">
               <Calendar className="h-5 w-5 text-muted-foreground" />
-              <p className="text-xs font-bold">{lastActivity ?? t("never")}</p>
+              <p className="text-xs font-bold">{lastActivity ? day(lastActivity) : t("never")}</p>
               <p className="text-xs text-muted-foreground">{t("lastActivity")}</p>
             </CardContent>
           </Card>
@@ -252,7 +254,7 @@ export default function ClientDetailPage() {
               <p className="text-xs text-muted-foreground">
                 {tr("score")}: <span className={cn("font-semibold", scoreColor(readinessScore(readiness[0]) ?? 0))}>
                   {readinessScore(readiness[0]) ?? "–"}/100
-                </span> · {readiness[0].date}
+                </span> · {day(readiness[0].date)}
               </p>
             )}
           </section>
@@ -332,6 +334,7 @@ function ClientWorkoutCard({
   cardio?: string;
 }) {
   const t = useTranslations("teams");
+  const { day } = useFormat();
   const [open, setOpen] = useState(false);
   return (
     <Card>
@@ -343,7 +346,7 @@ function ClientWorkoutCard({
           <div className="flex-1">
             <p className="font-medium">{title}</p>
             <p className="text-xs text-muted-foreground">
-              {date} · {cardio ?? t("setsCount", { count: setCount })}
+              {day(date)} · {cardio ?? t("setsCount", { count: setCount })}
             </p>
           </div>
           {!cardio && <span className="text-sm font-semibold text-accent-text">{volume}</span>}

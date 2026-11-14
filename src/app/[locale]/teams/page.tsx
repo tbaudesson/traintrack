@@ -337,13 +337,13 @@ function TeamCard({
             ) : (
               <div className="space-y-1">
                 {ordered.map((m) => (
-                  <div key={m.id} className="flex items-center gap-2 rounded-md px-1 py-1.5 text-sm">
+                  <div key={m.id} className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md px-1 py-1.5 text-sm">
                     {m.status === "active" && m.user_id ? (
-                      <Link href={`/client/${m.user_id}`} className="flex-1 truncate hover:underline">
+                      <Link href={`/client/${m.user_id}`} className="min-w-28 flex-1 truncate hover:underline">
                         {m.display_name}
                       </Link>
                     ) : (
-                      <span className="flex-1 truncate">{m.display_name}</span>
+                      <span className="min-w-28 flex-1 truncate">{m.display_name}</span>
                     )}
                     {m.status === "active" && m.user_id && painByUser?.get(m.user_id) && (
                       <span

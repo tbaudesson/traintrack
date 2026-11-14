@@ -9,6 +9,7 @@ import type { PainReport } from "@/lib/pain";
 import { weeklyReport } from "@/lib/weeklyReport";
 import { cn } from "@/lib/utils";
 import { useExerciseLabel } from "@/lib/exerciseNames";
+import { useFormat } from "@/lib/format";
 
 const addDays = (date: string, days: number) => {
   const [y, m, d] = date.split("-").map(Number);
@@ -43,6 +44,7 @@ export function WeeklyReportCard({
 }) {
   const t = useTranslations("report");
   const tpain = useTranslations("pain");
+  const { num } = useFormat();
   const xl = useExerciseLabel();
   const [monday, setMonday] = useState(lastMonday);
   const report = useMemo(
@@ -104,7 +106,7 @@ export function WeeklyReportCard({
             <Tile label={t("days")} value={report.planned !== null ? `${report.daysTrained}/${report.planned}` : String(report.daysTrained)} />
             <Tile
               label={t("volume")}
-              value={`${report.volume.toLocaleString()} kg`}
+              value={`${num(report.volume, 0)} kg`}
               extra={
                 report.volumeChange !== null ? (
                   <span className={cn("text-xs font-semibold", report.volumeChange >= 0 ? "text-success-text" : "text-amber-600 dark:text-amber-400")}>
@@ -127,7 +129,7 @@ export function WeeklyReportCard({
               <ul className="space-y-0.5 pl-6 text-sm text-muted-foreground">
                 {report.records.slice(0, 5).map((r) => (
                   <li key={r.exerciseId}>
-                    {names.get(r.exerciseId) ?? "?"} · {r.weightKg} kg × {r.reps}
+                    {names.get(r.exerciseId) ?? "?"} · {num(r.weightKg)} kg × {r.reps}
                   </li>
                 ))}
               </ul>

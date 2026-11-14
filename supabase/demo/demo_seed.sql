@@ -6,14 +6,15 @@
 -- below and run this file in the SQL editor.
 --
 -- What it creates, for the coach (an existing account with a team):
---   Léa  — a regular athlete: Full Body assigned and dated five weeks ago,
---          fifteen sessions with progressing loads, a bench press record, a
---          goal, training days and good readiness check-ins.
---   Marc — an athlete to check in with: three sessions, then nothing for
---          eight days, and a knee pain reported on the squat.
+--   Léa  — a regular athlete: Full Body assigned and dated four weeks ago,
+--          Monday, Wednesday and Friday up to this week with progressing
+--          loads, a bench press record this week, a goal in progress,
+--          training days and good readiness check-ins.
+--   Marc — an athlete to check in with: three sessions, the last one six
+--          days ago with a knee pain reported on the squat, then nothing.
 --
--- It wipes and rewrites only the two demo athletes' training data, so it can
--- be run again. It refuses addresses without "demo" so it never touches a
+-- It retires and rewrites only the two demo athletes' training data, so it
+-- can be run again. It refuses addresses without "demo" so it never touches a
 -- real athlete. To remove the demo: delete the two accounts (Réglages or
 -- Supabase): everything of theirs goes with them.
 
@@ -26,7 +27,7 @@ DECLARE
   v_coach UUID; v_lea UUID; v_marc UUID; v_group UUID; v_program UUID; v_workout UUID;
   v_structure JSONB; v_day JSONB; v_ex JSONB; v_ex_id UUID;
   v_monday DATE := date_trunc('week', current_date)::date;
-  v_start DATE := (date_trunc('week', current_date) - interval '5 weeks')::date;
+  v_start DATE := (date_trunc('week', current_date) - interval '4 weeks')::date;
   v_date DATE; v_week INT; v_session INT; v_set INT; v_kg NUMERIC;
 BEGIN
   IF position('demo' IN lower(lea_email)) = 0 OR position('demo' IN lower(marc_email)) = 0 THEN
@@ -39,14 +40,17 @@ BEGIN
     RAISE EXCEPTION 'Account not found: create the three accounts first (coach %, Léa %, Marc %).', v_coach, v_lea, v_marc;
   END IF;
 
-  -- Wipe the demo athletes' training data (they are demo accounts).
-  DELETE FROM workout_notes WHERE user_id IN (v_lea, v_marc);
-  DELETE FROM workout_sets WHERE user_id IN (v_lea, v_marc);
-  DELETE FROM workouts WHERE user_id IN (v_lea, v_marc);
-  DELETE FROM readiness_checkins WHERE user_id IN (v_lea, v_marc);
-  DELETE FROM body_metrics WHERE user_id IN (v_lea, v_marc);
-  DELETE FROM athlete_profiles WHERE user_id IN (v_lea, v_marc);
-  DELETE FROM programs WHERE assigned_to_user_id IN (v_lea, v_marc) AND user_id = v_coach;
+  -- Retire the demo athletes' previous data (they are demo accounts). Marked
+  -- deleted rather than erased: the sync only passes soft deletes on, so the
+  -- coach's phone drops the old rows too.
+  UPDATE workout_notes SET deleted_at = now(), updated_at = now() WHERE user_id IN (v_lea, v_marc) AND deleted_at IS NULL;
+  UPDATE workout_sets SET deleted_at = now(), updated_at = now() WHERE user_id IN (v_lea, v_marc) AND deleted_at IS NULL;
+  UPDATE workouts SET deleted_at = now(), updated_at = now() WHERE user_id IN (v_lea, v_marc) AND deleted_at IS NULL;
+  UPDATE readiness_checkins SET deleted_at = now(), updated_at = now() WHERE user_id IN (v_lea, v_marc) AND deleted_at IS NULL;
+  UPDATE body_metrics SET deleted_at = now(), updated_at = now() WHERE user_id IN (v_lea, v_marc) AND deleted_at IS NULL;
+  UPDATE athlete_profiles SET deleted_at = now(), updated_at = now() WHERE user_id IN (v_lea, v_marc) AND deleted_at IS NULL;
+  UPDATE programs SET deleted_at = now(), updated_at = now()
+    WHERE assigned_to_user_id IN (v_lea, v_marc) AND user_id = v_coach AND deleted_at IS NULL;
 
   UPDATE profiles SET status = 'active', display_name = 'Léa (démo)' WHERE user_id = v_lea;
   UPDATE profiles SET status = 'active', display_name = 'Marc (démo)' WHERE user_id = v_marc;
@@ -63,10 +67,10 @@ BEGIN
 
   INSERT INTO athlete_profiles (user_id, goals, fitness_level, sex, height_cm, equipment, consent_health_data, consent_at, training_days, training_time, strength_goals) VALUES
     (v_lea, '["hypertrophy"]', 'intermediate', 'female', 168, '["barbell","dumbbell","machine","cable"]', true, now(), '[1,3,5]', '18:00',
-     jsonb_build_array(jsonb_build_object('id', gen_random_uuid()::text, 'exerciseName', 'Barbell Bench Press', 'targetKg', 70, 'startKg', 55, 'deadline', (current_date + 90)::text, 'createdAt', (v_start::timestamptz)::text))),
+     jsonb_build_array(jsonb_build_object('id', gen_random_uuid()::text, 'exerciseName', 'Barbell Bench Press', 'targetKg', 90, 'startKg', 66, 'deadline', (current_date + 90)::text, 'createdAt', (v_start::timestamptz)::text))),
     (v_marc, '["fat_loss"]', 'beginner', 'male', 182, '["dumbbell","bodyweight"]', true, now(), '[2,4,6]', '07:30', NULL);
 
-  -- Full Body from the catalogue, assigned by the coach and dated five weeks ago.
+  -- Full Body from the catalogue, assigned by the coach and dated four weeks ago.
   SELECT structure INTO v_structure FROM program_templates WHERE name = 'Full Body — Débutant' AND locale = 'fr' LIMIT 1;
   IF v_structure IS NULL THEN
     RAISE EXCEPTION 'Ready-made program "Full Body — Débutant" not found (migration 027).';
@@ -75,10 +79,11 @@ BEGIN
   VALUES (v_coach, v_coach, v_lea, v_group, 'Full Body — Débutant', 'Programme de démonstration', v_structure, v_start)
   RETURNING id INTO v_program;
 
-  -- Léa: Monday, Wednesday, Friday for five weeks, loads up 2.5 kg a week.
+  -- Léa: Monday, Wednesday, Friday up to today, loads up 2.5 kg a week.
   FOR v_week IN 0..4 LOOP
     FOR v_session IN 0..2 LOOP
       v_date := v_start + v_week * 7 + v_session * 2;
+      CONTINUE WHEN v_date > current_date;
       v_day := v_structure -> v_session;
       INSERT INTO workouts (user_id, program_id, program_day_index, date, title, duration_min, kind)
       VALUES (v_lea, v_program, v_session, v_date, 'Full Body — Débutant — ' || (v_day ->> 'name'), 55 + v_session * 5, 'strength')
@@ -106,9 +111,9 @@ BEGIN
     SELECT v_lea, current_date - d, 4, 4, 4, 2 FROM generate_series(0, 4) d;
   INSERT INTO body_metrics (user_id, date, weight_kg) VALUES (v_lea, current_date - 1, 63.5);
 
-  -- Marc: three sessions, a knee pain, then nothing for eight days.
+  -- Marc: three sessions, the last six days ago with a knee pain, then nothing.
   FOR v_session IN 0..2 LOOP
-    v_date := current_date - 14 + v_session * 2;
+    v_date := current_date - 10 + v_session * 2;
     INSERT INTO workouts (user_id, date, title, duration_min, kind)
     VALUES (v_marc, v_date, 'Séance libre', 45, 'strength') RETURNING id INTO v_workout;
     SELECT id INTO v_ex_id FROM exercises WHERE user_id IS NULL AND name = 'Back Squat' LIMIT 1;
@@ -122,6 +127,7 @@ BEGIN
     END IF;
   END LOOP;
 
-  RAISE NOTICE 'Demo ready: Léa % sessions, Marc 3 sessions, team %', 15, v_group;
+  RAISE NOTICE 'Demo ready: Léa % sessions, Marc 3 sessions, team %',
+    (SELECT count(*) FROM workouts WHERE user_id = v_lea AND deleted_at IS NULL), v_group;
 END
 $demo$;

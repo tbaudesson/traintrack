@@ -862,6 +862,7 @@
     "zone5": "Très dur : impossible de parler, quelques minutes au maximum."
   },
   "goals": {
+    "titleOther": "Objectifs",
     "title": "Mes objectifs",
     "add": "Nouvel objectif",
     "needProfile": "Complétez votre profil athlète pour vous fixer des objectifs.",

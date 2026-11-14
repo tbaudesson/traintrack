@@ -862,6 +862,7 @@
     "zone5": "Sehr hart: Sprechen unmöglich, höchstens einige Minuten."
   },
   "goals": {
+    "titleOther": "Ziele",
     "title": "Meine Ziele",
     "add": "Neues Ziel",
     "needProfile": "Vervollständigen Sie Ihr Athletenprofil, um Ziele zu setzen.",

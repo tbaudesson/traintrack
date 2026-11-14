@@ -862,6 +862,7 @@
     "zone5": "Very hard: no talking, a few minutes at most."
   },
   "goals": {
+    "titleOther": "Goals",
     "title": "My goals",
     "add": "New goal",
     "needProfile": "Complete your athlete profile to set goals.",

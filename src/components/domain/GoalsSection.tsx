@@ -14,6 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useExerciseLabel } from "@/lib/exerciseNames";
+import { useFormat } from "@/lib/format";
 
 const SELECT = "mt-1 h-11 w-full rounded-lg border border-input bg-card px-3 text-base";
 const frDate = (date: string) => date.split("-").reverse().join("/");
@@ -37,6 +38,7 @@ export function GoalsSection({
   editable: boolean;
 }) {
   const t = useTranslations("goals");
+  const { num } = useFormat();
   const xl = useExerciseLabel();
   const [adding, setAdding] = useState(false);
   const [exerciseId, setExerciseId] = useState<number | "">("");
@@ -81,7 +83,7 @@ export function GoalsSection({
       <div className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight">
           <Goal className="h-5 w-5 text-accent-text" aria-hidden="true" />
-          {t("title")}
+          {editable ? t("title") : t("titleOther")}
         </h2>
         {editable && profile && (
           <Button size="sm" variant="outline" onClick={() => setAdding(true)}>
@@ -108,7 +110,7 @@ export function GoalsSection({
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">{xl(resolve(goal)?.name ?? goal.exerciseName)}</p>
                   <p className="text-xs text-muted-foreground">
-                    {t("target", { kg: goal.targetKg })}
+                    {t("target", { kg: num(goal.targetKg) })}
                     {goal.deadline && ` · ${t("deadline", { date: frDate(goal.deadline) })}`}
                   </p>
                 </div>
@@ -141,7 +143,7 @@ export function GoalsSection({
                   </>
                 ) : (
                   <>
-                    {t("current", { kg: progress.currentKg })}
+                    {t("current", { kg: num(progress.currentKg) })}
                     {" · "}
                     {progress.projectedOn
                       ? t(late ? "projectedLate" : "projected", { date: frDate(progress.projectedOn) })

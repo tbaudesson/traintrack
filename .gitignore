@@ -3,3 +3,6 @@ node_modules
 .env.local
 .DS_Store
 *.log
+
+# Demo seed filled with real addresses: never committed
+supabase/demo/*.mine.sql

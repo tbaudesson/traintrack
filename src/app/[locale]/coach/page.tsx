@@ -17,6 +17,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { NudgeButton } from "@/components/domain/NudgeButton";
 import { EmptyState } from "@/components/ui/page-parts";
 import { cn } from "@/lib/utils";
+import { useFormat } from "@/lib/format";
 
 const frDate = (date: string) => date.split("-").reverse().slice(0, 2).join("/");
 
@@ -29,6 +30,7 @@ export default function CoachDashboardPage() {
   const tt = useTranslations("teams");
   const tpain = useTranslations("pain");
   const xl = useExerciseLabel();
+  const { num } = useFormat();
   const { clients, loading } = useClients();
   const exercises = useExercises();
 
@@ -120,7 +122,7 @@ export default function CoachDashboardPage() {
                 return (
                   <Row key={a.userId} userId={a.userId} name={a.name} teams={a.teams}>
                     <span className="text-xs text-muted-foreground">
-                      {records.slice(0, 2).map((r) => `${names.get(r.exerciseId) ?? "?"} ${r.weightKg} kg × ${r.reps}`).join(" · ")}
+                      {records.slice(0, 2).map((r) => `${names.get(r.exerciseId) ?? "?"} ${num(r.weightKg)} kg × ${r.reps}`).join(" · ")}
                       {records.length > 2 && ` (+${records.length - 2})`}
                     </span>
                   </Row>
@@ -134,7 +136,7 @@ export default function CoachDashboardPage() {
                   <span className="text-xs font-medium text-success-text">
                     {digest!
                       .get(a.userId)!
-                      .goalsReached.map(({ goal, on }) => `${xl(goal.exerciseName)} ${goal.targetKg} kg · ${frDate(on)}`)
+                      .goalsReached.map(({ goal, on }) => `${xl(goal.exerciseName)} ${num(goal.targetKg)} kg · ${frDate(on)}`)
                       .join(" · ")}
                   </span>
                 </Row>
