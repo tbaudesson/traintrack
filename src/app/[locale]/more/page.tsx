@@ -13,6 +13,7 @@ import {
   ListChecks, ClipboardList, Users, HeartPulse, Settings,
   User, Shield, Newspaper, Flag, MessageCircle, Activity,
   Award,
+  PawPrint,
 } from "lucide-react";
 
 export default function MorePage() {
@@ -34,6 +35,7 @@ export default function MorePage() {
     ...(hasFeature("coaching") ? [{ href: "/activity", icon: Newspaper, label: t("activity") }] : []),
     { href: "/challenges", icon: Flag, label: t("challenges") },
     { href: "/competitions", icon: Award, label: t("competitions") },
+    { href: "/horses", icon: PawPrint, label: t("horses") },
     { href: "/messages", icon: MessageCircle, label: t("messages") },
     { href: "/health", icon: Activity, label: t("health") },
   ];

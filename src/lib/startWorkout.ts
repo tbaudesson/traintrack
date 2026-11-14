@@ -12,9 +12,24 @@ import { programWeek } from "./programWeek";
 import { createCustomExercise } from "@/hooks/useExercises";
 
 /** A deload load: a tenth lighter, to the plate step below. */
-export function lighter(kg: number, equipment?: Exercise["equipment"]): number {
+export function lighter(kg: number, equipment?: Exercise["equipment"], factor: number = DELOAD_LOAD): number {
   const step = equipment === "dumbbell" || equipment === "kettlebell" ? 2 : 2.5;
-  return Math.max(step, Math.floor((kg * DELOAD_LOAD) / step) * step);
+  return Math.max(step, Math.floor((kg * factor) / step) * step);
+}
+
+/** Options for a session started today: a deload, and loads brought back after an injury. */
+export interface StartOptions {
+  deload?: boolean;
+  /** Share of the usual load for an exercise (1 = all of it), e.g. 0.7 in the first week back after an injury. */
+  loadFactor?: (exerciseName: string) => number;
+}
+
+/** The weight to start with: lighter in a deload week, and lighter still while coming back from an injury. */
+function startWeight(kg: number | undefined, name: string | undefined, equipment: Exercise["equipment"] | undefined, options: StartOptions) {
+  if (!kg) return kg;
+  const back = name && options.loadFactor ? options.loadFactor(name) : 1;
+  const factor = (options.deload ? DELOAD_LOAD : 1) * back;
+  return factor < 1 ? lighter(kg, equipment, factor) : kg;
 }
 
 /** The title a workout started from a program day carries. */
@@ -70,7 +85,7 @@ export async function startWorkoutFromDay(
   dayIndex: number,
   exercises: Exercise[],
   date: string,
-  options: { deload?: boolean } = {}
+  options: StartOptions = {}
 ): Promise<number> {
   const uid = getCurrentUserIdSync();
   const pastWorkouts = await db.workouts.filter((w) => !w.deletedAt && (!uid || w.userId === uid)).toArray();
@@ -99,8 +114,8 @@ export async function startWorkoutFromDay(
     const sessions = recentPerformances(exerciseId, undefined, pastWorkouts, pastSets, 2);
     const advice = nextLoad({ sessions, targetSets: pe.targetSets, targetReps: pe.targetReps, equipment: ex?.equipment });
     const usual = advice?.weightKg ?? topWeight(last) ?? undefined;
-    // A deload week lightens the usual load; percentages already set their own.
-    const weightKg = options.deload && usual ? lighter(usual, ex?.equipment) : usual;
+    // A deload week or a return from injury lightens the usual load; percentages set their own.
+    const weightKg = startWeight(usual, ex?.name ?? pe.exerciseName, ex?.equipment, options);
     const max = pe.percents?.length ? referenceMax(oneRepMaxHistory(exerciseId, pastWorkouts, pastSets), date) : null;
     const planned = Math.max(1, pe.targetSets || 1);
     const sets = options.deload ? deloadSets(planned) : planned;
@@ -139,7 +154,7 @@ export function lastRepeatable<W extends Pick<Workout, "id" | "date" | "kind">>(
  * same order, as many working sets, the weights of last time, the supersets
  * and the program it belonged to. Reps are left for the athlete to fill.
  */
-export async function repeatWorkout(source: Workout, date: string, options: { deload?: boolean } = {}): Promise<number> {
+export async function repeatWorkout(source: Workout, date: string, options: StartOptions = {}): Promise<number> {
   const sets = (await db.workoutSets.where("workoutId").equals(source.id!).toArray())
     .filter((s) => !s.deletedAt && !s.isWarmup)
     .sort((a, b) => a.setNumber - b.setNumber || (a.id ?? 0) - (b.id ?? 0));
@@ -155,13 +170,15 @@ export async function repeatWorkout(source: Workout, date: string, options: { de
   for (const exerciseId of order) {
     const all = sets.filter((s) => s.exerciseId === exerciseId);
     const own = options.deload ? all.slice(0, deloadSets(all.length)) : all;
-    const equipment = (await db.exercises.get(exerciseId))?.equipment;
+    const exercise = await db.exercises.get(exerciseId);
+    const equipment = exercise?.equipment;
+    const name = exercise?.name;
     for (const [i, s] of own.entries()) {
       await addWorkoutSet({
         workoutId: id,
         exerciseId,
         setNumber: i + 1,
-        weightKg: s.weightKg ? (options.deload ? lighter(s.weightKg, equipment) : s.weightKg) : undefined,
+        weightKg: startWeight(s.weightKg, name, equipment, options),
         restSec: s.restSec,
         supersetGroup: s.supersetGroup ?? null,
         completed: false,

@@ -20,7 +20,7 @@ import { usePainReports } from "@/hooks/usePain";
 import { recentPainOn, SEVERE_PAIN } from "@/lib/pain";
 import { PainDialog } from "@/components/domain/PainDialog";
 import { InjuryBadge } from "@/components/domain/InjuryBadge";
-import { bySafety, injuryWarning, toggleInjury } from "@/lib/injuries";
+import { bySafety, declareInjury, injuryWarning, returnAdjust } from "@/lib/injuries";
 import { GuidedSession, type GuidedStep } from "@/components/domain/GuidedSession";
 import { guidedOrder } from "@/lib/guided";
 import { useAuth } from "@/contexts/AuthContext";
@@ -676,6 +676,7 @@ export function SessionLogger({ workoutId }: { workoutId: number }) {
         {groups.map(([exerciseId, exSets], index) => {
           const ex = exMap.get(exerciseId);
           const injuryWarn = injuryWarning(ex?.name, injuries);
+          const comeback = returnAdjust(ex?.name, injuries, workout?.date ?? localDate());
           const work = exSets.filter((s) => !s.isWarmup);
           const warmups = exSets.filter((s) => s.isWarmup);
           const last = work[work.length - 1];
@@ -744,6 +745,17 @@ export function SessionLogger({ workoutId }: { workoutId: number }) {
                       area: tpain(`area_${pain.area}`),
                       level: pain.level,
                       date: short(pain.date),
+                    })}
+                  </p>
+                )}
+
+                {comeback && (
+                  <p className="flex items-start gap-1.5 rounded-lg bg-amber-50 p-2 text-sm text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+                    <Bandage className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                    {tinj(comeback.load < 1 ? "returnLine" : "returnLastWeek", {
+                      area: locale === "de" ? tpain(`area_${comeback.area}`) : tpain(`area_${comeback.area}`).toLowerCase(),
+                      week: comeback.week,
+                      percent: Math.round((1 - comeback.load) * 100),
                     })}
                   </p>
                 )}
@@ -1090,7 +1102,7 @@ export function SessionLogger({ workoutId }: { workoutId: number }) {
           onReplace={() => setSwapFor(painFor)}
           // Only on one's own session: the injury goes on the athlete's profile.
           injuries={workout?.userId === getCurrentUserIdSync() ? injuries : undefined}
-          onDeclareInjury={(area) => updateTrainingSchedule({ injuryAreas: toggleInjury(injuries, area, localDate()) })}
+          onDeclareInjury={(area) => updateTrainingSchedule({ injuryAreas: declareInjury(injuries, area, localDate()) })}
         />
       )}
 

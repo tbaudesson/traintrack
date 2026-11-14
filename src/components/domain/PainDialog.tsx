@@ -45,7 +45,7 @@ export function PainDialog({
   const locale = useLocale();
   // A strong pain on an area not declared yet: offer to declare it as an injury.
   const canDeclare =
-    !!onDeclareInjury && !!injuries && !!area && area !== "other" && level !== null && level >= SEVERE_PAIN && !injuries.some((i) => i.area === area);
+    !!onDeclareInjury && !!injuries && !!area && area !== "other" && level !== null && level >= SEVERE_PAIN && !injuries.some((i) => i.area === area && !i.healedOn);
 
   async function save(replace: boolean) {
     if (!area || !level) return;

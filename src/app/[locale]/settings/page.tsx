@@ -44,7 +44,7 @@ import {
 } from "lucide-react";
 import { localDate } from "@/lib/dates";
 import { useFormat } from "@/lib/format";
-import { INJURY_AREAS, toggleInjury } from "@/lib/injuries";
+import { INJURY_AREAS, injuryState, returnPhases, toggleInjury } from "@/lib/injuries";
 
 /** A thumbnail of each style: its background, a card and a button. */
 const STYLE_PREVIEW: Record<AppStyle, { frame: string; card: string; button: string }> = {
@@ -340,25 +340,33 @@ export default function SettingsPage() {
             <p className="mb-2 text-xs text-muted-foreground">{tinj("settingsHint")}</p>
             <div className="flex flex-wrap gap-2">
               {INJURY_AREAS.map((area) => {
-                const injury = athlete.injuryAreas?.find((i) => i.area === area);
+                const injuries = athlete.injuryAreas ?? [];
+                const injury = injuries.find((i) => i.area === area);
+                const state = injuryState(injuries, area, localDate());
+                const phase = state === "returning" ? returnPhases([injury!], localDate())[0] : null;
                 return (
                   <button
                     key={area}
                     type="button"
-                    onClick={() => updateTrainingSchedule({ injuryAreas: toggleInjury(athlete.injuryAreas ?? [], area, localDate()) })}
-                    aria-pressed={!!injury}
+                    onClick={() => updateTrainingSchedule({ injuryAreas: toggleInjury(injuries, area, localDate()) })}
+                    aria-pressed={state !== "none"}
                     className={cn(
                       "min-h-10 rounded-full border px-3 text-sm transition-colors",
-                      injury ? "border-rose-500 bg-rose-500 font-semibold text-white" : "border-border text-muted-foreground hover:border-rose-300"
+                      state === "injured"
+                        ? "border-rose-500 bg-rose-500 font-semibold text-white"
+                        : state === "returning"
+                          ? "border-amber-500 bg-amber-500 font-semibold text-white"
+                          : "border-border text-muted-foreground hover:border-rose-300"
                     )}
                   >
                     {tpain(`area_${area}`)}
-                    {injury && <span className="ml-1 text-xs font-normal opacity-90">· {tinj("since", { date: short(injury.since) })}</span>}
+                    {state === "injured" && <span className="ml-1 text-xs font-normal opacity-90">· {tinj("since", { date: short(injury!.since) })}</span>}
+                    {phase && <span className="ml-1 text-xs font-normal opacity-90">· {tinj("returningChip", { week: phase.week })}</span>}
                   </button>
                 );
               })}
             </div>
-            {(athlete.injuryAreas?.length ?? 0) > 0 && <p className="mt-2 text-xs text-muted-foreground">{tinj("healedHint")}</p>}
+            <p className="mt-2 text-xs text-muted-foreground">{tinj("stepsHint")}</p>
           </Section>
         )}
 

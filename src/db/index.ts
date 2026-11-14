@@ -299,6 +299,30 @@ export interface CompetitionResult extends SyncFields {
   updatedAt: string;
 }
 
+/** A horse one lunges or rides, with how much work it may take in a week. */
+export interface Horse extends SyncFields {
+  id?: number;
+  name: string;
+  /** Minutes of work a week (walk, trot and canter) before the alert. */
+  weeklyLimitMin?: number | null;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** The work a session put on a horse, in minutes at each gait. */
+export interface HorseSession extends SyncFields {
+  id?: number;
+  horseId: number;
+  date: string;
+  walkMin: number;
+  trotMin: number;
+  canterMin: number;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Message extends SyncFields {
   id?: number;
   recipientId: string;
@@ -345,6 +369,8 @@ const db = new Dexie("TrainTrack") as Dexie & {
   messages: EntityTable<Message, "id">;
   healthMetrics: EntityTable<HealthMetric, "id">;
   competitionResults: EntityTable<CompetitionResult, "id">;
+  horses: EntityTable<Horse, "id">;
+  horseSessions: EntityTable<HorseSession, "id">;
   formDrafts: EntityTable<FormDraft, "id">;
   syncMeta: EntityTable<SyncMeta, "tableName">;
   authMeta: EntityTable<AuthMeta, "key">;
@@ -445,6 +471,12 @@ db.version(6).stores({
 // v7: vaulting competition results.
 db.version(7).stores({
   competitionResults: "++id, date, uuid, _dirty",
+});
+
+// v8: horses and the work put on them.
+db.version(8).stores({
+  horses: "++id, uuid, _dirty",
+  horseSessions: "++id, horseId, date, uuid, _dirty",
 });
 
 export { db };

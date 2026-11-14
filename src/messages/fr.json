@@ -560,7 +560,8 @@
     "messages": "Messages",
     "health": "Santé et objets connectés",
     "activity": "Activité",
-    "competitions": "Compétitions"
+    "competitions": "Compétitions",
+    "horses": "Chevaux"
   },
   "health": {
     "title": "Santé et objets connectés",
@@ -1177,7 +1178,11 @@
     "leftOut": "{count, plural, one {# exercice écarté} other {# exercices écartés}} à cause de votre blessure.",
     "coachTitle": "Blessures déclarées",
     "coachHint": "Les exercices qui sollicitent ces zones sont signalés à l'athlète, et dans ses programmes.",
-    "declareFromPain": "Déclarer une blessure ({area}) : les exercices qui sollicitent cette zone seront signalés."
+    "declareFromPain": "Déclarer une blessure ({area}) : les exercices qui sollicitent cette zone seront signalés.",
+    "returningChip": "reprise S{week}/3",
+    "stepsHint": "Un tap : blessure en cours (rouge). Un autre une fois guéri : reprise progressive sur 3 semaines (orange). Un dernier pour la retirer.",
+    "returnLine": "Reprise après blessure ({area}) : semaine {week} sur 3, charges −{percent} % pour revenir en douceur.",
+    "returnLastWeek": "Reprise après blessure ({area}) : dernière semaine, charges habituelles, arrêtez si la douleur revient."
   },
   "catalog": {
     "title": "Programmes tout faits",
@@ -1223,7 +1228,12 @@
     "leaveTitle": "Quitter « {name} » ?",
     "leaveText": "Le programme disparaît de vos entraînements. Les séances déjà faites restent dans votre historique, et vous pourrez le reprendre depuis les programmes tout faits.",
     "cancel": "Annuler",
-    "coachHint": "Votre coach a préparé ce programme pour vous : demandez-lui s'il faut le changer."
+    "coachHint": "Votre coach a préparé ce programme pour vous : demandez-lui s'il faut le changer.",
+    "share": "Partager ce programme",
+    "shareText": "Je te partage mon programme « {name} » sur TrainTrack :",
+    "linkCopied": "Lien copié : collez-le dans un message.",
+    "shareFailed": "Le partage n'a pas abouti, réessayez.",
+    "shareOffline": "Le partage demande une connexion."
   },
   "exerciseHistory": {
     "empty": "Pas encore de séance avec cet exercice.",
@@ -1362,5 +1372,45 @@
     "textCardio": "Endurance : {count} sorties, {distance}",
     "textCompetitions": "Compétitions : {list}",
     "textPains": "{count, plural, one {# douleur signalée} other {# douleurs signalées}} : à surveiller"
+  },
+  "horses": {
+    "title": "Chevaux",
+    "addHorse": "Ajouter un cheval",
+    "editHorse": "Modifier le cheval",
+    "deleteHorse": "Supprimer le cheval",
+    "save": "Enregistrer",
+    "intro": "Notez le travail de chaque cheval après la séance : minutes au pas, au trot et au galop. L'app suit la semaine par rapport à sa limite, pour qu'aucun cheval n'en fasse trop.",
+    "empty": "Ajoutez les chevaux que vous longez ou montez pour suivre leur charge de travail.",
+    "name": "Nom",
+    "weeklyLimit": "Limite par semaine (minutes)",
+    "weeklyLimitHint": "Travail total au pas, au trot et au galop. 150 min si vide ; à fixer avec le vétérinaire ou l'entraîneur selon l'âge et la condition du cheval.",
+    "notes": "Notes",
+    "limit": "Limite : {min} min par semaine",
+    "thisWeek": "{total} / {limit} min cette semaine",
+    "canter": "dont {min} min de galop",
+    "over": "Limite de la semaine dépassée : prévoyez du repos ou un travail léger.",
+    "near": "Proche de la limite de la semaine.",
+    "hard": "{count, plural, one {# séance} other {# séances}} avec plus de {max} min de galop.",
+    "noRest": "Aucun jour de repos cette semaine.",
+    "logSession": "Noter une séance",
+    "logTitle": "Séance de {name}",
+    "date": "Date",
+    "walk": "Pas",
+    "trot": "Trot",
+    "canterLabel": "Galop",
+    "canterWarning": "Plus de {max} min de galop : beaucoup pour une seule séance.",
+    "notesPlaceholder": "Comportement, boiterie, nombre de voltigeurs…",
+    "saveSession": "Enregistrer {total} min",
+    "sessionLine": "{total} min · pas {walk} · trot {trot} · galop {canter}",
+    "deleteSession": "Supprimer la séance"
+  },
+  "share": {
+    "title": "Programme partagé",
+    "sharedBy": "Partagé par {name}",
+    "days": "{count, plural, one {# jour} other {# jours}}",
+    "add": "Ajouter à mes programmes",
+    "more": "… et {count} autres séances",
+    "notFound": "Ce lien ne mène à aucun programme : il a peut-être été retiré.",
+    "offline": "Impossible d'ouvrir ce programme sans connexion."
   }
 }

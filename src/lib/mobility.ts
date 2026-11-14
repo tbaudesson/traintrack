@@ -105,7 +105,8 @@ export const MOBILITY_INJURY_RULES: Record<string, Partial<Record<PainArea, Inju
 };
 
 /** The strongest warning for a move, given the injured areas. */
-export function mobilityWarning(key: string, injuries: { area: PainArea }[]): { level: InjuryLevel; areas: PainArea[] } | null {
+export function mobilityWarning(key: string, all: { area: PainArea; healedOn?: string | null }[]): { level: InjuryLevel; areas: PainArea[] } | null {
+  const injuries = all.filter((i) => !i.healedOn);
   const rules = MOBILITY_INJURY_RULES[key];
   if (!rules || !injuries.length) return null;
   for (const level of ["avoid", "caution"] as const) {

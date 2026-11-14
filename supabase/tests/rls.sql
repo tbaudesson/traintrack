@@ -296,5 +296,45 @@ begin
   perform _root();
 end $$;
 
+-- ─── Horses and shared programs 045 ─────────────────────────
+do $$
+declare
+  tr uuid := 'a0000000-0000-4000-8000-000000000003';
+  cl uuid := 'a0000000-0000-4000-8000-000000000007';
+  atk uuid := 'a0000000-0000-4000-8000-000000000001';
+  pend uuid := 'a0000000-0000-4000-8000-000000000004';
+  horse uuid := 'd0000000-0000-4000-8000-000000000045';
+  share uuid := 'd0000000-0000-4000-8000-000000000046';
+begin
+  perform _as(cl);
+  perform _allowed('a vaulter adds a horse',
+    format('insert into horses (id, user_id, name, weekly_limit_min) values (%L, %L, %L, 150)', horse, cl, 'Tornado'));
+  perform _allowed('a session goes on one''s own horse',
+    format('insert into horse_sessions (user_id, horse_id, date, walk_min, canter_min) values (%L, %L, %L, 10, 12)', cl, horse, '2026-11-14'));
+  perform _denied('a weekly limit out of range is refused',
+    format('insert into horses (user_id, name, weekly_limit_min) values (%L, %L, 5)', cl, 'Pony'));
+  perform _allowed('a program is shared',
+    format('insert into shared_programs (id, user_id, name, structure) values (%L, %L, %L, %L::jsonb)', share, cl, 'Mon plan', '[{"name":"J1","exercises":[]}]'));
+  perform _root();
+  perform _as(atk);
+  perform _denied('a session cannot go on someone else''s horse',
+    format('insert into horse_sessions (user_id, horse_id, date) values (%L, %L, %L)', atk, horse, '2026-11-14'));
+  perform _t('a stranger cannot see the horses',
+    _count('select 1 from horses where user_id = ''' || cl || '''') = 0);
+  perform _t('a stranger cannot list shared programs',
+    _count('select 1 from shared_programs') = 0);
+  perform _t('the link opens the shared program',
+    _count('select 1 from get_shared_program(''' || share || ''')') = 1);
+  perform _root();
+  perform _as(tr);
+  perform _t('the coach reads the vaulter''s horse workload',
+    _count('select 1 from horse_sessions where user_id = ''' || cl || '''') = 1);
+  perform _root();
+  perform _as(pend);
+  perform _t('a pending account cannot open a shared program',
+    _count('select 1 from get_shared_program(''' || share || ''')') = 0);
+  perform _root();
+end $$;
+
 select ' FAIL ' || name from _r where not ok;
 select count(*) filter (where ok) as passed, count(*) filter (where not ok) as failed from _r;

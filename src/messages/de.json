@@ -560,7 +560,8 @@
     "messages": "Nachrichten",
     "health": "Gesundheit & Wearables",
     "activity": "Aktivität",
-    "competitions": "Turniere"
+    "competitions": "Turniere",
+    "horses": "Pferde"
   },
   "health": {
     "title": "Gesundheit & Wearables",
@@ -1177,7 +1178,11 @@
     "leftOut": "{count, plural, one {# Übung} other {# Übungen}} wegen deiner Verletzung weggelassen.",
     "coachTitle": "Gemeldete Verletzungen",
     "coachHint": "Übungen, die diese Bereiche belasten, werden dem Athleten und in seinen Programmen markiert.",
-    "declareFromPain": "Verletzung melden ({area}): Übungen, die diesen Bereich belasten, werden markiert."
+    "declareFromPain": "Verletzung melden ({area}): Übungen, die diesen Bereich belasten, werden markiert.",
+    "returningChip": "Rückkehr W{week}/3",
+    "stepsHint": "Ein Tipp: aktuelle Verletzung (rot). Noch einer, wenn verheilt: schrittweise Rückkehr über 3 Wochen (orange). Ein letzter zum Entfernen.",
+    "returnLine": "Rückkehr nach Verletzung ({area}): Woche {week} von 3, Gewichte −{percent} %, um sanft einzusteigen.",
+    "returnLastWeek": "Rückkehr nach Verletzung ({area}): letzte Woche, übliche Gewichte, aufhören, wenn der Schmerz zurückkommt."
   },
   "catalog": {
     "title": "Fertige Programme",
@@ -1223,7 +1228,12 @@
     "leaveTitle": "„{name}“ verlassen?",
     "leaveText": "Das Programm verschwindet aus deinem Training. Erledigte Einheiten bleiben im Verlauf, und du kannst es bei den fertigen Programmen wieder aufnehmen.",
     "cancel": "Abbrechen",
-    "coachHint": "Dein Coach hat dieses Programm für dich erstellt: Frag ihn, wenn es geändert werden soll."
+    "coachHint": "Dein Coach hat dieses Programm für dich erstellt: Frag ihn, wenn es geändert werden soll.",
+    "share": "Programm teilen",
+    "shareText": "Hier ist mein Programm „{name}“ auf TrainTrack:",
+    "linkCopied": "Link kopiert: in eine Nachricht einfügen.",
+    "shareFailed": "Teilen hat nicht geklappt, bitte erneut versuchen.",
+    "shareOffline": "Zum Teilen ist eine Verbindung nötig."
   },
   "exerciseHistory": {
     "empty": "Noch keine Einheit mit dieser Übung.",
@@ -1362,5 +1372,45 @@
     "textCardio": "Ausdauer: {count} Einheiten, {distance}",
     "textCompetitions": "Turniere: {list}",
     "textPains": "{count, plural, one {# Schmerz gemeldet} other {# Schmerzen gemeldet}}: im Auge behalten"
+  },
+  "horses": {
+    "title": "Pferde",
+    "addHorse": "Pferd hinzufügen",
+    "editHorse": "Pferd bearbeiten",
+    "deleteHorse": "Pferd löschen",
+    "save": "Speichern",
+    "intro": "Trage nach dem Training die Arbeit jedes Pferdes ein: Minuten im Schritt, Trab und Galopp. Die App verfolgt die Woche im Verhältnis zum Limit, damit kein Pferd zu viel macht.",
+    "empty": "Füge die Pferde hinzu, die du longierst oder reitest, um ihre Belastung zu verfolgen.",
+    "name": "Name",
+    "weeklyLimit": "Wochenlimit (Minuten)",
+    "weeklyLimitHint": "Gesamtarbeit in Schritt, Trab und Galopp. 150 Min., wenn leer; mit Tierarzt oder Trainer je nach Alter und Verfassung festlegen.",
+    "notes": "Notizen",
+    "limit": "Limit: {min} Min. pro Woche",
+    "thisWeek": "{total} / {limit} Min. diese Woche",
+    "canter": "davon {min} Min. Galopp",
+    "over": "Wochenlimit überschritten: Ruhe oder leichte Arbeit einplanen.",
+    "near": "Nahe am Wochenlimit.",
+    "hard": "{count, plural, one {# Einheit} other {# Einheiten}} mit mehr als {max} Min. Galopp.",
+    "noRest": "Kein Ruhetag in dieser Woche.",
+    "logSession": "Einheit eintragen",
+    "logTitle": "Einheit von {name}",
+    "date": "Datum",
+    "walk": "Schritt",
+    "trot": "Trab",
+    "canterLabel": "Galopp",
+    "canterWarning": "Mehr als {max} Min. Galopp: viel für eine Einheit.",
+    "notesPlaceholder": "Verhalten, Lahmheit, Anzahl Voltigierer…",
+    "saveSession": "{total} Min. speichern",
+    "sessionLine": "{total} Min. · Schritt {walk} · Trab {trot} · Galopp {canter}",
+    "deleteSession": "Einheit löschen"
+  },
+  "share": {
+    "title": "Geteiltes Programm",
+    "sharedBy": "Geteilt von {name}",
+    "days": "{count, plural, one {# Tag} other {# Tage}}",
+    "add": "Zu meinen Programmen hinzufügen",
+    "more": "… und {count} weitere Einheiten",
+    "notFound": "Dieser Link führt zu keinem Programm: Es wurde vielleicht entfernt.",
+    "offline": "Ohne Verbindung lässt sich dieses Programm nicht öffnen."
   }
 }

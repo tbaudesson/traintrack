@@ -268,7 +268,7 @@ export default function HomePage() {
     setChoosing(false);
     setStarting(true);
     try {
-      const id = await startWorkoutFromDay(program, index, exercises, today, { deload: lighterToday.lighter });
+      const id = await startWorkoutFromDay(program, index, exercises, today, lighterToday.start);
       router.push(sessionHref(id));
     } finally {
       setStarting(false);
@@ -283,7 +283,7 @@ export default function HomePage() {
     setChoosing(false);
     setStarting(true);
     try {
-      const id = await repeatWorkout(repeatable, today, { deload: lighterToday.lighter });
+      const id = await repeatWorkout(repeatable, today, lighterToday.start);
       router.push(sessionHref(id));
     } finally {
       setStarting(false);

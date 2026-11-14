@@ -560,7 +560,8 @@
     "messages": "Messages",
     "health": "Health & wearables",
     "activity": "Activity",
-    "competitions": "Competitions"
+    "competitions": "Competitions",
+    "horses": "Horses"
   },
   "health": {
     "title": "Health & wearables",
@@ -1177,7 +1178,11 @@
     "leftOut": "{count, plural, one {# exercise left out} other {# exercises left out}} because of your injury.",
     "coachTitle": "Declared injuries",
     "coachHint": "The exercises that load these areas are flagged to the athlete, and in their programs.",
-    "declareFromPain": "Declare an injury ({area}): the exercises that load this area will be flagged."
+    "declareFromPain": "Declare an injury ({area}): the exercises that load this area will be flagged.",
+    "returningChip": "return W{week}/3",
+    "stepsHint": "One tap: injury in progress (red). Another once healed: a progressive return over 3 weeks (orange). One more to remove it.",
+    "returnLine": "Coming back from injury ({area}): week {week} of 3, loads −{percent} % to ease back in.",
+    "returnLastWeek": "Coming back from injury ({area}): last week, usual loads, stop if the pain comes back."
   },
   "catalog": {
     "title": "Ready-made programs",
@@ -1223,7 +1228,12 @@
     "leaveTitle": "Leave “{name}”?",
     "leaveText": "The program leaves your training. The sessions already done stay in your history, and you can take it up again from the ready-made programs.",
     "cancel": "Cancel",
-    "coachHint": "Your coach prepared this program for you: ask them if it needs changing."
+    "coachHint": "Your coach prepared this program for you: ask them if it needs changing.",
+    "share": "Share this program",
+    "shareText": "Here's my program “{name}” on TrainTrack:",
+    "linkCopied": "Link copied: paste it in a message.",
+    "shareFailed": "Sharing didn't work, try again.",
+    "shareOffline": "Sharing needs a connection."
   },
   "exerciseHistory": {
     "empty": "No session with this exercise yet.",
@@ -1362,5 +1372,45 @@
     "textCardio": "Endurance: {count} outings, {distance}",
     "textCompetitions": "Competitions: {list}",
     "textPains": "{count, plural, one {# pain reported} other {# pains reported}}: to keep an eye on"
+  },
+  "horses": {
+    "title": "Horses",
+    "addHorse": "Add a horse",
+    "editHorse": "Edit the horse",
+    "deleteHorse": "Delete the horse",
+    "save": "Save",
+    "intro": "Log each horse's work after the session: minutes at walk, trot and canter. The app follows the week against its limit, so no horse does too much.",
+    "empty": "Add the horses you lunge or ride to follow their workload.",
+    "name": "Name",
+    "weeklyLimit": "Weekly limit (minutes)",
+    "weeklyLimitHint": "Total work at walk, trot and canter. 150 min if empty; set it with the vet or the trainer for the horse's age and condition.",
+    "notes": "Notes",
+    "limit": "Limit: {min} min a week",
+    "thisWeek": "{total} / {limit} min this week",
+    "canter": "of which {min} min canter",
+    "over": "Weekly limit passed: plan rest or light work.",
+    "near": "Close to the weekly limit.",
+    "hard": "{count, plural, one {# session} other {# sessions}} with more than {max} min of canter.",
+    "noRest": "No rest day this week.",
+    "logSession": "Log a session",
+    "logTitle": "{name}'s session",
+    "date": "Date",
+    "walk": "Walk",
+    "trot": "Trot",
+    "canterLabel": "Canter",
+    "canterWarning": "More than {max} min of canter: a lot for one session.",
+    "notesPlaceholder": "Behaviour, lameness, number of vaulters…",
+    "saveSession": "Save {total} min",
+    "sessionLine": "{total} min · walk {walk} · trot {trot} · canter {canter}",
+    "deleteSession": "Delete the session"
+  },
+  "share": {
+    "title": "Shared program",
+    "sharedBy": "Shared by {name}",
+    "days": "{count, plural, one {# day} other {# days}}",
+    "add": "Add to my programs",
+    "more": "… and {count} more sessions",
+    "notFound": "This link leads to no program: it may have been removed.",
+    "offline": "This program can't be opened without a connection."
   }
 }

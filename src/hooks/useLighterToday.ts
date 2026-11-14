@@ -4,6 +4,8 @@ import { readinessScore, useTodayReadiness } from "@/hooks/useReadiness";
 import { lighterReason, type LighterReason } from "@/lib/readinessAdjust";
 import { localDate } from "@/lib/dates";
 import { mondayOfDate } from "@/lib/weekPlan";
+import { returnAdjust } from "@/lib/injuries";
+import type { StartOptions } from "@/lib/startWorkout";
 
 const KEY = "traintrack.keepNormal";
 
@@ -17,6 +19,8 @@ export function useLighterToday(): {
   readiness: number | null;
   keptNormal: boolean;
   setKeptNormal: (keep: boolean) => void;
+  /** The options to start a session with: a lighter day, and loads coming back after an injury. */
+  start: StartOptions;
 } {
   const today = localDate();
   const profile = useAthleteProfile();
@@ -47,5 +51,7 @@ export function useLighterToday(): {
   );
 
   const reason = lighterReason({ deloadWeek: profile?.deloadWeek === mondayOfDate(today), readiness, keptNormal });
-  return { lighter: reason !== null, reason, readiness, keptNormal, setKeptNormal };
+  const injuries = profile?.injuryAreas ?? [];
+  const loadFactor = (name: string) => returnAdjust(name, injuries, today)?.load ?? 1;
+  return { lighter: reason !== null, reason, readiness, keptNormal, setKeptNormal, start: { deload: reason !== null, loadFactor } };
 }

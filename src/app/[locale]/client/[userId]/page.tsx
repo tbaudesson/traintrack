@@ -13,9 +13,11 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, TrendingUp, CheckCircle, HeartPulse, Apple, ChevronDown, ChevronUp, Bandage, FileText } from "lucide-react";
 import { useInjuriesOf } from "@/hooks/useAthleteProfile";
+import { returnPhases, type Injury, type ReturnPhase } from "@/lib/injuries";
 import { useCompetitions } from "@/hooks/useCompetitions";
 import { DetailRow } from "@/components/ui/detail-row";
 import { CompetitionResults } from "@/components/domain/CompetitionResults";
+import { HorseLoadSummary } from "@/components/domain/HorseLoadSummary";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
@@ -81,6 +83,12 @@ export default function ClientDetailPage() {
   const painHistory = usePainReports(userId);
   const pains = painHistory.filter((p) => p.date >= localDateIn(-30));
   const injuries = useInjuriesOf(userId);
+  // Injuries in progress, and healed ones still in their return weeks.
+  const shownInjuries = injuries.flatMap((injury): { injury: Injury; phase: ReturnPhase | null }[] => {
+    if (!injury.healedOn) return [{ injury, phase: null }];
+    const phase = returnPhases([injury], localDate())[0];
+    return phase ? [{ injury, phase }] : [];
+  });
   const competitions = useCompetitions(userId);
   const tcomp = useTranslations("competitions");
   const tm = useTranslations("monthly");
@@ -170,16 +178,22 @@ export default function ClientDetailPage() {
           </section>
         )}
 
-        {injuries.length > 0 && (
+        {shownInjuries.length > 0 && (
           <section className="space-y-2">
             <h2 className="text-sm font-semibold text-muted-foreground">{tinj("coachTitle")}</h2>
             <Card>
               <CardContent className="space-y-1.5 py-3">
                 <div className="flex flex-wrap gap-2">
-                  {injuries.map((i) => (
-                    <span key={i.area} className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-1 text-sm font-medium text-rose-700 dark:bg-rose-950/50 dark:text-rose-300">
+                  {shownInjuries.map(({ injury: i, phase }) => (
+                    <span
+                      key={i.area}
+                      className={cn(
+                        "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-sm font-medium",
+                        phase ? "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300" : "bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300"
+                      )}
+                    >
                       <Bandage className="h-3.5 w-3.5" aria-hidden="true" />
-                      {tpain(`area_${i.area}`)} · {tinj("since", { date: day(i.since) })}
+                      {tpain(`area_${i.area}`)} · {phase ? tinj("returningChip", { week: phase.week }) : tinj("since", { date: day(i.since) })}
                     </span>
                   ))}
                 </div>
@@ -253,6 +267,8 @@ export default function ClientDetailPage() {
         <DetailRow href={`/client/${userId}/report`} icon={FileText} title={tm("open")} subtitle={tm("openHintCoach")} />
 
         <GoalsSection profile={clientProfile} workouts={workouts} sets={sets} exercises={exercises} editable={false} />
+
+        <HorseLoadSummary userId={userId} />
 
         {competitions.length > 0 && (
           <section className="space-y-2">

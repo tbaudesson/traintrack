@@ -143,6 +143,21 @@ const TABLE_CONFIGS: TableSyncConfig[] = [
     hasUpdatedAt: true,
     trainerVisible: true,
   },
+  {
+    dexieTable: "horses",
+    supabaseTable: "horses",
+    hasUpdatedAt: true,
+    trainerVisible: true,
+  },
+  {
+    dexieTable: "horseSessions",
+    supabaseTable: "horse_sessions",
+    fkMappings: {
+      horseId: { parentDexieTable: "horses", supabaseColumn: "horse_id" },
+    },
+    hasUpdatedAt: true,
+    trainerVisible: true,
+  },
 ];
 
 // Sync order: parents first, then children
@@ -160,6 +175,8 @@ const SYNC_ORDER = [
   "messages",
   "healthMetrics",
   "competitionResults",
+  "horses",
+  "horseSessions",
 ];
 
 // ─── Retry with exponential backoff ───────────────────────────────────

@@ -3,8 +3,9 @@
 import { sessionHref } from "@/lib/routes";
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { ArrowRight, CalendarDays, Check, LogOut, Loader2, Pencil, UserCheck, Wand2 } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { ArrowRight, CalendarDays, Check, LogOut, Loader2, Pencil, Share2, UserCheck, Wand2 } from "lucide-react";
+import { shareLink, shareProgram } from "@/lib/shareService";
 import { getCurrentUserIdSync, type ProgramDay } from "@/db";
 import { useRouter } from "@/i18n/navigation";
 import { useLighterToday } from "@/hooks/useLighterToday";
@@ -51,6 +52,9 @@ export default function ProgramPage() {
   const lighterToday = useLighterToday();
   const [busy, setBusy] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [shareMessage, setShareMessage] = useState<string | null>(null);
+  const locale = useLocale();
   const today = localDate();
 
   const origin = program ? programOrigin(program, getCurrentUserIdSync(), readyMade) : null;
@@ -83,7 +87,7 @@ export default function ProgramPage() {
     if (next === null || !program) return;
     setBusy(true);
     try {
-      const id = await startWorkoutFromDay(program, next, exercises, today, { deload: lighterToday.lighter });
+      const id = await startWorkoutFromDay(program, next, exercises, today, lighterToday.start);
       router.push(sessionHref(id));
     } finally {
       setBusy(false);
@@ -95,6 +99,27 @@ export default function ProgramPage() {
     // The sessions done stay linked to it.
     await updateProgram(programId, { name: customisedName(program!.name, t("customSuffix")) });
     router.push(`/programs/${programId}/edit`);
+  }
+
+  /** A link to a copy of this program, sent with the phone's share sheet or copied. */
+  async function share() {
+    if (!program) return;
+    setSharing(true);
+    setShareMessage(null);
+    try {
+      const id = await shareProgram({ name: program.name, description: program.description, structure: program.structure ?? [] });
+      const url = shareLink(window.location.origin, locale, id);
+      if (navigator.share) {
+        await navigator.share({ title: program.name, text: t("shareText", { name: program.name }), url }).catch(() => undefined);
+      } else {
+        await navigator.clipboard.writeText(url);
+        setShareMessage(t("linkCopied"));
+      }
+    } catch {
+      setShareMessage(t(navigator.onLine ? "shareFailed" : "shareOffline"));
+    } finally {
+      setSharing(false);
+    }
   }
 
   async function leave() {
@@ -244,6 +269,16 @@ export default function ProgramPage() {
             );
           })}
         </section>
+
+        {origin !== "coach" && days.length > 0 && (
+          <div className="space-y-1">
+            <Button variant="outline" className="w-full" onClick={share} disabled={sharing}>
+              {sharing ? <Loader2 className="mr-1 h-4 w-4 animate-spin" aria-hidden="true" /> : <Share2 className="mr-1 h-4 w-4" aria-hidden="true" />}
+              {t("share")}
+            </Button>
+            {shareMessage && <p className="text-center text-xs text-muted-foreground" role="status">{shareMessage}</p>}
+          </div>
+        )}
 
         {origin === "followed" && (
           <section className="space-y-2">

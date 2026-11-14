@@ -40,13 +40,13 @@ export default function LogPage() {
   const today = localDate();
   const allSets = useAllWorkoutSets();
   // A deload week or a day of low form: the session starts lighter.
-  const deloading = useLighterToday().lighter;
+  const startOptions = useLighterToday().start;
   const repeatable = lastRepeatable(workouts, allSets, today);
 
   async function repeatLast() {
     if (!repeatable) return;
     setBusy(true);
-    const id = await repeatWorkout(repeatable, today, { deload: deloading });
+    const id = await repeatWorkout(repeatable, today, startOptions);
     router.push(sessionHref(id));
   }
 
@@ -65,7 +65,7 @@ export default function LogPage() {
 
   async function startFromProgramDay(program: Program, dayIndex: number) {
     setBusy(true);
-    const id = await startWorkoutFromDay(program, dayIndex, exercises, today, { deload: deloading });
+    const id = await startWorkoutFromDay(program, dayIndex, exercises, today, startOptions);
     router.push(sessionHref(id));
   }
 
