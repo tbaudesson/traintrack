@@ -1,4 +1,4 @@
-import type { Program } from "@/db";
+import type { Program, ProgramDay } from "@/db";
 
 /**
  * Where a program in one's list comes from, which decides what one can do
@@ -25,3 +25,19 @@ export function programOrigin(
 
 /** What "Customise" renames a ready-made program to: it is no longer the ready-made one. */
 export const customisedName = (name: string, suffix: string) => `${name} (${suffix})`;
+
+/**
+ * What a program asks for, whatever its language: the exercises (named in
+ * English everywhere), sets and reps, and the sport and length of cardio
+ * days. The same ready-made program in French and in English shares it.
+ */
+export const programFingerprint = (structure: ProgramDay[] | undefined) =>
+  (structure ?? [])
+    .map((d) =>
+      [
+        d.week ?? "",
+        d.exercises.map((e) => `${e.exerciseName}:${e.targetSets}:${e.targetReps}`).join(","),
+        d.cardio ? `${d.cardio.sport}:${d.cardio.durationMin ?? ""}:${d.cardio.distanceKm ?? ""}` : "",
+      ].join("/")
+    )
+    .join("|");

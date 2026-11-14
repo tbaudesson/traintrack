@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { customisedName, programOrigin } from "./programOrigin";
+import { customisedName, programFingerprint, programOrigin } from "./programOrigin";
+import { PROGRAM_TEMPLATES } from "./programTemplates";
 
 const readyMade = new Set(["Débuter la course : 5 km"]);
 const me = "me";
@@ -23,5 +24,17 @@ describe("programOrigin", () => {
   it("makes a customised ready-made program one's own", () => {
     const name = customisedName("Débuter la course : 5 km", "perso");
     expect(programOrigin({ name, ownerUserId: me }, me, readyMade)).toBe("mine");
+  });
+});
+
+describe("programFingerprint", () => {
+  it("is shared by a ready-made program in its three languages, and by no other", () => {
+    const groups = new Map<string, Set<string | undefined>>();
+    for (const t of PROGRAM_TEMPLATES) {
+      const key = programFingerprint(t.structure);
+      groups.set(key, new Set([...(groups.get(key) ?? []), t.locale]));
+    }
+    expect(groups.size * 3).toBe(PROGRAM_TEMPLATES.length);
+    for (const locales of groups.values()) expect([...locales].sort()).toEqual(["de", "en", "fr"]);
   });
 });

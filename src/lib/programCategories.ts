@@ -2,9 +2,9 @@ import type { ProgramDay, Sport } from "@/db";
 import { PROGRAM_TEMPLATES, type ProgramGoal, type ProgramTemplate } from "./programTemplates";
 
 /** The shelves of the ready-made programs, as an athlete looks for them. */
-export type ProgramCategory = "bodybuilding" | "strength" | "fitness" | "running" | "swimming" | "cycling" | "vaulting";
+export type ProgramCategory = "bodybuilding" | "strength" | "fitness" | "callisthenics" | "running" | "swimming" | "cycling" | "vaulting";
 
-export const CATEGORY_ORDER: ProgramCategory[] = ["bodybuilding", "strength", "fitness", "running", "swimming", "cycling", "vaulting"];
+export const CATEGORY_ORDER: ProgramCategory[] = ["bodybuilding", "strength", "fitness", "callisthenics", "running", "swimming", "cycling", "vaulting"];
 
 const BY_SPORT: Partial<Record<Sport, ProgramCategory>> = { run: "running", swim: "swimming", bike: "cycling", vaulting: "vaulting" };
 
@@ -15,6 +15,10 @@ const BY_ID: Record<string, ProgramCategory> = {
   "renfo-nageur": "swimming",
   "renfo-cycliste": "cycling",
   "voltige-prepa": "vaulting",
+  "poids-du-corps-3": "callisthenics",
+  "callisthenics-debutant": "callisthenics",
+  "callisthenics-intermediaire": "callisthenics",
+  "callisthenics-avance": "callisthenics",
 };
 
 const BY_GOAL: Record<ProgramGoal, ProgramCategory> = {
@@ -46,8 +50,13 @@ export function programCategory(
   const sport = mainSport(program.structure ?? []);
   if (sport && BY_SPORT[sport]) return BY_SPORT[sport]!;
   const known = builtIn.find((t) => t.name === program.name);
-  const id = known?.id.replace(/-(en|de)$/, "");
-  if (id && BY_ID[id]) return BY_ID[id];
+  // The shelf of a built-in program, by its id: a catalogue row read from the
+  // server has another id, so the built-in list of the same name is asked too.
+  const id = [...builtIn, ...PROGRAM_TEMPLATES]
+    .filter((t) => t.name === program.name)
+    .map((t) => t.id.replace(/-(en|de)$/, ""))
+    .find((i) => BY_ID[i]);
+  if (id) return BY_ID[id];
   const goal = program.goal ?? known?.goal;
   return goal ? BY_GOAL[goal] : null;
 }

@@ -534,7 +534,7 @@
     "level": "Level",
     "days": "Days / week",
     "daysShort": "days/wk",
-    "use": "Use this program",
+    "use": "Add to my programs",
     "goal_strength": "Strength",
     "goal_hypertrophy": "Muscle",
     "goal_fat_loss": "Fat loss",
@@ -1220,7 +1220,12 @@
     "perWeek": "{count} sessions / wk",
     "weeks": "{count, plural, one {# week} other {# weeks}}",
     "home": "At home",
-    "mySport": "My sport"
+    "mySport": "My sport",
+    "howToAdd": "Tap a category, then add the program that suits you.",
+    "alreadyAdded": "Already in my programs · Open",
+    "cat_callisthenics": "Callisthenics",
+    "timedTitle": "Timed session on demand",
+    "timedText": "Built from the area, equipment and length you choose, without adding anything to your programs."
   },
   "demo": {
     "watch": "Watch the demo",

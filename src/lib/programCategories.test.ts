@@ -46,3 +46,8 @@ it("counts the weeks of a plan", () => {
   expect(planWeeks(byId("voltige-competition-12").structure)).toBe(12);
   expect(planWeeks(byId("voltige-prepa").structure)).toBeNull();
 });
+
+it("files a program on its built-in shelf even when the catalogue comes from the server", () => {
+  const fromServer = [{ id: "5f0c2c1e-0000-4000-8000-000000000001", name: "Poids du corps", goal: "general" as const }];
+  expect(programCategory({ name: "Poids du corps" }, fromServer)).toBe("callisthenics");
+});

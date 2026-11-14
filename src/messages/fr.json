@@ -534,7 +534,7 @@
     "level": "Niveau",
     "days": "Jours / semaine",
     "daysShort": "j/sem",
-    "use": "Utiliser ce programme",
+    "use": "Ajouter à mes programmes",
     "goal_strength": "Force",
     "goal_hypertrophy": "Muscle",
     "goal_fat_loss": "Perte de gras",
@@ -1220,7 +1220,12 @@
     "perWeek": "{count} séances / sem.",
     "weeks": "{count, plural, one {# semaine} other {# semaines}}",
     "home": "À la maison",
-    "mySport": "Mon sport"
+    "mySport": "Mon sport",
+    "howToAdd": "Touchez une catégorie, puis ajoutez le programme qui vous convient.",
+    "alreadyAdded": "Déjà dans mes programmes · Ouvrir",
+    "cat_callisthenics": "Callisthenics",
+    "timedTitle": "Séance minutée à la demande",
+    "timedText": "Générée selon la zone, le matériel et la durée choisis, sans rien ajouter à vos programmes."
   },
   "demo": {
     "watch": "Voir la démo",

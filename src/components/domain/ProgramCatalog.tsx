@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
-  Award, Bike, BicepsFlexed, ClipboardList, Dumbbell, Flame, Footprints, Home, Loader2, PersonStanding, Timer, Waves,
+  Award, Bike, BicepsFlexed, Check, ChevronRight, ClipboardList, Dumbbell, Flame, Footprints, Home, Loader2, PersonStanding, Plus, Timer, Waves, Zap,
   type LucideIcon,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -23,6 +23,7 @@ export const CATEGORY_STYLE: Record<ProgramCategory | "timed" | "mobility" | "cu
   swimming: { icon: Waves, tone: "from-sky-100 to-sky-200 text-sky-700 dark:from-sky-900/50 dark:to-sky-950/60 dark:text-sky-300" },
   cycling: { icon: Bike, tone: "from-lime-100 to-lime-200 text-lime-700 dark:from-lime-900/50 dark:to-lime-950/60 dark:text-lime-300" },
   vaulting: { icon: Award, tone: "from-fuchsia-100 to-fuchsia-200 text-fuchsia-700 dark:from-fuchsia-900/50 dark:to-fuchsia-950/60 dark:text-fuchsia-300" },
+  callisthenics: { icon: Zap, tone: "from-orange-100 to-orange-200 text-orange-700 dark:from-orange-900/50 dark:to-orange-950/60 dark:text-orange-300" },
   timed: { icon: Timer, tone: "from-rose-100 to-rose-200 text-rose-700 dark:from-rose-900/50 dark:to-rose-950/60 dark:text-rose-300" },
   mobility: { icon: PersonStanding, tone: "from-teal-100 to-teal-200 text-teal-700 dark:from-teal-900/50 dark:to-teal-950/60 dark:text-teal-300" },
   custom: { icon: ClipboardList, tone: "from-card to-muted text-muted-foreground" },
@@ -38,7 +39,7 @@ export function CategoryIcon({ category, size = "md" }: { category: keyof typeof
   );
 }
 
-const isMine = (tile: string, favorite?: string | null) => !!favorite && (tile === favorite || (tile === "timed" && favorite === "callisthenics"));
+const isMine = (tile: string, favorite?: string | null) => !!favorite && tile === favorite;
 
 function Tile({
   category,
@@ -62,9 +63,12 @@ function Tile({
         <CategoryIcon category={category} size="lg" />
         {mine && <span className="rounded-full bg-accent-500 px-2 py-0.5 text-[0.7rem] font-semibold text-white">{t("mySport")}</span>}
       </span>
-      <span className="mt-auto block">
-        <span className="block font-semibold leading-tight">{label}</span>
-        <span className="block text-xs text-muted-foreground">{detail}</span>
+      <span className="mt-auto flex w-full items-end justify-between gap-1">
+        <span className="block">
+          <span className="block font-semibold leading-tight">{label}</span>
+          <span className="block text-xs text-muted-foreground">{detail}</span>
+        </span>
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
       </span>
     </>
   );
@@ -78,8 +82,10 @@ function Tile({
 
 /**
  * The ready-made programs on shelves: one tile per kind of training, then the
- * timed sessions and the warm-ups, which are generated rather than chosen.
- * A tile opens its programs, the athlete's level first.
+ * warm-ups, which are generated rather than chosen. The callisthenics shelf
+ * also leads to the timed sessions, generated on the spot.
+ * A tile opens its programs, the athlete's level first; each is added to
+ * one's programs in a tap, or opened when it already is.
  */
 export function ProgramCatalog({
   templates,
@@ -87,6 +93,7 @@ export function ProgramCatalog({
   busy,
   onUse,
   favorite,
+  added,
 }: {
   templates: ProgramTemplate[];
   level?: string;
@@ -94,6 +101,8 @@ export function ProgramCatalog({
   favorite?: string | null;
   busy: boolean;
   onUse: (template: ProgramTemplate) => void;
+  /** The id of one's program that is this ready-made one, if any. */
+  added?: (template: ProgramTemplate) => number | undefined;
 }) {
   const t = useTranslations("catalog");
   const tt = useTranslations("templates");
@@ -103,19 +112,19 @@ export function ProgramCatalog({
   // The favourite sport's tile first, the others in their usual order.
   const tiles = [
     ...CATEGORY_ORDER.filter((c) => (byShelf.get(c)?.length ?? 0) > 0),
-    "timed" as const,
     "mobility" as const,
   ].sort((a, b) => Number(isMine(b, favorite)) - Number(isMine(a, favorite)));
   const shown = open ? (byShelf.get(open) ?? []).filter((tpl) => !filter || tpl.level === filter) : [];
 
   return (
     <section className="space-y-3">
-      <h2 className="text-lg font-semibold tracking-tight">{t("title")}</h2>
+      <div>
+        <h2 className="text-lg font-semibold tracking-tight">{t("title")}</h2>
+        <p className="text-sm text-muted-foreground">{t("howToAdd")}</p>
+      </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {tiles.map((c) =>
-          c === "timed" ? (
-            <Tile key={c} category="timed" label={t("cat_timed")} detail={t("timedHint")} href="/intervals" mine={favorite === "callisthenics"} />
-          ) : c === "mobility" ? (
+          c === "mobility" ? (
             <Tile key={c} category="mobility" label={t("cat_mobility")} detail={t("mobilityHint")} href="/mobility" />
           ) : (
             <Tile
@@ -143,6 +152,16 @@ export function ProgramCatalog({
                   {t(`cat_${open}`)}
                 </DialogTitle>
               </DialogHeader>
+              {open === "callisthenics" && (
+                <Link href="/intervals" className="t-surface flex items-center gap-3 rounded-2xl p-3 ring-1 ring-foreground/5">
+                  <CategoryIcon category="timed" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-semibold leading-tight">{t("timedTitle")}</span>
+                    <span className="block text-xs text-muted-foreground">{t("timedText")}</span>
+                  </span>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                </Link>
+              )}
               <div className="flex flex-wrap gap-2">
                 <Choice on={filter === null} onClick={() => setFilter(null)}>{t("allLevels")}</Choice>
                 {(["beginner", "intermediate", "advanced"] as ProgramLevel[])
@@ -169,9 +188,26 @@ export function ProgramCatalog({
                           </Tag>
                         )}
                       </div>
-                      <Button size="sm" className="w-full" onClick={() => onUse(tpl)} disabled={busy}>
-                        {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : tt("use")}
-                      </Button>
+                      {added?.(tpl) !== undefined ? (
+                        <Link
+                          href={`/programs/${added(tpl)}`}
+                          className="flex min-h-9 w-full items-center justify-center gap-1.5 rounded-lg bg-muted text-sm font-medium"
+                        >
+                          <Check className="h-4 w-4 text-accent-text" aria-hidden="true" />
+                          {t("alreadyAdded")}
+                        </Link>
+                      ) : (
+                        <Button size="sm" className="w-full" onClick={() => onUse(tpl)} disabled={busy}>
+                          {busy ? (
+                            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                          ) : (
+                            <>
+                              <Plus className="mr-1 h-4 w-4" aria-hidden="true" />
+                              {tt("use")}
+                            </>
+                          )}
+                        </Button>
+                      )}
                     </li>
                   );
                 })}

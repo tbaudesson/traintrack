@@ -27,7 +27,7 @@ import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
 import { DetailRow } from "@/components/ui/detail-row";
 import { useClients } from "@/hooks/useClients";
 import { useProgramTemplates, useReadyMadeNames } from "@/lib/templateService";
-import { programOrigin } from "@/lib/programOrigin";
+import { programFingerprint, programOrigin } from "@/lib/programOrigin";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
 
 export default function ProgramsPage() {
@@ -158,7 +158,14 @@ export default function ProgramsPage() {
         }
       />
       <div className="space-y-6 p-4 pb-24">
-        <ProgramCatalog templates={catalogue} level={profile?.fitnessLevel} busy={busy} onUse={applyTemplate} favorite={prefs.sport} />
+        <ProgramCatalog
+          templates={catalogue}
+          level={profile?.fitnessLevel}
+          busy={busy}
+          onUse={applyTemplate}
+          favorite={prefs.sport}
+          added={(tpl) => (mine.find((p) => p.name === tpl.name) ?? mine.find((p) => programFingerprint(p.structure) === programFingerprint(tpl.structure)))?.id}
+        />
 
         {/* Programs followed as they are: ready-made ones and a coach's. */}
         {followed.length > 0 && (
