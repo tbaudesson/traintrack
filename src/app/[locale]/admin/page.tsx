@@ -117,12 +117,14 @@ function UsersTab() {
   const [editId, setEditId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
 
+  const [failed, setFailed] = useState(false);
   function load() {
     return Promise.all([adminListUsers(), listPlans()]).then(([u, p]) => {
       setUsers(u);
       setPlans(p);
+      setFailed(false);
       setLoading(false);
-    });
+    }).catch(() => { setFailed(true); setLoading(false); });
   }
   async function refresh() {
     setLoading(true);
@@ -133,6 +135,7 @@ function UsersTab() {
   }, []);
 
   if (loading) return <Loader2 className="mx-auto my-8 h-6 w-6 animate-spin text-muted-foreground" />;
+  if (failed) return <LoadFailed />;
   if (users.length === 0) return <p className="py-6 text-center text-sm text-muted-foreground">{t("noUsers")}</p>;
 
   const statusColor: Record<string, string> = {
@@ -236,11 +239,13 @@ function InvitationsTab() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
+  const [failed, setFailed] = useState(false);
   function load() {
     return adminListInvitations().then((i) => {
       setInvites(i);
+      setFailed(false);
       setLoading(false);
-    });
+    }).catch(() => { setFailed(true); setLoading(false); });
   }
   async function refresh() {
     setLoading(true);
@@ -286,6 +291,8 @@ function InvitationsTab() {
 
       {loading ? (
         <Loader2 className="mx-auto my-8 h-6 w-6 animate-spin text-muted-foreground" />
+      ) : failed ? (
+        <LoadFailed />
       ) : invites.length === 0 ? (
         <p className="py-6 text-center text-sm text-muted-foreground">{t("noInvitations")}</p>
       ) : (
@@ -316,11 +323,13 @@ function PlansTab() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
 
+  const [failed, setFailed] = useState(false);
   function load() {
     return listPlans().then((p) => {
       setPlans(p);
+      setFailed(false);
       setLoading(false);
-    });
+    }).catch(() => { setFailed(true); setLoading(false); });
   }
   async function refresh() {
     setLoading(true);
@@ -331,6 +340,7 @@ function PlansTab() {
   }, []);
 
   if (loading) return <Loader2 className="mx-auto my-8 h-6 w-6 animate-spin text-muted-foreground" />;
+  if (failed) return <LoadFailed />;
 
   return (
     <div className="space-y-3">
@@ -435,8 +445,11 @@ function GdprTab() {
   const [loading, setLoading] = useState(true);
   const [saved, setSaved] = useState(false);
 
+  const [failed, setFailed] = useState(false);
   useEffect(() => {
-    getAppSettings().then((v) => { setS(v); setLoading(false); });
+    getAppSettings()
+      .then((v) => { setS(v); setLoading(false); })
+      .catch(() => { setFailed(true); setLoading(false); });
   }, []);
 
   async function save() {
@@ -448,6 +461,7 @@ function GdprTab() {
   }
 
   if (loading) return <Loader2 className="mx-auto my-8 h-6 w-6 animate-spin text-muted-foreground" />;
+  if (failed) return <LoadFailed />;
 
   const field = (key: string, label: string) => (
     <div>
@@ -472,4 +486,10 @@ function GdprTab() {
       </CardContent>
     </Card>
   );
+}
+
+/** A tab that could not load (offline or server unreachable): said plainly instead of spinning. */
+function LoadFailed() {
+  const tc = useTranslations("common");
+  return <p role="status" className="py-6 text-center text-sm text-muted-foreground">{tc("offline")}</p>;
 }
