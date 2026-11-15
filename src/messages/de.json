@@ -1654,7 +1654,10 @@
     "session": "Deine erste Einheit machen, im geführten Modus",
     "readiness": "Deine Tagesform eintragen",
     "calendar": "Deine Einheiten in den Kalender übernehmen",
-    "look": "Das Aussehen der App wählen"
+    "look": "Das Aussehen der App wählen",
+    "next": "Als Nächstes: {step}",
+    "showSteps": "Schritte ansehen",
+    "hideSteps": "Schritte einklappen"
   },
   "join": {
     "title": "Einladung",

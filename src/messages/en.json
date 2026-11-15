@@ -1654,7 +1654,10 @@
     "session": "Do your first session, in guided mode",
     "readiness": "Log how you feel today",
     "calendar": "Add your sessions to your calendar",
-    "look": "Choose how the app looks"
+    "look": "Choose how the app looks",
+    "next": "Next: {step}",
+    "showSteps": "See the steps",
+    "hideSteps": "Fold the steps"
   },
   "join": {
     "title": "Invitation",

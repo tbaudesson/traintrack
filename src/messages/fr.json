@@ -1654,7 +1654,10 @@
     "session": "Faire votre première séance, en mode guidé",
     "readiness": "Noter votre forme du jour",
     "calendar": "Ajouter vos séances à votre agenda",
-    "look": "Choisir l’apparence de l’app"
+    "look": "Choisir l’apparence de l’app",
+    "next": "Suivant : {step}",
+    "showSteps": "Voir les étapes",
+    "hideSteps": "Replier les étapes"
   },
   "join": {
     "title": "Invitation",

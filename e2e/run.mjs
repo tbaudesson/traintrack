@@ -392,6 +392,12 @@ await test("sign-up: sport, injuries, a program of that sport put in the plannin
   // The program is in the planning, and the week names it.
   await page.locator("section", { hasText: "prochaines semaines à mon agenda" }).getByText(`· ${name}`).first().waitFor({ timeout: 10000 });
   await page.getByRole("heading", { name: "Vos premiers pas" }).waitFor({ timeout: 5000 });
+  // One line: the next step only, the list on demand.
+  const steps = page.locator("section", { has: page.getByRole("heading", { name: "Vos premiers pas" }) });
+  await steps.getByText(/^Suivant : /).waitFor({ timeout: 5000 });
+  expect(!(await steps.locator("li").count()), "the first steps are open on the home screen");
+  await steps.getByRole("button", { name: "Voir les étapes" }).click();
+  expect((await steps.locator("li").count()) >= 4, "the steps do not open");
   await snap("home-first-steps");
 });
 
