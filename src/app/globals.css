@@ -144,6 +144,15 @@
   --arc-active-ring: inset 0 1.5px 1px oklch(1 0 0 / 0.45), inset 0 -4px 10px oklch(0.2 0.15 290 / 0.3), 0 8px 0 var(--accent-800), 0 18px 36px color-mix(in oklab, var(--accent-600) 45%, transparent);
   --arc-label: var(--foreground);
   --arc-label-active: var(--accent-text);
+
+  /* Semantic navigation surfaces. Layout variants may change their sources
+     without changing the navigation components. */
+  --nav-panel: color-mix(in oklab, var(--card) 88%, transparent);
+  --nav-surface: var(--arc-bubble-bg);
+  --nav-foreground: var(--foreground);
+  --nav-accent: var(--accent-text);
+  --nav-ring: var(--arc-rim);
+  --nav-glow: color-mix(in oklab, var(--accent-500) 24%, transparent);
 }
 
 .dark {
@@ -170,6 +179,10 @@
   --arc-active-ring: inset 0 1.5px 1px oklch(1 0 0 / 0.5), 0 0 0 1px oklch(1 0 0 / 0.25), 0 0 34px color-mix(in oklab, var(--accent-500) 70%, transparent);
   --accent-text: var(--accent-300);
   --success-text: oklch(0.82 0.15 155);
+  --nav-panel: color-mix(in oklab, var(--card) 82%, transparent);
+  --nav-foreground: var(--foreground);
+  --nav-accent: var(--accent-300);
+  --nav-glow: color-mix(in oklab, var(--accent-400) 38%, transparent);
   --background: oklch(0.165 0.045 278);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.235 0.04 280);

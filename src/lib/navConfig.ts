@@ -1,84 +1,165 @@
-import type { FeatureKey } from "@/lib/adminService";
+import type { FeatureKey, UserRole } from "@/lib/adminService";
+
+export type NavigationSectionId = "train" | "performance" | "coaching" | "profileAdmin";
 
 export interface NavItemDef {
   id: string;
   href: string;
-  icon: string; // lucide icon name (resolved in BottomNav)
-  key: string; // translation key in "nav"
+  icon: string;
+  /** Translation key in the `nav` namespace. */
+  key: string;
   feature?: FeatureKey;
+  roles?: UserRole[];
 }
 
-// All destinations that may appear on the menu wheel.
-export const NAV_CATALOG: NavItemDef[] = [
-  { id: "home", href: "/", icon: "Home", key: "home" },
-  { id: "log", href: "/log", icon: "Dumbbell", key: "log" },
-  { id: "nutrition", href: "/nutrition", icon: "Apple", key: "nutrition", feature: "nutrition" },
-  { id: "progress", href: "/progress", icon: "TrendingUp", key: "progress" },
-  { id: "exercises", href: "/exercises", icon: "ListChecks", key: "exercises" },
-  { id: "programs", href: "/programs", icon: "ClipboardList", key: "programs" },
-  { id: "teams", href: "/teams", icon: "Users", key: "teams" },
-  { id: "activity", href: "/activity", icon: "Newspaper", key: "activity", feature: "coaching" },
-  { id: "challenges", href: "/challenges", icon: "Flag", key: "challenges" },
-  { id: "health", href: "/health", icon: "Activity", key: "health" },
-  { id: "readiness", href: "/readiness", icon: "HeartPulse", key: "readiness", feature: "readiness" },
-  { id: "profile", href: "/profile", icon: "Trophy", key: "profile" },
-  { id: "more", href: "/more", icon: "Menu", key: "more" },
-];
+export interface NavigationSectionDef extends NavItemDef {
+  id: NavigationSectionId;
+  children: readonly NavItemDef[];
+}
 
-// "more" is mandatory — it's the entry point to profile/settings/admin.
-export const LOCKED_NAV_ID = "more";
-/** Home is the medallion in the middle of the wheel, not a section on it. */
-export const HOME_NAV_ID = "home";
-/** The sections that may sit on the wheel. */
-export const WHEEL_CATALOG = NAV_CATALOG.filter((n) => n.id !== HOME_NAV_ID);
-const DEFAULT_ORDER = ["log", "nutrition", "progress", "more"];
-/** The order of the sections on the wheel, and those left off it. */
+/** Two levels only: four universes, each with no more than six destinations. */
+export const NAVIGATION_CATALOG: readonly NavigationSectionDef[] = [
+  {
+    id: "train", href: "/", icon: "Dumbbell", key: "sectionTrain", children: [
+      { id: "today", href: "/", icon: "CalendarCheck", key: "todaySession" },
+      { id: "programs", href: "/programs", icon: "ClipboardList", key: "programs" },
+      { id: "exercises", href: "/exercises", icon: "ListChecks", key: "exercises" },
+      { id: "sports", href: "/more", icon: "Bike", key: "sports" },
+      { id: "history", href: "/log", icon: "History", key: "history" },
+      { id: "import", href: "/settings", icon: "FileUp", key: "import", feature: "excel_import" },
+    ],
+  },
+  {
+    id: "performance", href: "/progress", icon: "TrendingUp", key: "sectionPerformance", children: [
+      { id: "progress", href: "/progress", icon: "TrendingUp", key: "progress" },
+      { id: "readiness", href: "/readiness", icon: "HeartPulse", key: "fitness", feature: "readiness" },
+      { id: "health", href: "/health", icon: "Activity", key: "health" },
+      { id: "nutrition", href: "/nutrition", icon: "Apple", key: "nutrition", feature: "nutrition" },
+      { id: "goals", href: "/progress", icon: "Target", key: "goals" },
+      { id: "challenges", href: "/challenges", icon: "Flag", key: "challenges", feature: "challenges" },
+    ],
+  },
+  {
+    id: "coaching", href: "/teams", icon: "Users", key: "sectionCoaching", feature: "coaching", children: [
+      { id: "teams", href: "/teams", icon: "Users", key: "teams", feature: "coaching" },
+      { id: "athletes", href: "/coach", icon: "UserRound", key: "athletes", feature: "coaching" },
+      { id: "assignments", href: "/coach", icon: "ClipboardCheck", key: "assignments", feature: "coaching" },
+      { id: "planning", href: "/coach", icon: "CalendarDays", key: "planning", feature: "coaching" },
+      { id: "messages", href: "/messages", icon: "MessageCircle", key: "messages", feature: "coaching" },
+      { id: "requests", href: "/activity", icon: "Inbox", key: "requests", feature: "coaching" },
+    ],
+  },
+  {
+    id: "profileAdmin", href: "/profile", icon: "UserRoundCog", key: "sectionProfileAdmin", children: [
+      { id: "profile", href: "/profile", icon: "Trophy", key: "profile" },
+      { id: "notifications", href: "/settings", icon: "Bell", key: "notifications" },
+      { id: "admin", href: "/admin", icon: "ShieldCheck", key: "administration", roles: ["admin"] },
+      { id: "layouts", href: "/settings", icon: "PanelsTopLeft", key: "layouts" },
+      { id: "connections", href: "/more", icon: "Plug", key: "connections" },
+      { id: "settings", href: "/settings", icon: "Settings", key: "settings" },
+    ],
+  },
+] as const;
+
+export interface NavigationAccess {
+  role?: UserRole;
+  features?: readonly string[];
+  isAdmin?: boolean;
+}
+
+export function canAccessNavigation(item: Pick<NavItemDef, "feature" | "roles">, access: NavigationAccess): boolean {
+  if (access.isAdmin || access.role === "admin") return true;
+  if (item.roles && !item.roles.includes(access.role ?? "user")) return false;
+  return !item.feature || !!access.features?.includes(item.feature);
+}
+
+export function navigationForAccess(access: NavigationAccess): NavigationSectionDef[] {
+  return NAVIGATION_CATALOG
+    .filter((section) => canAccessNavigation(section, access))
+    .map((section) => ({ ...section, children: section.children.filter((item) => canAccessNavigation(item, access)) }));
+}
+
+export function sectionForPath(pathname: string): NavigationSectionDef | undefined {
+  const matches = NAVIGATION_CATALOG.flatMap((section) => section.children.map((item) => ({ section, item })))
+    .filter(({ item }) => item.href !== "/" && (pathname === item.href || pathname.startsWith(`${item.href}/`)))
+    .sort((a, b) => b.item.href.length - a.item.href.length);
+  return matches[0]?.section ?? (pathname === "/" ? NAVIGATION_CATALOG[0] : undefined);
+}
+
 const KEY = "traintrack.navWheel";
-/** Before the wheel: up to five sections of the old bottom bar, put first. */
 const LEGACY_KEY = "traintrack.navItems";
+const SECTION_IDS = NAVIGATION_CATALOG.map((section) => section.id);
+const LEGACY_SECTION: Record<string, NavigationSectionId> = {
+  log: "train", programs: "train", exercises: "train",
+  progress: "performance", readiness: "performance", health: "performance", nutrition: "performance", challenges: "performance",
+  teams: "coaching", activity: "coaching",
+  profile: "profileAdmin", more: "profileAdmin",
+};
 
-const CATALOG_IDS = WHEEL_CATALOG.map((n) => n.id);
-const isNavId = (id: unknown): id is string => typeof id === "string" && CATALOG_IDS.includes(id);
-const navIds = (value: unknown): string[] => (Array.isArray(value) ? value.filter(isNavId) : []);
+const isSectionId = (value: unknown): value is NavigationSectionId =>
+  typeof value === "string" && SECTION_IDS.includes(value as NavigationSectionId);
 
-/**
- * Every section, in the order given first, then the rest; without those left
- * off. "More" is never left off, and at least one other section stays.
- */
-export function arrangeNav(order: string[], hidden: string[] = []): string[] {
-  const all = [...new Set([...order.filter(isNavId), ...CATALOG_IDS])];
-  const shown = all.filter((id) => id === LOCKED_NAV_ID || !hidden.includes(id));
-  return shown.some((id) => id !== LOCKED_NAV_ID) ? shown : all;
+function uniqueSections(values: unknown): NavigationSectionId[] {
+  if (!Array.isArray(values)) return [];
+  return [...new Set(values.map((value) => isSectionId(value) ? value : LEGACY_SECTION[String(value)]).filter(Boolean))] as NavigationSectionId[];
 }
 
-const DEFAULT_SHOWN = arrangeNav(DEFAULT_ORDER);
+function explicitSections(values: unknown): NavigationSectionId[] {
+  return Array.isArray(values) ? [...new Set(values.filter(isSectionId))] : [];
+}
 
-/** The sections on the wheel, in order, "more" included. */
-export function getNavItemIds(): string[] {
-  if (typeof window === "undefined") return DEFAULT_SHOWN;
+export interface NavigationPreferences {
+  version: 2;
+  sectionOrder: NavigationSectionId[];
+  hiddenSections: NavigationSectionId[];
+}
+
+export function migrateNavigationPreferences(value: unknown, legacyItems: unknown = null): NavigationPreferences {
+  const saved = value && typeof value === "object" ? value as Record<string, unknown> : {};
+  const order = uniqueSections(saved.sectionOrder ?? saved.order);
+  const legacy = uniqueSections(legacyItems);
+  const sectionOrder = [...new Set([...(order.length ? order : legacy), ...SECTION_IDS])];
+  // Legacy hidden values are destinations; hiding one must not hide its whole new universe.
+  const hiddenSections = explicitSections(saved.hiddenSections ?? saved.hidden);
+  return { version: 2, sectionOrder, hiddenSections };
+}
+
+export function getNavigationPreferences(): NavigationPreferences {
+  if (typeof window === "undefined") return migrateNavigationPreferences(null);
   try {
     const raw = window.localStorage.getItem(KEY);
-    if (raw) {
-      const saved = JSON.parse(raw);
-      return arrangeNav(navIds(saved?.order), navIds(saved?.hidden));
-    }
-    // Sections added to the app later show up on their own: only those left off are stored.
-    const legacy = navIds(JSON.parse(window.localStorage.getItem(LEGACY_KEY) ?? "null"));
-    return arrangeNav(legacy.length > 0 ? legacy : DEFAULT_ORDER);
+    const legacy = window.localStorage.getItem(LEGACY_KEY);
+    return migrateNavigationPreferences(raw ? JSON.parse(raw) : null, legacy ? JSON.parse(legacy) : null);
   } catch {
-    return DEFAULT_SHOWN;
+    return migrateNavigationPreferences(null);
   }
 }
 
-/** Put these sections on the wheel, in this order; the others are left off. */
-export function setNavItemIds(ids: string[]): void {
-  const order = arrangeNav(ids, CATALOG_IDS.filter((id) => !ids.includes(id)));
-  const hidden = CATALOG_IDS.filter((id) => !order.includes(id));
-  window.localStorage.setItem(KEY, JSON.stringify({ order, hidden }));
+export function saveNavigationPreferences(preferences: NavigationPreferences): void {
+  window.localStorage.setItem(KEY, JSON.stringify(migrateNavigationPreferences(preferences)));
   window.dispatchEvent(new Event("navitemschange"));
 }
 
+// Compatibility API for the existing Settings UI during the layout transition.
+export const NAV_CATALOG = NAVIGATION_CATALOG.flatMap((section) => [...section.children]);
+export const WHEEL_CATALOG = NAVIGATION_CATALOG;
+export const LOCKED_NAV_ID = "profileAdmin";
+export const HOME_NAV_ID = "train";
+export function arrangeNav(order: string[], hidden: string[] = []): string[] {
+  const ids = SECTION_IDS;
+  const all = [...new Set([...order.filter((id) => ids.includes(id as NavigationSectionId)), ...ids])];
+  const shown = all.filter((id) => id === LOCKED_NAV_ID || !hidden.includes(id));
+  return shown.some((id) => id !== LOCKED_NAV_ID) ? shown : all;
+}
+export function getNavItemIds(): string[] {
+  const preferences = getNavigationPreferences();
+  return arrangeNav(preferences.sectionOrder, preferences.hiddenSections);
+}
+export function setNavItemIds(ids: string[]): void {
+  const sections = uniqueSections(ids);
+  saveNavigationPreferences({ version: 2, sectionOrder: [...sections, ...SECTION_IDS.filter((id) => !sections.includes(id))], hiddenSections: SECTION_IDS.filter((id) => !sections.includes(id)) });
+}
 export function resetNavItemIds(): string[] {
-  setNavItemIds(DEFAULT_SHOWN);
-  return [...DEFAULT_SHOWN];
+  saveNavigationPreferences(migrateNavigationPreferences(null));
+  return getNavItemIds();
 }

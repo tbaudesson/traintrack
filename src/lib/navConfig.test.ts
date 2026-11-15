@@ -1,57 +1,59 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { WHEEL_CATALOG, arrangeNav, getNavItemIds, resetNavItemIds, setNavItemIds } from "./navConfig";
+import {
+  NAVIGATION_CATALOG, canAccessNavigation, getNavigationPreferences, migrateNavigationPreferences,
+  navigationForAccess, saveNavigationPreferences,
+} from "./navConfig";
 
-const ALL = WHEEL_CATALOG.map((n) => n.id);
+describe("hierarchical navigation catalog", () => {
+  it("has exactly two circular levels and no section exceeds six entries", () => {
+    expect(NAVIGATION_CATALOG).toHaveLength(4);
+    expect(NAVIGATION_CATALOG.every((section) => section.children.length <= 6)).toBe(true);
+    expect(NAVIGATION_CATALOG.flatMap((section) => section.children).every((item) => !("children" in item))).toBe(true);
+  });
 
-describe("the sections on the menu wheel", () => {
+  it("filters licensed destinations and whole licensed sections", () => {
+    const basic = navigationForAccess({ role: "user", features: [] });
+    expect(basic.map((section) => section.id)).not.toContain("coaching");
+    expect(basic.find((section) => section.id === "performance")?.children.map((item) => item.id)).not.toContain("nutrition");
+    const coach = navigationForAccess({ role: "user", features: ["coaching", "nutrition"] });
+    expect(coach.map((section) => section.id)).toContain("coaching");
+    expect(coach.find((section) => section.id === "performance")?.children.map((item) => item.id)).toContain("nutrition");
+  });
+
+  it("keeps administration role-only while admins bypass feature gates", () => {
+    const adminItem = NAVIGATION_CATALOG[3].children.find((item) => item.id === "admin")!;
+    expect(canAccessNavigation(adminItem, { role: "user", features: [] })).toBe(false);
+    const admin = navigationForAccess({ role: "admin", isAdmin: true, features: [] });
+    expect(admin.find((section) => section.id === "profileAdmin")?.children.map((item) => item.id)).toContain("admin");
+    expect(admin.map((section) => section.id)).toContain("coaching");
+  });
+});
+
+describe("navigation preference migration", () => {
   let store: Record<string, string>;
-
   beforeEach(() => {
     store = {};
-    vi.stubGlobal("window", {
-      localStorage: {
-        getItem: (k: string) => store[k] ?? null,
-        setItem: (k: string, v: string) => { store[k] = v; },
-      },
-      dispatchEvent: () => true,
-    });
+    vi.stubGlobal("window", { localStorage: { getItem: (key: string) => store[key] ?? null, setItem: (key: string, value: string) => { store[key] = value; } }, dispatchEvent: vi.fn() });
   });
   afterEach(() => vi.unstubAllGlobals());
 
-  it("put the given order first, then every other section, never Home", () => {
-    expect(arrangeNav(["teams", "more"]).slice(0, 2)).toEqual(["teams", "more"]);
-    expect(arrangeNav([])).toEqual(ALL);
-    expect(arrangeNav(["home"])).not.toContain("home");
+  it("maps the old wheel destinations to stable section order without duplicates", () => {
+    expect(migrateNavigationPreferences({ order: ["more", "log", "nutrition", "teams"], hidden: ["activity"] })).toEqual({
+      version: 2,
+      sectionOrder: ["profileAdmin", "train", "performance", "coaching"],
+      hiddenSections: [],
+    });
   });
 
-  it("keep More and at least one other section", () => {
-    expect(arrangeNav([], ALL)).toEqual(ALL);
-    expect(arrangeNav(["log"], ALL.filter((id) => id !== "log"))).toEqual(["log", "more"]);
-  });
-
-  it("show as many sections as chosen, in order, and new ones on their own", () => {
-    const chosen = ["teams", "log", "health", "challenges", "progress", "programs", "more"];
-    setNavItemIds(chosen);
-    expect(getNavItemIds()).toEqual(chosen);
-    // A section the app gains later is in neither list, so it joins the wheel.
-    const saved = JSON.parse(store["traintrack.navWheel"]);
-    saved.hidden = saved.hidden.filter((id: string) => id !== "readiness");
-    store["traintrack.navWheel"] = JSON.stringify(saved);
-    expect(getNavItemIds()).toEqual([...chosen, "readiness"]);
-  });
-
-  it("keep the old bottom-bar choice first, with every other section after it", () => {
+  it("falls back to the legacy bottom bar and survives malformed storage", () => {
     store["traintrack.navItems"] = JSON.stringify(["home", "teams", "health", "more"]);
-    const ids = getNavItemIds();
-    expect(ids.slice(0, 3)).toEqual(["teams", "health", "more"]);
-    expect([...ids].sort()).toEqual([...ALL].sort());
+    expect(getNavigationPreferences().sectionOrder).toEqual(["coaching", "performance", "profileAdmin", "train"]);
+    store["traintrack.navWheel"] = "{";
+    expect(getNavigationPreferences().sectionOrder).toEqual(["train", "performance", "coaching", "profileAdmin"]);
   });
 
-  it("reset to the default order with every section", () => {
-    setNavItemIds(["teams", "more"]);
-    const ids = resetNavItemIds();
-    expect(ids.slice(0, 4)).toEqual(["log", "nutrition", "progress", "more"]);
-    expect(getNavItemIds()).toEqual(ids);
-    expect(ids).toHaveLength(ALL.length);
+  it("writes only the versioned shape", () => {
+    saveNavigationPreferences({ version: 2, sectionOrder: ["performance", "train", "coaching", "profileAdmin"], hiddenSections: ["coaching"] });
+    expect(JSON.parse(store["traintrack.navWheel"])).toEqual({ version: 2, sectionOrder: ["performance", "train", "coaching", "profileAdmin"], hiddenSections: ["coaching"] });
   });
 });

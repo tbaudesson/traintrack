@@ -514,6 +514,136 @@ await test("a feature left out of the licence is locked, offline too", async () 
   expect(!(await page.getByText("Licence requise").count()), "running stays locked with the feature back");
 });
 
+// ── The menu wheel, with real pointer input ─────────────────────────
+// Mouse moves and touches go through the browser's own input pipeline (not
+// element.click()), so pointer capture, hit-testing and pointercancel behave
+// as they do on a phone or a desktop.
+const WHEEL = 'nav[aria-label="Navigation principale"]';
+const wheel = {
+  async open(path = "/fr") {
+    await page.goto(`${BASE}${path}`);
+    await page.getByRole("button", { name: "Ouvrir le menu" }).click();
+    await page.locator(WHEEL).waitFor({ timeout: 10000 });
+  },
+  /** The rotation of the ring of the open wheel, in degrees. */
+  rotation: (nav = WHEEL) =>
+    page.locator(`${nav} ul`).first().evaluate((ul) => Number(/rotate\((-?[\d.]+)deg\)/.exec(ul.style.transform)?.[1] ?? NaN)),
+  count: (nav = WHEEL) => page.locator(`${nav} > ul > li`).count(),
+  /** The centre of an item of the wheel, found by its label. */
+  async centre(label, nav = WHEEL) {
+    const box = await page.locator(`${nav} > ul > li`).filter({ hasText: label }).first().locator("button, a").first().boundingBox();
+    expect(box, `no item "${label}" in the wheel`);
+    return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  },
+  /** Waits for the end of the 240 ms turn, then checks the ring sits on a notch. */
+  async onNotch(nav = WHEEL) {
+    await page.waitForTimeout(400);
+    const deg = await wheel.rotation(nav);
+    const step = 360 / (await wheel.count(nav));
+    const off = Math.abs(deg / step - Math.round(deg / step));
+    expect(off < 0.01, `the wheel stopped between two notches: ${deg}° (notch every ${step}°)`);
+    return deg;
+  },
+};
+const mouseDrag = async (from, dx) => {
+  await page.mouse.move(from.x, from.y);
+  await page.mouse.down();
+  for (let i = 1; i <= 10; i++) await page.mouse.move(from.x + (dx * i) / 10, from.y);
+  await page.mouse.up();
+};
+
+await test("the menu wheel: a click opens a section, and its wheel leads to a page", async () => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  try {
+    await wheel.open();
+    const train = await wheel.centre("S’entraîner");
+    await page.mouse.click(train.x, train.y);
+    const sub = 'nav[aria-label="S’entraîner"]';
+    await page.locator(sub).waitFor({ timeout: 5000 });
+    await page.getByText("Toutes les sections").waitFor();
+    const programs = await wheel.centre("Programmes", sub);
+    await page.mouse.click(programs.x, programs.y);
+    await page.waitForURL(/\/fr\/programs$/, { timeout: 10000 });
+    await page.locator(sub).waitFor({ state: "detached", timeout: 5000 });
+  } finally {
+    await page.setViewportSize({ width: 390, height: 844 });
+  }
+});
+
+await test("the menu wheel: dragged with the mouse, from the empty ring or from an icon, it turns, snaps, and opens nothing", async () => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  try {
+    await wheel.open();
+    const box = await page.locator(WHEEL).boundingBox();
+    // On the ring, between two icons: nothing to open there.
+    const empty = { x: box.x + box.width * 0.78, y: box.y + box.height * 0.22 };
+    await mouseDrag(empty, -170);
+    expect((await wheel.onNotch()) !== 0, "the wheel did not turn");
+    expect(!(await page.locator('nav[aria-label="S’entraîner"]').count()), "a drag opened a section");
+
+    // Started on an icon: it turns too, and the icon under the finger is not opened.
+    const start = await wheel.rotation();
+    await mouseDrag(await wheel.centre("Performance"), 170);
+    expect((await wheel.onNotch()) !== start, "a drag started on an icon did not turn the wheel");
+    expect(!(await page.locator('nav[aria-label="Performance"]').count()), "the icon under the drag was opened");
+
+    // In a section, a drag from a link does not follow it.
+    const performance = await wheel.centre("Performance");
+    await page.mouse.click(performance.x, performance.y);
+    const sub = 'nav[aria-label="Performance"]';
+    await page.locator(sub).waitFor({ timeout: 5000 });
+    await mouseDrag(await wheel.centre("Progrès", sub), -170);
+    await wheel.onNotch(sub);
+    expect(/\/fr$/.test(page.url()), `a drag from a link followed it: ${page.url()}`);
+    // And a click right after a drag still works.
+    const progress = await wheel.centre("Progrès", sub);
+    await page.mouse.click(progress.x, progress.y);
+    await page.waitForURL(/\/fr\/progress$/, { timeout: 10000 });
+  } finally {
+    await page.setViewportSize({ width: 390, height: 844 });
+  }
+});
+
+await test("the menu wheel: touched on a phone, a tap opens, a drag snaps after the finger lifts or the gesture is cancelled", async () => {
+  const cdp = await context.newCDPSession(page);
+  await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 1 });
+  const touch = (type, p) => cdp.send("Input.dispatchTouchEvent", { type, touchPoints: p ? [{ x: p.x, y: p.y }] : [] });
+  const swipe = async (from, dx, end) => {
+    await touch("touchStart", from);
+    for (let i = 1; i <= 10; i++) await touch("touchMove", { x: from.x + (dx * i) / 10, y: from.y });
+    await touch(end, end === "touchCancel" ? null : { x: from.x + dx, y: from.y });
+  };
+  const tap = async (p) => {
+    await touch("touchStart", p);
+    await touch("touchEnd", p);
+  };
+  try {
+    await wheel.open();
+    // A tap on a section opens it.
+    await tap(await wheel.centre("S’entraîner"));
+    const sub = 'nav[aria-label="S’entraîner"]';
+    await page.locator(sub).waitFor({ timeout: 5000 });
+
+    // Lifted: pointerup snaps the wheel, and the link under the finger is not followed.
+    await swipe(await wheel.centre("Programmes", sub), -120, "touchEnd");
+    const lifted = await wheel.onNotch(sub);
+    expect(lifted !== 0, "the swipe did not turn the wheel");
+    expect(/\/fr$/.test(page.url()), `a swipe followed a link: ${page.url()}`);
+
+    // Cancelled by the browser mid-way: pointercancel snaps it too.
+    await swipe(await wheel.centre("Exercices", sub), -70, "touchCancel");
+    await wheel.onNotch(sub);
+    expect(/\/fr$/.test(page.url()), `a cancelled swipe followed a link: ${page.url()}`);
+
+    // A tap on a link of the section's wheel follows it.
+    await tap(await wheel.centre("Programmes", sub));
+    await page.waitForURL(/\/fr\/programs$/, { timeout: 10000 });
+  } finally {
+    await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: false });
+    await cdp.detach();
+  }
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });
