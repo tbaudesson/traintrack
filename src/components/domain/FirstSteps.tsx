@@ -34,23 +34,18 @@ export function FirstSteps({ steps, onDismiss }: { steps: FirstStep[]; onDismiss
           <h2 id="first-steps-title" className="text-sm font-semibold">
             {t("title")}
           </h2>
-          <p className="line-clamp-2 text-xs text-muted-foreground">
-            {t("progress", { done, total: steps.length })}
-            {next && !open && (
-              <>
-                {" · "}
-                {next.href ? (
-                  <Link href={next.href} onClick={next.onClick} className="font-medium text-accent-text">
-                    {t("next", { step: next.label })}
-                  </Link>
-                ) : (
-                  <button type="button" onClick={next.onClick} className="inline text-left font-medium text-accent-text">
-                    {t("next", { step: next.label })}
-                  </button>
-                )}
-              </>
-            )}
-          </p>
+          <p className="text-xs text-muted-foreground">{t("progress", { done, total: steps.length })}</p>
+          {next && !open && (
+            next.href ? (
+              <Link href={next.href} onClick={next.onClick} className="line-clamp-2 block text-xs font-medium text-accent-text">
+                {t("next", { step: next.label })}
+              </Link>
+            ) : (
+              <button type="button" onClick={next.onClick} className="line-clamp-2 block w-full text-left text-xs font-medium text-accent-text">
+                {t("next", { step: next.label })}
+              </button>
+            )
+          )}
         </div>
         <button
           type="button"
