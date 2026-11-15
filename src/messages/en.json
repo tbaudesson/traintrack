@@ -351,7 +351,9 @@
     "enduranceHint": "Run, ride, swim… or a GPX file.",
     "also": "Also",
     "importProgram": "Import a program (Excel)",
-    "allProgramDays": "All the days of my programs"
+    "allProgramDays": "All the days of my programs",
+    "setValidated": "Set {n} done",
+    "setCurrent": "Current set"
   },
   "progress": {
     "title": "Progress",

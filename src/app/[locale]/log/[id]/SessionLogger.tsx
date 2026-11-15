@@ -317,6 +317,8 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
       .filter((f): f is { id: number; values: typeof f.values } => f.id !== undefined && Object.keys(f.values).length > 0);
   }
 
+  // The set to do now: the first one not done, in the order of the session.
+  const currentSetId = groups.flatMap(([, exSets]) => exSets).find((s) => !s.completed)?.id;
   const prefillAll = groups.flatMap(([exerciseId, exSets]) => prefillFor(exerciseId, exSets));
 
   /** The session as the guided mode walks it: one step per set, in order, with what to show. */
@@ -932,7 +934,19 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                 </div>
 
                 {exSets.map((s) => (
-                  <div key={s.id} className={cn("grid items-center gap-1.5", cols)}>
+                  <div
+                    key={s.id}
+                    aria-current={s.id === currentSetId ? "step" : undefined}
+                    className={cn(
+                      "grid items-center gap-1.5 rounded-xl px-1 py-0.5 transition-colors motion-reduce:transition-none",
+                      cols,
+                      // Done: tinted and dimmed; the one to do now: outlined.
+                      s.completed && "bg-green-500/10 opacity-75",
+                      s.id === currentSetId && "bg-accent-500/5 ring-2 ring-accent-500/60"
+                    )}
+                  >
+                    {s.completed && <span className="sr-only">{t("setValidated", { n: s.setNumber })}</span>}
+                    {s.id === currentSetId && <span className="sr-only">{t("setCurrent")}</span>}
                     <span
                       className={cn(
                         "flex size-8 items-center justify-center rounded-lg text-sm font-bold",

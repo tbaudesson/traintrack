@@ -607,7 +607,13 @@ await test("a session keeps what is typed and the rest running across a reload",
   await reps.first().waitFor({ timeout: 10000 });
   expect((await reps.first().inputValue()) === "12", `the reps typed were lost: "${await reps.first().inputValue()}"`);
   // A set done starts the rest; reloaded, the rest goes on to the same moment.
+  const current = page.locator('[aria-current="step"]');
+  expect((await current.count()) === 1, "not exactly one current set");
   await page.getByRole("button", { name: "Marquer comme faite" }).first().click();
+  // The set done says so; the next one becomes the one to do.
+  await page.getByText("Série 1 validée").waitFor({ timeout: 5000 });
+  await current.getByText("Série en cours").waitFor({ timeout: 5000 });
+  expect((await current.locator("span:not(.sr-only)").first().innerText()).trim() === "2", "the current set did not move to set 2");
   const rest = page.getByRole("timer", { name: "Repos" });
   await rest.waitFor({ timeout: 5000 });
   await page.waitForTimeout(1500);

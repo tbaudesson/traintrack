@@ -351,7 +351,9 @@
     "enduranceHint": "Course, vélo, natation… ou un fichier GPX.",
     "also": "Aussi",
     "importProgram": "Importer un programme (Excel)",
-    "allProgramDays": "Tous les jours de mes programmes"
+    "allProgramDays": "Tous les jours de mes programmes",
+    "setValidated": "Série {n} validée",
+    "setCurrent": "Série en cours"
   },
   "progress": {
     "title": "Progrès",
