@@ -623,6 +623,40 @@ await test("a session keeps what is typed and the rest running across a reload",
   expect(/1:2\d|1:1\d|8\d|7\d/.test(left), `the rest did not go on from where it was: "${left}"`);
 });
 
+await test("a set's menu holds its RPE and deletes it, with 5 s to undo", async () => {
+  const id = await sessionWithSets(3);
+  await page.goto(`${BASE}/fr/log/session?id=${id}`);
+  const ticks = page.getByRole("button", { name: "Marquer comme faite" });
+  await ticks.first().waitFor({ timeout: 10000 });
+  expect((await ticks.count()) === 3, "three sets expected");
+  // The RPE is no longer on every line: it is in the set's menu.
+  expect(!(await page.getByRole("spinbutton", { name: "RPE" }).count()), "an RPE field is still on the lines");
+  await snap("active-session");
+  await page.getByRole("button", { name: "Options de la série 3" }).click();
+  const menu = page.getByRole("dialog");
+  await menu.getByRole("spinbutton", { name: "RPE" }).fill("8");
+  await menu.getByRole("button", { name: "Supprimer la série" }).click();
+  // Gone from the list at once, back with Undo.
+  await page.getByText("Série supprimée").waitFor({ timeout: 5000 });
+  expect((await ticks.count()) === 2, "the set deleted is still shown");
+  await page.getByRole("button", { name: "Annuler" }).click();
+  expect((await ticks.count()) === 3, "the set did not come back with Undo");
+  // Deleted again and left alone: gone for good after 5 s, a reload included.
+  await page.getByRole("button", { name: "Options de la série 3" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Supprimer la série" }).click();
+  await page.getByText("Série supprimée").waitFor({ state: "detached", timeout: 8000 });
+  await page.reload();
+  await ticks.first().waitFor({ timeout: 10000 });
+  expect((await ticks.count()) === 2, "the set came back after the 5 s");
+  // Finishing and adding an exercise are at the bottom of the screen.
+  const finish = page.getByRole("button", { name: /Terminer la séance/ });
+  const box = await finish.boundingBox();
+  expect(box && box.y > 844 - 120, `"Finish" is not at the bottom: ${box?.y}`);
+  expect(box && box.x >= 0 && box.x + box.width <= 390, `"Finish" goes past the screen: ${box?.x}+${box?.width}`);
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: join(ARTIFACTS, "active-session-screen.png") });
+  await page.getByRole("button", { name: /Ajouter un exercice/ }).waitFor({ timeout: 5000 });
+});
+
 // ── The menu wheel, with real pointer input ─────────────────────────
 // Mouse moves and touches go through the browser's own input pipeline (not
 // element.click()), so pointer capture, hit-testing and pointercancel behave

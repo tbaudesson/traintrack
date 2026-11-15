@@ -353,7 +353,15 @@
     "importProgram": "Import a program (Excel)",
     "allProgramDays": "All the days of my programs",
     "setValidated": "Set {n} done",
-    "setCurrent": "Current set"
+    "setCurrent": "Current set",
+    "setMenu": "Options for set {n}",
+    "setOptions": "Set {n}",
+    "deleteSet": "Delete the set",
+    "setDeleted": "Set deleted",
+    "undo": "Undo",
+    "deleteWorkoutConfirm": "Delete this session?",
+    "deleteWorkoutText": "The session and all its sets will be deleted.",
+    "exerciseShort": "Exercise"
   },
   "progress": {
     "title": "Progress",

@@ -353,7 +353,15 @@
     "importProgram": "Programm importieren (Excel)",
     "allProgramDays": "Alle Tage meiner Programme",
     "setValidated": "Satz {n} erledigt",
-    "setCurrent": "Aktueller Satz"
+    "setCurrent": "Aktueller Satz",
+    "setMenu": "Optionen für Satz {n}",
+    "setOptions": "Satz {n}",
+    "deleteSet": "Satz löschen",
+    "setDeleted": "Satz gelöscht",
+    "undo": "Rückgängig",
+    "deleteWorkoutConfirm": "Diese Einheit löschen?",
+    "deleteWorkoutText": "Die Einheit und alle ihre Sätze werden gelöscht.",
+    "exerciseShort": "Übung"
   },
   "progress": {
     "title": "Fortschritt",

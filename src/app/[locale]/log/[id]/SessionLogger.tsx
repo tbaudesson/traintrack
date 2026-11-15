@@ -31,7 +31,7 @@ import { findWorkoutProgramDay } from "@/lib/startWorkout";
 import { VideoEmbed } from "@/components/domain/VideoEmbed";
 import { demoVideo } from "@/lib/demoVideos";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
-import { useSessionFocus } from "@/hooks/useSessionFocus";
+import { useGlobalNavigationHidden, useSessionFocus } from "@/hooks/useSessionFocus";
 import { beep, unlockAudio } from "@/lib/beep";
 import { cancelRestEnd, scheduleRestEnd } from "@/lib/restAlerts";
 import { clearRestEnd, loadRestEnd, saveRestEnd } from "@/lib/restTimer";
@@ -55,7 +55,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight, TrendingDown, Equal, Gauge, BatteryLow, Bandage, PersonStanding } from "lucide-react";
+import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, MoreHorizontal, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight, TrendingDown, Equal, Gauge, BatteryLow, Bandage, PersonStanding } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { IntervalWorkoutView } from "@/components/domain/IntervalWorkoutView";
@@ -100,6 +100,16 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
   const [plateWeight, setPlateWeight] = useState<number | null>(null);
   const [newRecord, setNewRecord] = useState<{ exercise: string; weightKg: number; reps: number } | null>(null);
   const [summary, setSummary] = useState<SessionSummaryData | null>(null);
+  // A set's menu (its RPE, deleting it), and the sets deleted but still undoable.
+  const [menuSet, setMenuSet] = useState<number | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<number[]>([]);
+  const deleteTimers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  // A field being typed in: the bottom bar steps aside for the keyboard.
+  const [typing, setTyping] = useState(false);
+  const navHidden = useGlobalNavigationHidden();
+  // The rest and effort bars sit above the bottom bar, itself above the menu wheel when it shows.
+  const barOffset = navHidden ? "bottom-[calc(5.5rem+env(safe-area-inset-bottom))]" : "bottom-[calc(11rem+env(safe-area-inset-bottom))]";
   // Today's session is being done: no global navigation until its summary.
   // A past one, opened from the history, keeps it.
   useSessionFocus(!!workout && workout.date === localDate() && !summary);
@@ -430,6 +440,36 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
     cancelRestEnd();
   }
 
+  // Leaving the page within the 5 s: the sets deleted are deleted.
+  useEffect(() => {
+    const timers = deleteTimers.current;
+    const flush = () => {
+      for (const [id, timer] of timers) {
+        clearTimeout(timer);
+        deleteWorkoutSet(id);
+      }
+      timers.clear();
+    };
+    window.addEventListener("pagehide", flush);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      flush();
+    };
+  }, []);
+
+  // The bottom bar gives way to the keyboard while a field is typed in.
+  useEffect(() => {
+    const isField = (el: EventTarget | null) => el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement;
+    const onIn = (e: FocusEvent) => isField(e.target) && setTyping(true);
+    const onOut = (e: FocusEvent) => isField(e.target) && setTyping(false);
+    document.addEventListener("focusin", onIn);
+    document.addEventListener("focusout", onOut);
+    return () => {
+      document.removeEventListener("focusin", onIn);
+      document.removeEventListener("focusout", onOut);
+    };
+  }, []);
+
   // A rest running when the page was closed or reloaded goes on to the same moment.
   const restResumed = useRef(false);
   useEffect(() => {
@@ -534,6 +574,27 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
           injuries
         );
 
+  /** Delete a set in 5 s, unless undone: until then it is only hidden. */
+  function deleteSoon(id: number) {
+    setPendingDelete((ids) => [...ids, id]);
+    deleteTimers.current.set(
+      id,
+      setTimeout(() => {
+        deleteTimers.current.delete(id);
+        deleteWorkoutSet(id);
+        setPendingDelete((ids) => ids.filter((x) => x !== id));
+      }, 5000)
+    );
+  }
+
+  function undoDelete() {
+    const id = pendingDelete[pendingDelete.length - 1];
+    if (id === undefined) return;
+    clearTimeout(deleteTimers.current.get(id));
+    deleteTimers.current.delete(id);
+    setPendingDelete((ids) => ids.filter((x) => x !== id));
+  }
+
   async function toggleDone(
     setId: number,
     completed: boolean,
@@ -621,14 +682,11 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
             >
               <Pencil className="h-4 w-4" />
             </Button>
-            <Button size="sm" onClick={finishWorkout}>
-              {t("finishWorkout")}
-            </Button>
           </div>
         }
       />
 
-      <div className="space-y-4 p-4 pb-28">
+      <div className="space-y-4 p-4 pb-48">
         {/* Heart-rate monitor (Web Bluetooth): after the plan of a run, before the sets of a strength session. */}
         {!(workout && isCardio(workout)) && heartRateCard}
 
@@ -656,10 +714,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                   size="sm"
                   variant="ghost"
                   className="text-destructive"
-                  onClick={async () => {
-                    await deleteWorkout(workoutId);
-                    router.push("/log");
-                  }}
+                  onClick={() => setConfirmDelete(true)}
                 >
                   <Trash2 className="mr-1 h-4 w-4" />
                   {t("deleteWorkout")}
@@ -743,7 +798,8 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
           const records = recordHistory(exerciseId, allWorkouts, allSets).slice(-5).reverse();
           // A bodyweight exercise shows no load, until one is added (a weighted pull-up).
           const bodyweight = ex?.equipment === "bodyweight" && !percentPlan && !exSets.some((x) => (x.weightKg ?? 0) > 0) && !loaded.has(exerciseId);
-          const cols = bodyweight ? "grid-cols-[2rem_1fr_1fr_2.5rem_2.5rem]" : "grid-cols-[2rem_1fr_1fr_1fr_2.5rem_2.5rem]";
+          // Load, reps and the tick first; the RPE and deleting are in the set's menu.
+          const cols = bodyweight ? "grid-cols-[2.25rem_1fr_3rem_2.5rem]" : "grid-cols-[2.25rem_1fr_1fr_3rem_2.5rem]";
           // Done: folded to one line, reopened on demand.
           const folded = work.length > 0 && exSets.every((x) => x.completed) && !reopened.has(exerciseId) && guideOpen === false;
           return (
@@ -928,12 +984,11 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                   <span>{t("set")}</span>
                   {!bodyweight && <span>{t("weight")}</span>}
                   <span aria-hidden="true">{isTimedTarget(target?.targetReps) ? t("secondsShort") : t("repsShort")}</span>
-                  <span>{t("rpe")}</span>
                   <span>{t("doneShort")}</span>
                   <span></span>
                 </div>
 
-                {exSets.map((s) => (
+                {exSets.filter((s) => !pendingDelete.includes(s.id!)).map((s) => (
                   <div
                     key={s.id}
                     aria-current={s.id === currentSetId ? "step" : undefined}
@@ -949,7 +1004,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                     {s.id === currentSetId && <span className="sr-only">{t("setCurrent")}</span>}
                     <span
                       className={cn(
-                        "flex size-8 items-center justify-center rounded-lg text-sm font-bold",
+                        "flex size-9 items-center justify-center rounded-lg text-sm font-bold",
                         s.isWarmup
                           ? "border border-dashed border-border text-xs text-muted-foreground"
                           : "t-well bg-accent-100 text-accent-text dark:bg-accent-900/40"
@@ -958,9 +1013,8 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                     >
                       {s.isWarmup ? `${t("warmupShort")}${warmups.indexOf(s) + 1}` : s.setNumber}
                     </span>
-                    {!bodyweight && <NumCell label={t("weight")} placeholder={plannedFor(s) !== undefined ? String(plannedFor(s)) : previousTop !== null ? String(suggestion ?? previousTop) : undefined} value={s.weightKg} onChange={(v) => s.id && updateWorkoutSet(s.id, { weightKg: v })} />}
-                    <NumCell label={t("reps")} placeholder={target?.targetReps} value={s.reps} onChange={(v) => s.id && updateWorkoutSet(s.id, { reps: v })} />
-                    <NumCell label={t("rpe")} value={s.rpe} onChange={(v) => s.id && updateWorkoutSet(s.id, { rpe: v !== undefined && v >= 1 && v <= 10 ? v : undefined })} />
+                    {!bodyweight && <NumCell large label={t("weight")} placeholder={plannedFor(s) !== undefined ? String(plannedFor(s)) : previousTop !== null ? String(suggestion ?? previousTop) : undefined} value={s.weightKg} onChange={(v) => s.id && updateWorkoutSet(s.id, { weightKg: v })} />}
+                    <NumCell large label={t("reps")} placeholder={target?.targetReps} value={s.reps} onChange={(v) => s.id && updateWorkoutSet(s.id, { reps: v })} />
                     <button
                       onClick={() =>
                         s.id &&
@@ -969,20 +1023,22 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                       aria-label={tc("markDone")}
                       aria-pressed={!!s.completed}
                       className={cn(
-                        "flex size-10 items-center justify-center rounded-md border",
+                        "flex size-12 items-center justify-center rounded-xl border",
                         s.completed
                           ? "border-green-500 bg-green-500 text-white"
                           : "t-well border-transparent bg-accent-100 text-accent-text dark:bg-accent-900/40"
                       )}
                     >
-                      <Check className="h-4 w-4" />
+                      <Check className="size-5" />
                     </button>
                     <button
-                      onClick={() => s.id && deleteWorkoutSet(s.id)}
-                      aria-label={tc("delete")}
-                      className="flex size-10 items-center justify-center rounded-md text-muted-foreground hover:text-destructive"
+                      type="button"
+                      onClick={() => s.id && setMenuSet(s.id)}
+                      aria-label={t("setMenu", { n: s.setNumber })}
+                      aria-haspopup="dialog"
+                      className="flex size-10 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <MoreHorizontal className="size-5" aria-hidden="true" />
                     </button>
                   </div>
                 ))}
@@ -1104,17 +1160,102 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
           );
         })}
 
-        {!isCardio(workout) && (
-          <Button variant="outline" className="w-full" onClick={() => setPickerOpen(true)}>
-          <Plus className="mr-1 h-4 w-4" />
-          {t("addExercise")}
-        </Button>
-        )}
 
         <div className="pt-2">
           <WorkoutNotes workoutId={workoutId} />
         </div>
       </div>
+
+      {/* The session's actions, at thumb's reach: finishing first, adding an exercise next. */}
+      {!typing && !summary && workout && (
+        <div
+          className={cn(
+            "fixed inset-x-0 z-50 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]",
+            navHidden ? "bottom-0 border-t border-border bg-background/95 backdrop-blur" : "bottom-24"
+          )}
+        >
+          <div className="mx-auto flex max-w-md gap-2">
+            {!isCardio(workout) && (
+              <Button variant="outline" className="h-12 min-w-0 flex-1 shrink rounded-full px-3" onClick={() => setPickerOpen(true)} aria-label={t("addExercise")}>
+                <Plus className="size-4 shrink-0" aria-hidden="true" />
+                <span className="truncate">{t("exerciseShort")}</span>
+              </Button>
+            )}
+            <Button className="h-12 min-w-0 flex-[1.3] shrink rounded-full px-3" onClick={finishWorkout}>
+              <Check className="size-4 shrink-0" aria-hidden="true" />
+              <span className="truncate">{t("finishWorkout")}</span>
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* A set deleted: undone within 5 s, deleted for good after. */}
+      {pendingDelete.length > 0 && (
+        <div role="status" className="fixed top-4 left-1/2 z-[60] flex -translate-x-1/2 items-center gap-3 rounded-full bg-foreground py-1 pr-1 pl-4 text-sm text-background shadow-lg">
+          {t("setDeleted")}
+          <button type="button" onClick={undoDelete} className="min-h-10 rounded-full px-3 font-semibold underline">
+            {t("undo")}
+          </button>
+        </div>
+      )}
+
+      {/* A set's menu: its RPE, and deleting it. */}
+      {(() => {
+        const set = menuSet === null ? undefined : sets?.find((x) => x.id === menuSet);
+        return (
+          <Dialog open={!!set} onOpenChange={(open) => !open && setMenuSet(null)}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{set ? t("setOptions", { n: set.setNumber }) : ""}</DialogTitle>
+              </DialogHeader>
+              {set?.id !== undefined && (
+                <div className="space-y-4">
+                  <label className="block space-y-1">
+                    <span className="text-sm font-medium">{t("rpe")}</span>
+                    <NumCell large label={t("rpe")} value={set.rpe} onChange={(v) => updateWorkoutSet(set.id!, { rpe: v !== undefined && v >= 1 && v <= 10 ? v : undefined })} />
+                  </label>
+                  <Button
+                    variant="outline"
+                    className="h-12 w-full text-destructive"
+                    onClick={() => {
+                      deleteSoon(set.id!);
+                      setMenuSet(null);
+                    }}
+                  >
+                    <Trash2 className="size-4" aria-hidden="true" />
+                    {t("deleteSet")}
+                  </Button>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+        );
+      })()}
+
+      <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("deleteWorkoutConfirm")}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">{t("deleteWorkoutText")}</p>
+          <div className="flex gap-2">
+            <Button variant="outline" className="h-11 flex-1" onClick={() => setConfirmDelete(false)}>
+              {tc("cancel")}
+            </Button>
+            <Button
+              variant="destructive"
+              className="h-11 flex-1"
+              onClick={async () => {
+                setConfirmDelete(false);
+                await deleteWorkout(workoutId);
+                router.push("/log");
+              }}
+            >
+              {tc("delete")}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {newRecord && (
         <div role="status" className="t-hero fixed top-4 left-1/2 z-[60] flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 items-center gap-3 rounded-2xl p-3">
@@ -1137,7 +1278,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
       />
 
       {effort && (
-        <div role="timer" aria-label={t("effortLabel")} className="fixed bottom-24 left-1/2 z-[55] flex -translate-x-1/2 items-center gap-2 rounded-full bg-success-text py-1 pr-1 pl-4 whitespace-nowrap text-background shadow-lg">
+        <div role="timer" aria-label={t("effortLabel")} className={cn("fixed left-1/2 z-[55] flex -translate-x-1/2 items-center gap-2 rounded-full bg-success-text py-1 pr-1 pl-4 whitespace-nowrap text-background shadow-lg", barOffset)}>
           <Timer className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span className="text-sm font-medium">{t("effortOfSet", { set: effort.setNumber })}</span>
           <span className="font-mono text-lg font-semibold tabular-nums">
@@ -1154,7 +1295,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
 
       {/* Rest timer */}
       {rest !== null && (
-        <div role="timer" aria-label={t("restLabel")} className="fixed bottom-24 left-1/2 z-[55] flex -translate-x-1/2 items-center gap-2 rounded-full bg-primary py-1 pr-1 pl-4 text-primary-foreground shadow-lg">
+        <div role="timer" aria-label={t("restLabel")} className={cn("fixed left-1/2 z-[55] flex -translate-x-1/2 items-center gap-2 rounded-full bg-primary py-1 pr-1 pl-4 text-primary-foreground shadow-lg", barOffset)}>
           <Timer className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span className="text-sm font-medium">{t("restLabel")}</span>
           <span className="font-mono text-lg font-semibold tabular-nums">
@@ -1266,7 +1407,7 @@ function formatPerformance(sets: { weightKg?: number; reps?: number }[], num: (n
   return `${sets.map((s) => `${num(s.weightKg ?? 0)}×${s.reps}`).join(", ")} kg`;
 }
 
-function NumCell({ label, placeholder, value, onChange }: { label: string; placeholder?: string; value?: number; onChange: (v: number | undefined) => void }) {
+function NumCell({ label, placeholder, value, onChange, large }: { label: string; placeholder?: string; value?: number; onChange: (v: number | undefined) => void; large?: boolean }) {
   const ref = useRef<HTMLInputElement>(null);
   // Saved as it is typed (on the device), and at once when the field is left.
   const { schedule, flush } = useDebouncedSave(onChange);
@@ -1289,7 +1430,10 @@ function NumCell({ label, placeholder, value, onChange }: { label: string; place
         flush();
       }}
       aria-label={label}
-      className="h-11 w-full rounded-md border border-border bg-transparent px-1 text-center text-base outline-none focus:border-accent-500"
+      className={cn(
+        "w-full rounded-md border border-border bg-transparent px-1 text-center outline-none focus:border-accent-500",
+        large ? "h-14 rounded-xl text-xl font-semibold tabular-nums" : "h-11 text-base"
+      )}
     />
   );
 }

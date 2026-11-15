@@ -353,7 +353,15 @@
     "importProgram": "Importer un programme (Excel)",
     "allProgramDays": "Tous les jours de mes programmes",
     "setValidated": "Série {n} validée",
-    "setCurrent": "Série en cours"
+    "setCurrent": "Série en cours",
+    "setMenu": "Options de la série {n}",
+    "setOptions": "Série {n}",
+    "deleteSet": "Supprimer la série",
+    "setDeleted": "Série supprimée",
+    "undo": "Annuler",
+    "deleteWorkoutConfirm": "Supprimer cette séance ?",
+    "deleteWorkoutText": "La séance et toutes ses séries seront supprimées.",
+    "exerciseShort": "Exercice"
   },
   "progress": {
     "title": "Progrès",
