@@ -79,6 +79,22 @@ export function navigationForAccess(access: NavigationAccess): NavigationSection
     .map((section) => ({ ...section, children: section.children.filter((item) => canAccessNavigation(item, access)) }));
 }
 
+/**
+ * The one item of a section that the page belongs to, so only one is ever
+ * current. Several items may share an address until each has its own screen:
+ * the item named after the page stands for it (Settings for /settings),
+ * otherwise the first of them in the section's order.
+ */
+export function currentItemId(section: Pick<NavigationSectionDef, "children">, pathname: string): string | undefined {
+  const matching = section.children.filter((item) =>
+    item.href === "/" ? pathname === "/" : pathname === item.href || pathname.startsWith(`${item.href}/`));
+  if (!matching.length) return undefined;
+  const longest = Math.max(...matching.map((item) => item.href.length));
+  const candidates = matching.filter((item) => item.href.length === longest);
+  const page = candidates[0].href.split("/").pop();
+  return (candidates.find((item) => item.id === page) ?? candidates[0]).id;
+}
+
 export function sectionForPath(pathname: string): NavigationSectionDef | undefined {
   const matches = NAVIGATION_CATALOG.flatMap((section) => section.children.map((item) => ({ section, item })))
     .filter(({ item }) => item.href !== "/" && (pathname === item.href || pathname.startsWith(`${item.href}/`)))

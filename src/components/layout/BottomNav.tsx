@@ -10,6 +10,7 @@ import { GlobalNavigationWheel } from "@/components/navigation/GlobalNavigationW
 import { SectionNavigationWheel } from "@/components/navigation/SectionNavigationWheel";
 import { NavigationBreadcrumb } from "@/components/navigation/NavigationBreadcrumb";
 import { NavigationListFallback } from "@/components/navigation/NavigationListFallback";
+import { useGlobalNavigationHidden } from "@/hooks/useSessionFocus";
 
 /** Bottom launcher for the reusable two-level circular navigation. */
 export function BottomNav() {
@@ -22,6 +23,9 @@ export function BottomNav() {
   const [listMode, setListMode] = useState(false);
   const [selected, setSelected] = useState<NavigationSectionId | null>(null);
   const [preferenceVersion, setPreferenceVersion] = useState(0);
+  // During an active session the wheel is gone, and it comes back closed.
+  const hidden = useGlobalNavigationHidden();
+  if (hidden && open) setOpen(false);
 
   useEffect(() => {
     const sync = () => setPreferenceVersion((value) => value + 1);
@@ -35,6 +39,7 @@ export function BottomNav() {
   const routeSection = sectionForPath(pathname);
   const section = sections.find((entry) => entry.id === selected) ?? sections.find((entry) => entry.id === routeSection?.id);
 
+  if (hidden) return null;
   return <>
     {open && <button type="button" aria-label={common("close")} className="t-arc-scrim fixed inset-0 z-40" onClick={() => setOpen(false)} />}
     {open && <aside onClick={(event) => { if ((event.target as HTMLElement).closest("a")) setOpen(false); }} className="fixed inset-x-3 bottom-24 z-50 mx-auto flex max-w-md flex-col items-center gap-3 rounded-[2rem] border bg-[var(--nav-panel)] p-4 shadow-2xl backdrop-blur-xl" aria-label={common("mainNav")}>

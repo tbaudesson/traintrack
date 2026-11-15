@@ -31,6 +31,7 @@ import { findWorkoutProgramDay } from "@/lib/startWorkout";
 import { VideoEmbed } from "@/components/domain/VideoEmbed";
 import { demoVideo } from "@/lib/demoVideos";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
+import { useSessionFocus } from "@/hooks/useSessionFocus";
 import { beep, unlockAudio } from "@/lib/beep";
 import { cancelRestEnd, scheduleRestEnd } from "@/lib/restAlerts";
 import { PlateCalculator } from "@/components/domain/PlateCalculator";
@@ -97,6 +98,9 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
   const [plateWeight, setPlateWeight] = useState<number | null>(null);
   const [newRecord, setNewRecord] = useState<{ exercise: string; weightKg: number; reps: number } | null>(null);
   const [summary, setSummary] = useState<SessionSummaryData | null>(null);
+  // Today's session is being done: no global navigation until its summary.
+  // A past one, opened from the history, keeps it.
+  useSessionFocus(!!workout && workout.date === localDate() && !summary);
   const [rest, setRest] = useState<number | null>(null);
   const [editMeta, setEditMeta] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");

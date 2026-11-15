@@ -32,7 +32,10 @@ function chromiumPath() {
 }
 
 const results = [];
+/** With E2E_ONLY=<regex>, only the matching paths run (the setup always does). */
+const only = process.env.E2E_ONLY ? new RegExp(process.env.E2E_ONLY) : null;
 async function test(name, fn) {
+  if (only && !only.test(name)) return;
   const started = Date.now();
   try {
     await fn();
@@ -233,6 +236,7 @@ await test("a timed callisthenics session plays and stops without saving", async
   expect(spoken.some((s) => s.startsWith("Préparez-vous. Premier exercice")), `not announced: ${JSON.stringify(spoken)}`);
   expect(spoken.some((s) => / secondes?\.$/.test(s)), `effort not announced: ${JSON.stringify(spoken)}`);
   await snap("player-voice");
+  expect(!(await page.getByRole("button", { name: "Ouvrir le menu" }).count()), "the menu wheel is still there during the timed session");
   const voice = dialog.getByRole("button", { name: "Coach vocal" });
   expect((await voice.getAttribute("aria-pressed")) === "true", "voice coach off by default");
   await voice.click();
@@ -240,6 +244,7 @@ await test("a timed callisthenics session plays and stops without saving", async
   await voice.click();
   await dialog.getByRole("button", { name: /Terminer la séance/ }).click();
   expect(page.url().includes("/intervals"), "left the page although nothing was done");
+  await page.getByRole("button", { name: "Ouvrir le menu" }).waitFor({ timeout: 5000 });
 });
 
 await test("a stretching session names the side", async () => {
@@ -641,7 +646,45 @@ await test("the menu wheel: touched on a phone, a tap opens, a drag snaps after 
   } finally {
     await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: false });
     await cdp.detach();
+    // Leaving touch emulation puts the page back online while Playwright still
+    // believes it offline: toggle, so the next paths run offline again.
+    await context.setOffline(false);
+    await context.setOffline(true);
   }
+});
+
+await test("the menu wheel is gone during today's session, and stays on a past one", async () => {
+  const [today, past] = await page.evaluate(async (user) => {
+    const db = await new Promise((resolve, reject) => {
+      const req = indexedDB.open("TrainTrack");
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    const now = new Date();
+    const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const lastWeek = new Date(now);
+    lastWeek.setDate(now.getDate() - 7);
+    const add = (date, uuid) =>
+      new Promise((resolve, reject) => {
+        const tx = db.transaction("workouts", "readwrite");
+        const req = tx.objectStore("workouts").add({ userId: user, uuid, date, title: "Séance e2e", _dirty: 0, createdAt: now.toISOString(), updatedAt: now.toISOString() });
+        tx.oncomplete = () => resolve(req.result);
+        tx.onerror = () => reject(tx.error);
+      });
+    const ids = [await add(iso(now), "e2e-nav-today"), await add(iso(lastWeek), "e2e-nav-past")];
+    db.close();
+    return ids;
+  }, USER);
+  const menu = page.getByRole("button", { name: "Ouvrir le menu" });
+  await page.goto(`${BASE}/fr/log/session?id=${past}`);
+  await menu.waitFor({ timeout: 10000 });
+  await page.goto(`${BASE}/fr/log/session?id=${today}`);
+  await page.getByRole("button", { name: /Terminer/ }).first().waitFor({ timeout: 10000 });
+  await page.waitForTimeout(300);
+  expect(!(await menu.count()), "the menu wheel is still there during today's session");
+  // Leaving the session brings it back.
+  await page.goto(`${BASE}/fr`);
+  await menu.waitFor({ timeout: 10000 });
 });
 
 await test("no page threw an error", async () => {

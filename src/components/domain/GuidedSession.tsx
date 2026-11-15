@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Check, ChevronLeft, ChevronRight, Minus, Plus, Timer, Trophy, X } from "lucide-react";
 import { guidedCursor } from "@/lib/guided";
+import { useSessionFocus } from "@/hooks/useSessionFocus";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -48,6 +49,7 @@ export function GuidedSession({
   onClose: () => void;
 }) {
   const t = useTranslations("guided");
+  useSessionFocus(true);
   const [chosen, setChosen] = useState<number | null>(null);
   const order = steps.map((s) => s.id);
   const completed = new Set(steps.filter((s) => s.completed).map((s) => s.id));

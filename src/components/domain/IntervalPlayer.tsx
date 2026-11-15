@@ -8,6 +8,7 @@ import { beep } from "@/lib/beep";
 import { speak, stepAnnouncement, stopSpeaking, voiceSupported } from "@/lib/voice";
 import { savePrefs } from "@/lib/appTheme";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
+import { useSessionFocus } from "@/hooks/useSessionFocus";
 import { useExerciseLabel } from "@/lib/exerciseNames";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,7 @@ export function IntervalPlayer({
   labels?: { work: string; rest: string; counter?: (n: number, total: number) => string };
 }) {
   const t = useTranslations("intervals");
+  useSessionFocus(true);
   const locale = useLocale();
   const xl = useExerciseLabel();
   const { voice } = useAppPrefs();

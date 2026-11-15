@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  NAVIGATION_CATALOG, canAccessNavigation, getNavigationPreferences, migrateNavigationPreferences,
+  NAVIGATION_CATALOG, canAccessNavigation, currentItemId, getNavigationPreferences, migrateNavigationPreferences,
   navigationForAccess, saveNavigationPreferences,
 } from "./navConfig";
 
@@ -26,6 +26,32 @@ describe("hierarchical navigation catalog", () => {
     const admin = navigationForAccess({ role: "admin", isAdmin: true, features: [] });
     expect(admin.find((section) => section.id === "profileAdmin")?.children.map((item) => item.id)).toContain("admin");
     expect(admin.map((section) => section.id)).toContain("coaching");
+  });
+});
+
+describe("the current item of a section", () => {
+  const section = (id: string) => NAVIGATION_CATALOG.find((entry) => entry.id === id)!;
+
+  it("is a single item even when several share the page's address", () => {
+    for (const entry of NAVIGATION_CATALOG) {
+      for (const item of entry.children) {
+        const current = entry.children.filter((other) => other.id === currentItemId(entry, item.href));
+        expect(current, `${entry.id} ${item.href}`).toHaveLength(1);
+      }
+    }
+  });
+
+  it("is the item named after the page, otherwise the first one sharing it", () => {
+    expect(currentItemId(section("profileAdmin"), "/settings")).toBe("settings");
+    expect(currentItemId(section("performance"), "/progress")).toBe("progress");
+    expect(currentItemId(section("coaching"), "/coach")).toBe("athletes");
+    expect(currentItemId(section("train"), "/programs/12")).toBe("programs");
+  });
+
+  it("matches the home page exactly, and nothing for a page outside the section", () => {
+    expect(currentItemId(section("train"), "/")).toBe("today");
+    expect(currentItemId(section("train"), "/progress")).toBeUndefined();
+    expect(currentItemId(section("train"), "/programsx")).toBeUndefined();
   });
 });
 
