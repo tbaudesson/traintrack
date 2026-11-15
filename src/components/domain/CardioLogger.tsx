@@ -12,6 +12,7 @@ import { RunGuide } from "@/components/domain/RunGuide";
 import { GpxImport } from "@/components/domain/GpxImport";
 import type { CardioTarget, Workout } from "@/db";
 import { updateWorkout } from "@/hooks/useWorkouts";
+import { useDebouncedSave } from "@/hooks/useDebouncedSave";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { describeTarget, formatPace, hasDistance } from "@/lib/cardio";
@@ -54,6 +55,8 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
   const [running, setRunning] = useState(false);
 
   const save = () => updateWorkout(workout.id!, { distanceM: distanceM || undefined, durationSec: durationSec || undefined });
+  // Saved as it is typed (on the device), and at once when a field is left.
+  const { schedule, flush } = useDebouncedSave<null>(() => save());
 
   // An indoor-cycling session played block by block; its time fills the log.
   const ts = useTranslations("spinning");
@@ -160,17 +163,17 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
           {measured && (
             <label className="block text-sm font-medium">
               {swim ? t("distanceM") : t("distanceKm")}
-              <Input type="text" inputMode="decimal" value={distance} onChange={(e) => setDistance(e.target.value)} onBlur={save} className="mt-1" />
+              <Input type="text" inputMode="decimal" value={distance} onChange={(e) => { setDistance(e.target.value); schedule(null); }} onBlur={() => { schedule(null); flush(); }} className="mt-1" />
             </label>
           )}
           <div className="grid grid-cols-2 gap-3">
             <label className="block text-sm font-medium">
               {t("minutes")}
-              <Input type="number" inputMode="numeric" min={0} value={minutes} onChange={(e) => setMinutes(e.target.value)} onBlur={save} className="mt-1" />
+              <Input type="number" inputMode="numeric" min={0} value={minutes} onChange={(e) => { setMinutes(e.target.value); schedule(null); }} onBlur={() => { schedule(null); flush(); }} className="mt-1" />
             </label>
             <label className="block text-sm font-medium">
               {t("seconds")}
-              <Input type="number" inputMode="numeric" min={0} max={59} value={seconds} onChange={(e) => setSeconds(e.target.value)} onBlur={save} className="mt-1" />
+              <Input type="number" inputMode="numeric" min={0} max={59} value={seconds} onChange={(e) => { setSeconds(e.target.value); schedule(null); }} onBlur={() => { schedule(null); flush(); }} className="mt-1" />
             </label>
           </div>
           {measured && <GpxImport

@@ -568,6 +568,55 @@ await test("the training hub puts three ways to train first, and keeps every oth
   }
 });
 
+/** A session of today with one exercise and its sets, straight in the device's store; its id. */
+async function sessionWithSets(sets = 3, exercise = "Push-up") {
+  return page.evaluate(async ({ user, sets, exercise }) => {
+    const db = await new Promise((resolve, reject) => {
+      const req = indexedDB.open("TrainTrack");
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    const all = (store) => new Promise((resolve) => { const r = db.transaction(store).objectStore(store).getAll(); r.onsuccess = () => resolve(r.result); });
+    const add = (store, value) => new Promise((resolve, reject) => {
+      const tx = db.transaction(store, "readwrite");
+      const r = tx.objectStore(store).add(value);
+      tx.oncomplete = () => resolve(r.result);
+      tx.onerror = () => reject(tx.error);
+    });
+    const ex = (await all("exercises")).find((e) => e.name === exercise);
+    const now = new Date();
+    const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const id = await add("workouts", { userId: user, uuid: `e2e-active-${Date.now()}`, date, title: "Séance active e2e", _dirty: 0, createdAt: now.toISOString(), updatedAt: now.toISOString() });
+    for (let n = 1; n <= sets; n++) {
+      await add("workoutSets", { userId: user, uuid: `e2e-active-${id}-${n}`, workoutId: id, exerciseId: ex.id, setNumber: n, completed: false, restSec: 90, _dirty: 0, createdAt: now.toISOString(), updatedAt: now.toISOString() });
+    }
+    db.close();
+    return id;
+  }, { user: USER, sets, exercise });
+}
+
+await test("a session keeps what is typed and the rest running across a reload", async () => {
+  const id = await sessionWithSets();
+  await page.goto(`${BASE}/fr/log/session?id=${id}`);
+  const reps = page.getByRole("spinbutton", { name: "Répétitions" });
+  await reps.first().waitFor({ timeout: 10000 });
+  // Typed, not left: saved on the device a moment later all the same.
+  await reps.first().fill("12");
+  await page.waitForTimeout(900);
+  await page.reload();
+  await reps.first().waitFor({ timeout: 10000 });
+  expect((await reps.first().inputValue()) === "12", `the reps typed were lost: "${await reps.first().inputValue()}"`);
+  // A set done starts the rest; reloaded, the rest goes on to the same moment.
+  await page.getByRole("button", { name: "Marquer comme faite" }).first().click();
+  const rest = page.getByRole("timer", { name: "Repos" });
+  await rest.waitFor({ timeout: 5000 });
+  await page.waitForTimeout(1500);
+  await page.reload();
+  await rest.waitFor({ timeout: 10000 });
+  const left = await rest.innerText();
+  expect(/1:2\d|1:1\d|8\d|7\d/.test(left), `the rest did not go on from where it was: "${left}"`);
+});
+
 // ── The menu wheel, with real pointer input ─────────────────────────
 // Mouse moves and touches go through the browser's own input pipeline (not
 // element.click()), so pointer capture, hit-testing and pointercancel behave

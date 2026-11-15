@@ -34,6 +34,8 @@ import { useAppPrefs } from "@/hooks/useAppPrefs";
 import { useSessionFocus } from "@/hooks/useSessionFocus";
 import { beep, unlockAudio } from "@/lib/beep";
 import { cancelRestEnd, scheduleRestEnd } from "@/lib/restAlerts";
+import { clearRestEnd, loadRestEnd, saveRestEnd } from "@/lib/restTimer";
+import { useDebouncedSave } from "@/hooks/useDebouncedSave";
 import { PlateCalculator } from "@/components/domain/PlateCalculator";
 import { CardioLogger } from "@/components/domain/CardioLogger";
 import { formatDistance, formatDuration, formatPace, isCardio, isCardioDone, newCardioRecords } from "@/lib/cardio";
@@ -387,12 +389,19 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
   }, []);
 
   function startRest(seconds: number) {
+    const endsAt = timestampIn(seconds);
+    if (restPrefs.notify) scheduleRestEnd(endsAt, t("restOverTitle"), t("restOverBody"));
+    runRestUntil(endsAt);
+  }
+
+  /** Count down to a moment: a rest just begun, or one found again after a reload. */
+  function runRestUntil(endsAt: number) {
     if (timerRef.current) clearInterval(timerRef.current);
-    setRest(seconds);
     // Against the clock rather than counting ticks: a locked phone skips ticks.
-    restEndsAt.current = timestampIn(seconds);
+    restEndsAt.current = endsAt;
+    setRest(Math.max(1, Math.ceil((endsAt - timestampIn(0)) / 1000)));
+    saveRestEnd(workoutId, endsAt);
     let lastBeep = 0;
-    if (restPrefs.notify) scheduleRestEnd(restEndsAt.current, t("restOverTitle"), t("restOverBody"));
     timerRef.current = setInterval(() => {
       const left = Math.ceil((restEndsAt.current - Date.now()) / 1000);
       if (left > 0) {
@@ -405,6 +414,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
       }
       if (timerRef.current) clearInterval(timerRef.current);
       setRest(null);
+      clearRestEnd(workoutId);
       if (restPrefs.sound) beep("go");
       if (restPrefs.vibrate) navigator.vibrate?.([300, 120, 300]);
     }, 500);
@@ -414,8 +424,20 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
   function stopRest() {
     if (timerRef.current) clearInterval(timerRef.current);
     setRest(null);
+    clearRestEnd(workoutId);
     cancelRestEnd();
   }
+
+  // A rest running when the page was closed or reloaded goes on to the same moment.
+  const restResumed = useRef(false);
+  useEffect(() => {
+    if (restResumed.current) return;
+    restResumed.current = true;
+    const endsAt = loadRestEnd(workoutId);
+    if (endsAt) runRestUntil(endsAt);
+    // Once, on opening the session.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function startEffort(next: { setId: number; setNumber: number; restSec?: number; timed: boolean; hint: { weightKg?: number | null; targetReps?: string } }) {
     stopRest();
@@ -443,6 +465,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
 
   function extendRest(seconds: number) {
     restEndsAt.current += seconds * 1000;
+    saveRestEnd(workoutId, restEndsAt.current);
     setRest((r) => (r === null ? r : r + seconds));
     if (restPrefs.notify) scheduleRestEnd(restEndsAt.current, t("restOverTitle"), t("restOverBody"));
   }
@@ -921,9 +944,9 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                     >
                       {s.isWarmup ? `${t("warmupShort")}${warmups.indexOf(s) + 1}` : s.setNumber}
                     </span>
-                    {!bodyweight && <NumCell key={`w${s.weightKg ?? ""}`} label={t("weight")} placeholder={plannedFor(s) !== undefined ? String(plannedFor(s)) : previousTop !== null ? String(suggestion ?? previousTop) : undefined} value={s.weightKg} onChange={(v) => s.id && updateWorkoutSet(s.id, { weightKg: v })} />}
-                    <NumCell key={`r${s.reps ?? ""}`} label={t("reps")} placeholder={target?.targetReps} value={s.reps} onChange={(v) => s.id && updateWorkoutSet(s.id, { reps: v })} />
-                    <NumCell key={`p${s.rpe ?? ""}`} label={t("rpe")} value={s.rpe} onChange={(v) => s.id && updateWorkoutSet(s.id, { rpe: v !== undefined && v >= 1 && v <= 10 ? v : undefined })} />
+                    {!bodyweight && <NumCell label={t("weight")} placeholder={plannedFor(s) !== undefined ? String(plannedFor(s)) : previousTop !== null ? String(suggestion ?? previousTop) : undefined} value={s.weightKg} onChange={(v) => s.id && updateWorkoutSet(s.id, { weightKg: v })} />}
+                    <NumCell label={t("reps")} placeholder={target?.targetReps} value={s.reps} onChange={(v) => s.id && updateWorkoutSet(s.id, { reps: v })} />
+                    <NumCell label={t("rpe")} value={s.rpe} onChange={(v) => s.id && updateWorkoutSet(s.id, { rpe: v !== undefined && v >= 1 && v <= 10 ? v : undefined })} />
                     <button
                       onClick={() =>
                         s.id &&
@@ -1230,15 +1253,26 @@ function formatPerformance(sets: { weightKg?: number; reps?: number }[], num: (n
 }
 
 function NumCell({ label, placeholder, value, onChange }: { label: string; placeholder?: string; value?: number; onChange: (v: number | undefined) => void }) {
+  const ref = useRef<HTMLInputElement>(null);
+  // Saved as it is typed (on the device), and at once when the field is left.
+  const { schedule, flush } = useDebouncedSave(onChange);
+  const read = (text: string) => (text === "" ? undefined : Number(text));
+  // A value changed elsewhere (prefill, a tick filling the set) shows, unless the field is being typed in.
+  useEffect(() => {
+    const el = ref.current;
+    if (el && document.activeElement !== el) el.value = value === undefined || value === null ? "" : String(value);
+  }, [value]);
   return (
     <input
+      ref={ref}
       type="number"
       inputMode="decimal"
       defaultValue={value ?? ""}
       placeholder={placeholder}
+      onInput={(e) => schedule(read(e.currentTarget.value))}
       onBlur={(e) => {
-        const v = e.target.value === "" ? undefined : Number(e.target.value);
-        onChange(v);
+        schedule(read(e.target.value));
+        flush();
       }}
       aria-label={label}
       className="h-11 w-full rounded-md border border-border bg-transparent px-1 text-center text-base outline-none focus:border-accent-500"
