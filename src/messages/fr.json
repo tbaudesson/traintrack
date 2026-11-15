@@ -361,7 +361,10 @@
     "undo": "Annuler",
     "deleteWorkoutConfirm": "Supprimer cette séance ?",
     "deleteWorkoutText": "La séance et toutes ses séries seront supprimées.",
-    "exerciseShort": "Exercice"
+    "exerciseShort": "Exercice",
+    "lastTimeSet": "Dernière fois : {value}",
+    "reuse": "Reprendre",
+    "reuseLabel": "Reprendre {value} pour la série {n}"
   },
   "progress": {
     "title": "Progrès",

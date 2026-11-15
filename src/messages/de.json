@@ -361,7 +361,10 @@
     "undo": "Rückgängig",
     "deleteWorkoutConfirm": "Diese Einheit löschen?",
     "deleteWorkoutText": "Die Einheit und alle ihre Sätze werden gelöscht.",
-    "exerciseShort": "Übung"
+    "exerciseShort": "Übung",
+    "lastTimeSet": "Letztes Mal: {value}",
+    "reuse": "Übernehmen",
+    "reuseLabel": "{value} für Satz {n} übernehmen"
   },
   "progress": {
     "title": "Fortschritt",

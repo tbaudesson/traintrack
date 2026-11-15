@@ -361,7 +361,10 @@
     "undo": "Undo",
     "deleteWorkoutConfirm": "Delete this session?",
     "deleteWorkoutText": "The session and all its sets will be deleted.",
-    "exerciseShort": "Exercise"
+    "exerciseShort": "Exercise",
+    "lastTimeSet": "Last time: {value}",
+    "reuse": "Reuse",
+    "reuseLabel": "Reuse {value} for set {n}"
   },
   "progress": {
     "title": "Progress",

@@ -1040,6 +1040,28 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                     >
                       <MoreHorizontal className="size-5" aria-hidden="true" />
                     </button>
+                    {(() => {
+                      // What this set was last time, to take again in one tap; only shown, nothing computed anew.
+                      const before = !s.isWarmup && !s.completed ? previous[work.indexOf(s)] : undefined;
+                      if (!before || !before.reps) return null;
+                      const value = (before.weightKg ?? 0) > 0 ? `${num(before.weightKg!)} × ${before.reps}` : String(before.reps);
+                      const same = (s.reps ?? null) === before.reps && (bodyweight || (s.weightKg ?? null) === (before.weightKg ?? null));
+                      return (
+                        <p className="col-span-full flex items-center gap-2 pl-11 text-xs text-muted-foreground">
+                          <span>{t("lastTimeSet", { value })}</span>
+                          {!same && (
+                            <button
+                              type="button"
+                              onClick={() => s.id && updateWorkoutSet(s.id, bodyweight ? { reps: before.reps } : { weightKg: before.weightKg, reps: before.reps })}
+                              aria-label={t("reuseLabel", { value, n: s.setNumber })}
+                              className="min-h-9 rounded-full px-2 font-semibold text-accent-text hover:bg-accent-500/10"
+                            >
+                              {t("reuse")}
+                            </button>
+                          )}
+                        </p>
+                      );
+                    })()}
                   </div>
                 ))}
 

@@ -569,8 +569,8 @@ await test("the training hub puts three ways to train first, and keeps every oth
 });
 
 /** A session of today with one exercise and its sets, straight in the device's store; its id. */
-async function sessionWithSets(sets = 3, exercise = "Push-up") {
-  return page.evaluate(async ({ user, sets, exercise }) => {
+async function sessionWithSets(sets = 3, exercise = "Push-up", { daysAgo = 0, reps = [] } = {}) {
+  return page.evaluate(async ({ user, sets, exercise, daysAgo, reps }) => {
     const db = await new Promise((resolve, reject) => {
       const req = indexedDB.open("TrainTrack");
       req.onsuccess = () => resolve(req.result);
@@ -585,14 +585,17 @@ async function sessionWithSets(sets = 3, exercise = "Push-up") {
     });
     const ex = (await all("exercises")).find((e) => e.name === exercise);
     const now = new Date();
-    const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const day = new Date(now);
+    day.setDate(now.getDate() - daysAgo);
+    const date = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
     const id = await add("workouts", { userId: user, uuid: `e2e-active-${Date.now()}`, date, title: "Séance active e2e", _dirty: 0, createdAt: now.toISOString(), updatedAt: now.toISOString() });
     for (let n = 1; n <= sets; n++) {
-      await add("workoutSets", { userId: user, uuid: `e2e-active-${id}-${n}`, workoutId: id, exerciseId: ex.id, setNumber: n, completed: false, restSec: 90, _dirty: 0, createdAt: now.toISOString(), updatedAt: now.toISOString() });
+      const done = reps[n - 1] !== undefined;
+      await add("workoutSets", { userId: user, uuid: `e2e-active-${id}-${n}`, workoutId: id, exerciseId: ex.id, setNumber: n, completed: done, reps: done ? reps[n - 1] : undefined, restSec: 90, _dirty: 0, createdAt: now.toISOString(), updatedAt: now.toISOString() });
     }
     db.close();
     return id;
-  }, { user: USER, sets, exercise });
+  }, { user: USER, sets, exercise, daysAgo, reps });
 }
 
 await test("a session keeps what is typed and the rest running across a reload", async () => {
@@ -655,6 +658,20 @@ await test("a set's menu holds its RPE and deletes it, with 5 s to undo", async 
   expect(box && box.x >= 0 && box.x + box.width <= 390, `"Finish" goes past the screen: ${box?.x}+${box?.width}`);
   if (process.env.E2E_SHOTS) await page.screenshot({ path: join(ARTIFACTS, "active-session-screen.png") });
   await page.getByRole("button", { name: /Ajouter un exercice/ }).waitFor({ timeout: 5000 });
+});
+
+await test("each set shows what it was last time, and takes it again in one tap", async () => {
+  await sessionWithSets(3, "Plank", { daysAgo: 3, reps: [45, 40, 35] });
+  const id = await sessionWithSets(3, "Plank");
+  await page.goto(`${BASE}/fr/log/session?id=${id}`);
+  await page.getByText("Dernière fois : 45", { exact: true }).waitFor({ timeout: 10000 });
+  await page.getByText("Dernière fois : 35", { exact: true }).waitFor({ timeout: 5000 });
+  await page.getByRole("button", { name: "Reprendre 45 pour la série 1" }).click();
+  const first = page.getByRole("spinbutton").first();
+  await page.waitForFunction(() => document.querySelector('input[type="number"]')?.value === "45", null, { timeout: 5000 });
+  expect((await first.inputValue()) === "45", `set 1 not filled: "${await first.inputValue()}"`);
+  // Taken: nothing more to take for that set.
+  expect(!(await page.getByRole("button", { name: "Reprendre 45 pour la série 1" }).count()), "Reuse still offered once taken");
 });
 
 // ── The menu wheel, with real pointer input ─────────────────────────
