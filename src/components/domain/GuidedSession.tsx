@@ -261,7 +261,7 @@ function Stepper({ label, unit, value, step, onChange }: { label: string; unit?:
             placeholder="0"
             onChange={(e) => set(Number(e.target.value.replace(",", ".")) || 0)}
             aria-label={label}
-            className="w-full bg-transparent text-center text-5xl font-bold tabular-nums outline-none"
+            className="w-full rounded-xl bg-transparent text-center text-5xl font-bold tabular-nums outline-none focus-visible:ring-2 focus-visible:ring-accent-500/60"
           />
           {unit && <span className="text-lg text-muted-foreground">{unit}</span>}
         </label>
