@@ -11,7 +11,7 @@ function MonthlyReportPageContent() {
   return (
     <>
       <PageHeader title={t("title")} showBack />
-      <div className="p-4 pb-28">
+      <div className="mx-auto max-w-5xl p-4 pb-28 md:p-6">
         <MonthlyReportView />
       </div>
     </>

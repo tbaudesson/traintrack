@@ -76,7 +76,7 @@ export default function PrivacyPage() {
   return (
     <>
       <PageHeader title={doc.title} showBack />
-      <div className="mx-auto max-w-2xl space-y-5 p-4 pb-24">
+      <article className="t-legal-document mx-auto my-4 max-w-2xl space-y-5 rounded-2xl p-5 pb-24 md:my-8 md:p-8">
         <p className="text-xs text-muted-foreground">{doc.updated}</p>
         <p className="text-sm text-muted-foreground">{doc.intro}</p>
         {doc.sections.map((s) => (
@@ -85,7 +85,7 @@ export default function PrivacyPage() {
             <p className="text-sm leading-relaxed text-muted-foreground">{s.p}</p>
           </section>
         ))}
-      </div>
+      </article>
     </>
   );
 }

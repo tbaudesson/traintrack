@@ -563,6 +563,19 @@
     border: 1px solid color-mix(in oklab, var(--accent-500) 28%, var(--border));
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12), 0 28px 70px -38px #000, 0 0 42px color-mix(in oklab, var(--accent-500) 10%, transparent);
   }
+  .t-onboarding-shell {
+    background-image:
+      radial-gradient(circle at 88% 18%, color-mix(in oklab, var(--accent-500) 22%, transparent), transparent 30%),
+      repeating-linear-gradient(135deg, transparent 0 7px, color-mix(in oklab, var(--foreground) 2.5%, transparent) 7px 8px),
+      linear-gradient(145deg, color-mix(in oklab, var(--surface-1) 95%, white), var(--surface-1));
+    border: 1px solid color-mix(in oklab, var(--accent-500) 28%, var(--border));
+    box-shadow: var(--lift-lg);
+  }
+  .t-legal-document {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    box-shadow: var(--lift);
+  }
   @media (min-width: 768px) {
     .t-settings-grid {
       align-items: start;

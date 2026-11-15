@@ -147,7 +147,7 @@ export default function OnboardingPage() {
 
   if (intro) {
     return (
-      <div className="mx-auto flex min-h-[80vh] max-w-lg flex-col justify-center gap-6 p-6">
+      <div className="t-onboarding-shell mx-auto flex min-h-[80vh] max-w-2xl flex-col justify-center gap-6 rounded-3xl p-6 md:my-8 md:p-10">
         <div className="flex size-16 items-center justify-center rounded-3xl bg-accent-500/15 text-accent-text">
           <Sparkles className="size-8" aria-hidden="true" />
         </div>
@@ -179,7 +179,7 @@ export default function OnboardingPage() {
   return (
     <>
       <PageHeader title={t("title")} />
-      <div className="mx-auto max-w-lg space-y-5 p-4 pb-28">
+      <div className="mx-auto max-w-2xl space-y-5 p-4 pb-28 md:p-6">
         <div className="space-y-2">
           <p className="text-xs font-semibold tracking-widest text-accent-text uppercase">
             {tw("step", { step: step + 1, total: STEPS })}
