@@ -59,7 +59,8 @@ export function WeekStrip({
 
   return (
     <section className="t-surface space-y-3 rounded-2xl p-4 ring-1 ring-foreground/5">
-      <div className="flex items-center justify-between">
+      {/* On a narrow screen, "Edit" goes under the title rather than past the card's edge. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-2">
         <div className="flex items-center gap-1">
           {offset !== undefined && onOffset && (
             <button type="button" onClick={() => onOffset(offset - 1)} aria-label={t("weekPrevious")} className="-ml-2 flex size-10 items-center justify-center rounded-full hover:bg-muted">
@@ -92,7 +93,7 @@ export function WeekStrip({
           </span>
         )}
         {/* With a planning, the days are set program by program. */}
-        <Link href={upcoming ? "/programs" : "/settings"} className="flex min-h-10 items-center text-sm font-medium text-accent-text">
+        <Link href={upcoming ? "/programs" : "/settings"} className="ml-auto flex min-h-10 items-center text-sm font-medium text-accent-text">
           {planned ? t("weekPlanEdit") : t("weekPlanSetup")}
         </Link>
       </div>

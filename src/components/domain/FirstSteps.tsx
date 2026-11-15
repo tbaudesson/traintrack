@@ -34,7 +34,7 @@ export function FirstSteps({ steps, onDismiss }: { steps: FirstStep[]; onDismiss
           <h2 id="first-steps-title" className="text-sm font-semibold">
             {t("title")}
           </h2>
-          <p className="truncate text-xs text-muted-foreground">
+          <p className="line-clamp-2 text-xs text-muted-foreground">
             {t("progress", { done, total: steps.length })}
             {next && !open && (
               <>
