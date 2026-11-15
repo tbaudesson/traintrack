@@ -675,7 +675,8 @@
     "typeHint_consistency": "Reiht Mitglieder nach Anzahl verschiedener Trainingstage.",
     "status_active": "Aktiv",
     "status_upcoming": "Bevorstehend",
-    "status_ended": "Beendet"
+    "status_ended": "Beendet",
+    "planRequired": "Eine Challenge zu erstellen ist in deiner Lizenz nicht enthalten."
   },
   "messages": {
     "title": "Nachrichten",
@@ -809,7 +810,35 @@
     "inv_revoked": "widerrufen",
     "editName": "Name bearbeiten",
     "nameSaved": "Gespeichert",
-    "templates": "Vorlagen"
+    "templates": "Vorlagen",
+    "featGroup_training": "Training",
+    "featGroup_running": "Laufen",
+    "featGroup_nutrition": "Ernährung",
+    "featGroup_followUp": "Verlauf",
+    "featGroup_coaching": "Coaching",
+    "featGroup_vaulting": "Voltigieren",
+    "featServer": "vom Server geprüft",
+    "feat_planning": "Erweiterte Planung",
+    "featHint_planning": "Einheit verschieben, Express-Version, Kalenderexport",
+    "feat_level_tests": "Leistungstests",
+    "featHint_level_tests": "Testseite und Erinnerung alle sechs Wochen",
+    "feat_excel_import": "Excel-Import",
+    "featHint_excel_import": "Ein Programm aus einer Excel-Datei importieren",
+    "featHint_ai_programs": "Ein Programm mit KI erstellen (eigener Schlüssel)",
+    "feat_running": "Laufen",
+    "featHint_running": "Persönliche Tempos, geführte Intervalle, Laufguide",
+    "featHint_nutrition": "Mahlzeitenprotokoll, Ziele, Trinken",
+    "feat_meal_plans": "Mahlzeitenideen",
+    "featHint_meal_plans": "Mahlzeiten passend zu Zielen und Einheiten des Tages",
+    "featHint_readiness": "Tagesform-Abfrage und leichtere Einheit",
+    "featHint_advanced_progress": "Geschätztes 1RM, detaillierte Kurven",
+    "feat_reports": "Berichte",
+    "featHint_reports": "Wochen-, Monats- und Programmbericht",
+    "featHint_coaching": "Teams erstellen, Athleten einladen, ihre Belastung verfolgen",
+    "feat_challenges": "Challenges",
+    "featHint_challenges": "Team-Challenges erstellen (ansehen bleibt möglich)",
+    "feat_vaulting": "Voltigieren",
+    "featHint_vaulting": "Wettkämpfe und Pferde"
   },
   "profile": {
     "title": "Profil",
@@ -1286,7 +1315,8 @@
     "returningChip": "Rückkehr W{week}/3",
     "stepsHint": "Ein Tipp: aktuelle Verletzung (rot). Noch einer, wenn verheilt: schrittweise Rückkehr über 3 Wochen (orange). Ein letzter zum Entfernen.",
     "returnLine": "Rückkehr nach Verletzung ({area}): Woche {week} von 3, Gewichte −{percent} %, um sanft einzusteigen.",
-    "returnLastWeek": "Rückkehr nach Verletzung ({area}): letzte Woche, übliche Gewichte, aufhören, wenn der Schmerz zurückkommt."
+    "returnLastWeek": "Rückkehr nach Verletzung ({area}): letzte Woche, übliche Gewichte, aufhören, wenn der Schmerz zurückkommt.",
+    "cautiousKept": "Nicht genug risikofreie Übungen für diesen Schwerpunkt: {count, plural, one {# Übung mit „Vorsicht“ bleibt} other {# Übungen mit „Vorsicht“ bleiben}}, nur schmerzfrei ausführen."
   },
   "catalog": {
     "title": "Fertige Programme",

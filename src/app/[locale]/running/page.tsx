@@ -22,12 +22,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { RunPacesCard } from "@/components/domain/RunPacesCard";
 import type { IntervalResult } from "@/components/domain/IntervalPlayer";
 import { RunGuide, runSummary, useRunWords } from "@/components/domain/RunGuide";
+import { RequireFeature } from "@/components/domain/UpgradeNotice";
 
 /**
  * Running: one's paces, and interval sessions to run on their own, played
  * block by block with the voice, each effort at one's own pace.
  */
-export default function RunningPage() {
+function RunningPageContent() {
   const t = useTranslations("running");
   const router = useRouter();
   const { num } = useFormat();
@@ -154,5 +155,13 @@ export default function RunningPage() {
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+export default function RunningPage() {
+  return (
+    <RequireFeature feature="running" namespace="running">
+      <RunningPageContent />
+    </RequireFeature>
   );
 }

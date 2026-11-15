@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/page-parts";
 import { localDateIn } from "@/lib/dates";
 import { useFormat } from "@/lib/format";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 
 const TYPES: ChallengeType[] = ["volume", "sessions", "consistency"];
 
@@ -28,6 +29,7 @@ function todayISO(offset = 0) {
 export default function ChallengesPage() {
   const t = useTranslations("challenges");
   const { user } = useAuth();
+  const { hasFeature } = useFeatureAccess();
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,9 +58,11 @@ export default function ChallengesPage() {
         title={t("title")}
         showBack
         actions={
-          <Button size="sm" onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-1 h-4 w-4" />{t("create")}
-          </Button>
+          hasFeature("challenges") ? (
+            <Button size="sm" onClick={() => setCreateOpen(true)}>
+              <Plus className="mr-1 h-4 w-4" />{t("create")}
+            </Button>
+          ) : undefined
         }
       />
       <div className="space-y-3 p-4 pb-24">
@@ -213,7 +217,8 @@ function CreateChallengeDialog({
       setTeamName("");
       onCreated();
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      const message = e instanceof Error ? e.message : String(e);
+      setError(message.includes("PLAN_REQUIRED") ? t("planRequired") : message);
     } finally {
       setBusy(false);
     }

@@ -3,9 +3,10 @@
 import { useTranslations } from "next-intl";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MonthlyReportView } from "@/components/domain/MonthlyReportView";
+import { RequireFeature } from "@/components/domain/UpgradeNotice";
 
 /** The athlete's own monthly report. */
-export default function MonthlyReportPage() {
+function MonthlyReportPageContent() {
   const t = useTranslations("monthly");
   return (
     <>
@@ -14,5 +15,13 @@ export default function MonthlyReportPage() {
         <MonthlyReportView />
       </div>
     </>
+  );
+}
+
+export default function MonthlyReportPage() {
+  return (
+    <RequireFeature feature="reports" namespace="monthly">
+      <MonthlyReportPageContent />
+    </RequireFeature>
   );
 }

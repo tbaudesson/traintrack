@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { INJURY_RULES, bySafety, declareInjury, injuryState, injuryWarning, isAvoided, returnAdjust, toggleInjury } from "./injuries";
 import { NAMES } from "./exerciseNames";
-import { INTERVAL_EXERCISES, buildIntervalSession } from "./intervals";
+import { INTERVAL_EXERCISES, buildIntervalSession, injuryPool } from "./intervals";
 
 describe("injuryWarning", () => {
   it("advises against what loads the injured area most", () => {
@@ -77,4 +77,28 @@ it("leaves the exercises to avoid out of the timed sessions", () => {
   const pool = INTERVAL_EXERCISES.filter((e) => !isAvoided(e.name, injuries));
   const s = buildIntervalSession({ focus: "full", dumbbells: true, pattern: "45-15", minutes: 45, seed: 3 }, pool);
   expect(s.rounds.flat().some((e) => isAvoided(e.name, injuries))).toBe(false);
+});
+
+describe("timed sessions with an injury", () => {
+  const shoulder = [{ area: "shoulder" as const }];
+  it("leave out what loads the shoulder, even lightly", () => {
+    for (const focus of ["full", "abs", "lower"] as const)
+      for (const dumbbells of [false, true]) {
+        const plan = { focus, dumbbells, pattern: "45-15" as const, minutes: 45, seed: 7 };
+        const { pool, cautious } = injuryPool(plan, shoulder);
+        const names = buildIntervalSession(plan, pool).rounds.flat().map((e) => e.name);
+        for (const banned of ["Push-up", "Plank", "Jumping Jack", "Burpee", "Mountain Climber", "Knee Push-up", "Bear Crawl"]) expect(names).not.toContain(banned);
+        expect(cautious, `${focus} ${dumbbells}`).toEqual([]);
+        // Enough left for full rounds.
+        expect(new Set(names).size).toBeGreaterThanOrEqual(8);
+      }
+  });
+
+  it("keep a few cautious ones only when the focus runs short, never those to avoid", () => {
+    const knees = [{ area: "knee" as const }, { area: "hip" as const }, { area: "ankle" as const }];
+    const plan = { focus: "lower" as const, dumbbells: false, minutes: 45 };
+    const { pool, cautious } = injuryPool(plan, knees);
+    expect(cautious.length).toBeGreaterThan(0);
+    expect(pool.some((e) => isAvoided(e.name, knees))).toBe(false);
+  });
 });

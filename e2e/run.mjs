@@ -105,7 +105,8 @@ await page.evaluate(async (user) => {
       tx.oncomplete = resolve;
       tx.onerror = () => reject(tx.error);
     });
-  await put("authMeta", { key: "currentUser", userId: user, email: "e2e@test.local" });
+  // The licence as last seen online: every feature.
+  await put("authMeta", { key: "currentUser", userId: user, email: "e2e@test.local", planFeatures: ["ai_programs","nutrition","readiness","coaching","advanced_progress","planning","level_tests","excel_import","running","meal_plans","reports","challenges","vaulting"] });
   await put("athleteProfiles", {
     userId: user, uuid: "e2e-profile", goals: ["general_fitness"], fitnessLevel: "beginner", equipment: ["dumbbell"],
     trainingDays: [1, 3, 5], trainingTime: "18:30", _dirty: 0, createdAt: now, updatedAt: now,
@@ -479,6 +480,38 @@ await test("the home screen follows the sport practised, and offers it when anot
   await rows.getByText("Séance libre").waitFor({ timeout: 5000 });
   expect(!(await rows.getByText("Fractionnés guidés").count()), "the guided intervals are put forward in all-sports mode");
   await page.keyboard.press("Escape");
+});
+
+await test("a feature left out of the licence is locked, offline too", async () => {
+  const setFeatures = (features) =>
+    page.evaluate(async (features) => {
+      const db = await new Promise((resolve, reject) => {
+        const req = indexedDB.open("TrainTrack");
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction("authMeta", "readwrite");
+        const store = tx.objectStore("authMeta");
+        const get = store.get("currentUser");
+        get.onsuccess = () => store.put({ ...get.result, planFeatures: features });
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error);
+      });
+      db.close();
+    }, features);
+  const all = ["ai_programs","nutrition","readiness","coaching","advanced_progress","planning","level_tests","excel_import","running","meal_plans","reports","challenges","vaulting"];
+  await setFeatures(all.filter((f) => f !== "running" && f !== "level_tests"));
+  await page.goto(`${BASE}/fr/running`);
+  await page.getByText("Licence requise").waitFor({ timeout: 10000 });
+  await page.goto(`${BASE}/fr/more`);
+  await page.getByText("Programmes").first().waitFor({ timeout: 10000 });
+  expect(!(await page.getByText("Course à pied", { exact: true }).count()), "running is still in the list");
+  expect(!(await page.getByText("Tests de niveau", { exact: true }).count()), "the level tests are still in the list");
+  await setFeatures(all);
+  await page.goto(`${BASE}/fr/running`);
+  await page.getByText("Licence requise").waitFor({ state: "detached", timeout: 10000 }).catch(() => {});
+  expect(!(await page.getByText("Licence requise").count()), "running stays locked with the feature back");
 });
 
 await test("no page threw an error", async () => {

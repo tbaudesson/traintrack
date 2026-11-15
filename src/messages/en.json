@@ -675,7 +675,8 @@
     "typeHint_consistency": "Ranks members by number of distinct training days.",
     "status_active": "Active",
     "status_upcoming": "Upcoming",
-    "status_ended": "Ended"
+    "status_ended": "Ended",
+    "planRequired": "Creating a challenge isn’t included in your plan."
   },
   "messages": {
     "title": "Messages",
@@ -809,7 +810,35 @@
     "inv_revoked": "revoked",
     "editName": "Edit name",
     "nameSaved": "Saved",
-    "templates": "Templates"
+    "templates": "Templates",
+    "featGroup_training": "Training",
+    "featGroup_running": "Running",
+    "featGroup_nutrition": "Nutrition",
+    "featGroup_followUp": "Follow-up",
+    "featGroup_coaching": "Coaching",
+    "featGroup_vaulting": "Vaulting",
+    "featServer": "checked by the server",
+    "feat_planning": "Advanced planning",
+    "featHint_planning": "Move a session, express version, calendar export",
+    "feat_level_tests": "Level tests",
+    "featHint_level_tests": "Tests page and a retest reminder every six weeks",
+    "feat_excel_import": "Excel import",
+    "featHint_excel_import": "Import a program from an Excel file",
+    "featHint_ai_programs": "Build a program with AI (the user’s own key)",
+    "feat_running": "Running",
+    "featHint_running": "Personal paces, guided intervals, run guide",
+    "featHint_nutrition": "Meal log, targets, hydration",
+    "feat_meal_plans": "Meal ideas",
+    "featHint_meal_plans": "Meals suggested from the targets and the day’s sessions",
+    "featHint_readiness": "Readiness check-in and lighter session",
+    "featHint_advanced_progress": "Estimated 1RM, detailed charts",
+    "feat_reports": "Reports",
+    "featHint_reports": "Weekly, monthly and end-of-program reports",
+    "featHint_coaching": "Create teams, invite athletes, follow their load",
+    "feat_challenges": "Challenges",
+    "featHint_challenges": "Create team challenges (seeing them stays possible)",
+    "feat_vaulting": "Vaulting",
+    "featHint_vaulting": "Competitions and horses"
   },
   "profile": {
     "title": "Profile",
@@ -1286,7 +1315,8 @@
     "returningChip": "return W{week}/3",
     "stepsHint": "One tap: injury in progress (red). Another once healed: a progressive return over 3 weeks (orange). One more to remove it.",
     "returnLine": "Coming back from injury ({area}): week {week} of 3, loads −{percent} % to ease back in.",
-    "returnLastWeek": "Coming back from injury ({area}): last week, usual loads, stop if the pain comes back."
+    "returnLastWeek": "Coming back from injury ({area}): last week, usual loads, stop if the pain comes back.",
+    "cautiousKept": "Not enough risk-free exercises for this focus: {count, plural, one {# exercise marked “Caution” is kept} other {# exercises marked “Caution” are kept}}, to do without pain."
   },
   "catalog": {
     "title": "Ready-made programs",

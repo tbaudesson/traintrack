@@ -39,15 +39,26 @@ export interface Invitation {
 
 // ─── Plans / licences ────────────────────────────────────────────────
 
-/** All gateable feature keys. */
-export const FEATURE_KEYS = [
-  "ai_programs",
-  "nutrition",
-  "readiness",
-  "coaching",
-  "advanced_progress",
+/**
+ * The features a licence can include, by theme. Those that keep data on the
+ * account are also checked by the server (migrations 021 and 052): a write
+ * without the feature is refused with PLAN_REQUIRED.
+ */
+export const FEATURE_GROUPS = [
+  { key: "training", features: ["planning", "level_tests", "excel_import", "ai_programs"] },
+  { key: "running", features: ["running"] },
+  { key: "nutrition", features: ["nutrition", "meal_plans"] },
+  { key: "followUp", features: ["readiness", "advanced_progress", "reports"] },
+  { key: "coaching", features: ["coaching", "challenges"] },
+  { key: "vaulting", features: ["vaulting"] },
 ] as const;
-export type FeatureKey = (typeof FEATURE_KEYS)[number];
+
+export type FeatureKey = (typeof FEATURE_GROUPS)[number]["features"][number];
+/** All gateable feature keys. */
+export const FEATURE_KEYS: FeatureKey[] = FEATURE_GROUPS.flatMap((g) => [...g.features]);
+
+/** The features the server checks itself, on what they save. */
+export const SERVER_CHECKED: readonly FeatureKey[] = ["nutrition", "meal_plans", "readiness", "running", "planning", "coaching", "challenges", "vaulting"];
 
 export interface Plan {
   id: string;

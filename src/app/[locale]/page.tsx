@@ -304,6 +304,7 @@ export default function HomePage() {
   // Last week's report, from Monday to Wednesday, until closed.
   const lastMonday = mondayOfDate(localDateIn(-7, now));
   const showReport =
+    hasFeature("reports") &&
     (Date.parse(`${today}T00:00:00Z`) - Date.parse(`${thisMonday}T00:00:00Z`)) / 86400000 < 3 &&
     reportClosed !== lastMonday &&
     workouts.some((w) => w.date >= lastMonday && w.date < thisMonday);
@@ -394,9 +395,9 @@ export default function HomePage() {
   // A sport chosen that the last weeks contradict: offer the one practised.
   const sportHint = detected && prefs.sport && kindOf(detected) !== kindOf(prefs.sport) && !closedCards.includes(`sport-${detected}`) ? detected : null;
   // Pressed for time: a shorter version of a strength session not begun, when it is long enough to shorten.
-  const canExpress = !!session && session.date === today && !session.workoutId && !session.day.cardio && session.day.exercises.length > 1 && dayMinutes(session.day) > 25;
+  const canExpress = hasFeature("planning") && !!session && session.date === today && !session.workoutId && !session.day.cardio && session.day.exercises.length > 1 && dayMinutes(session.day) > 25;
   // A plan just over (trained in the last four weeks): its review, until closed.
-  const finishedProgram = programs.find(
+  const finishedProgram = !hasFeature("reports") ? undefined : programs.find(
     (p) =>
       !!p.startDate &&
       !isTestProgram(p) &&
@@ -406,7 +407,7 @@ export default function HomePage() {
   );
   // The level tests, once done, again every six weeks.
   const testProgram = programs.find((p) => isTestProgram(p) && !p.assignedToUserId);
-  const tests = testProgram ? testsDue({ program: testProgram, workouts, today }) : null;
+  const tests = testProgram && hasFeature("level_tests") ? testsDue({ program: testProgram, workouts, today }) : null;
 
   // The notes of the home screen, most pressing first: a load rising too fast,
   // a low form, a deload week, a program just over, last week's report, the
@@ -442,7 +443,7 @@ export default function HomePage() {
                 setReportClosed(lastMonday);
               }}
             /></Fragment> }] : []),
-    ...(tests?.due && !closedCards.includes(`tests-${tests.next}`) ? [{ key: "tests", node: <Fragment key="tests">`tests-${tests.next}`) && (
+    ...(tests?.due && !closedCards.includes(`tests-${tests.next}`) ? [{ key: "tests", node: <Fragment key="tests">
             <HomeNote
               icon={Gauge}
               title={t("testsDue")}
@@ -554,7 +555,7 @@ export default function HomePage() {
   const freeRows = [
     { key: "free", rank: prefs.allSports ? 0 : activity === "strength" ? 0 : 3, node: <DetailRow key="free" onClick={startFree} disabled={starting} icon={Plus} tone="neutral" title={t("freeSession")} subtitle={t("freeSessionHint")} /> },
     { key: "intervals", rank: prefs.allSports ? 1 : activity === "bodyweight" ? 0 : 4, node: <DetailRow key="intervals" href="/intervals" icon={Timer} tone="neutral" title={ti("title")} subtitle={ti("hint")} /> },
-    ...(runner ? [{ key: "running", rank: 1, node: <DetailRow key="running" href="/running" icon={Footprints} tone="neutral" title={t("runIntervals")} subtitle={t("runIntervalsHint")} /> }] : []),
+    ...(runner && hasFeature("running") ? [{ key: "running", rank: 1, node: <DetailRow key="running" href="/running" icon={Footprints} tone="neutral" title={t("runIntervals")} subtitle={t("runIntervalsHint")} /> }] : []),
     { key: "mobility", rank: prefs.allSports ? 2 : 5, node: <DetailRow key="mobility" href="/mobility" icon={PersonStanding} tone="neutral" title={tmo("title")} subtitle={tmo("hint")} /> },
     {
       key: "endurance",
@@ -799,7 +800,7 @@ export default function HomePage() {
                 { key: "plan", done: programs.some((p) => (p.weekdays ?? []).length > 0), label: tf("plan"), href: "/programs" },
                 { key: "session", done: workouts.length > 0, label: tf("session"), onClick: start },
                 ...(hasFeature("readiness") ? [{ key: "readiness", done: readiness.length > 0, label: tf("readiness"), href: "/readiness" }] : []),
-                { key: "calendar", done: !!flags.calendar, label: tf("calendar"), onClick: exportCalendar },
+                ...(hasFeature("planning") ? [{ key: "calendar", done: !!flags.calendar, label: tf("calendar"), onClick: exportCalendar }] : []),
                 { key: "look", done: !!flags.look || prefs.style !== "classic", label: tf("look"), href: "/settings", onClick: () => setFlag("look", "look-seen") },
               ]}
             />
@@ -820,12 +821,12 @@ export default function HomePage() {
           <WeekStrip
             plan={plan}
             planned={planned.length > 0 || (profile?.trainingDays ?? []).length > 0}
-            onExport={exportCalendar}
+            onExport={hasFeature("planning") ? exportCalendar : undefined}
             upcoming={upcoming}
             offset={planned.length ? weekOffset : undefined}
             onOffset={(n) => setWeekChoice(Math.max(-4, Math.min(8, n)))}
             streak={streak?.weeks}
-            movable={profile ? movable : undefined}
+            movable={profile && hasFeature("planning") ? movable : undefined}
             onPickDay={setMoveDate}
           />
           {canExpress && (

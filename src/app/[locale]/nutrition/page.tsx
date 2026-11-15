@@ -264,7 +264,7 @@ export default function NutritionPage() {
         </Card>
 
         {/* Meal ideas for today, from the targets and the day's sessions. */}
-        <MealPlanCard targets={targets} entries={entries} onSetTargets={() => setEditTargets(true)} />
+        {hasFeature("meal_plans") && <MealPlanCard targets={targets} entries={entries} onSetTargets={() => setEditTargets(true)} />}
 
         {editTargets && (
           <Card>

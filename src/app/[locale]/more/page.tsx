@@ -42,14 +42,14 @@ export default function MorePage() {
       : []),
     { href: "/exercises", icon: ListChecks, label: t("exercises") },
     { href: "/programs", icon: ClipboardList, label: t("programs") },
-    { href: "/tests", icon: Gauge, label: t("tests") },
-    { href: "/running", icon: Footprints, label: t("running") },
+    ...(hasFeature("level_tests") ? [{ href: "/tests", icon: Gauge, label: t("tests") }] : []),
+    ...(hasFeature("running") ? [{ href: "/running", icon: Footprints, label: t("running") }] : []),
     { href: "/teams", icon: Users, label: t("teams") },
     ...(hasFeature("coaching") ? [{ href: "/activity", icon: Newspaper, label: t("activity") }] : []),
     { href: "/challenges", icon: Flag, label: t("challenges") },
     // Vaulting only: for a vaulter, or once there is something to see.
-    ...(vaulting || competitions.length ? [{ href: "/competitions", icon: Award, label: t("competitions") }] : []),
-    ...(vaulting || horses.length ? [{ href: "/horses", icon: PawPrint, label: t("horses") }] : []),
+    ...(hasFeature("vaulting") && (vaulting || competitions.length) ? [{ href: "/competitions", icon: Award, label: t("competitions") }] : []),
+    ...(hasFeature("vaulting") && (vaulting || horses.length) ? [{ href: "/horses", icon: PawPrint, label: t("horses") }] : []),
     { href: "/messages", icon: MessageCircle, label: t("messages") },
     { href: "/health", icon: Activity, label: t("health") },
   ];

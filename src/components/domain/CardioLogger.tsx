@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Footprints, Gauge, Info, Play, Target, Upload } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useRunVma } from "@/hooks/useRunVma";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { formatPace as formatKmPace, HR_ZONE_SHARE, hrZoneOf, paceAt } from "@/lib/runPaces";
 import { planRunBlocks } from "@/lib/runWorkouts";
 import { RunGuide } from "@/components/domain/RunGuide";
@@ -40,13 +41,16 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
   const tr = useTranslations("running");
   const { vma, guessed } = useRunVma();
   const run = workout.sport === "run";
+  // Personal paces and the run guide come with the running feature.
+  const { hasFeature } = useFeatureAccess();
+  const paces = run && hasFeature("running");
   const zonePace = (zone: number) => {
     const [slow, fast] = HR_ZONE_SHARE[zone];
     return tr("paceRange", { from: formatKmPace(paceAt(vma, slow)), to: formatKmPace(paceAt(vma, fast)) });
   };
   const plannedZone = run ? hrZoneOf(target?.intensity) : null;
   // A plan's run with repeats: played with the guide, at the athlete's paces.
-  const runBlocks = target ? planRunBlocks(target) : null;
+  const runBlocks = target && paces ? planRunBlocks(target) : null;
   const [running, setRunning] = useState(false);
 
   const save = () => updateWorkout(workout.id!, { distanceM: distanceM || undefined, durationSec: durationSec || undefined });
@@ -134,13 +138,13 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
                     <dt className="w-16 shrink-0 font-semibold">{t("zone", { zone })}</dt>
                     <dd className="text-muted-foreground">
                       {t(`zone${zone}`)}
-                      {run && <span className="block font-medium text-foreground tabular-nums">{zonePace(zone)}</span>}
+                      {paces && <span className="block font-medium text-foreground tabular-nums">{zonePace(zone)}</span>}
                     </dd>
                   </div>
                 ))}
               </dl>
             </details>}
-            {run && (
+            {paces && (
               <Link href="/running" className="flex min-h-10 items-center gap-1.5 text-sm font-medium text-accent-text">
                 <Footprints className="h-4 w-4 shrink-0" aria-hidden="true" />
                 {guessed ? tr("setPacesLink") : tr("pacesLink")}

@@ -29,6 +29,7 @@ import { CategoryIcon } from "@/components/domain/ProgramCatalog";
 import { SeasonTarget } from "@/components/domain/SeasonTarget";
 import { ProgramPlanning } from "@/components/domain/ProgramPlanning";
 import { ProgramReviewCard } from "@/components/domain/ProgramReviewCard";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
 
 /**
@@ -49,6 +50,7 @@ export default function ProgramPage() {
   const sets = useAllWorkoutSets();
   const readyMade = useReadyMadeNames();
   const lighterToday = useLighterToday();
+  const { hasFeature } = useFeatureAccess();
   const [busy, setBusy] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [sharing, setSharing] = useState(false);
@@ -184,7 +186,7 @@ export default function ProgramPage() {
         </section>
 
         {/* What it brought so far, and once over, what to follow next. */}
-        {!forSomeoneElse && (
+        {!forSomeoneElse && hasFeature("reports") && (
           <ProgramReviewCard program={program} workouts={workouts} sets={sets} exercises={exercises} today={today} canFollow={origin !== "coach"} />
         )}
 

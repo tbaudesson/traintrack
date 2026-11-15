@@ -11,6 +11,7 @@ import { createWorkout } from "@/hooks/useWorkouts";
 import { addWorkoutSet } from "@/hooks/useWorkoutSets";
 import {
   INTERVAL_EXERCISES,
+  injuryPool,
   INTERVAL_FOCUSES,
   INTERVAL_MINUTES,
   INTERVAL_PATTERNS,
@@ -23,7 +24,6 @@ import {
   type IntervalPlan,
 } from "@/lib/intervals";
 import { localDate } from "@/lib/dates";
-import { isAvoided } from "@/lib/injuries";
 import { unlockAudio } from "@/lib/beep";
 import { exerciseDescription, useExerciseLabel } from "@/lib/exerciseNames";
 import { demoVideo } from "@/lib/demoVideos";
@@ -33,6 +33,7 @@ import { SectionHeading } from "@/components/ui/page-parts";
 import { Button } from "@/components/ui/button";
 import { Choice, ChoiceField } from "@/components/ui/choice";
 import { IntervalPlayer, type IntervalResult } from "@/components/domain/IntervalPlayer";
+import { InjuryBadge } from "@/components/domain/InjuryBadge";
 
 const SAVED = "traintrack-interval-plan";
 const newSeed = () => Math.floor(Math.random() * 1_000_000) + 1;
@@ -100,7 +101,10 @@ export default function IntervalsPage() {
 
   // An injury leaves out the exercises that load the injured area most.
   const injuries = useMemo(() => athlete?.injuryAreas ?? [], [athlete]);
-  const pool = useMemo(() => INTERVAL_EXERCISES.filter((e) => !isAvoided(e.name, injuries)), [injuries]);
+  const { pool, leftOut, cautious } = useMemo(
+    () => (plan ? injuryPool(plan, injuries) : { pool: INTERVAL_EXERCISES, leftOut: 0, cautious: [] as string[] }),
+    [plan, injuries]
+  );
   const session = useMemo(() => (plan ? buildIntervalSession(plan, pool) : null), [plan, pool]);
 
   // Each exercise with its demo: the video, and the cue in the app's language.
@@ -224,9 +228,10 @@ export default function IntervalsPage() {
               rest,
             })}
           </p>
-          {injuries.length > 0 && pool.length < INTERVAL_EXERCISES.length && (
+          {leftOut > 0 && (
             <p className="rounded-lg bg-rose-50 p-2 text-xs text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">
-              {tinj("leftOut", { count: INTERVAL_EXERCISES.length - pool.length })}
+              {tinj("leftOut", { count: leftOut })}
+              {cautious.length > 0 && <> {tinj("cautiousKept", { count: cautious.length })}</>}
             </p>
           )}
           {circuits.map((round, i) => (
@@ -239,8 +244,9 @@ export default function IntervalsPage() {
                   <li key={e.name} className="flex min-h-9 items-center gap-2 text-sm">
                     <span className="w-5 text-right text-xs text-muted-foreground tabular-nums">{n + 1}</span>
                     <span className="flex-1">{xl(e.name)}</span>
+                    {cautious.includes(e.name) && <InjuryBadge exerciseName={e.name} injuries={injuries} />}
                     {e.equipment === "dumbbell" && <span className="text-xs text-muted-foreground">{t("withDumbbells")}</span>}
-                    {demoOf(e).video && <DemoButton onClick={() => setDemo({ name: xl(e.name), ...demoOf(e) })} />}
+                    {(demoOf(e).video || demoOf(e).cue) && <DemoButton onClick={() => setDemo({ name: xl(e.name), ...demoOf(e) })} />}
                   </li>
                 ))}
               </ol>

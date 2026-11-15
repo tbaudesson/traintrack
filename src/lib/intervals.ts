@@ -1,4 +1,5 @@
 import type { MuscleGroup } from "@/db";
+import { injuryWarning, type Injury } from "./injuries";
 
 /** What the session works: the belly, the whole body, or the legs and glutes. */
 export type IntervalFocus = "abs" | "full" | "lower";
@@ -75,10 +76,73 @@ export const INTERVAL_EXERCISES: IntervalExercise[] = [
   { name: "Dumbbell Sumo Squat", muscleGroup: "legs", equipment: "dumbbell", focus: ["lower"], kind: "strength", description: "Wide stance, toes out, hold a dumbbell between the legs and squat down, knees over the toes." },
   { name: "Dumbbell Push Press", muscleGroup: "shoulders", equipment: "dumbbell", focus: ["full"], kind: "strength", description: "Dumbbells at the shoulders, dip slightly at the knees, then drive them overhead with the legs." },
   { name: "Dumbbell Woodchop", muscleGroup: "core", equipment: "dumbbell", focus: ["abs", "full"], kind: "core", sides: true, description: "Hold one dumbbell with both hands, rotate it diagonally, hip to above the opposite shoulder." },
+  { name: "Butt Kicks", muscleGroup: "full_body", equipment: "bodyweight", focus: ["full", "lower"], kind: "cardio", description: "Run on the spot, bringing the heels up to the glutes, fast and light on the feet." },
+  { name: "Fast Feet", muscleGroup: "legs", equipment: "bodyweight", focus: ["full", "lower"], kind: "cardio", description: "Slightly crouched, tap the feet as fast as possible on the balls of the feet." },
+  { name: "Lateral Shuffle", muscleGroup: "legs", equipment: "bodyweight", focus: ["full", "lower"], kind: "cardio", description: "Knees bent, shuffle three steps sideways and back, staying low, without crossing the feet." },
+  { name: "Step Jack", muscleGroup: "full_body", equipment: "bodyweight", focus: ["full", "lower"], kind: "cardio", description: "Step one foot out to the side and back, then the other, fast, without jumping. Arms stay low." },
+  { name: "Standing Knee Drive", muscleGroup: "core", equipment: "bodyweight", focus: ["abs", "full"], kind: "cardio", description: "Standing tall, drive one knee up to hip height and back, then the other, fast, abs tight." },
+  { name: "Star Jump", muscleGroup: "full_body", equipment: "bodyweight", focus: ["full", "lower"], kind: "cardio", description: "Squat slightly, then jump up spreading arms and legs in a star, land softly feet together." },
+  { name: "Broad Jump", muscleGroup: "legs", equipment: "bodyweight", focus: ["lower"], kind: "cardio", description: "Swing the arms and jump forward as far as possible, land softly in a squat, walk back." },
+  { name: "Shadow Boxing", muscleGroup: "full_body", equipment: "bodyweight", focus: ["full"], kind: "cardio", description: "In a guard stance, throw quick punches straight ahead, light on the feet, without locking the elbows." },
+  { name: "Squat Thrust", muscleGroup: "full_body", equipment: "bodyweight", focus: ["full"], kind: "cardio", description: "Squat, hands on the floor, jump the feet back to a plank, jump them back in and stand up." },
+  { name: "Plank Jack", muscleGroup: "core", equipment: "bodyweight", focus: ["abs", "full"], kind: "cardio", description: "In a high plank, jump the feet apart and back together, hips level." },
+  { name: "Bear Crawl", muscleGroup: "full_body", equipment: "bodyweight", focus: ["full", "abs"], kind: "cardio", description: "On hands and feet, knees just off the floor, crawl forward and back with small steps, back flat." },
+  { name: "Sumo Squat", muscleGroup: "legs", equipment: "bodyweight", focus: ["lower", "full"], kind: "strength", description: "Wide stance, toes out, squat down with the knees over the toes, chest up, stand up." },
+  { name: "Squat Pulse", muscleGroup: "legs", equipment: "bodyweight", focus: ["lower"], kind: "strength", description: "Hold the bottom of a squat and move up and down a few centimetres, without standing up." },
+  { name: "Lateral Lunge", muscleGroup: "legs", equipment: "bodyweight", focus: ["lower", "full"], kind: "strength", description: "Step wide to one side, sit back on that leg with the other straight, push back. Alternate sides." },
+  { name: "Curtsy Lunge", muscleGroup: "legs", equipment: "bodyweight", focus: ["lower", "full"], kind: "strength", description: "Step one leg back and across behind the other, lower the knee, return. Alternate legs." },
+  { name: "Split Squat", muscleGroup: "legs", equipment: "bodyweight", focus: ["lower"], kind: "strength", sides: true, description: "In a long stride, lower the back knee towards the floor and push back up, feet staying put." },
+  { name: "Cossack Squat", muscleGroup: "legs", equipment: "bodyweight", focus: ["lower"], kind: "strength", description: "Very wide stance, sit down on one leg, the other straight with toes up, then shift to the other side." },
+  { name: "Single-Leg Glute Bridge", muscleGroup: "legs", equipment: "bodyweight", focus: ["lower", "abs"], kind: "strength", sides: true, description: "On your back, one foot on the floor and the other leg up, drive the hips up and squeeze the glutes." },
+  { name: "Bodyweight Calf Raise", muscleGroup: "legs", equipment: "bodyweight", focus: ["lower"], kind: "strength", description: "Standing, rise onto the toes as high as possible, pause, lower slowly." },
+  { name: "Good Morning", muscleGroup: "legs", equipment: "bodyweight", focus: ["lower"], kind: "strength", description: "Hands on the hips, knees soft, hinge forward with a flat back until the chest is near horizontal, stand up." },
+  { name: "Donkey Kick", muscleGroup: "legs", equipment: "bodyweight", focus: ["lower"], kind: "strength", sides: true, description: "On all fours, knee bent, push one heel up towards the ceiling without arching the back." },
+  { name: "Fire Hydrant", muscleGroup: "legs", equipment: "bodyweight", focus: ["lower"], kind: "strength", sides: true, description: "On all fours, lift one bent knee out to the side to hip height, lower it with control." },
+  { name: "Knee Push-up", muscleGroup: "chest", equipment: "bodyweight", focus: ["full"], kind: "strength", description: "Hands under the shoulders, knees on the floor, body in a straight line, knees to head, lower the chest and push up." },
+  { name: "Incline Push-up", muscleGroup: "chest", equipment: "bodyweight", focus: ["full"], kind: "strength", description: "Hands on a chair or a bench, body straight, lower the chest to the edge and push back up." },
+  { name: "Diamond Push-up", muscleGroup: "arms", equipment: "bodyweight", focus: ["full"], kind: "strength", description: "Hands together under the chest, thumbs and index fingers touching, lower the chest and push up, elbows close." },
+  { name: "Pike Push-up", muscleGroup: "shoulders", equipment: "bodyweight", focus: ["full"], kind: "strength", description: "Hips high in an upside-down V, bend the elbows to bring the head towards the floor, push back up." },
+  { name: "Bench Dip", muscleGroup: "arms", equipment: "bodyweight", focus: ["full"], kind: "strength", description: "Hands on the edge of a chair behind you, legs out, bend the elbows to lower the hips, push back up." },
+  { name: "Heel Taps", muscleGroup: "core", equipment: "bodyweight", focus: ["abs"], kind: "core", description: "On your back, knees bent, shoulders lifted, reach side to side to touch each heel." },
+  { name: "Reverse Crunch", muscleGroup: "core", equipment: "bodyweight", focus: ["abs"], kind: "core", description: "On your back, knees bent at 90 degrees, roll the hips off the floor towards the chest, lower slowly." },
+  { name: "Scissor Kicks", muscleGroup: "core", equipment: "bodyweight", focus: ["abs"], kind: "core", description: "On your back, legs straight and lifted, cross them one over the other, lower back on the floor." },
+  { name: "V-up", muscleGroup: "core", equipment: "bodyweight", focus: ["abs"], kind: "core", description: "Lying flat, lift the legs and the chest at the same time to touch the toes, lower with control." },
+  { name: "Sit-up", muscleGroup: "core", equipment: "bodyweight", focus: ["abs"], kind: "core", description: "On your back, knees bent, roll up to sitting, then lower slowly, hands at the temples." },
+  { name: "Standing Oblique Crunch", muscleGroup: "core", equipment: "bodyweight", focus: ["abs", "full"], kind: "core", description: "Standing, hands behind the head, bring one knee up to the side to meet the elbow, alternate." },
+  { name: "Glute Bridge Hold", muscleGroup: "core", equipment: "bodyweight", focus: ["abs", "lower"], kind: "core", description: "On your back, knees bent, lift the hips and hold them high, glutes and abs tight." },
+  { name: "Side Plank Hip Dip", muscleGroup: "core", equipment: "bodyweight", focus: ["abs"], kind: "core", sides: true, description: "In a side plank on the forearm, lower the hip towards the floor and lift it back up." },
+  { name: "Dumbbell Bent-Over Row", muscleGroup: "back", equipment: "dumbbell", focus: ["full"], kind: "strength", description: "Bent forward with a flat back, a dumbbell in each hand, pull them to the hips, lower with control." },
+  { name: "Dumbbell Floor Press", muscleGroup: "chest", equipment: "dumbbell", focus: ["full"], kind: "strength", description: "On your back, knees bent, press the dumbbells up, lower until the upper arms touch the floor." },
+  { name: "Dumbbell Curl to Press", muscleGroup: "shoulders", equipment: "dumbbell", focus: ["full"], kind: "strength", description: "Curl the dumbbells to the shoulders, then press them overhead, lower in reverse." },
+  { name: "Dumbbell Lateral Lunge", muscleGroup: "legs", equipment: "dumbbell", focus: ["lower", "full"], kind: "strength", description: "A dumbbell held at the chest, step wide to one side and sit back on that leg, push back. Alternate." },
+  { name: "Dumbbell Glute Bridge", muscleGroup: "legs", equipment: "dumbbell", focus: ["lower"], kind: "strength", description: "On your back, a dumbbell on the hips, drive the hips up and squeeze the glutes, lower slowly." },
+  { name: "Dumbbell Hammer Curl", muscleGroup: "arms", equipment: "dumbbell", focus: ["full"], kind: "strength", description: "Standing, palms facing each other, curl the dumbbells to the shoulders, lower slowly." },
+  { name: "Bird Dog", muscleGroup: "core", equipment: "bodyweight", focus: ["abs"], kind: "core", sides: true, description: "" },
+  { name: "Superman Hold", muscleGroup: "core", equipment: "bodyweight", focus: ["abs", "full"], kind: "core", description: "" },
 ];
 
 /** The exercises newly added to the library for timed sessions. */
 export const NEW_INTERVAL_EXERCISES = INTERVAL_EXERCISES.filter((e) => e.description && !["Side Plank", "Dead Bug", "Glute Bridge"].includes(e.name));
+
+/**
+ * The exercises a timed session may use, given the athlete's injuries. A
+ * circuit is done fast and tired, so nothing that loads an injured area goes
+ * in, not even lightly: those marked "caution" come back only when the focus
+ * would be short of exercises for a round, and never those to avoid.
+ */
+export function injuryPool(
+  plan: Pick<IntervalPlan, "focus" | "dumbbells" | "minutes">,
+  injuries: Pick<Injury, "area" | "healedOn">[],
+  all: IntervalExercise[] = INTERVAL_EXERCISES
+): { pool: IntervalExercise[]; leftOut: number; cautious: string[] } {
+  const level = (e: IntervalExercise) => injuryWarning(e.name, injuries)?.level ?? null;
+  const fits = (e: IntervalExercise) => e.focus.includes(plan.focus) && (plan.dumbbells || e.equipment === "bodyweight");
+  const safe = all.filter((e) => !level(e));
+  const short = exercisesPerRound(plan.minutes) - safe.filter(fits).length;
+  const cautious = short > 0 ? all.filter((e) => fits(e) && level(e) === "caution").slice(0, short) : [];
+  const pool = [...safe, ...cautious];
+  return { pool, leftOut: all.filter(fits).length - pool.filter(fits).length, cautious: cautious.map((e) => e.name) };
+}
 
 export function patternSeconds(pattern: IntervalPattern): { work: number; rest: number } {
   const [work, rest] = pattern.split("-").map(Number);

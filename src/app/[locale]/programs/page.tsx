@@ -147,10 +147,12 @@ export default function ProgramsPage() {
                 {tai("generate")}
               </Button>
             )}
-            <Button size="sm" variant="outline" onClick={() => setImporting(true)}>
-              <FileSpreadsheet className="mr-1 h-4 w-4" aria-hidden="true" />
-              {t("importExcel")}
-            </Button>
+            {hasFeature("excel_import") && (
+              <Button size="sm" variant="outline" onClick={() => setImporting(true)}>
+                <FileSpreadsheet className="mr-1 h-4 w-4" aria-hidden="true" />
+                {t("importExcel")}
+              </Button>
+            )}
             <Button size="sm" onClick={handleCreate} disabled={busy}>
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="mr-1 h-4 w-4" />{t("create")}</>}
             </Button>
@@ -273,7 +275,7 @@ export default function ProgramsPage() {
         </DialogContent>
       </Dialog>
 
-      <ProgramImportDialog open={importing} onOpenChange={setImporting} />
+      <ProgramImportDialog open={importing && hasFeature("excel_import")} onOpenChange={setImporting} />
     </>
   );
 }

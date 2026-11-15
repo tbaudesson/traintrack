@@ -4211,3 +4211,222 @@ ALTER TABLE athlete_profiles ADD CONSTRAINT athlete_profiles_meal_prefs_check
   );
 
 COMMIT;
+
+-- 052_plan_features_checked.sql
+-- Licences: more features to tick, and the server checks them on what is saved.
+--
+-- New features: running, meal_plans, level_tests, planning, reports,
+-- excel_import, challenges, vaulting. Every licence that exists gets them
+-- all, so no one loses anything: untick them afterwards on the admin page.
+--
+-- Checked by the server (refused with PLAN_REQUIRED without the feature):
+-- - readiness_checkins: readiness
+-- - nutrition_entries, hydration_logs: nutrition
+-- - competition_results, horses, horse_sessions: vaulting
+-- - athlete_profiles: run_paces (running), meal_prefs (meal_plans),
+--   schedule_moves (planning), when they change
+-- - create_challenge: challenges
+-- Deleting stays possible, and what was saved before stays readable.
+-- The rest (level tests, reports, Excel import) is worked out on the device.
+--
+-- Deploy: apply this file first, then the code.
+--
+-- Safe to re-run. All-or-nothing: wrapped in one transaction.
+
+BEGIN;
+
+-- ─── The new features, on every licence ──────────────────────────
+
+UPDATE plans
+SET features = (
+  SELECT COALESCE(jsonb_agg(DISTINCT f ORDER BY f), '[]'::jsonb)
+  FROM jsonb_array_elements_text(
+    COALESCE(features, '[]'::jsonb)
+    || '["running","meal_plans","level_tests","planning","reports","excel_import","challenges","vaulting"]'::jsonb
+  ) AS f
+);
+
+-- ─── The check ───────────────────────────────────────────────────
+
+-- The caller’s licence must include the feature. A call without a user
+-- (the service itself, scheduled jobs) passes.
+CREATE OR REPLACE FUNCTION require_plan_feature(p_feature TEXT)
+RETURNS VOID LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  IF auth.uid() IS NOT NULL AND NOT has_plan_feature(auth.uid(), p_feature) THEN
+    RAISE EXCEPTION 'PLAN_REQUIRED: %', p_feature USING ERRCODE = '42501';
+  END IF;
+END;
+$$;
+
+-- Rows of a feature: written only with it, deleted (deleted_at) always.
+-- An upsert of a row that exists is checked as the update that follows.
+CREATE OR REPLACE FUNCTION enforce_plan_feature_rows()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_exists BOOLEAN;
+BEGIN
+  IF NEW.deleted_at IS NOT NULL THEN
+    RETURN NEW;
+  END IF;
+  IF TG_OP = 'INSERT' THEN
+    v_exists := CASE TG_TABLE_NAME
+      WHEN 'readiness_checkins' THEN EXISTS (SELECT 1 FROM readiness_checkins r WHERE r.id = NEW.id)
+      WHEN 'nutrition_entries' THEN EXISTS (SELECT 1 FROM nutrition_entries r WHERE r.id = NEW.id)
+      WHEN 'hydration_logs' THEN EXISTS (SELECT 1 FROM hydration_logs r WHERE r.id = NEW.id)
+      WHEN 'competition_results' THEN EXISTS (SELECT 1 FROM competition_results r WHERE r.id = NEW.id)
+      WHEN 'horses' THEN EXISTS (SELECT 1 FROM horses r WHERE r.id = NEW.id)
+      WHEN 'horse_sessions' THEN EXISTS (SELECT 1 FROM horse_sessions r WHERE r.id = NEW.id)
+      ELSE false
+    END;
+    IF v_exists THEN
+      RETURN NEW;
+    END IF;
+  END IF;
+  PERFORM require_plan_feature(TG_ARGV[0]);
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS readiness_checkins_plan ON readiness_checkins;
+CREATE TRIGGER readiness_checkins_plan BEFORE INSERT OR UPDATE ON readiness_checkins
+  FOR EACH ROW EXECUTE FUNCTION enforce_plan_feature_rows('readiness');
+
+DROP TRIGGER IF EXISTS nutrition_entries_plan ON nutrition_entries;
+CREATE TRIGGER nutrition_entries_plan BEFORE INSERT OR UPDATE ON nutrition_entries
+  FOR EACH ROW EXECUTE FUNCTION enforce_plan_feature_rows('nutrition');
+
+DROP TRIGGER IF EXISTS hydration_logs_plan ON hydration_logs;
+CREATE TRIGGER hydration_logs_plan BEFORE INSERT OR UPDATE ON hydration_logs
+  FOR EACH ROW EXECUTE FUNCTION enforce_plan_feature_rows('nutrition');
+
+DROP TRIGGER IF EXISTS competition_results_plan ON competition_results;
+CREATE TRIGGER competition_results_plan BEFORE INSERT OR UPDATE ON competition_results
+  FOR EACH ROW EXECUTE FUNCTION enforce_plan_feature_rows('vaulting');
+
+DROP TRIGGER IF EXISTS horses_plan ON horses;
+CREATE TRIGGER horses_plan BEFORE INSERT OR UPDATE ON horses
+  FOR EACH ROW EXECUTE FUNCTION enforce_plan_feature_rows('vaulting');
+
+DROP TRIGGER IF EXISTS horse_sessions_plan ON horse_sessions;
+CREATE TRIGGER horse_sessions_plan BEFORE INSERT OR UPDATE ON horse_sessions
+  FOR EACH ROW EXECUTE FUNCTION enforce_plan_feature_rows('vaulting');
+
+-- The profile: some of its columns belong to a feature. Checked when they
+-- change to something (clearing them stays possible).
+CREATE OR REPLACE FUNCTION enforce_plan_feature_profile()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_old athlete_profiles%ROWTYPE;
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    IF EXISTS (SELECT 1 FROM athlete_profiles a WHERE a.id = NEW.id) THEN
+      RETURN NEW;
+    END IF;
+  ELSE
+    v_old := OLD;
+  END IF;
+  IF NEW.run_paces IS NOT NULL AND NEW.run_paces IS DISTINCT FROM v_old.run_paces THEN
+    PERFORM require_plan_feature('running');
+  END IF;
+  IF NEW.meal_prefs IS NOT NULL AND NEW.meal_prefs IS DISTINCT FROM v_old.meal_prefs THEN
+    PERFORM require_plan_feature('meal_plans');
+  END IF;
+  IF NEW.schedule_moves IS NOT NULL AND jsonb_typeof(NEW.schedule_moves) = 'array'
+     AND jsonb_array_length(NEW.schedule_moves) > 0
+     AND NEW.schedule_moves IS DISTINCT FROM v_old.schedule_moves THEN
+    PERFORM require_plan_feature('planning');
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS athlete_profiles_plan ON athlete_profiles;
+CREATE TRIGGER athlete_profiles_plan BEFORE INSERT OR UPDATE ON athlete_profiles
+  FOR EACH ROW EXECUTE FUNCTION enforce_plan_feature_profile();
+
+-- ─── Challenges: created with the feature ────────────────────────
+
+CREATE OR REPLACE FUNCTION create_challenge(
+  p_group_id UUID, p_name TEXT, p_type TEXT, p_start DATE, p_end DATE
+) RETURNS UUID LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_id UUID;
+BEGIN
+  IF NOT is_group_owner_or_manager(p_group_id) THEN
+    RAISE EXCEPTION 'Unauthorized: not the team trainer';
+  END IF;
+  PERFORM require_plan_feature('challenges');
+  IF p_type NOT IN ('volume', 'sessions', 'consistency') THEN
+    RAISE EXCEPTION 'Invalid challenge type';
+  END IF;
+  INSERT INTO challenges (group_id, created_by, name, type, start_date, end_date)
+  VALUES (p_group_id, auth.uid(), p_name, p_type, p_start, p_end)
+  RETURNING id INTO v_id;
+  RETURN v_id;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION require_plan_feature(TEXT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION require_plan_feature(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION create_challenge(UUID, TEXT, TEXT, DATE, DATE) TO authenticated;
+
+COMMIT;
+
+-- 053_more_timed_exercises.sql
+-- Timed sessions (callisthenics): 41 more exercises in the library, in
+-- English, French and German. Cardio without the hands on the floor, more for
+-- the legs and the abs, push-up variants and a few with dumbbells.
+--
+-- Deploy: apply this file first, then the code (the app would otherwise add
+-- them as the athlete’s own exercises the first time).
+--
+-- Safe to re-run. All-or-nothing: wrapped in one transaction.
+
+BEGIN;
+
+INSERT INTO exercises (user_id, name, muscle_group, equipment, is_custom, description, name_fr, name_de, description_fr, description_de)
+SELECT NULL, v.name, v.muscle_group, v.equipment, false, v.description, v.name_fr, v.name_de, v.description_fr, v.description_de
+FROM (VALUES
+  ('Butt Kicks', 'full_body', 'bodyweight', 'Run on the spot, bringing the heels up to the glutes, fast and light on the feet.', 'Talons-fesses', 'Anfersen', 'Courir sur place en ramenant les talons vers les fessiers, vite et léger sur les appuis.', 'Auf der Stelle laufen und die Fersen schnell zum Gesäß ziehen, leichtfüßig.'),
+  ('Fast Feet', 'legs', 'bodyweight', 'Slightly crouched, tap the feet as fast as possible on the balls of the feet.', 'Pas rapides sur place', 'Schnelle Füße', 'Légèrement fléchi, piétiner le plus vite possible sur l’avant des pieds.', 'Leicht gebeugt so schnell wie möglich auf den Fußballen trippeln.'),
+  ('Lateral Shuffle', 'legs', 'bodyweight', 'Knees bent, shuffle three steps sideways and back, staying low, without crossing the feet.', 'Pas chassés latéraux', 'Seitliche Sidesteps', 'Genoux fléchis, trois pas chassés sur le côté puis retour, en restant bas, sans croiser les pieds.', 'Mit gebeugten Knien drei Sidesteps zur Seite und zurück, tief bleiben, Füße nicht kreuzen.'),
+  ('Step Jack', 'full_body', 'bodyweight', 'Step one foot out to the side and back, then the other, fast, without jumping. Arms stay low.', 'Jumping jack sans saut', 'Hampelmann ohne Sprung', 'Écarter un pied sur le côté puis le ramener, puis l’autre, vite, sans sauter. Les bras restent bas.', 'Einen Fuß zur Seite setzen und zurück, dann den anderen, zügig, ohne Sprung. Arme bleiben unten.'),
+  ('Standing Knee Drive', 'core', 'bodyweight', 'Standing tall, drive one knee up to hip height and back, then the other, fast, abs tight.', 'Montées de genou debout', 'Kniehub im Stehen', 'Debout bien droit, monter un genou à hauteur de hanche puis l’autre, vite, abdos serrés.', 'Aufrecht stehend abwechselnd ein Knie zügig auf Hüfthöhe ziehen, Bauch fest.'),
+  ('Star Jump', 'full_body', 'bodyweight', 'Squat slightly, then jump up spreading arms and legs in a star, land softly feet together.', 'Saut en étoile', 'Sternsprung', 'Fléchir un peu, puis sauter en écartant bras et jambes en étoile, se réceptionner pieds joints en douceur.', 'Leicht in die Knie, dann mit gespreizten Armen und Beinen als Stern springen, weich mit geschlossenen Füßen landen.'),
+  ('Broad Jump', 'legs', 'bodyweight', 'Swing the arms and jump forward as far as possible, land softly in a squat, walk back.', 'Saut en longueur', 'Weitsprung aus dem Stand', 'Lancer les bras et sauter vers l’avant le plus loin possible, se réceptionner en squat en douceur, revenir en marchant.', 'Mit Armschwung so weit wie möglich nach vorne springen, weich in der Hocke landen, zurückgehen.'),
+  ('Shadow Boxing', 'full_body', 'bodyweight', 'In a guard stance, throw quick punches straight ahead, light on the feet, without locking the elbows.', 'Boxe dans le vide', 'Schattenboxen', 'En garde, enchaîner des coups de poing rapides devant soi, léger sur les appuis, sans verrouiller les coudes.', 'In Deckung schnelle gerade Schläge nach vorne, leichtfüßig, Ellbogen nicht durchstrecken.'),
+  ('Squat Thrust', 'full_body', 'bodyweight', 'Squat, hands on the floor, jump the feet back to a plank, jump them back in and stand up.', 'Squat thrust', 'Squat Thrust', 'Descendre en squat, mains au sol, sauter les pieds en arrière en planche, les ramener et se relever.', 'In die Hocke, Hände auf den Boden, Füße in den Stütz springen, zurückspringen und aufrichten.'),
+  ('Plank Jack', 'core', 'bodyweight', 'In a high plank, jump the feet apart and back together, hips level.', 'Planche jumping jack', 'Plank Jacks', 'En planche bras tendus, écarter et resserrer les pieds en sautant, hanches à niveau.', 'Im hohen Stütz die Füße auseinander und wieder zusammen springen, Hüfte gerade.'),
+  ('Bear Crawl', 'full_body', 'bodyweight', 'On hands and feet, knees just off the floor, crawl forward and back with small steps, back flat.', 'Marche de l’ours', 'Bärengang', 'À quatre pattes, genoux juste décollés, avancer puis reculer à petits pas, dos plat.', 'Im Vierfüßlerstand, Knie knapp über dem Boden, mit kleinen Schritten vor und zurück krabbeln, Rücken gerade.'),
+  ('Sumo Squat', 'legs', 'bodyweight', 'Wide stance, toes out, squat down with the knees over the toes, chest up, stand up.', 'Squat sumo', 'Sumo-Kniebeuge', 'Pieds écartés, pointes vers l’extérieur, descendre genoux au-dessus des pieds, buste droit, remonter.', 'Breiter Stand, Fußspitzen nach außen, Knie über den Zehen absenken, Brust aufrecht, hochkommen.'),
+  ('Squat Pulse', 'legs', 'bodyweight', 'Hold the bottom of a squat and move up and down a few centimetres, without standing up.', 'Squat pulsé', 'Kniebeuge-Pulse', 'Tenir le bas du squat et monter-descendre de quelques centimètres, sans se relever.', 'Unten in der Kniebeuge bleiben und wenige Zentimeter auf und ab federn, ohne aufzustehen.'),
+  ('Lateral Lunge', 'legs', 'bodyweight', 'Step wide to one side, sit back on that leg with the other straight, push back. Alternate sides.', 'Fente latérale', 'Seitlicher Ausfallschritt', 'Faire un grand pas sur le côté, s’asseoir sur cette jambe l’autre tendue, revenir. Alterner.', 'Großer Schritt zur Seite, auf dieses Bein setzen, das andere gestreckt, zurückdrücken. Abwechseln.'),
+  ('Curtsy Lunge', 'legs', 'bodyweight', 'Step one leg back and across behind the other, lower the knee, return. Alternate legs.', 'Fente croisée', 'Curtsy Lunge', 'Reculer une jambe en la croisant derrière l’autre, descendre le genou, revenir. Alterner.', 'Ein Bein hinter dem anderen überkreuzt nach hinten setzen, Knie absenken, zurück. Abwechseln.'),
+  ('Split Squat', 'legs', 'bodyweight', 'In a long stride, lower the back knee towards the floor and push back up, feet staying put.', 'Fente statique', 'Split Squat', 'En grande fente, descendre le genou arrière vers le sol et remonter, sans bouger les pieds.', 'In weiter Schrittstellung das hintere Knie Richtung Boden senken und hochdrücken, Füße bleiben stehen.'),
+  ('Cossack Squat', 'legs', 'bodyweight', 'Very wide stance, sit down on one leg, the other straight with toes up, then shift to the other side.', 'Squat cosaque', 'Kosaken-Kniebeuge', 'Pieds très écartés, s’asseoir sur une jambe, l’autre tendue pointe en l’air, puis passer de l’autre côté.', 'Sehr breiter Stand, auf ein Bein setzen, das andere gestreckt mit Zehen nach oben, dann zur anderen Seite.'),
+  ('Single-Leg Glute Bridge', 'legs', 'bodyweight', 'On your back, one foot on the floor and the other leg up, drive the hips up and squeeze the glutes.', 'Pont fessier sur une jambe', 'Einbeinige Glute Bridge', 'Sur le dos, un pied au sol et l’autre jambe levée, monter les hanches en serrant les fessiers.', 'In Rückenlage, ein Fuß am Boden, das andere Bein oben, Hüfte anheben und Gesäß anspannen.'),
+  ('Bodyweight Calf Raise', 'legs', 'bodyweight', 'Standing, rise onto the toes as high as possible, pause, lower slowly.', 'Montées sur pointes', 'Wadenheben ohne Gewicht', 'Debout, monter sur la pointe des pieds le plus haut possible, marquer un temps, redescendre lentement.', 'Im Stand so hoch wie möglich auf die Zehenspitzen, kurz halten, langsam absenken.'),
+  ('Good Morning', 'legs', 'bodyweight', 'Hands on the hips, knees soft, hinge forward with a flat back until the chest is near horizontal, stand up.', 'Good morning', 'Good Morning', 'Mains sur les hanches, genoux souples, basculer le buste dos plat presque à l’horizontale, se redresser.', 'Hände an der Hüfte, Knie locker, mit geradem Rücken nach vorne beugen fast bis zur Waagerechten, aufrichten.'),
+  ('Donkey Kick', 'legs', 'bodyweight', 'On all fours, knee bent, push one heel up towards the ceiling without arching the back.', 'Kick arrière à quatre pattes', 'Donkey Kick', 'À quatre pattes, genou fléchi, pousser un talon vers le plafond sans cambrer.', 'Im Vierfüßlerstand mit gebeugtem Knie eine Ferse Richtung Decke drücken, ohne Hohlkreuz.'),
+  ('Fire Hydrant', 'legs', 'bodyweight', 'On all fours, lift one bent knee out to the side to hip height, lower it with control.', 'Fire hydrant (ouverture de hanche)', 'Fire Hydrant', 'À quatre pattes, lever un genou fléchi sur le côté à hauteur de hanche, redescendre en contrôlant.', 'Im Vierfüßlerstand ein gebeugtes Knie seitlich auf Hüfthöhe heben, kontrolliert absenken.'),
+  ('Knee Push-up', 'chest', 'bodyweight', 'Hands under the shoulders, knees on the floor, body in a straight line, knees to head, lower the chest and push up.', 'Pompes sur les genoux', 'Liegestütze auf den Knien', 'Mains sous les épaules, genoux au sol, corps aligné des genoux à la tête, descendre la poitrine et pousser.', 'Hände unter den Schultern, Knie am Boden, Körper gerade von Knie bis Kopf, Brust absenken und hochdrücken.'),
+  ('Incline Push-up', 'chest', 'bodyweight', 'Hands on a chair or a bench, body straight, lower the chest to the edge and push back up.', 'Pompes inclinées', 'Schräge Liegestütze', 'Mains sur une chaise ou un banc, corps gainé, descendre la poitrine vers le bord et remonter.', 'Hände auf einem Stuhl oder einer Bank, Körper gerade, Brust zur Kante senken und hochdrücken.'),
+  ('Diamond Push-up', 'arms', 'bodyweight', 'Hands together under the chest, thumbs and index fingers touching, lower the chest and push up, elbows close.', 'Pompes diamant', 'Diamant-Liegestütze', 'Mains jointes sous la poitrine, pouces et index qui se touchent, descendre et pousser, coudes serrés.', 'Hände unter der Brust, Daumen und Zeigefinger berühren sich, absenken und hochdrücken, Ellbogen eng.'),
+  ('Pike Push-up', 'shoulders', 'bodyweight', 'Hips high in an upside-down V, bend the elbows to bring the head towards the floor, push back up.', 'Pompes en V (pike)', 'Pike-Liegestütze', 'Hanches hautes en V inversé, plier les coudes pour amener la tête vers le sol, repousser.', 'Hüfte hoch im umgekehrten V, Ellbogen beugen und den Kopf Richtung Boden senken, hochdrücken.'),
+  ('Bench Dip', 'arms', 'bodyweight', 'Hands on the edge of a chair behind you, legs out, bend the elbows to lower the hips, push back up.', 'Dips sur une chaise', 'Dips an der Stuhlkante', 'Mains sur le bord d’une chaise derrière soi, jambes devant, plier les coudes pour descendre les hanches, remonter.', 'Hände hinter dir auf einer Stuhlkante, Beine nach vorne, Ellbogen beugen, Hüfte senken, hochdrücken.'),
+  ('Heel Taps', 'core', 'bodyweight', 'On your back, knees bent, shoulders lifted, reach side to side to touch each heel.', 'Touches de talons', 'Fersen-Tippen', 'Sur le dos, genoux fléchis, épaules décollées, aller toucher chaque talon d’un côté puis de l’autre.', 'In Rückenlage, Knie gebeugt, Schultern angehoben, abwechselnd seitlich zu den Fersen greifen.'),
+  ('Reverse Crunch', 'core', 'bodyweight', 'On your back, knees bent at 90 degrees, roll the hips off the floor towards the chest, lower slowly.', 'Crunch inversé', 'Reverse Crunch', 'Sur le dos, genoux à 90 degrés, enrouler le bassin vers la poitrine, redescendre lentement.', 'In Rückenlage, Knie im rechten Winkel, das Becken Richtung Brust einrollen, langsam absenken.'),
+  ('Scissor Kicks', 'core', 'bodyweight', 'On your back, legs straight and lifted, cross them one over the other, lower back on the floor.', 'Ciseaux', 'Scherenbeine', 'Sur le dos, jambes tendues décollées, les croiser l’une sur l’autre, le bas du dos au sol.', 'In Rückenlage die gestreckten Beine anheben und überkreuzen, unterer Rücken am Boden.'),
+  ('V-up', 'core', 'bodyweight', 'Lying flat, lift the legs and the chest at the same time to touch the toes, lower with control.', 'V-up', 'V-Up', 'Allongé, lever en même temps jambes et buste pour toucher les pieds, redescendre en contrôlant.', 'Flach liegend Beine und Oberkörper gleichzeitig heben, die Zehen berühren, kontrolliert absenken.'),
+  ('Sit-up', 'core', 'bodyweight', 'On your back, knees bent, roll up to sitting, then lower slowly, hands at the temples.', 'Relevés de buste', 'Sit-up', 'Sur le dos, genoux fléchis, s’enrouler jusqu’à la position assise, puis redescendre lentement.', 'In Rückenlage mit gebeugten Knien bis zum Sitzen aufrollen, dann langsam ablegen.'),
+  ('Standing Oblique Crunch', 'core', 'bodyweight', 'Standing, hands behind the head, bring one knee up to the side to meet the elbow, alternate.', 'Crunch oblique debout', 'Seitlicher Crunch im Stehen', 'Debout, mains derrière la tête, monter un genou sur le côté vers le coude, alterner.', 'Im Stand, Hände hinter dem Kopf, ein Knie seitlich zum Ellbogen ziehen, abwechseln.'),
+  ('Glute Bridge Hold', 'core', 'bodyweight', 'On your back, knees bent, lift the hips and hold them high, glutes and abs tight.', 'Pont fessier tenu', 'Glute Bridge halten', 'Sur le dos, genoux fléchis, monter les hanches et les tenir hautes, fessiers et abdos serrés.', 'In Rückenlage mit gebeugten Knien die Hüfte heben und oben halten, Gesäß und Bauch fest.'),
+  ('Side Plank Hip Dip', 'core', 'bodyweight', 'In a side plank on the forearm, lower the hip towards the floor and lift it back up.', 'Planche latérale avec descente de hanche', 'Seitstütz mit Hüftsenken', 'En planche latérale sur l’avant-bras, descendre la hanche vers le sol puis la remonter.', 'Im Seitstütz auf dem Unterarm die Hüfte Richtung Boden senken und wieder heben.'),
+  ('Dumbbell Bent-Over Row', 'back', 'dumbbell', 'Bent forward with a flat back, a dumbbell in each hand, pull them to the hips, lower with control.', 'Rowing buste penché aux haltères', 'Vorgebeugtes Kurzhantelrudern', 'Penché en avant dos plat, un haltère dans chaque main, les tirer vers les hanches, redescendre en contrôlant.', 'Mit geradem Rücken vorgebeugt, je eine Kurzhantel, zur Hüfte ziehen, kontrolliert absenken.'),
+  ('Dumbbell Floor Press', 'chest', 'dumbbell', 'On your back, knees bent, press the dumbbells up, lower until the upper arms touch the floor.', 'Développé au sol aux haltères', 'Kurzhantel-Bodendrücken', 'Sur le dos, genoux fléchis, pousser les haltères vers le haut, redescendre jusqu’à poser les bras au sol.', 'In Rückenlage mit gebeugten Knien die Kurzhanteln hochdrücken, absenken bis die Oberarme den Boden berühren.'),
+  ('Dumbbell Curl to Press', 'shoulders', 'dumbbell', 'Curl the dumbbells to the shoulders, then press them overhead, lower in reverse.', 'Curl puis développé aux haltères', 'Curl mit Schulterdrücken', 'Monter les haltères aux épaules en curl, puis les pousser au-dessus de la tête, redescendre en sens inverse.', 'Kurzhanteln zu den Schultern curlen, dann über Kopf drücken, in umgekehrter Reihenfolge absenken.'),
+  ('Dumbbell Lateral Lunge', 'legs', 'dumbbell', 'A dumbbell held at the chest, step wide to one side and sit back on that leg, push back. Alternate.', 'Fente latérale avec haltère', 'Seitlicher Ausfallschritt mit Kurzhantel', 'Un haltère contre la poitrine, grand pas sur le côté et s’asseoir sur cette jambe, revenir. Alterner.', 'Kurzhantel vor der Brust, großer Schritt zur Seite und auf dieses Bein setzen, zurückdrücken. Abwechseln.'),
+  ('Dumbbell Glute Bridge', 'legs', 'dumbbell', 'On your back, a dumbbell on the hips, drive the hips up and squeeze the glutes, lower slowly.', 'Pont fessier avec haltère', 'Glute Bridge mit Kurzhantel', 'Sur le dos, un haltère sur les hanches, monter les hanches en serrant les fessiers, redescendre lentement.', 'In Rückenlage, Kurzhantel auf der Hüfte, Hüfte anheben, Gesäß anspannen, langsam absenken.'),
+  ('Dumbbell Hammer Curl', 'arms', 'dumbbell', 'Standing, palms facing each other, curl the dumbbells to the shoulders, lower slowly.', 'Curl marteau aux haltères', 'Hammer-Curl mit Kurzhanteln', 'Debout, paumes face à face, monter les haltères vers les épaules, redescendre lentement.', 'Im Stand, Handflächen zueinander, Kurzhanteln zu den Schultern curlen, langsam absenken.')
+) AS v(name, muscle_group, equipment, description, name_fr, name_de, description_fr, description_de)
+WHERE NOT EXISTS (SELECT 1 FROM exercises e WHERE e.user_id IS NULL AND e.name = v.name);
+
+COMMIT;

@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { RequireFeature } from "@/components/domain/UpgradeNotice";
 
 const STATUS_BAR: Record<LoadStatus, string> = { ok: "bg-emerald-500", near: "bg-amber-500", over: "bg-rose-500" };
 
@@ -23,7 +24,7 @@ const STATUS_BAR: Record<LoadStatus, string> = { ok: "bg-emerald-500", near: "bg
  * minutes against the horse's limit, the canter, rest days and sessions with
  * a lot of canter — so no horse carries more than it should.
  */
-export default function HorsesPage() {
+function HorsesPageContent() {
   const t = useTranslations("horses");
   const horses = useHorses();
   const sessions = useHorseSessions();
@@ -283,5 +284,13 @@ function Minutes({ label, value, onChange }: { label: string; value: number; onC
         <Plus className="h-4 w-4" aria-hidden="true" />
       </button>
     </div>
+  );
+}
+
+export default function HorsesPage() {
+  return (
+    <RequireFeature feature="vaulting" namespace="horses">
+      <HorsesPageContent />
+    </RequireFeature>
   );
 }

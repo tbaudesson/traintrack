@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CompetitionResults } from "@/components/domain/CompetitionResults";
+import { RequireFeature } from "@/components/domain/UpgradeNotice";
 
 interface Draft {
   id?: number;
@@ -55,7 +56,7 @@ const whole = (s: string) => {
  * technical, freestyle), the final score worked out, the ranking, and the
  * curve of the season.
  */
-export default function CompetitionsPage() {
+function CompetitionsPageContent() {
   const t = useTranslations("competitions");
   const { num } = useFormat();
   const results = useCompetitions();
@@ -188,5 +189,13 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <span>{label}</span>
       {children}
     </label>
+  );
+}
+
+export default function CompetitionsPage() {
+  return (
+    <RequireFeature feature="vaulting" namespace="competitions">
+      <CompetitionsPageContent />
+    </RequireFeature>
   );
 }

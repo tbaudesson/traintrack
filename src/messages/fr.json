@@ -675,7 +675,8 @@
     "typeHint_consistency": "Classe les membres par nombre de jours d'entraînement distincts.",
     "status_active": "En cours",
     "status_upcoming": "À venir",
-    "status_ended": "Terminé"
+    "status_ended": "Terminé",
+    "planRequired": "Créer un défi n’est pas inclus dans votre licence."
   },
   "messages": {
     "title": "Messages",
@@ -809,7 +810,35 @@
     "inv_revoked": "révoquée",
     "editName": "Modifier le nom",
     "nameSaved": "Enregistré",
-    "templates": "Programmes types"
+    "templates": "Programmes types",
+    "featGroup_training": "Entraînement",
+    "featGroup_running": "Course à pied",
+    "featGroup_nutrition": "Nutrition",
+    "featGroup_followUp": "Suivi",
+    "featGroup_coaching": "Coaching",
+    "featGroup_vaulting": "Voltige",
+    "featServer": "vérifié par le serveur",
+    "feat_planning": "Planning avancé",
+    "featHint_planning": "Déplacer une séance, version express, export vers le calendrier",
+    "feat_level_tests": "Tests de niveau",
+    "featHint_level_tests": "Page Tests et rappels de retest toutes les six semaines",
+    "feat_excel_import": "Import Excel",
+    "featHint_excel_import": "Importer un programme depuis un fichier Excel",
+    "featHint_ai_programs": "Créer un programme avec l’IA (clé de l’utilisateur)",
+    "feat_running": "Course à pied",
+    "featHint_running": "Allures personnelles, fractionnés guidés, guide de course",
+    "featHint_nutrition": "Journal des repas, objectifs, hydratation",
+    "feat_meal_plans": "Idées de repas",
+    "featHint_meal_plans": "Repas proposés selon les objectifs et les séances du jour",
+    "featHint_readiness": "Questionnaire de forme et séance allégée",
+    "featHint_advanced_progress": "1RM estimé, courbes détaillées",
+    "feat_reports": "Bilans",
+    "featHint_reports": "Bilan de la semaine, du mois et de fin de programme",
+    "featHint_coaching": "Créer des équipes, inviter des athlètes, suivre leur charge",
+    "feat_challenges": "Défis",
+    "featHint_challenges": "Créer des défis d’équipe (les voir reste possible)",
+    "feat_vaulting": "Voltige",
+    "featHint_vaulting": "Compétitions et chevaux"
   },
   "profile": {
     "title": "Profil",
@@ -1286,7 +1315,8 @@
     "returningChip": "reprise S{week}/3",
     "stepsHint": "Un tap : blessure en cours (rouge). Un autre une fois guéri : reprise progressive sur 3 semaines (orange). Un dernier pour la retirer.",
     "returnLine": "Reprise après blessure ({area}) : semaine {week} sur 3, charges −{percent} % pour revenir en douceur.",
-    "returnLastWeek": "Reprise après blessure ({area}) : dernière semaine, charges habituelles, arrêtez si la douleur revient."
+    "returnLastWeek": "Reprise après blessure ({area}) : dernière semaine, charges habituelles, arrêtez si la douleur revient.",
+    "cautiousKept": "Pas assez d’exercices sans risque pour ce thème : {count, plural, one {# exercice marqué « Prudence » est gardé} other {# exercices marqués « Prudence » sont gardés}}, à faire sans douleur."
   },
   "catalog": {
     "title": "Programmes tout faits",

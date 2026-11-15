@@ -255,16 +255,19 @@ export default function ProgressPage() {
           </div>
         )}
 
-        <WeeklyReportCard
-          workouts={workouts}
-          sets={sets}
-          exercises={exercises}
-          trainingDays={athlete?.trainingDays}
-          pains={pains}
-          lastMonday={mondayOfDate(localDateIn(-7, now))}
-        />
-
-        <DetailRow href="/report" icon={FileText} title={tm("open")} subtitle={tm("openHint")} />
+        {hasFeature("reports") && (
+          <>
+            <WeeklyReportCard
+              workouts={workouts}
+              sets={sets}
+              exercises={exercises}
+              trainingDays={athlete?.trainingDays}
+              pains={pains}
+              lastMonday={mondayOfDate(localDateIn(-7, now))}
+            />
+            <DetailRow href="/report" icon={FileText} title={tm("open")} subtitle={tm("openHint")} />
+          </>
+        )}
 
         {/* An endurance or bodyweight athlete sees their own figures first. */}
         {activity === "endurance" && <CardioProgress workouts={workouts} />}
@@ -295,7 +298,7 @@ export default function ProgressPage() {
         {activity !== "bodyweight" && bodyweightLifts.length > 0 && scored.length === 0 && bodyweightSection}
 
         {/* Vaulting competitions: shown once there is one, or for a vaulter. */}
-        {(competitions.length > 0 || prefs.sport === "vaulting") && (
+        {hasFeature("vaulting") && (competitions.length > 0 || prefs.sport === "vaulting") && (
           <section className="space-y-2">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold tracking-tight">{tcomp("title")}</h2>

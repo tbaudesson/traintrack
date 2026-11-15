@@ -190,7 +190,8 @@ async function withRetry<T>(
     try {
       return await fn();
     } catch (err) {
-      if (attempt === maxAttempts - 1) throw err;
+      // Refused for the licence: trying again changes nothing.
+      if (attempt === maxAttempts - 1 || (err instanceof Error && err.message.includes("PLAN_REQUIRED"))) throw err;
       const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 200;
       await new Promise((r) => setTimeout(r, delay));
     }

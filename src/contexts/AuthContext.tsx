@@ -50,13 +50,25 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
-async function cacheUserId(userId: string, email?: string): Promise<void> {
+async function cacheUserId(userId: string, email?: string, profile?: UserProfile | null): Promise<void> {
+  const prev = await db.authMeta.get("currentUser");
+  const same = prev?.userId === userId;
   await db.authMeta.put({
     key: "currentUser",
     userId,
     email: email ?? undefined,
+    // The licence as last seen: kept when the profile could not be fetched this time.
+    planFeatures: profile ? (profile.plan_features ?? []) : same ? prev?.planFeatures : undefined,
+    isAdmin: profile ? profile.role === "admin" : same ? prev?.isAdmin : undefined,
   });
   await refreshCachedUserId();
+}
+
+/** The licence kept on the device, for when the profile cannot be fetched. */
+async function getCachedPlan(userId?: string | null): Promise<{ planFeatures: string[]; isAdmin: boolean }> {
+  const meta = await db.authMeta.get("currentUser");
+  if (!meta || (userId && meta.userId !== userId)) return { planFeatures: [], isAdmin: false };
+  return { planFeatures: meta.planFeatures ?? [], isAdmin: !!meta.isAdmin };
 }
 
 async function clearCachedUserId(): Promise<void> {
@@ -107,6 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Profile fetch failed — proceed without it
           }
 
+          const kept = profile ? null : await getCachedPlan(session.user.id);
           if (!mounted) return;
 
           setState({
@@ -115,11 +128,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             loading: false,
             isOffline: false,
             profile,
-            isAdmin: profile?.role === "admin",
+            isAdmin: profile ? profile.role === "admin" : kept!.isAdmin,
             accountStatus: profile?.status ?? null,
-            planFeatures: profile?.plan_features ?? [],
+            planFeatures: profile ? (profile.plan_features ?? []) : kept!.planFeatures,
           });
-          await cacheUserId(session.user.id, session.user.email ?? undefined);
+          await cacheUserId(session.user.id, session.user.email ?? undefined, profile);
           await adoptLocalData(session.user.id);
           // Start sync engine after auth is established
           startSync(session.user.id);
@@ -129,30 +142,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // No session — check if we're offline with cached data
           const cachedId = await getCachedUserId();
           const offline = !navigator.onLine && !!cachedId;
+          const kept = offline ? await getCachedPlan() : { planFeatures: [], isAdmin: false };
           setState({
             user: null,
             session: null,
             loading: false,
             isOffline: offline,
             profile: null,
-            isAdmin: false,
+            isAdmin: kept.isAdmin,
             accountStatus: null,
-            planFeatures: [],
+            planFeatures: kept.planFeatures,
           });
         }
       } catch {
         // Network error — try offline mode
         if (!mounted) return;
         const cachedId = await getCachedUserId();
+        const kept = cachedId ? await getCachedPlan() : { planFeatures: [], isAdmin: false };
         setState({
           user: null,
           session: null,
           loading: false,
           isOffline: !!cachedId,
           profile: null,
-          isAdmin: false,
+          isAdmin: kept.isAdmin,
           accountStatus: null,
-          planFeatures: [],
+          planFeatures: kept.planFeatures,
         });
       }
     };
@@ -192,7 +207,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             accountStatus: profile ? profile.status : prev.accountStatus,
             planFeatures: profile ? (profile.plan_features ?? []) : prev.planFeatures,
           }));
-          await cacheUserId(session.user.id, session.user.email ?? undefined);
+          await cacheUserId(session.user.id, session.user.email ?? undefined, profile);
           if (event === "SIGNED_IN") {
             await adoptLocalData(session.user.id);
             startSync(session.user.id);
@@ -344,6 +359,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshProfile = useCallback(async () => {
     const profile = await getUserProfile();
+    const meta = await db.authMeta.get("currentUser");
+    if (profile && meta?.userId) await cacheUserId(meta.userId, meta.email, profile);
     setState((prev) => ({
       ...prev,
       profile,

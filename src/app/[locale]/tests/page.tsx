@@ -20,13 +20,14 @@ import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { useMetric } from "@/components/domain/ProgramReviewCard";
+import { RequireFeature } from "@/components/domain/UpgradeNotice";
 
 /**
  * Level tests: the main lifts and the bodyweight basics, done again every six
  * weeks, each result next to the ones before. The lifts give the estimated
  * 1RM the programs in percentages use.
  */
-export default function TestsPage() {
+function TestsPageContent() {
   const t = useTranslations("tests");
   const xl = useExerciseLabel();
   const { short, day } = useFormat();
@@ -147,5 +148,13 @@ export default function TestsPage() {
         )}
       </div>
     </>
+  );
+}
+
+export default function TestsPage() {
+  return (
+    <RequireFeature feature="level_tests" namespace="tests">
+      <TestsPageContent />
+    </RequireFeature>
   );
 }

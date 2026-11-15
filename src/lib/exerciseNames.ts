@@ -91,6 +91,47 @@ export const NAMES: Record<string, { fr: string; de: string }> = {
   "Bridge Hold": { fr: "Pont", de: "Brücke" },
   "Front Split Stretch": { fr: "Grand écart avant (progressif)", de: "Spagat vorwärts (schrittweise)" },
   "Pike Stretch": { fr: "Pince assise (jambes tendues)", de: "Hechtdehnung im Sitzen" },
+  "Butt Kicks": { fr: "Talons-fesses", de: "Anfersen" },
+  "Fast Feet": { fr: "Pas rapides sur place", de: "Schnelle Füße" },
+  "Lateral Shuffle": { fr: "Pas chassés latéraux", de: "Seitliche Sidesteps" },
+  "Step Jack": { fr: "Jumping jack sans saut", de: "Hampelmann ohne Sprung" },
+  "Standing Knee Drive": { fr: "Montées de genou debout", de: "Kniehub im Stehen" },
+  "Star Jump": { fr: "Saut en étoile", de: "Sternsprung" },
+  "Broad Jump": { fr: "Saut en longueur", de: "Weitsprung aus dem Stand" },
+  "Shadow Boxing": { fr: "Boxe dans le vide", de: "Schattenboxen" },
+  "Squat Thrust": { fr: "Squat thrust", de: "Squat Thrust" },
+  "Plank Jack": { fr: "Planche jumping jack", de: "Plank Jacks" },
+  "Bear Crawl": { fr: "Marche de l'ours", de: "Bärengang" },
+  "Sumo Squat": { fr: "Squat sumo", de: "Sumo-Kniebeuge" },
+  "Squat Pulse": { fr: "Squat pulsé", de: "Kniebeuge-Pulse" },
+  "Lateral Lunge": { fr: "Fente latérale", de: "Seitlicher Ausfallschritt" },
+  "Curtsy Lunge": { fr: "Fente croisée", de: "Curtsy Lunge" },
+  "Split Squat": { fr: "Fente statique", de: "Split Squat" },
+  "Cossack Squat": { fr: "Squat cosaque", de: "Kosaken-Kniebeuge" },
+  "Single-Leg Glute Bridge": { fr: "Pont fessier sur une jambe", de: "Einbeinige Glute Bridge" },
+  "Bodyweight Calf Raise": { fr: "Montées sur pointes", de: "Wadenheben ohne Gewicht" },
+  "Good Morning": { fr: "Good morning", de: "Good Morning" },
+  "Donkey Kick": { fr: "Kick arrière à quatre pattes", de: "Donkey Kick" },
+  "Fire Hydrant": { fr: "Fire hydrant (ouverture de hanche)", de: "Fire Hydrant" },
+  "Knee Push-up": { fr: "Pompes sur les genoux", de: "Liegestütze auf den Knien" },
+  "Incline Push-up": { fr: "Pompes inclinées", de: "Schräge Liegestütze" },
+  "Diamond Push-up": { fr: "Pompes diamant", de: "Diamant-Liegestütze" },
+  "Pike Push-up": { fr: "Pompes en V (pike)", de: "Pike-Liegestütze" },
+  "Bench Dip": { fr: "Dips sur une chaise", de: "Dips an der Stuhlkante" },
+  "Heel Taps": { fr: "Touches de talons", de: "Fersen-Tippen" },
+  "Reverse Crunch": { fr: "Crunch inversé", de: "Reverse Crunch" },
+  "Scissor Kicks": { fr: "Ciseaux", de: "Scherenbeine" },
+  "V-up": { fr: "V-up", de: "V-Up" },
+  "Sit-up": { fr: "Relevés de buste", de: "Sit-up" },
+  "Standing Oblique Crunch": { fr: "Crunch oblique debout", de: "Seitlicher Crunch im Stehen" },
+  "Glute Bridge Hold": { fr: "Pont fessier tenu", de: "Glute Bridge halten" },
+  "Side Plank Hip Dip": { fr: "Planche latérale avec descente de hanche", de: "Seitstütz mit Hüftsenken" },
+  "Dumbbell Bent-Over Row": { fr: "Rowing buste penché aux haltères", de: "Vorgebeugtes Kurzhantelrudern" },
+  "Dumbbell Floor Press": { fr: "Développé au sol aux haltères", de: "Kurzhantel-Bodendrücken" },
+  "Dumbbell Curl to Press": { fr: "Curl puis développé aux haltères", de: "Curl mit Schulterdrücken" },
+  "Dumbbell Lateral Lunge": { fr: "Fente latérale avec haltère", de: "Seitlicher Ausfallschritt mit Kurzhantel" },
+  "Dumbbell Glute Bridge": { fr: "Pont fessier avec haltère", de: "Glute Bridge mit Kurzhantel" },
+  "Dumbbell Hammer Curl": { fr: "Curl marteau aux haltères", de: "Hammer-Curl mit Kurzhanteln" },
 };
 
 export const DESCRIPTIONS: Record<string, { fr: string; de: string }> = {
@@ -265,6 +306,170 @@ export const DESCRIPTIONS: Record<string, { fr: string; de: string }> = {
   "Pike Stretch": {
     fr: "Assis, jambes serrées et tendues, se pencher depuis les hanches, dos long. Respirer et relâcher.",
     de: "Im Sitzen, Beine geschlossen und gestreckt, aus der Hüfte nach vorn beugen, Rücken lang. Atmen und lösen.",
+  },
+  "Butt Kicks": {
+    fr: "Courir sur place en ramenant les talons vers les fessiers, vite et léger sur les appuis.",
+    de: "Auf der Stelle laufen und die Fersen schnell zum Gesäß ziehen, leichtfüßig.",
+  },
+  "Fast Feet": {
+    fr: "Légèrement fléchi, piétiner le plus vite possible sur l'avant des pieds.",
+    de: "Leicht gebeugt so schnell wie möglich auf den Fußballen trippeln.",
+  },
+  "Lateral Shuffle": {
+    fr: "Genoux fléchis, trois pas chassés sur le côté puis retour, en restant bas, sans croiser les pieds.",
+    de: "Mit gebeugten Knien drei Sidesteps zur Seite und zurück, tief bleiben, Füße nicht kreuzen.",
+  },
+  "Step Jack": {
+    fr: "Écarter un pied sur le côté puis le ramener, puis l'autre, vite, sans sauter. Les bras restent bas.",
+    de: "Einen Fuß zur Seite setzen und zurück, dann den anderen, zügig, ohne Sprung. Arme bleiben unten.",
+  },
+  "Standing Knee Drive": {
+    fr: "Debout bien droit, monter un genou à hauteur de hanche puis l'autre, vite, abdos serrés.",
+    de: "Aufrecht stehend abwechselnd ein Knie zügig auf Hüfthöhe ziehen, Bauch fest.",
+  },
+  "Star Jump": {
+    fr: "Fléchir un peu, puis sauter en écartant bras et jambes en étoile, se réceptionner pieds joints en douceur.",
+    de: "Leicht in die Knie, dann mit gespreizten Armen und Beinen als Stern springen, weich mit geschlossenen Füßen landen.",
+  },
+  "Broad Jump": {
+    fr: "Lancer les bras et sauter vers l'avant le plus loin possible, se réceptionner en squat en douceur, revenir en marchant.",
+    de: "Mit Armschwung so weit wie möglich nach vorne springen, weich in der Hocke landen, zurückgehen.",
+  },
+  "Shadow Boxing": {
+    fr: "En garde, enchaîner des coups de poing rapides devant soi, léger sur les appuis, sans verrouiller les coudes.",
+    de: "In Deckung schnelle gerade Schläge nach vorne, leichtfüßig, Ellbogen nicht durchstrecken.",
+  },
+  "Squat Thrust": {
+    fr: "Descendre en squat, mains au sol, sauter les pieds en arrière en planche, les ramener et se relever.",
+    de: "In die Hocke, Hände auf den Boden, Füße in den Stütz springen, zurückspringen und aufrichten.",
+  },
+  "Plank Jack": {
+    fr: "En planche bras tendus, écarter et resserrer les pieds en sautant, hanches à niveau.",
+    de: "Im hohen Stütz die Füße auseinander und wieder zusammen springen, Hüfte gerade.",
+  },
+  "Bear Crawl": {
+    fr: "À quatre pattes, genoux juste décollés, avancer puis reculer à petits pas, dos plat.",
+    de: "Im Vierfüßlerstand, Knie knapp über dem Boden, mit kleinen Schritten vor und zurück krabbeln, Rücken gerade.",
+  },
+  "Sumo Squat": {
+    fr: "Pieds écartés, pointes vers l'extérieur, descendre genoux au-dessus des pieds, buste droit, remonter.",
+    de: "Breiter Stand, Fußspitzen nach außen, Knie über den Zehen absenken, Brust aufrecht, hochkommen.",
+  },
+  "Squat Pulse": {
+    fr: "Tenir le bas du squat et monter-descendre de quelques centimètres, sans se relever.",
+    de: "Unten in der Kniebeuge bleiben und wenige Zentimeter auf und ab federn, ohne aufzustehen.",
+  },
+  "Lateral Lunge": {
+    fr: "Faire un grand pas sur le côté, s'asseoir sur cette jambe l'autre tendue, revenir. Alterner.",
+    de: "Großer Schritt zur Seite, auf dieses Bein setzen, das andere gestreckt, zurückdrücken. Abwechseln.",
+  },
+  "Curtsy Lunge": {
+    fr: "Reculer une jambe en la croisant derrière l'autre, descendre le genou, revenir. Alterner.",
+    de: "Ein Bein hinter dem anderen überkreuzt nach hinten setzen, Knie absenken, zurück. Abwechseln.",
+  },
+  "Split Squat": {
+    fr: "En grande fente, descendre le genou arrière vers le sol et remonter, sans bouger les pieds.",
+    de: "In weiter Schrittstellung das hintere Knie Richtung Boden senken und hochdrücken, Füße bleiben stehen.",
+  },
+  "Cossack Squat": {
+    fr: "Pieds très écartés, s'asseoir sur une jambe, l'autre tendue pointe en l'air, puis passer de l'autre côté.",
+    de: "Sehr breiter Stand, auf ein Bein setzen, das andere gestreckt mit Zehen nach oben, dann zur anderen Seite.",
+  },
+  "Single-Leg Glute Bridge": {
+    fr: "Sur le dos, un pied au sol et l'autre jambe levée, monter les hanches en serrant les fessiers.",
+    de: "In Rückenlage, ein Fuß am Boden, das andere Bein oben, Hüfte anheben und Gesäß anspannen.",
+  },
+  "Bodyweight Calf Raise": {
+    fr: "Debout, monter sur la pointe des pieds le plus haut possible, marquer un temps, redescendre lentement.",
+    de: "Im Stand so hoch wie möglich auf die Zehenspitzen, kurz halten, langsam absenken.",
+  },
+  "Good Morning": {
+    fr: "Mains sur les hanches, genoux souples, basculer le buste dos plat presque à l'horizontale, se redresser.",
+    de: "Hände an der Hüfte, Knie locker, mit geradem Rücken nach vorne beugen fast bis zur Waagerechten, aufrichten.",
+  },
+  "Donkey Kick": {
+    fr: "À quatre pattes, genou fléchi, pousser un talon vers le plafond sans cambrer.",
+    de: "Im Vierfüßlerstand mit gebeugtem Knie eine Ferse Richtung Decke drücken, ohne Hohlkreuz.",
+  },
+  "Fire Hydrant": {
+    fr: "À quatre pattes, lever un genou fléchi sur le côté à hauteur de hanche, redescendre en contrôlant.",
+    de: "Im Vierfüßlerstand ein gebeugtes Knie seitlich auf Hüfthöhe heben, kontrolliert absenken.",
+  },
+  "Knee Push-up": {
+    fr: "Mains sous les épaules, genoux au sol, corps aligné des genoux à la tête, descendre la poitrine et pousser.",
+    de: "Hände unter den Schultern, Knie am Boden, Körper gerade von Knie bis Kopf, Brust absenken und hochdrücken.",
+  },
+  "Incline Push-up": {
+    fr: "Mains sur une chaise ou un banc, corps gainé, descendre la poitrine vers le bord et remonter.",
+    de: "Hände auf einem Stuhl oder einer Bank, Körper gerade, Brust zur Kante senken und hochdrücken.",
+  },
+  "Diamond Push-up": {
+    fr: "Mains jointes sous la poitrine, pouces et index qui se touchent, descendre et pousser, coudes serrés.",
+    de: "Hände unter der Brust, Daumen und Zeigefinger berühren sich, absenken und hochdrücken, Ellbogen eng.",
+  },
+  "Pike Push-up": {
+    fr: "Hanches hautes en V inversé, plier les coudes pour amener la tête vers le sol, repousser.",
+    de: "Hüfte hoch im umgekehrten V, Ellbogen beugen und den Kopf Richtung Boden senken, hochdrücken.",
+  },
+  "Bench Dip": {
+    fr: "Mains sur le bord d'une chaise derrière soi, jambes devant, plier les coudes pour descendre les hanches, remonter.",
+    de: "Hände hinter dir auf einer Stuhlkante, Beine nach vorne, Ellbogen beugen, Hüfte senken, hochdrücken.",
+  },
+  "Heel Taps": {
+    fr: "Sur le dos, genoux fléchis, épaules décollées, aller toucher chaque talon d'un côté puis de l'autre.",
+    de: "In Rückenlage, Knie gebeugt, Schultern angehoben, abwechselnd seitlich zu den Fersen greifen.",
+  },
+  "Reverse Crunch": {
+    fr: "Sur le dos, genoux à 90 degrés, enrouler le bassin vers la poitrine, redescendre lentement.",
+    de: "In Rückenlage, Knie im rechten Winkel, das Becken Richtung Brust einrollen, langsam absenken.",
+  },
+  "Scissor Kicks": {
+    fr: "Sur le dos, jambes tendues décollées, les croiser l'une sur l'autre, le bas du dos au sol.",
+    de: "In Rückenlage die gestreckten Beine anheben und überkreuzen, unterer Rücken am Boden.",
+  },
+  "V-up": {
+    fr: "Allongé, lever en même temps jambes et buste pour toucher les pieds, redescendre en contrôlant.",
+    de: "Flach liegend Beine und Oberkörper gleichzeitig heben, die Zehen berühren, kontrolliert absenken.",
+  },
+  "Sit-up": {
+    fr: "Sur le dos, genoux fléchis, s'enrouler jusqu'à la position assise, puis redescendre lentement.",
+    de: "In Rückenlage mit gebeugten Knien bis zum Sitzen aufrollen, dann langsam ablegen.",
+  },
+  "Standing Oblique Crunch": {
+    fr: "Debout, mains derrière la tête, monter un genou sur le côté vers le coude, alterner.",
+    de: "Im Stand, Hände hinter dem Kopf, ein Knie seitlich zum Ellbogen ziehen, abwechseln.",
+  },
+  "Glute Bridge Hold": {
+    fr: "Sur le dos, genoux fléchis, monter les hanches et les tenir hautes, fessiers et abdos serrés.",
+    de: "In Rückenlage mit gebeugten Knien die Hüfte heben und oben halten, Gesäß und Bauch fest.",
+  },
+  "Side Plank Hip Dip": {
+    fr: "En planche latérale sur l'avant-bras, descendre la hanche vers le sol puis la remonter.",
+    de: "Im Seitstütz auf dem Unterarm die Hüfte Richtung Boden senken und wieder heben.",
+  },
+  "Dumbbell Bent-Over Row": {
+    fr: "Penché en avant dos plat, un haltère dans chaque main, les tirer vers les hanches, redescendre en contrôlant.",
+    de: "Mit geradem Rücken vorgebeugt, je eine Kurzhantel, zur Hüfte ziehen, kontrolliert absenken.",
+  },
+  "Dumbbell Floor Press": {
+    fr: "Sur le dos, genoux fléchis, pousser les haltères vers le haut, redescendre jusqu'à poser les bras au sol.",
+    de: "In Rückenlage mit gebeugten Knien die Kurzhanteln hochdrücken, absenken bis die Oberarme den Boden berühren.",
+  },
+  "Dumbbell Curl to Press": {
+    fr: "Monter les haltères aux épaules en curl, puis les pousser au-dessus de la tête, redescendre en sens inverse.",
+    de: "Kurzhanteln zu den Schultern curlen, dann über Kopf drücken, in umgekehrter Reihenfolge absenken.",
+  },
+  "Dumbbell Lateral Lunge": {
+    fr: "Un haltère contre la poitrine, grand pas sur le côté et s'asseoir sur cette jambe, revenir. Alterner.",
+    de: "Kurzhantel vor der Brust, großer Schritt zur Seite und auf dieses Bein setzen, zurückdrücken. Abwechseln.",
+  },
+  "Dumbbell Glute Bridge": {
+    fr: "Sur le dos, un haltère sur les hanches, monter les hanches en serrant les fessiers, redescendre lentement.",
+    de: "In Rückenlage, Kurzhantel auf der Hüfte, Hüfte anheben, Gesäß anspannen, langsam absenken.",
+  },
+  "Dumbbell Hammer Curl": {
+    fr: "Debout, paumes face à face, monter les haltères vers les épaules, redescendre lentement.",
+    de: "Im Stand, Handflächen zueinander, Kurzhanteln zu den Schultern curlen, langsam absenken.",
   },
 };
 

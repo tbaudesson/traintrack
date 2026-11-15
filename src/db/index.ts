@@ -369,6 +369,9 @@ export interface AuthMeta {
   userId?: string;
   email?: string;
   sessionToken?: string;
+  /** The licence's features last seen online, for offline use (the server checks writes). */
+  planFeatures?: string[];
+  isAdmin?: boolean;
 }
 
 // ─── Database definition ──────────────────────────────────────────────

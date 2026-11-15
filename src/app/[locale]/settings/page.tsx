@@ -385,7 +385,7 @@ export default function SettingsPage() {
                     className="mt-1"
                   />
                 </label>
-                <Button
+                {hasFeature("planning") && <Button
                   variant="outline"
                   className="h-11"
                   disabled={!(athlete.trainingDays ?? []).length}
@@ -409,9 +409,9 @@ export default function SettingsPage() {
                 >
                   <CalendarPlus className="mr-1 h-4 w-4" aria-hidden="true" />
                   {t("planCalendar")}
-                </Button>
+                </Button>}
               </div>
-              <p className="mt-2 text-xs text-muted-foreground">{t("planCalendarHint")}</p>
+              {hasFeature("planning") && <p className="mt-2 text-xs text-muted-foreground">{t("planCalendarHint")}</p>}
             </>
           ) : (
             <Link href="/onboarding" className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-full")}>

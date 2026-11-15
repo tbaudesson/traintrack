@@ -19,7 +19,8 @@ import {
   adminCreateInvitation,
   adminListInvitations,
   adminRevokeInvitation,
-  FEATURE_KEYS,
+  FEATURE_GROUPS,
+  SERVER_CHECKED,
   type AdminUserProfile,
   type Plan,
   type FeatureKey,
@@ -372,20 +373,33 @@ function PlanCard({ plan, onChanged }: { plan: Plan; onChanged: () => void }) {
         <Input value={desc} onChange={(e) => setDesc(e.target.value)} placeholder={t("planDesc")} />
         <div className="space-y-1.5">
           <p className="text-xs font-medium text-muted-foreground">{t("features")}</p>
-          {FEATURE_KEYS.map((f) => (
-            <button
-              key={f}
-              onClick={() => toggle(f)}
-              className="flex w-full items-center gap-2 text-left text-sm"
-            >
-              <span className={cn(
-                "flex h-4 w-4 shrink-0 items-center justify-center rounded border",
-                features.includes(f) ? "border-accent-500 bg-accent-500 text-white" : "border-muted-foreground"
-              )}>
-                {features.includes(f) && <Check className="h-3 w-3" />}
-              </span>
-              {t(`feat_${f}`)}
-            </button>
+          {FEATURE_GROUPS.map((g) => (
+            <fieldset key={g.key} className="space-y-1.5 pt-1">
+              <legend className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{t(`featGroup_${g.key}`)}</legend>
+              {g.features.map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => toggle(f)}
+                  aria-pressed={features.includes(f)}
+                  className="flex w-full items-start gap-2 text-left text-sm"
+                >
+                  <span className={cn(
+                    "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border",
+                    features.includes(f) ? "border-accent-500 bg-accent-500 text-white" : "border-muted-foreground"
+                  )}>
+                    {features.includes(f) && <Check className="h-3 w-3" />}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block">{t(`feat_${f}`)}</span>
+                    <span className="block text-xs text-muted-foreground">
+                      {t(`featHint_${f}`)}
+                      {SERVER_CHECKED.includes(f) && <> · {t("featServer")}</>}
+                    </span>
+                  </span>
+                </button>
+              ))}
+            </fieldset>
           ))}
         </div>
         <div className="flex gap-2">
