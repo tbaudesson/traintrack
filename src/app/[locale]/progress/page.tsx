@@ -9,6 +9,7 @@ import { useExercises } from "@/hooks/useExercises";
 import { useAthleteProfile } from "@/hooks/useAthleteProfile";
 import { GoalsSection } from "@/components/domain/GoalsSection";
 import { WeeklyReportCard } from "@/components/domain/WeeklyReportCard";
+import { Recommendations } from "@/components/domain/Recommendations";
 import { usePainReports } from "@/hooks/usePain";
 import { mondayOfDate } from "@/lib/weekPlan";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
@@ -254,6 +255,9 @@ export default function ProgressPage() {
             <StatCard icon={Flame} value={num(stats.weekVolume, 0)} label={`${t("thisWeek")} (kg)`} />
           </div>
         )}
+
+        {/* All of today's advice; the home screen shows the first one only. */}
+        <Recommendations limit={99} />
 
         {hasFeature("reports") && (
           <>

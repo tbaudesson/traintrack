@@ -33,8 +33,8 @@ function dayStr(offsetDays = 0) {
   return localDateIn(-offsetDays);
 }
 
-export function Recommendations() {
-  const t = useTranslations("recommend");
+/** Today's advice, most useful first. */
+export function useRecommendations() {
   const workouts = useWorkouts();
   const todayReadiness = useTodayReadiness();
   const today = dayStr(0);
@@ -42,7 +42,7 @@ export function Recommendations() {
   const profile = useAthleteProfile();
   const healthToday = useHealthForDate(today);
 
-  const recs = useMemo(() => {
+  return useMemo(() => {
     const dates = workouts.map((w) => w.date).sort();
     const last = dates[dates.length - 1];
     const daysSinceLastWorkout = last
@@ -76,26 +76,37 @@ export function Recommendations() {
       caloriesToday: macros.calories,
       caloriesTarget: targets?.calories,
       sleepHours: healthToday?.sleepHours,
-    }).slice(0, 3);
+    });
   }, [workouts, nutritionToday, todayReadiness, profile, healthToday, today]);
+}
 
+/** One piece of advice: its icon in the colour of its tone, and its text. */
+export function RecommendationRow({ rec }: { rec: ReturnType<typeof useRecommendations>[number] }) {
+  const t = useTranslations("recommend");
+  const Icon = ICONS[rec.kind];
+  return (
+    <div className="flex items-start gap-3">
+      <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${TONE_STYLES[rec.tone]}`}>
+        <Icon className="h-4 w-4" aria-hidden="true" />
+      </div>
+      <p className="pt-1 text-sm">{t(rec.kind, rec.params ?? {})}</p>
+    </div>
+  );
+}
+
+/** Today's advice, the first ones. */
+export function Recommendations({ limit = 3 }: { limit?: number }) {
+  const t = useTranslations("recommend");
+  const recs = useRecommendations().slice(0, limit);
   if (recs.length === 0) return null;
 
   return (
     <Card>
       <CardContent className="space-y-2.5 py-4">
         <p className="text-sm font-semibold text-muted-foreground">{t("title")}</p>
-        {recs.map((r, idx) => {
-          const Icon = ICONS[r.kind];
-          return (
-            <div key={`${r.kind}-${idx}`} className="flex items-start gap-3">
-              <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${TONE_STYLES[r.tone]}`}>
-                <Icon className="h-4 w-4" />
-              </div>
-              <p className="pt-1 text-sm">{t(r.kind, r.params ?? {})}</p>
-            </div>
-          );
-        })}
+        {recs.map((r, idx) => (
+          <RecommendationRow key={`${r.kind}-${idx}`} rec={r} />
+        ))}
       </CardContent>
     </Card>
   );

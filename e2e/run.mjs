@@ -152,9 +152,13 @@ await test("the home screen opens offline, with the offline banner", async () =>
 await test("a ready-made program is added from the home screen", async () => {
   await page.getByText("Changer de séance ou de programme").click();
   await page.getByRole("dialog").getByText("Full Body — Débutant").first().click();
+  // Saved: it joins the programs to start, at the top of the picker.
+  await page.getByRole("dialog").locator("section", { hasText: "Mes programmes" }).getByText("Full Body — Débutant").first().waitFor({ timeout: 10000 });
   await page.keyboard.press("Escape");
-  // It now appears in "My programs" on the home screen.
+  // It now appears in "My programs", on the training page (the home screen keeps the next session only).
+  await page.goto(`${BASE}/fr/log`);
   await page.locator("section", { hasText: "Mes programmes" }).getByText("Full Body — Débutant").first().waitFor({ timeout: 10000 });
+  await page.goto(`${BASE}/fr`);
 });
 
 await test("the weeks ahead go to the phone's calendar", async () => {
@@ -175,6 +179,12 @@ await test("a sharp rise of the training load is flagged on the home screen", as
   await card.getByText(/Hausse trop brutale|Hausse marquée/).waitFor({ timeout: 10000 });
   await card.scrollIntoViewIfNeeded();
   await snap("load-card");
+  if (process.env.E2E_SHOTS) {
+    // The same home screen on a large screen: the signal of the day beside the session and the week.
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await snap("home-desktop");
+    await page.setViewportSize({ width: 390, height: 844 });
+  }
 });
 
 await test("pressed for time, the session of the day has a short version", async () => {

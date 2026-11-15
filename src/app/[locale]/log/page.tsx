@@ -17,7 +17,11 @@ import { Upload, Activity, Plus, Dumbbell, Calendar, Loader2, ClipboardList, Rot
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
 import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
 import { DetailRow } from "@/components/ui/detail-row";
-import { daysToOffer, lastRepeatable, repeatWorkout, startWorkoutFromDay } from "@/lib/startWorkout";
+import { daysToOffer, findWorkoutProgramDay, lastRepeatable, nextDayIndex, repeatWorkout, startWorkoutFromDay } from "@/lib/startWorkout";
+import { MyPrograms } from "@/components/domain/MyPrograms";
+import { useProgramTemplates } from "@/lib/templateService";
+import { PROGRAM_TEMPLATES } from "@/lib/programTemplates";
+import { useAppPrefs } from "@/hooks/useAppPrefs";
 import { describeTarget, formatDistance, isCardio } from "@/lib/cardio";
 import { SportPicker } from "@/components/domain/SportPicker";
 import { GpxImport } from "@/components/domain/GpxImport";
@@ -32,6 +36,8 @@ export default function LogPage() {
   const workouts = useWorkouts();
   const programs = useTrainablePrograms();
   const exercises = useExercises();
+  const catalogue = useProgramTemplates();
+  const prefs = useAppPrefs();
   const [busy, setBusy] = useState(false);
   const [sportOpen, setSportOpen] = useState(false);
   const tc = useTranslations("cardio");
@@ -137,6 +143,20 @@ export default function LogPage() {
             )}
           </section>
         )}
+
+        {/* The programs in progress, moved here from the home screen. */}
+        <MyPrograms
+          programs={programs}
+          workouts={workouts}
+          catalogue={[...catalogue, ...PROGRAM_TEMPLATES]}
+          today={today}
+          favorite={prefs.sport}
+          onContinue={(program) => {
+            const running = workouts.find((w) => w.date === today && findWorkoutProgramDay([program], w));
+            if (running?.id) router.push(sessionHref(running.id));
+            else startFromProgramDay(program, nextDayIndex(program, workouts, today));
+          }}
+        />
 
         {/* History */}
         <section className="space-y-2">

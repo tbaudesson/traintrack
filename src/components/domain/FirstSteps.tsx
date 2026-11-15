@@ -31,20 +31,26 @@ export function FirstSteps({ steps, onDismiss }: { steps: FirstStep[]; onDismiss
       <div className="flex min-h-11 items-center gap-3">
         <Rocket className="size-5 shrink-0 text-accent-text" aria-hidden="true" />
         <div className="min-w-0 flex-1">
-          <h2 id="first-steps-title" className="truncate text-sm font-semibold">
-            {t("title")} <span className="font-normal text-muted-foreground">· {t("progress", { done, total: steps.length })}</span>
+          <h2 id="first-steps-title" className="text-sm font-semibold">
+            {t("title")}
           </h2>
-          {next && !open && (
-            next.href ? (
-              <Link href={next.href} onClick={next.onClick} className="block truncate text-xs font-medium text-accent-text">
-                {t("next", { step: next.label })}
-              </Link>
-            ) : (
-              <button type="button" onClick={next.onClick} className="block max-w-full truncate text-left text-xs font-medium text-accent-text">
-                {t("next", { step: next.label })}
-              </button>
-            )
-          )}
+          <p className="truncate text-xs text-muted-foreground">
+            {t("progress", { done, total: steps.length })}
+            {next && !open && (
+              <>
+                {" · "}
+                {next.href ? (
+                  <Link href={next.href} onClick={next.onClick} className="font-medium text-accent-text">
+                    {t("next", { step: next.label })}
+                  </Link>
+                ) : (
+                  <button type="button" onClick={next.onClick} className="font-medium text-accent-text">
+                    {t("next", { step: next.label })}
+                  </button>
+                )}
+              </>
+            )}
+          </p>
         </div>
         <button
           type="button"

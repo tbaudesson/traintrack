@@ -13,14 +13,12 @@ import { useTrainablePrograms } from "@/hooks/usePrograms";
 import { useProgramTemplates } from "@/lib/templateService";
 import { useUnreadComments } from "@/hooks/useCoachComments";
 import { useExercises } from "@/hooks/useExercises";
-import { useNutritionForDate, sumMacros } from "@/hooks/useNutrition";
 import { useTodayReadiness, useReadiness, readinessScore } from "@/hooks/useReadiness";
 import { DeloadCard, deloadLaterFor } from "@/components/domain/DeloadCard";
 import { LOW_READINESS } from "@/lib/readinessAdjust";
 import { ReadinessBanner } from "@/components/domain/ReadinessBanner";
 import { useLighterToday } from "@/hooks/useLighterToday";
 import { WeeklyReportCard } from "@/components/domain/WeeklyReportCard";
-import { MyPrograms } from "@/components/domain/MyPrograms";
 import { PROGRAM_TEMPLATES } from "@/lib/programTemplates";
 import { programCategory } from "@/lib/programCategories";
 import { homePicture } from "@/lib/appTheme";
@@ -53,20 +51,17 @@ import { useCompetitions } from "@/hooks/useCompetitions";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
-import { Recommendations } from "@/components/domain/Recommendations";
+import { RecommendationRow, useRecommendations } from "@/components/domain/Recommendations";
 import { SessionPickerDialog, useDayDetail } from "@/components/domain/SessionPickerDialog";
 import { useStartActions } from "@/hooks/useStartActions";
 import type { ReactNode } from "react";
 import {
   type LucideIcon,
-  ArrowRight, Check, ListChecks, MessageSquare, Sparkles, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
+  ArrowRight, Check, ListChecks, MessageSquare, Sparkles, Bell, ChevronRight, ClipboardList, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
   Timer,
   PartyPopper,
   Gauge,
   X,
-  Footprints,
-  Repeat,
-  CalendarCheck,
 } from "lucide-react";
 import { localDate, localDateIn } from "@/lib/dates";
 import { useFormat } from "@/lib/format";
@@ -96,33 +91,6 @@ function ProgressRing({ percent }: { percent: number }) {
         />
       </svg>
       <span className="absolute inset-0 flex items-center justify-center text-lg font-bold tabular-nums">{percent}%</span>
-    </div>
-  );
-}
-
-function OverviewTile({
-  icon: Icon,
-  label,
-  value,
-  hint,
-  highlight,
-  tile,
-}: {
-  icon: LucideIcon;
-  label: string;
-  value: ReactNode;
-  hint: string;
-  highlight?: boolean;
-  tile: string;
-}) {
-  return (
-    <div className="t-tile min-w-0 rounded-2xl p-3" style={{ "--tile": tile } as React.CSSProperties}>
-      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Icon className="size-4 shrink-0" style={{ color: tile }} aria-hidden={true} />
-        <span className="truncate">{label}</span>
-      </p>
-      <p className={`mt-1 truncate text-2xl font-bold tabular-nums ${highlight ? "text-accent-text" : ""}`}>{value}</p>
-      <p className="truncate text-xs text-muted-foreground">{hint}</p>
     </div>
   );
 }
@@ -176,6 +144,7 @@ export default function HomePage() {
   const tf = useTranslations("firstSteps");
   const locale = useLocale();
   const tr = useTranslations("readiness");
+  const trec = useTranslations("recommend");
   const tm = useTranslations("more");
   const tcat = useTranslations("catalog");
   const router = useRouter();
@@ -219,6 +188,7 @@ export default function HomePage() {
   const picture = homePicture(prefs);
   const exercises = useExercises();
   const todayReadiness = useTodayReadiness();
+  const recommendations = useRecommendations();
   const { hasFeature } = useFeatureAccess();
   const { memberships } = useTeams();
   const [now] = useState(() => Date.now());
@@ -244,7 +214,6 @@ export default function HomePage() {
   const [sportOpen, setSportOpen] = useState(false);
 
   const today = localDate(now);
-  const nutritionToday = useNutritionForDate(today);
   const hasTeamInvite = memberships.some((m) => m.status === "pending");
   const name = account?.display_name ?? user?.email?.split("@")[0] ?? "";
   const readyScore = todayReadiness ? readinessScore(todayReadiness) : null;
@@ -412,14 +381,73 @@ export default function HomePage() {
   const testProgram = programs.find((p) => isTestProgram(p) && !p.assignedToUserId);
   const tests = testProgram && hasFeature("level_tests") ? testsDue({ program: testProgram, workouts, today }) : null;
 
-  // The notes of the home screen, most pressing first: a load rising too fast,
-  // a low form, a deload week, a program just over, last week's report, the
-  // tests due, the sport practised. Only the first shows open.
+  // The signal of the day, most pressing first: a load rising too fast, a low
+  // form, a coach's comments, a team invitation, a deload week, a program just
+  // over, last week's report, the tests due, today's form to give, the sport
+  // practised, the first piece of advice, today's form given. Only the first
+  // shows open; the others are folded under "Also to look at".
   const lowForm = lighterToday.reason === "deload" ? null : lighterToday.readiness;
   const deloadShown = deloading || (!!deload && deloadLaterFor() !== thisMonday);
+  // Actionable news, in the signal of the day: a coach's comments, a team invitation.
+  const commentsNode = comments.length > 0 && (
+    <Link href={sessionHref(comments[0].workoutId)} className="block">
+      <Card className="active:scale-[0.99]">
+        <CardContent className="flex items-center gap-3 py-3">
+          <MessageSquare className="size-5 shrink-0 text-accent-text" aria-hidden="true" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium">{t("newComments", { count: comments.length })}</p>
+            <p className="truncate text-xs text-muted-foreground">
+              {comments[0].authorName ?? "—"}{comments[0].body ? ` : ${comments[0].body}` : ""}
+            </p>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+        </CardContent>
+      </Card>
+    </Link>
+  );
+  const inviteNode = hasTeamInvite && (
+    <Link href="/teams" className="block">
+      <Card className="active:scale-[0.99]">
+        <CardContent className="flex items-center gap-3 py-3">
+          <div className="flex-1">
+            <p className="text-sm font-medium">{t("teamInvite")}</p>
+            <p className="text-xs text-muted-foreground">{t("teamInviteDesc")}</p>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+        </CardContent>
+      </Card>
+    </Link>
+  );
+  // Today's form: asked for when not given yet; otherwise its score, when nothing else is pressing.
+  const readinessNode = hasFeature("readiness") && (
+    <Link href="/readiness" className="block">
+      <Card className="active:scale-[0.99]">
+        <CardContent className="flex items-center gap-3 py-3">
+          <div className="t-well flex h-11 w-11 items-center justify-center rounded-xl bg-linear-to-b from-accent-50 to-accent-200 dark:from-accent-800/50 dark:to-accent-900/40">
+            <HeartPulse className="h-5 w-5 text-accent-text" aria-hidden="true" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium">{tr("title")}</p>
+            <p className="text-xs text-muted-foreground">
+              {readyScore != null ? `${tr("score")}: ${readyScore}/100` : tr("todayPrompt")}
+            </p>
+          </div>
+          {readyScore == null && (
+            <span className="rounded-full bg-linear-to-b from-[color-mix(in_oklab,var(--primary)_86%,white)] to-primary px-2.5 py-1 text-xs font-medium text-primary-foreground shadow-[inset_0_1px_0_oklch(1_0_0/0.3)]">
+              {tr("checkIn")}
+            </span>
+          )}
+          <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+        </CardContent>
+      </Card>
+    </Link>
+  );
+  const topRecommendation = recommendations[0];
   const notes: { key: string; node: ReactNode }[] = [
     ...(load && (load.zone === "caution" || load.zone === "danger") ? [{ key: "load", node: <TrainingLoadCard key="load" load={load} /> }] : []),
     ...(lowForm !== null && lowForm < LOW_READINESS ? [{ key: "form", node: <Fragment key="form"><ReadinessBanner readiness={lowForm} keptNormal={lighterToday.keptNormal} onKeep={lighterToday.setKeptNormal} /></Fragment> }] : []),
+    ...(commentsNode ? [{ key: "comments", node: <Fragment key="comments">{commentsNode}</Fragment> }] : []),
+    ...(inviteNode ? [{ key: "invite", node: <Fragment key="invite">{inviteNode}</Fragment> }] : []),
     ...(deloadShown ? [{ key: "deload", node: <DeloadCard key="deload" advice={deload} monday={thisMonday} active={deloading} hasProfile={!!profile} /> }] : []),
     ...(finishedProgram ? [{ key: "review", node: <Fragment key="review"><HomeNote
               icon={PartyPopper}
@@ -455,6 +483,7 @@ export default function HomePage() {
               action={t("testsDueAction")}
               onClose={() => closeCard(`tests-${tests.next}`)}
             /></Fragment> }] : []),
+    ...(readinessNode && readyScore == null ? [{ key: "readiness", node: <Fragment key="readiness">{readinessNode}</Fragment> }] : []),
     ...(sportHint ? [{ key: "sport", node: <Fragment key="sport"><HomeNote
               icon={Sparkles}
               title={t("sportHint", { sport: tcat(sportHint === "callisthenics" ? "cat_timed" : `cat_${sportHint}`) })}
@@ -463,6 +492,15 @@ export default function HomePage() {
               onAction={() => savePrefs({ sport: sportHint, sport2: prefs.sport === sportHint ? prefs.sport2 : prefs.sport })}
               onClose={() => closeCard(`sport-${sportHint}`)}
             /></Fragment> }] : []),
+    ...(topRecommendation ? [{ key: "advice", node: (
+      <Card key="advice">
+        <CardContent className="space-y-2.5 py-4">
+          <p className="text-sm font-semibold text-muted-foreground">{trec("title")}</p>
+          <RecommendationRow rec={topRecommendation} />
+        </CardContent>
+      </Card>
+    ) }] : []),
+    ...(readinessNode && readyScore != null ? [{ key: "readiness", node: <Fragment key="readiness">{readinessNode}</Fragment> }] : []),
   ];
   // The next sessions of the planning, over two weeks: a plan starting next Monday shows already.
   const upcoming = useMemo(
@@ -545,7 +583,7 @@ export default function HomePage() {
   const dayDetail = useDayDetail();
 
   return (
-    <div className="space-y-5 p-4 pb-28">
+    <div className="mx-auto max-w-5xl space-y-5 p-4 pb-28">
       <header className="relative flex items-center gap-3 pt-2">
         <Image
           src="/images/dumbbell.webp"
@@ -610,154 +648,204 @@ export default function HomePage() {
         </section>
       ) : (
         <>
-          <section className="t-hero relative overflow-hidden rounded-3xl p-5">
-            {picture.scene ? (
-              <>
-                {/* A whole illustration: behind the card, faded on the side of the text. */}
-                <Image
-                  src={picture.src}
-                  alt=""
-                  fill
-                  unoptimized
-                  className="pointer-events-none object-cover object-right opacity-90 [mask-image:linear-gradient(to_right,transparent_15%,black_70%)]"
-                />
-                <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-linear-to-r from-background/70 via-background/25 to-transparent" />
-              </>
-            ) : (
-              <Image
-                src={picture.src}
-                alt=""
-                width={Math.round((picture.width * 209) / picture.height)}
-                height={209}
-                unoptimized
-                className="pointer-events-none absolute top-2 left-[33%] opacity-55 [mask-image:linear-gradient(to_right,transparent_8%,black_45%)] dark:opacity-50"
-              />
-            )}
-            <div className="relative flex items-start justify-between gap-3">
-              <div className="max-w-[60%] min-w-0">
-                <p className="text-xs font-semibold tracking-widest text-accent-text uppercase">
-                  {session && session.date !== today
-                    ? t("nextSessionOn", { date: new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", timeZone: "UTC" }).format(new Date(`${session.date}T00:00:00Z`)) })
-                    : t("todaySession")}
-                </p>
-                <h2 className="mt-1 line-clamp-2 text-3xl leading-tight font-bold tracking-tight break-words">{session?.day.name ?? t("freeSession")}</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {session
-                    ? `${session.program.name} · ${dayDetail(session.day)}`
-                    : t("freeSessionDesc")}
-                  {sessionWeek && (
-                    <span className="mt-0.5 block text-xs font-semibold text-accent-text">
-                      {!sessionWeek.started
-                        ? t("programStarts", { date: short(session!.program.startDate!) })
-                        : sessionWeek.total
-                          ? t("programWeekOf", { week: sessionWeek.week, total: sessionWeek.total })
-                          : t("programWeek", { week: sessionWeek.week })}
-                    </span>
-                  )}
-                </p>
-              </div>
-              <ProgressRing percent={percent} />
-            </div>
-            {session && session.options.length > 1 && (
-              <div className="relative mt-3 flex flex-wrap gap-1.5" role="group" aria-label={t("sameDay")}>
-                {session.options.map((o) => {
-                  const on = o.program.id === session.program.id && o.index === session.index && o.workoutId === session.workoutId;
-                  return (
-                    <button
-                      key={o.key}
-                      type="button"
-                      onClick={() => setPickKey(o.key)}
-                      aria-pressed={on}
-                      className={cn(
-                        "min-h-9 rounded-full px-3 text-xs font-semibold",
-                        on ? "bg-accent-600 text-white" : "t-surface text-foreground ring-1 ring-foreground/10"
-                      )}
-                    >
-                      {o.workoutId ? "✓ " : ""}
-                      {o.program.structure[o.index]?.name} · {o.program.name}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-            <div className="relative mt-4 flex items-center justify-between gap-2">
-              <Button onClick={start} disabled={starting} className="rounded-full px-5">
-                {starting ? (
-                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                ) : (
+          {/* Three zones: the next thing to do and the week, then the signal of the day. */}
+          <div className="space-y-5 md:grid md:grid-cols-3 md:items-start md:gap-5 md:space-y-0">
+            <div className="space-y-5 md:col-span-2">
+              <section className="t-hero relative overflow-hidden rounded-3xl p-5">
+                {picture.scene ? (
                   <>
-                    {session?.workoutId ? t("continue") : t("start")}
-                    <ArrowRight className="size-4" aria-hidden="true" />
+                    {/* A whole illustration: behind the card, faded on the side of the text. */}
+                    <Image
+                      src={picture.src}
+                      alt=""
+                      fill
+                      unoptimized
+                      className="pointer-events-none object-cover object-right opacity-90 [mask-image:linear-gradient(to_right,transparent_15%,black_70%)]"
+                    />
+                    <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-linear-to-r from-background/70 via-background/25 to-transparent" />
                   </>
+                ) : (
+                  <Image
+                    src={picture.src}
+                    alt=""
+                    width={Math.round((picture.width * 209) / picture.height)}
+                    height={209}
+                    unoptimized
+                    className="pointer-events-none absolute top-2 left-[33%] opacity-55 [mask-image:linear-gradient(to_right,transparent_8%,black_45%)] dark:opacity-50"
+                  />
                 )}
-              </Button>
-              {session?.program.id !== undefined && (
-                <Link
-                  href={`/programs/${session.program.id}`}
-                  className="t-surface flex h-11 items-center gap-1.5 rounded-full px-3 text-sm font-medium whitespace-nowrap"
+                <div className="relative flex items-start justify-between gap-3">
+                  <div className="max-w-[60%] min-w-0">
+                    <p className="text-xs font-semibold tracking-widest text-accent-text uppercase">
+                      {session && session.date !== today
+                        ? t("nextSessionOn", { date: new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", timeZone: "UTC" }).format(new Date(`${session.date}T00:00:00Z`)) })
+                        : t("todaySession")}
+                    </p>
+                    <h2 className="mt-1 line-clamp-2 text-3xl leading-tight font-bold tracking-tight break-words">{session?.day.name ?? t("freeSession")}</h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {session
+                        ? `${session.program.name} · ${dayDetail(session.day)}`
+                        : t("freeSessionDesc")}
+                      {sessionWeek && (
+                        <span className="mt-0.5 block text-xs font-semibold text-accent-text">
+                          {!sessionWeek.started
+                            ? t("programStarts", { date: short(session!.program.startDate!) })
+                            : sessionWeek.total
+                              ? t("programWeekOf", { week: sessionWeek.week, total: sessionWeek.total })
+                              : t("programWeek", { week: sessionWeek.week })}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <ProgressRing percent={percent} />
+                </div>
+                {session && session.options.length > 1 && (
+                  <div className="relative mt-3 flex flex-wrap gap-1.5" role="group" aria-label={t("sameDay")}>
+                    {session.options.map((o) => {
+                      const on = o.program.id === session.program.id && o.index === session.index && o.workoutId === session.workoutId;
+                      return (
+                        <button
+                          key={o.key}
+                          type="button"
+                          onClick={() => setPickKey(o.key)}
+                          aria-pressed={on}
+                          className={cn(
+                            "min-h-9 rounded-full px-3 text-xs font-semibold",
+                            on ? "bg-accent-600 text-white" : "t-surface text-foreground ring-1 ring-foreground/10"
+                          )}
+                        >
+                          {o.workoutId ? "✓ " : ""}
+                          {o.program.structure[o.index]?.name} · {o.program.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                <div className="relative mt-4 flex items-center justify-between gap-2">
+                  <Button onClick={start} disabled={starting} className="rounded-full px-5">
+                    {starting ? (
+                      <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                    ) : (
+                      <>
+                        {session?.workoutId ? t("continue") : t("start")}
+                        <ArrowRight className="size-4" aria-hidden="true" />
+                      </>
+                    )}
+                  </Button>
+                  {session?.program.id !== undefined && (
+                    <Link
+                      href={`/programs/${session.program.id}`}
+                      className="t-surface flex h-11 items-center gap-1.5 rounded-full px-3 text-sm font-medium whitespace-nowrap"
+                    >
+                      <ClipboardList className="size-4" aria-hidden="true" />
+                      {t("details")}
+                    </Link>
+                  )}
+                </div>
+                {canExpress && (
+                  <button
+                    type="button"
+                    onClick={() => setExpressOpen(true)}
+                    className="relative mt-2 flex min-h-11 w-full items-center justify-center gap-1.5 rounded-full text-sm font-semibold text-accent-text ring-1 ring-accent-500/30"
+                  >
+                    <Timer className="size-4" aria-hidden="true" />
+                    {t("express")}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setChoosing(true)}
+                  className="relative mt-2 flex min-h-11 w-full items-center justify-center gap-1.5 text-sm font-semibold text-accent-text"
                 >
-                  <ClipboardList className="size-4" aria-hidden="true" />
-                  {t("details")}
+                  <ListChecks className="size-4" aria-hidden="true" />
+                  {t("changeSession")}
+                </button>
+              </section>
+
+              {/* A new athlete's first steps, for a month, until done or hidden. */}
+              {profile && !flags.stepsClosed && Date.parse(profile.createdAt) > now - 30 * 86_400_000 && (
+                <FirstSteps
+                  onDismiss={() => setFlag("stepsClosed", "first-steps-closed")}
+                  steps={[
+                    { key: "plan", done: programs.some((p) => (p.weekdays ?? []).length > 0), label: tf("plan"), href: "/programs" },
+                    { key: "session", done: workouts.length > 0, label: tf("session"), onClick: start },
+                    ...(hasFeature("readiness") ? [{ key: "readiness", done: readiness.length > 0, label: tf("readiness"), href: "/readiness" }] : []),
+                    ...(hasFeature("planning") ? [{ key: "calendar", done: !!flags.calendar, label: tf("calendar"), onClick: exportCalendar }] : []),
+                    { key: "look", done: !!flags.look || prefs.style !== "classic", label: tf("look"), href: "/settings", onClick: () => setFlag("look", "look-seen") },
+                  ]}
+                />
+              )}
+
+              <WeekStrip
+                plan={plan}
+                planned={planned.length > 0 || (profile?.trainingDays ?? []).length > 0}
+                onExport={hasFeature("planning") ? exportCalendar : undefined}
+                upcoming={upcoming}
+                offset={planned.length ? weekOffset : undefined}
+                onOffset={(n) => setWeekChoice(Math.max(-4, Math.min(8, n)))}
+                streak={streak?.weeks}
+                movable={profile && hasFeature("planning") ? movable : undefined}
+                onPickDay={setMoveDate}
+              />
+              {goal && goal.target > 0 && (
+                <section className="t-surface flex items-center gap-3 rounded-2xl p-4 ring-1 ring-foreground/5">
+                  <Target className="size-8 shrink-0 text-accent-text" aria-hidden="true" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium">{t("weeklyGoal")}</p>
+                    <p className="truncate text-xs text-muted-foreground">{t("goalProgram", { name: session!.program.name })}</p>
+                    <div className="t-sunken mt-2 h-2.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={Math.min(goal.done, goal.target)} aria-valuemin={0} aria-valuemax={goal.target} aria-label={t("weeklyGoal")}>
+                      <div className="h-full rounded-full bg-linear-to-r from-accent-700 to-accent-400 shadow-[inset_0_1px_0_oklch(1_0_0/0.4)]" style={{ width: `${Math.min(100, (goal.done / goal.target) * 100)}%` }} />
+                    </div>
+                    {(goal.done >= goal.target || goal.others > 0) && (
+                      <p className="mt-1.5 text-xs text-muted-foreground">
+                        {goal.done >= goal.target && <span className="font-semibold text-accent-text">{t("goalReached", { beyond: goal.beyond })}</span>}
+                        {goal.done >= goal.target && goal.others > 0 && " · "}
+                        {goal.others > 0 && t("otherActivities", { count: goal.others })}
+                      </p>
+                    )}
+                  </div>
+                  <p className="shrink-0 text-right">
+                    <span className="text-lg font-semibold tabular-nums">{Math.min(goal.done, goal.target)}</span>
+                    <span className="text-muted-foreground"> / {goal.target}</span>
+                    <span className="block text-xs text-muted-foreground">{t("sessions")}</span>
+                  </p>
+                </section>
+              )}
+
+              {/* The week in one line; the details in Performance. */}
+              <section>
+                <Link href="/progress" className="t-surface flex min-h-11 items-center gap-3 rounded-2xl px-4 py-3 ring-1 ring-foreground/5">
+                  <TrendingUp className="size-5 shrink-0 text-accent-text" aria-hidden="true" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-semibold">{t("overview")}</span>
+                    <span className="block text-xs text-muted-foreground">
+                      {t(`metric_${overview.metric}`)} {num(overview.value, overview.unit === "km" ? 1 : 0)} {t(`unit_${overview.unit}`)}
+                      {overview.change !== null && ` · ${overview.change > 0 ? "+" : ""}${overview.change}% ${t("vsSameDay")}`}
+                    </span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-0.5 text-sm font-medium text-accent-text">
+                    {t("seeAll")}
+                    <ChevronRight className="size-4" aria-hidden="true" />
+                  </span>
                 </Link>
+              </section>
+            </div>
+
+            <div className="space-y-3">
+              {/* One thing at a time: the most pressing note, the others folded under "To look at". */}
+              {notes.length > 0 && notes[0].node}
+              {notes.length > 1 && (
+                <details className="t-surface rounded-2xl px-4 py-1 ring-1 ring-foreground/5">
+                  <summary className="flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold">
+                    <ListChecks className="size-4 text-accent-text" aria-hidden="true" />
+                    {t("toLookAt", { count: notes.length - 1 })}
+                  </summary>
+                  <div className="space-y-3 pt-1 pb-3">{notes.slice(1).map((n) => n.node)}</div>
+                </details>
               )}
             </div>
-            {canExpress && (
-              <button
-                type="button"
-                onClick={() => setExpressOpen(true)}
-                className="relative mt-2 flex min-h-11 w-full items-center justify-center gap-1.5 rounded-full text-sm font-semibold text-accent-text ring-1 ring-accent-500/30"
-              >
-                <Timer className="size-4" aria-hidden="true" />
-                {t("express")}
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => setChoosing(true)}
-              className="relative mt-2 flex min-h-11 w-full items-center justify-center gap-1.5 text-sm font-semibold text-accent-text"
-            >
-              <ListChecks className="size-4" aria-hidden="true" />
-              {t("changeSession")}
-            </button>
-          </section>
+          </div>
 
-          {/* A new athlete's first steps, for a month, until done or hidden. */}
-          {profile && !flags.stepsClosed && Date.parse(profile.createdAt) > now - 30 * 86_400_000 && (
-            <FirstSteps
-              onDismiss={() => setFlag("stepsClosed", "first-steps-closed")}
-              steps={[
-                { key: "plan", done: programs.some((p) => (p.weekdays ?? []).length > 0), label: tf("plan"), href: "/programs" },
-                { key: "session", done: workouts.length > 0, label: tf("session"), onClick: start },
-                ...(hasFeature("readiness") ? [{ key: "readiness", done: readiness.length > 0, label: tf("readiness"), href: "/readiness" }] : []),
-                ...(hasFeature("planning") ? [{ key: "calendar", done: !!flags.calendar, label: tf("calendar"), onClick: exportCalendar }] : []),
-                { key: "look", done: !!flags.look || prefs.style !== "classic", label: tf("look"), href: "/settings", onClick: () => setFlag("look", "look-seen") },
-              ]}
-            />
-          )}
-
-          {/* One thing at a time: the most pressing note, the others folded under "To look at". */}
-          {notes.length > 0 && notes[0].node}
-          {notes.length > 1 && (
-            <details className="t-surface rounded-2xl px-4 py-1 ring-1 ring-foreground/5">
-              <summary className="flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold">
-                <ListChecks className="size-4 text-accent-text" aria-hidden="true" />
-                {t("toLookAt", { count: notes.length - 1 })}
-              </summary>
-              <div className="space-y-3 pt-1 pb-3">{notes.slice(1).map((n) => n.node)}</div>
-            </details>
-          )}
-
-          <WeekStrip
-            plan={plan}
-            planned={planned.length > 0 || (profile?.trainingDays ?? []).length > 0}
-            onExport={hasFeature("planning") ? exportCalendar : undefined}
-            upcoming={upcoming}
-            offset={planned.length ? weekOffset : undefined}
-            onOffset={(n) => setWeekChoice(Math.max(-4, Math.min(8, n)))}
-            streak={streak?.weeks}
-            movable={profile && hasFeature("planning") ? movable : undefined}
-            onPickDay={setMoveDate}
-          />
           {canExpress && (
             <ExpressDialog
               key={`${session!.program.id}-${session!.index}`}
@@ -777,20 +865,6 @@ export default function HomePage() {
             workouts={workouts}
             onClose={() => setMoveDate(null)}
           />
-
-          <MyPrograms
-            programs={programs}
-            workouts={workouts}
-            catalogue={[...catalogue, ...PROGRAM_TEMPLATES]}
-            today={today}
-            favorite={prefs.sport}
-            onContinue={(program) => {
-              const running = workouts.find((w) => w.date === today && findWorkoutProgramDay([program], w));
-              if (running?.id) router.push(sessionHref(running.id));
-              else startDay(program, nextDayIndex(program, workouts, today));
-            }}
-          />
-
           <SportPicker open={sportOpen} onOpenChange={setSportOpen} onPick={actions.startCardio} />
 
           <SessionPickerDialog
@@ -806,120 +880,6 @@ export default function HomePage() {
             runner={runner}
             onEndurance={() => setSportOpen(true)}
           />
-
-          <section className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold tracking-tight">{t("overview")}</h2>
-              <Link href="/progress" className="flex min-h-10 items-center gap-1 text-sm font-medium text-accent-text">
-                {t("seeAll")}
-                <ChevronRight className="size-4" aria-hidden="true" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <OverviewTile
-                icon={overview.metric === "distance" ? Footprints : overview.metric === "volume" ? Dumbbell : overview.metric === "reps" ? Repeat : Timer}
-                label={t(`metric_${overview.metric}`)}
-                value={num(overview.value, overview.unit === "km" ? 1 : 0)}
-                hint={t(`unit_${overview.unit}`)}
-                tile="oklch(0.74 0.17 55)"
-              />
-              {hasFeature("nutrition") ? (
-                <OverviewTile icon={Flame} label={t("calories")} value={num(Math.round(sumMacros(nutritionToday).calories), 0)} hint={t("kcalToday")} tile="var(--accent-400)" />
-              ) : (
-                <OverviewTile icon={CalendarCheck} label={t("workouts")} value={overview.sessions} hint={t("thisWeek")} tile="var(--accent-400)" />
-              )}
-              <OverviewTile
-                icon={TrendingUp}
-                label={t("progression")}
-                value={overview.change === null ? "—" : `${overview.change > 0 ? "+" : ""}${overview.change}%`}
-                hint={t("vsSameDay")}
-                highlight
-                tile="oklch(0.74 0.12 200)"
-              />
-            </div>
-          </section>
-
-          {goal && goal.target > 0 && (
-            <section className="t-surface flex items-center gap-3 rounded-2xl p-4 ring-1 ring-foreground/5">
-              <Target className="size-8 shrink-0 text-accent-text" aria-hidden="true" />
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium">{t("weeklyGoal")}</p>
-                <p className="truncate text-xs text-muted-foreground">{t("goalProgram", { name: session!.program.name })}</p>
-                <div className="t-sunken mt-2 h-2.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={Math.min(goal.done, goal.target)} aria-valuemin={0} aria-valuemax={goal.target} aria-label={t("weeklyGoal")}>
-                  <div className="h-full rounded-full bg-linear-to-r from-accent-700 to-accent-400 shadow-[inset_0_1px_0_oklch(1_0_0/0.4)]" style={{ width: `${Math.min(100, (goal.done / goal.target) * 100)}%` }} />
-                </div>
-                {(goal.done >= goal.target || goal.others > 0) && (
-                  <p className="mt-1.5 text-xs text-muted-foreground">
-                    {goal.done >= goal.target && <span className="font-semibold text-accent-text">{t("goalReached", { beyond: goal.beyond })}</span>}
-                    {goal.done >= goal.target && goal.others > 0 && " · "}
-                    {goal.others > 0 && t("otherActivities", { count: goal.others })}
-                  </p>
-                )}
-              </div>
-              <p className="shrink-0 text-right">
-                <span className="text-lg font-semibold tabular-nums">{Math.min(goal.done, goal.target)}</span>
-                <span className="text-muted-foreground"> / {goal.target}</span>
-                <span className="block text-xs text-muted-foreground">{t("sessions")}</span>
-              </p>
-            </section>
-          )}
-
-          {comments.length > 0 && (
-            <Link href={sessionHref(comments[0].workoutId)} className="block">
-              <Card className="active:scale-[0.99]">
-                <CardContent className="flex items-center gap-3 py-3">
-                  <MessageSquare className="size-5 shrink-0 text-accent-text" aria-hidden="true" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium">{t("newComments", { count: comments.length })}</p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {comments[0].authorName ?? "—"}{comments[0].body ? ` : ${comments[0].body}` : ""}
-                    </p>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                </CardContent>
-              </Card>
-            </Link>
-          )}
-
-          {hasTeamInvite && (
-            <Link href="/teams" className="block">
-              <Card className="active:scale-[0.99]">
-                <CardContent className="flex items-center gap-3 py-3">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{t("teamInvite")}</p>
-                    <p className="text-xs text-muted-foreground">{t("teamInviteDesc")}</p>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                </CardContent>
-              </Card>
-            </Link>
-          )}
-
-          {hasFeature("readiness") && (
-            <Link href="/readiness" className="block">
-              <Card className="active:scale-[0.99]">
-                <CardContent className="flex items-center gap-3 py-3">
-                  <div className="t-well flex h-11 w-11 items-center justify-center rounded-xl bg-linear-to-b from-accent-50 to-accent-200 dark:from-accent-800/50 dark:to-accent-900/40">
-                    <HeartPulse className="h-5 w-5 text-accent-text" aria-hidden="true" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{tr("title")}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {readyScore != null ? `${tr("score")}: ${readyScore}/100` : tr("todayPrompt")}
-                    </p>
-                  </div>
-                  {readyScore == null && (
-                    <span className="rounded-full bg-linear-to-b from-[color-mix(in_oklab,var(--primary)_86%,white)] to-primary px-2.5 py-1 text-xs font-medium text-primary-foreground shadow-[inset_0_1px_0_oklch(1_0_0/0.3)]">
-                      {tr("checkIn")}
-                    </span>
-                  )}
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                </CardContent>
-              </Card>
-            </Link>
-          )}
-
-          <Recommendations />
         </>
       )}
     </div>
