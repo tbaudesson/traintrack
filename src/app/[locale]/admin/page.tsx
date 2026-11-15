@@ -490,6 +490,6 @@ function GdprTab() {
 
 /** A tab that could not load (offline or server unreachable): said plainly instead of spinning. */
 function LoadFailed() {
-  const tc = useTranslations("common");
-  return <p role="status" className="py-6 text-center text-sm text-muted-foreground">{tc("offline")}</p>;
+  const ts = useTranslations("sync");
+  return <p role="status" className="py-6 text-center text-sm text-muted-foreground">{ts("offline")}</p>;
 }
