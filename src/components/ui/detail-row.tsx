@@ -53,7 +53,7 @@ export function DetailRow({
       {leading ?? (icon && <IconWell icon={icon} tone={tone} />)}
       <span className="min-w-0 flex-1">
         <span className="block truncate font-medium">{title}</span>
-        {subtitle && <span className="block truncate text-xs text-muted-foreground">{subtitle}</span>}
+        {subtitle && <span className="line-clamp-2 block text-xs text-muted-foreground">{subtitle}</span>}
       </span>
       {interactive && <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden={true} />}
     </>
