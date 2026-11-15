@@ -2074,6 +2074,7 @@
     "actionRepRange": "Changez de plage de répétitions sur cet exercice (par exemple de 5 à 8–10).",
     "actionPlan": "Calez vos jours d'entraînement dans la semaine.",
     "actionStart": "Faites vos prochaines séances : la lecture arrivera ensuite.",
-    "go": "Y aller"
+    "go": "Y aller",
+    "seeInPerformance": "Voir dans Performance"
   }
 }

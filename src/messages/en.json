@@ -2074,6 +2074,7 @@
     "actionRepRange": "Change the rep range on this exercise (say from 5 to 8–10).",
     "actionPlan": "Set your training days in the week.",
     "actionStart": "Do your next sessions: the reading will follow.",
-    "go": "Go"
+    "go": "Go",
+    "seeInPerformance": "See in Performance"
   }
 }

@@ -54,6 +54,8 @@ import { RecommendationRow, useRecommendations } from "@/components/domain/Recom
 import { SessionPickerDialog, useDayDetail } from "@/components/domain/SessionPickerDialog";
 import { useStartActions } from "@/hooks/useStartActions";
 import { useSessionOfTheDay } from "@/hooks/useSessionOfTheDay";
+import { useInsights } from "@/hooks/useInsights";
+import { HomeInsight } from "@/components/domain/InsightCard";
 import type { ReactNode } from "react";
 import {
   type LucideIcon,
@@ -346,10 +348,12 @@ export default function HomePage() {
   const tests = testProgram && hasFeature("level_tests") ? testsDue({ program: testProgram, workouts, today }) : null;
 
   // The signal of the day, most pressing first: a load rising too fast, a low
-  // form, a coach's comments, a team invitation, a deload week, a program just
-  // over, last week's report, the tests due, today's form to give, the sport
-  // practised, the first piece of advice, today's form given. Only the first
-  // shows open; the others are folded under "Also to look at".
+  // form, the same pain again, a coach's comments, a team invitation, a deload
+  // week, a program just over, last week's report, the tests due, what the
+  // last four weeks say (records, volume, distance, a stall, regularity),
+  // today's form to give, the sport practised, the first piece of advice, the
+  // work kept up, today's form given. Only the first shows open; the others
+  // are folded under "Also to look at".
   const lowForm = lighterToday.reason === "deload" ? null : lighterToday.readiness;
   const deloadShown = deloading || (!!deload && deloadLaterFor() !== thisMonday);
   // Actionable news, in the signal of the day: a coach's comments, a team invitation.
@@ -407,9 +411,19 @@ export default function HomePage() {
     </Link>
   );
   const topRecommendation = recommendations[0];
+  // What the last four weeks say, as Performance reads it: placed in this list by its kind.
+  // The load has its own card here; too little data is the first steps' business.
+  const reading = useInsights({ today, workouts, sets, pains, readiness, profile });
+  const exerciseName = (id: number) => exercises.find((e) => e.id === id)?.name;
+  const insightOf = (kinds: string[]) => reading.insights.find((i) => kinds.includes(i.kind));
+  const painInsight = insightOf(["pain"]);
+  const progressInsight = insightOf(["records", "volumeUp", "volumeDown", "distanceUp", "distanceDown", "stagnation", "regularity"]);
+  const steadyInsight = insightOf(["steady"]);
+  const insightNote = (key: string, i: NonNullable<typeof painInsight>) => ({ key, node: <HomeInsight key={key} insight={i} exerciseName={exerciseName} /> });
   const notes: { key: string; node: ReactNode }[] = [
     ...(load && (load.zone === "caution" || load.zone === "danger") ? [{ key: "load", node: <TrainingLoadCard key="load" load={load} /> }] : []),
     ...(lowForm !== null && lowForm < LOW_READINESS ? [{ key: "form", node: <Fragment key="form"><ReadinessBanner readiness={lowForm} keptNormal={lighterToday.keptNormal} onKeep={lighterToday.setKeptNormal} /></Fragment> }] : []),
+    ...(painInsight ? [insightNote("insight-pain", painInsight)] : []),
     ...(commentsNode ? [{ key: "comments", node: <Fragment key="comments">{commentsNode}</Fragment> }] : []),
     ...(inviteNode ? [{ key: "invite", node: <Fragment key="invite">{inviteNode}</Fragment> }] : []),
     ...(deloadShown ? [{ key: "deload", node: <DeloadCard key="deload" advice={deload} monday={thisMonday} active={deloading} hasProfile={!!profile} /> }] : []),
@@ -447,6 +461,7 @@ export default function HomePage() {
               action={t("testsDueAction")}
               onClose={() => closeCard(`tests-${tests.next}`)}
             /></Fragment> }] : []),
+    ...(progressInsight ? [insightNote("insight", progressInsight)] : []),
     ...(readinessNode && readyScore == null ? [{ key: "readiness", node: <Fragment key="readiness">{readinessNode}</Fragment> }] : []),
     ...(sportHint ? [{ key: "sport", node: <Fragment key="sport"><HomeNote
               icon={Sparkles}
@@ -464,6 +479,7 @@ export default function HomePage() {
         </CardContent>
       </Card>
     ) }] : []),
+    ...(steadyInsight ? [insightNote("insight-steady", steadyInsight)] : []),
     ...(readinessNode && readyScore != null ? [{ key: "readiness", node: <Fragment key="readiness">{readinessNode}</Fragment> }] : []),
   ];
   // The next sessions of the planning, over two weeks: a plan starting next Monday shows already.

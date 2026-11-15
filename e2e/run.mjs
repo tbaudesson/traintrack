@@ -746,6 +746,23 @@ await test("Performance opens on what stands out, with its dates and evidence", 
   await page.waitForFunction(() => document.querySelector("details#chart-load")?.open === true, null, { timeout: 5000 });
   expect(await page.evaluate(() => document.activeElement?.closest("details")?.id === "chart-load"), "the focus is not on the load chart");
   await fold.getByText("Charge d’entraînement").first().waitFor({ timeout: 5000 });
+  // The home screen reads the same four weeks: whatever it says, Performance says too.
+  await page.goto(`${BASE}/fr`);
+  await page.getByRole("button", { name: "Changer de séance ou de programme" }).waitFor({ timeout: 10000 });
+  const more = page.locator("details", { hasText: "À voir aussi" });
+  await more.first().waitFor({ timeout: 5000 }).catch(() => {});
+  if (await more.count()) await more.locator("summary").click();
+  const homeTitles = await page.locator("section", { has: page.getByRole("link", { name: "Voir dans Performance" }) }).locator("h2").allInnerTexts();
+  await page.goto(`${BASE}/fr/progress`);
+  await page.getByText("Ce que disent vos 4 dernières semaines").waitFor({ timeout: 10000 });
+  const others = page.locator("details", { hasText: /Autres? lectures?/ });
+  if (homeTitles.length) {
+    await others.first().waitFor({ timeout: 10000 });
+    await others.locator("summary").click();
+  }
+  for (const title of homeTitles) {
+    expect((await page.getByText(title.trim(), { exact: true }).count()) > 0, `the home screen says "${title}", Performance does not`);
+  }
 });
 
 // ── The menu wheel, with real pointer input ─────────────────────────

@@ -2074,6 +2074,7 @@
     "actionRepRange": "Wechsle bei dieser Übung den Wiederholungsbereich (z. B. von 5 auf 8–10).",
     "actionPlan": "Leg deine Trainingstage in der Woche fest.",
     "actionStart": "Mach deine nächsten Einheiten: Die Auswertung folgt dann.",
-    "go": "Los"
+    "go": "Los",
+    "seeInPerformance": "In Performance ansehen"
   }
 }

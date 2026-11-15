@@ -157,3 +157,23 @@ export function MoreInsights({ items, exerciseName }: { items: Insight[]; exerci
     </details>
   );
 }
+
+/** An insight on the home screen, in short: its words, and the way to Performance for the rest. */
+export function HomeInsight({ insight, exerciseName }: { insight: Insight; exerciseName: (id: number) => string | undefined }) {
+  const t = useTranslations("insights");
+  const words = useInsightWords(exerciseName);
+  const Icon = ICON[insight.tone];
+  return (
+    <section className="t-surface space-y-1.5 rounded-2xl p-4 ring-1 ring-accent-500/30">
+      <h2 className="flex items-center gap-2 text-sm font-semibold">
+        <Icon className={cn("size-4 shrink-0", insight.tone === "warn" ? "text-amber-600 dark:text-amber-400" : insight.tone === "good" ? "text-success-text" : "text-accent-text")} aria-hidden="true" />
+        {words.title(insight)}
+      </h2>
+      <p className="text-sm text-muted-foreground">{words.text(insight)}</p>
+      <Link href="/progress" className="inline-flex min-h-10 items-center gap-1 text-sm font-semibold text-accent-text">
+        {t("seeInPerformance")}
+        <ChevronRight className="size-4" aria-hidden="true" />
+      </Link>
+    </section>
+  );
+}
