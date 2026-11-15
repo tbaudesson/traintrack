@@ -512,6 +512,28 @@
     border-color: color-mix(in oklab, var(--performance) 72%, var(--border));
     transform: translateY(-2px);
   }
+  .t-guided-shell {
+    background-image:
+      radial-gradient(circle at 50% 35%, color-mix(in oklab, var(--accent-600) 18%, transparent), transparent 36%),
+      repeating-linear-gradient(135deg, transparent 0 7px, color-mix(in oklab, var(--foreground) 2.5%, transparent) 7px 8px),
+      linear-gradient(to bottom, var(--background), color-mix(in oklab, var(--background) 94%, #050609));
+  }
+  .t-guided-header {
+    background: color-mix(in oklab, var(--surface-1) 84%, transparent);
+    box-shadow: 0 12px 30px -28px #000;
+    backdrop-filter: blur(16px);
+  }
+  .t-guided-progress {
+    background: linear-gradient(90deg, var(--accent-700), var(--accent-400));
+    box-shadow: 0 0 16px color-mix(in oklab, var(--accent-400) 75%, transparent);
+  }
+  .t-guided-control {
+    border: 1px solid color-mix(in oklab, var(--accent-500) 30%, var(--border));
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 -4px 8px rgb(0 0 0 / 0.16), 0 8px 18px -12px #000;
+  }
+  .t-exercise-block {
+    border-left: 3px solid color-mix(in oklab, var(--accent-500) 58%, var(--border));
+  }
   @media (min-width: 768px) {
     .t-settings-grid {
       align-items: start;

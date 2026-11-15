@@ -59,8 +59,8 @@ export function GuidedSession({
   const next = steps.slice(index + 1).find((s) => !s.completed);
 
   return (
-    <div role="dialog" aria-modal="true" aria-label={t("title")} className="fixed inset-0 z-[60] flex flex-col bg-background">
-      <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+    <div role="dialog" aria-modal="true" aria-label={t("title")} className="t-guided-shell fixed inset-0 z-[60] flex flex-col bg-background">
+      <div className="t-guided-header flex items-center gap-2 border-b border-border px-4 py-3">
         <p aria-live="polite" className="flex-1 text-sm font-medium text-muted-foreground tabular-nums">
           {t("progress", { done: completed.size, total: steps.length })}
         </p>
@@ -68,8 +68,8 @@ export function GuidedSession({
           <X className="h-5 w-5" aria-hidden="true" />
         </button>
       </div>
-      <div className="h-1 bg-muted">
-        <div className="h-full bg-accent-500 transition-all" style={{ width: `${(completed.size / Math.max(1, steps.length)) * 100}%` }} />
+      <div className="h-1 bg-black/30">
+        <div className="t-guided-progress h-full transition-all motion-reduce:transition-none" style={{ width: `${(completed.size / Math.max(1, steps.length)) * 100}%` }} />
       </div>
 
       <div className="flex flex-1 flex-col overflow-y-auto px-5 py-6">
@@ -150,7 +150,7 @@ function StepView({
     <div className="flex flex-1 flex-col gap-6">
       <div className="space-y-1 text-center">
         <p className="text-sm font-semibold tracking-wide text-accent-text uppercase">{step.label}</p>
-        <h2 className="text-3xl font-bold tracking-tight">{step.exerciseName}</h2>
+        <h2 className="t-display text-4xl md:text-5xl">{step.exerciseName}</h2>
         {step.target && <p className="text-sm text-muted-foreground">{step.target}</p>}
         {step.advice && <p className="text-sm font-medium text-success-text">{step.advice}</p>}
         {step.completed && <p className="text-sm font-medium text-success-text">{t("alreadyDone")}</p>}
@@ -210,7 +210,7 @@ function Stepper({ label, unit, value, step, onChange }: { label: string; unit?:
     <div className="space-y-1.5">
       <p className="text-center text-sm font-medium">{label}</p>
       <div className="flex items-center gap-3">
-        <button type="button" onClick={() => set(value - step)} aria-label={`${label} −${step}`} className="t-well flex size-16 shrink-0 items-center justify-center rounded-2xl">
+        <button type="button" onClick={() => set(value - step)} aria-label={`${label} -${step}`} className="t-guided-control t-well flex size-16 shrink-0 items-center justify-center rounded-2xl">
           <Minus className="h-6 w-6" aria-hidden="true" />
         </button>
         <label className="flex flex-1 items-baseline justify-center gap-1">
@@ -225,7 +225,7 @@ function Stepper({ label, unit, value, step, onChange }: { label: string; unit?:
           />
           {unit && <span className="text-lg text-muted-foreground">{unit}</span>}
         </label>
-        <button type="button" onClick={() => set(value + step)} aria-label={`${label} +${step}`} className="t-well flex size-16 shrink-0 items-center justify-center rounded-2xl">
+        <button type="button" onClick={() => set(value + step)} aria-label={`${label} +${step}`} className="t-guided-control t-well flex size-16 shrink-0 items-center justify-center rounded-2xl">
           <Plus className="h-6 w-6" aria-hidden="true" />
         </button>
       </div>

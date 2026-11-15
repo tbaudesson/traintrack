@@ -804,7 +804,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
           const folded = work.length > 0 && exSets.every((x) => x.completed) && !reopened.has(exerciseId) && guideOpen === false;
           return (
             <Fragment key={exerciseId}>
-            <Card className={cn("relative", inSuperset && "ring-2 ring-accent-500/40")}>
+            <Card className={cn("t-exercise-block relative", inSuperset && "ring-2 ring-accent-500/40")}>
               {!bodyweight && !folded && <Image
                 src="/images/dumbbell.webp"
                 alt=""
