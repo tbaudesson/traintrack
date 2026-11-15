@@ -21,7 +21,7 @@ export function Choice({ on, onClick, children }: { on: boolean; onClick: () => 
       onClick={onClick}
       className={cn(
         "min-h-11 rounded-full border px-4 text-sm font-medium transition-colors",
-        on ? "border-accent-500 bg-accent-500 text-white" : "border-border text-foreground hover:bg-muted"
+        on ? "border-accent-600 bg-accent-600 text-white" : "border-border text-foreground hover:bg-muted"
       )}
     >
       {children}
