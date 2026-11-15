@@ -997,7 +997,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                       cols,
                       // Done: tinted and dimmed; the one to do now: outlined.
                       s.completed && "bg-green-500/10 opacity-75",
-                      s.id === currentSetId && "bg-accent-500/5 ring-2 ring-accent-500/60"
+                      s.id === currentSetId && "t-current-set bg-accent-500/5 ring-2 ring-accent-500/60"
                     )}
                   >
                     {s.completed && <span className="sr-only">{t("setValidated", { n: s.setNumber })}</span>}
@@ -1192,7 +1192,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
       {!typing && !summary && workout && (
         <div
           className={cn(
-            "fixed inset-x-0 z-50 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]",
+            "t-session-dock fixed inset-x-0 z-50 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]",
             navHidden ? "bottom-0 border-t border-border bg-background/95 backdrop-blur" : "bottom-24"
           )}
         >
@@ -1300,7 +1300,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
       />
 
       {effort && (
-        <div role="timer" aria-label={t("effortLabel")} className={cn("fixed left-1/2 z-[55] flex -translate-x-1/2 items-center gap-2 rounded-full bg-success-text py-1 pr-1 pl-4 whitespace-nowrap text-background shadow-lg", barOffset)}>
+        <div role="timer" aria-label={t("effortLabel")} className={cn("t-effort-timer fixed left-1/2 z-[55] flex -translate-x-1/2 items-center gap-2 rounded-full bg-success-text py-1 pr-1 pl-4 whitespace-nowrap text-background shadow-lg", barOffset)}>
           <Timer className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span className="text-sm font-medium">{t("effortOfSet", { set: effort.setNumber })}</span>
           <span className="font-mono text-lg font-semibold tabular-nums">
@@ -1320,7 +1320,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
         // During the rest, what comes next: the set to do now, by its exercise and number.
         const upNext = sets?.find((x) => x.id === currentSetId);
         return (
-          <div role="timer" aria-label={t("restLabel")} className={cn("fixed left-1/2 z-[55] w-max max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-3xl bg-primary py-1 pr-1 pl-4 text-primary-foreground shadow-lg", barOffset)}>
+          <div role="timer" aria-label={t("restLabel")} className={cn("t-rest-timer fixed left-1/2 z-[55] w-max max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-3xl bg-primary py-1 pr-1 pl-4 text-primary-foreground shadow-lg", barOffset)}>
             <div className="flex items-center gap-2">
               <Timer className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span className="text-sm font-medium">{t("restLabel")}</span>
