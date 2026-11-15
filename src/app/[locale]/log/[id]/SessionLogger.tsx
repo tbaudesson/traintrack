@@ -686,7 +686,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
         }
       />
 
-      <div className="space-y-4 p-4 pb-48">
+      <div className="mx-auto max-w-2xl space-y-4 p-4 pb-48">
         {/* Heart-rate monitor (Web Bluetooth): after the plan of a run, before the sets of a strength session. */}
         {!(workout && isCardio(workout)) && heartRateCard}
 
