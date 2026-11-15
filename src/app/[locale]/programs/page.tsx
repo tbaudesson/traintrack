@@ -159,7 +159,7 @@ export default function ProgramsPage() {
           </div>
         }
       />
-      <div className="space-y-6 p-4 pb-24">
+      <div className="mx-auto max-w-5xl space-y-6 p-4 pb-24 md:p-6">
         {/* One's own programs first: those followed, then those built. */}
         {/* Programs followed as they are: ready-made ones and a coach's. */}
         {followed.length > 0 && (

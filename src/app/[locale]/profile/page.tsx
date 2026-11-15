@@ -36,22 +36,22 @@ export default function ProfilePage() {
   return (
     <>
       <PageHeader title={t("title")} showBack />
-      <div className="space-y-5 p-4 pb-24">
+      <div className="mx-auto max-w-5xl space-y-6 p-4 pb-24 md:p-6">
         {/* Level + XP */}
-        <Card className="overflow-hidden">
-          <CardContent className="py-5">
+        <Card className="t-profile-hero overflow-hidden">
+          <CardContent className="relative py-6 md:py-8">
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-500 to-violet-600 text-2xl font-bold text-white">
+              <div className="t-level-emblem flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl text-3xl font-black text-white md:h-24 md:w-24 md:text-4xl">
                 {g.level}
               </div>
               <div className="flex-1">
-                <p className="text-lg font-bold">{name}</p>
+                <p className="t-display text-2xl md:text-4xl">{name}</p>
                 <p className="text-xs text-muted-foreground">
                   {t("level")} {g.level} · {num(g.xp, 0)} {t("xp")}
                 </p>
-                <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
+                <div className="t-sunken mt-3 h-2.5 w-full overflow-hidden rounded-full bg-black/20">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-accent-500 to-violet-500"
+                    className="t-xp-progress h-full rounded-full"
                     style={{ width: `${g.progressPct}%` }}
                   />
                 </div>
@@ -64,7 +64,7 @@ export default function ProfilePage() {
         </Card>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2 md:gap-4">
           <Stat icon={<Dumbbell className="h-5 w-5 text-accent-500" />} value={g.totalWorkouts} label={t("workouts")} />
           <Stat icon={<TrendingUp className="h-5 w-5 text-emerald-500" />} value={num(g.totalVolume, 0)} label={t("volume")} />
           <Stat
@@ -76,15 +76,15 @@ export default function ProfilePage() {
 
         {/* Badges */}
         <section className="space-y-2">
-          <h2 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+          <h2 className="t-section-heading">
             <Trophy className="h-4 w-4 text-amber-500" /> {t("badges")}
             <span className="ml-auto text-xs font-normal">
               {t("earned", { n: earnedCount, total: g.badges.length })}
             </span>
           </h2>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {g.badges.map((b) => (
-              <Card key={b.key} className={cn(!b.earned && "opacity-50")}>
+              <Card key={b.key} className={cn("t-badge-card", !b.earned && "opacity-50")}>
                 <CardContent className="flex flex-col items-center gap-1.5 py-4 text-center">
                   <div
                     className={cn(
@@ -111,10 +111,10 @@ export default function ProfilePage() {
 
 function Stat({ icon, value, label }: { icon: React.ReactNode; value: string | number; label: string }) {
   return (
-    <Card>
+    <Card className="t-profile-stat">
       <CardContent className="flex flex-col items-center gap-1 py-4 text-center">
         {icon}
-        <p className="text-lg font-bold">{value}</p>
+        <p className="t-metric text-lg font-black md:text-2xl">{value}</p>
         <p className="text-xs text-muted-foreground">{label}</p>
       </CardContent>
     </Card>
