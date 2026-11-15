@@ -91,3 +91,27 @@ Chaque étape est un petit commit, avec ses tests ciblés, ESLint, TypeScript, b
 3. Faut-il rapprocher la liste du mode guidé (une série à la fois), ou garder la liste en l'agrandissant (ce qui est proposé) ?
 4. Étape 7 : faut-il proposer de reprendre une séance minutée interrompue, et pendant combien de temps (même jour seulement ?) ?
 5. La barre d'actions du bas : faut-il y mettre aussi « Ajouter un exercice » ?
+
+## 11. Reprise des séances minutées : état gardé (validé)
+
+Stocké sur l'appareil (`localStorage`, clé `traintrack.timed.intervals`), format version 1 (`src/lib/timedResume.ts`) :
+
+| Champ | Contenu |
+|---|---|
+| `v` | version du format (1) ; une autre version, ou un état illisible, est effacé |
+| `kind` | `intervals` (les séances minutées ; course guidée et mobilité pourront suivre) |
+| `context` | ce dont la page reconstruit la séance : le plan avec sa graine, donc les mêmes exercices dans le même ordre |
+| `stepCount` | le nombre d'étapes de cette séance, pour vérifier que c'est bien la même |
+| `index` | l'étape en cours au moment de la fermeture, rejouée depuis son début |
+| `done` | les efforts menés à terme, enregistrés avec la séance (ne garde que ceux avant `index`) |
+| `elapsedSec` | le temps réellement passé, pauses et temps fermé exclus |
+| `updatedAt` | le moment de la dernière étape atteinte |
+
+Règles :
+- Jusqu'à 6 heures après `updatedAt`, la page propose « Reprendre » ou « Recommencer ». Au-delà, seulement « Recommencer » ou « Abandonner ».
+- La séance n'avance pas pendant la fermeture : on reprend l'étape en cours depuis son début, avec le temps passé tel qu'il était.
+- Si la séance reconstruite n'a plus le même nombre d'étapes (blessures modifiées entre-temps, par exemple), on ne propose que « Recommencer » ou « Abandonner ».
+- L'état est effacé à la fin de la séance, enregistrée ou non, et sur « Recommencer » ou « Abandonner ».
+- L'enregistrement de la séance ne change pas : à la fin, et seulement si au moins un exercice est fait.
+
+Le minuteur de repos d'une séance classique, lui, continue jusqu'à son heure de fin enregistrée (`traintrack.rest.<id>`).
