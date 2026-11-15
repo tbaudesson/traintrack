@@ -306,6 +306,10 @@ await test("two programs planned on their own days show together in the week and
   await page.goto(`${BASE}/fr`);
   const hero = page.locator("section", { hasText: "Changer de séance ou de programme" });
   await hero.getByText(/Séance du jour|Prochaine séance · /).first().waitFor({ timeout: 10000 });
+  // Both plans loaded first: the choices of the day are only counted once the week shows them.
+  const planned = page.locator("section", { hasText: "prochaines semaines à mon agenda" });
+  await planned.getByText("· Full Body — Débutant").first().waitFor({ timeout: 10000 });
+  await planned.getByText("· program fr").first().waitFor({ timeout: 10000 });
   const choices = hero.getByRole("group", { name: "Séances prévues ce jour-là" }).getByRole("button");
   if ((await choices.count()) > 1) {
     const second = choices.nth(1);
