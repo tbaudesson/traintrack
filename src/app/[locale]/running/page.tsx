@@ -101,7 +101,7 @@ function RunningPageContent() {
                     <div className="min-w-0 flex-1">
                       <p className="flex items-center gap-2 font-semibold">
                         {t(`w_${w.id}`)}
-                        <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">{t(`focus_${w.focus}`)}</span>
+                        <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-foreground">{t(`focus_${w.focus}`)}</span>
                       </p>
                       <p className="text-sm text-muted-foreground">{t(`d_${w.id}`)}</p>
                     </div>

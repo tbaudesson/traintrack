@@ -69,12 +69,12 @@ export function RunPacesCard() {
           {guessed ? t("set") : t("change")}
         </Button>
       </div>
-      <dl className={cn("grid grid-cols-2 gap-x-3 gap-y-1.5 text-sm", guessed && "opacity-70")}>
+      <dl className={cn("grid grid-cols-2 gap-x-3 gap-y-1.5 text-sm", guessed && "[&>div]:border [&>div]:border-dashed [&>div]:border-border")}>
         {PACE_ZONES.map((zone) => {
           const [slow, fast] = zonePaces(vma, zone);
           return (
-            <div key={zone} className="flex items-baseline justify-between gap-2 rounded-lg bg-muted/60 px-2.5 py-1.5">
-              <dt className="truncate text-muted-foreground">{t(`zone_${zone}`)}</dt>
+            <div key={zone} className="flex flex-col gap-0.5 rounded-lg bg-muted/60 px-2.5 py-1.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-2">
+              <dt className="text-xs text-muted-foreground sm:text-sm">{t(`zone_${zone}`)}</dt>
               <dd className="font-semibold tabular-nums">
                 {formatPace(slow)}–{formatPace(fast)}
               </dd>
