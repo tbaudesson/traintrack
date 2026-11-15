@@ -44,7 +44,7 @@ export function FirstSteps({ steps, onDismiss }: { steps: FirstStep[]; onDismiss
                     {t("next", { step: next.label })}
                   </Link>
                 ) : (
-                  <button type="button" onClick={next.onClick} className="font-medium text-accent-text">
+                  <button type="button" onClick={next.onClick} className="inline text-left font-medium text-accent-text">
                     {t("next", { step: next.label })}
                   </button>
                 )}
