@@ -31,11 +31,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isResetPage = pathname === "/auth/reset";
   // An invitation link opens signed out too: it offers to sign up or in.
   const isJoinPage = pathname === "/join";
+  // Legal information must be readable before someone creates an account.
+  const isPublicLegalPage = pathname === "/legal/privacy";
 
   useEffect(() => {
     if (loading) return;
 
-    if (!isAuthenticated && !isAuthPage && !isJoinPage) {
+    if (!isAuthenticated && !isAuthPage && !isJoinPage && !isPublicLegalPage) {
       router.replace("/auth/login");
     } else if (isAuthenticated && isAuthPage && !isPendingPage && !isDeactivatedPage && !isResetPage) {
       if (accountStatus === "pending") {
@@ -53,7 +55,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         router.replace("/auth/deactivated");
       }
     }
-  }, [loading, isAuthenticated, isAuthPage, isJoinPage, isPendingPage, isDeactivatedPage, isResetPage, accountStatus, router]);
+  }, [loading, isAuthenticated, isAuthPage, isJoinPage, isPublicLegalPage, isPendingPage, isDeactivatedPage, isResetPage, accountStatus, router]);
 
   if (loading) {
     return (
@@ -66,7 +68,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     );
   }
 
-  if (isAuthPage || (isJoinPage && !isAuthenticated)) {
+  if (isAuthPage || (!isAuthenticated && (isJoinPage || isPublicLegalPage))) {
     // The skip link leads here too.
     return <main id="main-content">{children}</main>;
   }

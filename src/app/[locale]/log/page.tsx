@@ -96,7 +96,7 @@ export default function TrainPage() {
       <PageHeader title={t("hubTitle")} />
       <div className="mx-auto max-w-5xl space-y-8 p-4 pb-24 md:px-6 md:pt-7">
         {/* Three ways to train. */}
-        <div className="t-command-grid grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="t-command-grid grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           <section className="t-hero t-action-card t-action-card-primary flex min-w-0 flex-col gap-4 rounded-2xl p-5 md:min-h-80 md:p-6" aria-labelledby="hub-planned">
             <Dumbbell className="t-action-decoration pointer-events-none absolute -right-4 top-10 size-32 -rotate-12 text-white/[0.045]" aria-hidden="true" />
             <p id="hub-planned" className={label}>{t("planned")}</p>
