@@ -13,7 +13,7 @@ import { Recommendations } from "@/components/domain/Recommendations";
 import { usePainReports } from "@/hooks/usePain";
 import { useReadiness } from "@/hooks/useReadiness";
 import { useInsights } from "@/hooks/useInsights";
-import { InsightCard } from "@/components/domain/InsightCard";
+import { InsightAction, InsightCard, MoreInsights } from "@/components/domain/InsightCard";
 import type { InsightChart } from "@/lib/insights";
 import { mondayOfDate } from "@/lib/weekPlan";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
@@ -275,8 +275,11 @@ export default function ProgressPage() {
       <PageHeader title={t("title")} />
       <div className="space-y-6 p-4 pb-24">
         {reading.insights[0] && (
-          <InsightCard insight={reading.insights[0]} period={reading.period} exerciseName={exerciseName} canShow={(c) => charts[c]} onShowChart={showChart} />
+          <InsightCard insight={reading.insights[0]} period={reading.period} exerciseName={exerciseName} canShow={(c) => charts[c]} onShowChart={showChart}>
+            <InsightAction insight={reading.insights[0]} exerciseName={exerciseName} />
+          </InsightCard>
         )}
+        <MoreInsights items={reading.insights.slice(1)} exerciseName={exerciseName} />
 
         {/* Summary */}
         {scored.length > 0 && (

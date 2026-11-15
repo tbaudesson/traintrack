@@ -2046,7 +2046,7 @@
     "title_insufficient": "Pas encore assez de données",
     "text_insufficient": "Il faut au moins {needed} séances sur 4 semaines pour une première lecture.",
     "ev_loadRatio": "Ratio de charge : {ratio} (sain entre 0,8 et 1,3)",
-    "ev_loadWeeks": "Charge des 7 jours : {now} · moyenne : {avg}",
+    "ev_loadWeeks": "Charge des 7 jours : {now} · moyenne : {avg} (minutes × effort ressenti)",
     "ev_pain": "{count} signalements, le dernier le {date}",
     "ev_painExercise": "Pendant : {exercise}",
     "ev_record": "{exercise} : {weight} kg × {reps}, le {date}",

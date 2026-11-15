@@ -123,3 +123,37 @@ export function InsightAction({ insight, exerciseName }: { insight: Insight; exe
     </div>
   );
 }
+
+/** The other readings of the four weeks, folded: each with its words and the thing to do. */
+export function MoreInsights({ items, exerciseName }: { items: Insight[]; exerciseName: (id: number) => string | undefined }) {
+  const t = useTranslations("insights");
+  const words = useInsightWords(exerciseName);
+  if (items.length === 0) return null;
+  return (
+    <details className="t-surface rounded-2xl px-4 py-1 ring-1 ring-foreground/5">
+      <summary className="flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold">{t("more", { count: items.length })}</summary>
+      <ul className="space-y-3 pt-1 pb-3">
+        {items.map((i) => {
+          const Icon = ICON[i.tone];
+          return (
+            <li key={i.kind} className="flex items-start gap-2.5">
+              <Icon className={cn("mt-0.5 size-4 shrink-0", i.tone === "warn" ? "text-amber-600 dark:text-amber-400" : i.tone === "good" ? "text-success-text" : "text-accent-text")} aria-hidden="true" />
+              <div className="min-w-0 text-sm">
+                <p className="font-semibold">{words.title(i)}</p>
+                <p className="text-muted-foreground">{words.text(i)}</p>
+                <p className="mt-0.5 text-xs">
+                  {words.action(i)}
+                  {i.action.href && (
+                    <Link href={i.action.href} className="ml-1 font-semibold text-accent-text">
+                      {t("go")}
+                    </Link>
+                  )}
+                </p>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </details>
+  );
+}

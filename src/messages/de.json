@@ -2046,7 +2046,7 @@
     "title_insufficient": "Noch nicht genug Daten",
     "text_insufficient": "Für eine erste Auswertung brauchst du mindestens {needed} Einheiten in 4 Wochen.",
     "ev_loadRatio": "Belastungsverhältnis: {ratio} (gesund zwischen 0,8 und 1,3)",
-    "ev_loadWeeks": "Belastung der 7 Tage: {now} · Durchschnitt: {avg}",
+    "ev_loadWeeks": "Belastung der 7 Tage: {now} · Durchschnitt: {avg} (Minuten × empfundene Anstrengung)",
     "ev_pain": "{count} Meldungen, die letzte am {date}",
     "ev_painExercise": "Bei: {exercise}",
     "ev_record": "{exercise}: {weight} kg × {reps}, am {date}",

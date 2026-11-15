@@ -733,6 +733,9 @@ await test("Performance opens on what stands out, with its dates and evidence", 
   await card.getByRole("heading", { name: "Charge en hausse trop rapide" }).waitFor({ timeout: 5000 });
   await card.getByText(/^Du \d{2}\/\d{2}\/\d{4} au \d{2}\/\d{2}\/\d{4}, comparé au/).waitFor({ timeout: 5000 });
   await card.getByText(/Ratio de charge : \d/).waitFor({ timeout: 5000 });
+  // One thing to do, and the other readings folded under it.
+  await card.getByText("À faire").waitFor({ timeout: 5000 });
+  await card.getByText(/Allégez cette semaine|semaine de décharge/).waitFor({ timeout: 5000 });
   await snap("insight");
 });
 
