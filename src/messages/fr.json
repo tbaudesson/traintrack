@@ -201,7 +201,10 @@
     "sportHint": "Vous pratiquez surtout : {sport} ?",
     "sportHintText": "C’est ce que montrent vos dernières semaines. L’app peut mettre ce sport en avant : chiffres, séances et menus.",
     "sportHintAction": "Passer à ce sport",
-    "toLookAt": "{count, plural, one {À voir aussi (#)} other {À voir aussi (#)}}"
+    "toLookAt": "{count, plural, one {À voir aussi (#)} other {À voir aussi (#)}}",
+    "goalProgram": "Séances du programme {name}",
+    "goalReached": "Objectif atteint{beyond, plural, =0 {} one { · + # séance} other { · + # séances}}",
+    "otherActivities": "{count, plural, one {+ # autre activité cette semaine} other {+ # autres activités cette semaine}}"
   },
   "onboarding": {
     "title": "Votre profil athlète",

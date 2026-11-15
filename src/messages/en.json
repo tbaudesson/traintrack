@@ -201,7 +201,10 @@
     "sportHint": "Mostly {sport} lately?",
     "sportHintText": "That is what your last weeks show. The app can put this sport first: figures, sessions and menus.",
     "sportHintAction": "Switch to this sport",
-    "toLookAt": "{count, plural, one {Also to look at (#)} other {Also to look at (#)}}"
+    "toLookAt": "{count, plural, one {Also to look at (#)} other {Also to look at (#)}}",
+    "goalProgram": "Sessions of {name}",
+    "goalReached": "Goal reached{beyond, plural, =0 {} one { · + # session} other { · + # sessions}}",
+    "otherActivities": "{count, plural, one {+ # other activity this week} other {+ # other activities this week}}"
   },
   "onboarding": {
     "title": "Your athlete profile",

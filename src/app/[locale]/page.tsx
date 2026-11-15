@@ -34,7 +34,8 @@ import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useTeams } from "@/hooks/useTeams";
 import { findWorkoutProgramDay, nextDayIndex } from "@/lib/startWorkout";
 import { programWeek } from "@/lib/programWeek";
-import { isCardio, isCardioDone, weeklyGoal } from "@/lib/cardio";
+import { isCardio, isCardioDone } from "@/lib/cardio";
+import { weekGoal } from "@/lib/weekGoal";
 import { SportPicker } from "@/components/domain/SportPicker";
 import { WeekStrip } from "@/components/domain/WeekStrip";
 import { mondayOfDate, plannedSessions, upcomingSessions, weekPlan } from "@/lib/weekPlan";
@@ -515,7 +516,11 @@ export default function HomePage() {
   // Ready-made programs the user has not added yet.
   const templates = catalogue.filter((tpl) => !programs.some((p) => p.name === tpl.name));
 
-  const goal = session ? weeklyGoal(session.program, session.day) : 0;
+  // The program's own sessions against its goal; the rest of the week apart.
+  const goal = useMemo(
+    () => (session ? weekGoal({ program: session.program, day: session.day, monday: weekStart, today, workouts, sets }) : null),
+    [session, weekStart, today, workouts, sets]
+  );
   const needsOnboarding = profile !== undefined && !profile;
   // A new athlete goes straight to the guided set-up, unless they chose "later".
   useEffect(() => {
@@ -834,18 +839,26 @@ export default function HomePage() {
             </div>
           </section>
 
-          {goal > 0 && (
+          {goal && goal.target > 0 && (
             <section className="t-surface flex items-center gap-3 rounded-2xl p-4 ring-1 ring-foreground/5">
               <Target className="size-8 shrink-0 text-accent-text" aria-hidden="true" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">{t("weeklyGoal")}</p>
-                <div className="t-sunken mt-2 h-2.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={Math.min(overview.sessions, goal)} aria-valuemin={0} aria-valuemax={goal} aria-label={t("weeklyGoal")}>
-                  <div className="h-full rounded-full bg-linear-to-r from-accent-700 to-accent-400 shadow-[inset_0_1px_0_oklch(1_0_0/0.4)]" style={{ width: `${Math.min(100, (overview.sessions / goal) * 100)}%` }} />
+                <p className="truncate text-xs text-muted-foreground">{t("goalProgram", { name: session!.program.name })}</p>
+                <div className="t-sunken mt-2 h-2.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={Math.min(goal.done, goal.target)} aria-valuemin={0} aria-valuemax={goal.target} aria-label={t("weeklyGoal")}>
+                  <div className="h-full rounded-full bg-linear-to-r from-accent-700 to-accent-400 shadow-[inset_0_1px_0_oklch(1_0_0/0.4)]" style={{ width: `${Math.min(100, (goal.done / goal.target) * 100)}%` }} />
                 </div>
+                {(goal.done >= goal.target || goal.others > 0) && (
+                  <p className="mt-1.5 text-xs text-muted-foreground">
+                    {goal.done >= goal.target && <span className="font-semibold text-accent-text">{t("goalReached", { beyond: goal.beyond })}</span>}
+                    {goal.done >= goal.target && goal.others > 0 && " · "}
+                    {goal.others > 0 && t("otherActivities", { count: goal.others })}
+                  </p>
+                )}
               </div>
               <p className="shrink-0 text-right">
-                <span className="text-lg font-semibold tabular-nums">{overview.sessions}</span>
-                <span className="text-muted-foreground"> / {goal}</span>
+                <span className="text-lg font-semibold tabular-nums">{Math.min(goal.done, goal.target)}</span>
+                <span className="text-muted-foreground"> / {goal.target}</span>
                 <span className="block text-xs text-muted-foreground">{t("sessions")}</span>
               </p>
             </section>

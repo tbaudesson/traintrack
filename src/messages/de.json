@@ -201,7 +201,10 @@
     "sportHint": "Zuletzt vor allem {sport}?",
     "sportHintText": "Das zeigen deine letzten Wochen. Die App kann diesen Sport nach vorne stellen: Zahlen, Einheiten und Menüs.",
     "sportHintAction": "Zu diesem Sport wechseln",
-    "toLookAt": "{count, plural, one {Auch ansehen (#)} other {Auch ansehen (#)}}"
+    "toLookAt": "{count, plural, one {Auch ansehen (#)} other {Auch ansehen (#)}}",
+    "goalProgram": "Einheiten von {name}",
+    "goalReached": "Ziel erreicht{beyond, plural, =0 {} one { · + # Einheit} other { · + # Einheiten}}",
+    "otherActivities": "{count, plural, one {+ # weitere Aktivität diese Woche} other {+ # weitere Aktivitäten diese Woche}}"
   },
   "onboarding": {
     "title": "Dein Athletenprofil",
