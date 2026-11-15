@@ -136,7 +136,7 @@ export default function ReadinessPage() {
           </Card>
         )}
 
-        {load && <TrainingLoadCard load={load} />}
+        {load && <div className="t-readiness-load"><TrainingLoadCard load={load} /></div>}
 
         <Card className="t-health-entry">
           <CardContent className="space-y-4 py-4">
@@ -162,7 +162,7 @@ export default function ReadinessPage() {
         </Card>
 
         {history.length > 0 && (
-          <section className="space-y-2">
+          <section className="t-workspace-wide space-y-2">
             <SectionHeading>{t("history")}</SectionHeading>
             {history.map((r) => {
               const s = readinessScore(r);

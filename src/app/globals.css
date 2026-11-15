@@ -530,6 +530,7 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
     .t-health-workspace > .t-workspace-wide { grid-column: 1 / -1; }
+    .t-health-workspace > .t-readiness-load { grid-column: 2; grid-row: span 2; }
   }
 }
 
