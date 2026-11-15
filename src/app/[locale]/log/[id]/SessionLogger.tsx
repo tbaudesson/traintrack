@@ -1487,7 +1487,7 @@ function NumCell({ label, placeholder, value, onChange, large }: { label: string
       }}
       aria-label={label}
       className={cn(
-        "w-full rounded-md border border-border bg-transparent px-1 text-center outline-none focus:border-accent-500",
+        "w-full rounded-md border border-border bg-transparent px-1 text-center outline-none focus:border-accent-500 focus-visible:ring-2 focus-visible:ring-accent-500/60",
         large ? "h-14 rounded-xl text-xl font-semibold tabular-nums" : "h-11 text-base"
       )}
     />
