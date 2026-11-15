@@ -250,7 +250,9 @@
   /* A glass panel: every card, row and tile. No blur here: long lists of
      blurred panels are what makes a phone stutter. */
   .t-surface {
-    background: linear-gradient(145deg, color-mix(in oklab, var(--surface-1) 96%, white), var(--surface-1));
+    background-image:
+      repeating-linear-gradient(135deg, transparent 0 5px, color-mix(in oklab, var(--foreground) 2.5%, transparent) 5px 6px),
+      linear-gradient(145deg, color-mix(in oklab, var(--surface-1) 96%, white), var(--surface-1));
     border: 1px solid var(--border);
     box-shadow: var(--lift);
   }
@@ -272,6 +274,8 @@
     --muted-foreground: #b7bdc8;
     --accent-text: #c5a8ff;
     background-image:
+      repeating-linear-gradient(135deg, transparent 0 7px, rgb(255 255 255 / 0.025) 7px 8px),
+      linear-gradient(112deg, transparent 58%, color-mix(in oklab, var(--accent-500) 30%, transparent) 58% 63%, transparent 63%),
       linear-gradient(120deg, color-mix(in oklab, var(--accent-950) 94%, #0b0d12), color-mix(in oklab, var(--accent-800) 80%, #151820));
     color: #f5f7fa;
     border: 1px solid color-mix(in oklab, var(--accent-400) 40%, transparent);
@@ -300,17 +304,70 @@
   }
   .t-display {
     font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
-    font-weight: 850;
-    letter-spacing: -0.045em;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: -0.06em;
     line-height: 0.96;
+    text-transform: uppercase;
   }
   .t-metric { font-variant-numeric: tabular-nums slashed-zero; }
   .t-performance { color: var(--performance); }
   .t-panel {
-    background: var(--surface-1);
+    background-image: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in oklab, var(--foreground) 2.5%, transparent) 6px 7px), linear-gradient(145deg, color-mix(in oklab, var(--surface-1) 96%, white), var(--surface-1));
     border: 1px solid var(--border);
     box-shadow: var(--lift);
   }
+  .t-brand-header {
+    background-image:
+      linear-gradient(115deg, transparent 60%, color-mix(in oklab, var(--accent-600) 42%, transparent) 60% 64%, transparent 64%),
+      repeating-linear-gradient(135deg, transparent 0 5px, rgb(255 255 255 / 0.025) 5px 6px),
+      linear-gradient(110deg, #0b0d12, #171a22 72%, #0b0d12);
+    border: 1px solid color-mix(in oklab, var(--accent-500) 22%, #303644);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.09), 0 16px 36px -28px #000;
+    color: #f7f7fb;
+  }
+  .t-brand-mark {
+    background: linear-gradient(145deg, color-mix(in oklab, var(--accent-500) 20%, #1b1e27), #0b0d12);
+    border: 1px solid color-mix(in oklab, var(--accent-400) 55%, transparent);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), 0 0 22px color-mix(in oklab, var(--accent-600) 25%, transparent);
+  }
+  .t-wordmark {
+    color: var(--accent-400);
+    font-size: 1.25rem;
+    font-style: italic;
+    font-weight: 950;
+    letter-spacing: -0.07em;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+  .t-wordmark span { color: #f7f7fb; }
+  .t-nav-panel {
+    background-image:
+      repeating-linear-gradient(135deg, transparent 0 5px, rgb(255 255 255 / 0.025) 5px 6px),
+      linear-gradient(155deg, color-mix(in oklab, var(--nav-panel) 94%, #222630), color-mix(in oklab, var(--nav-panel) 96%, #050609));
+    border-color: color-mix(in oklab, var(--accent-400) 28%, var(--border));
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), 0 24px 70px rgb(0 0 0 / 0.55), 0 0 42px color-mix(in oklab, var(--accent-600) 15%, transparent);
+  }
+  .t-nav-wheel { filter: drop-shadow(0 18px 24px rgb(0 0 0 / 0.42)); }
+  .t-nav-rim {
+    background: conic-gradient(from 20deg, #444a57, #d4d8e0 8%, #333844 18%, var(--accent-500) 26%, #252a34 31%, #b7bcc7 48%, #292e39 65%, var(--accent-600) 76%, #d7dae2 84%, #353b47);
+    box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.22), inset 0 0 0 7px #171a21, 0 0 30px var(--nav-glow);
+    mask: radial-gradient(circle, transparent 0 83%, black 84%);
+  }
+  .t-nav-track {
+    background-image: repeating-linear-gradient(135deg, transparent 0 5px, rgb(255 255 255 / 0.03) 5px 6px), radial-gradient(circle, #232731, #0b0d12 72%);
+    border: 1px solid color-mix(in oklab, var(--nav-ring) 70%, #8c93a1);
+    box-shadow: inset 0 0 28px #000, 0 0 24px var(--nav-glow);
+  }
+  .t-nav-item {
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.15), inset 0 -4px 8px rgb(0 0 0 / 0.28), 0 5px 12px rgb(0 0 0 / 0.4);
+  }
+  .t-nav-item-active {
+    background: linear-gradient(145deg, var(--accent-500), var(--accent-900));
+    color: white;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.42), 0 0 0 1px var(--accent-300), 0 0 28px color-mix(in oklab, var(--accent-500) 75%, transparent);
+  }
+  .t-nav-label { text-shadow: 0 1px 8px var(--background); }
 }
 
 /* ═══════════════════════════════════════════════════════════════

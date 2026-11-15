@@ -90,14 +90,15 @@ export function CircularNavigation({
         if (event.key === "ArrowLeft") rotate(-1);
         if (event.key === "ArrowRight") rotate(1);
       }}
-      className={cn("relative size-[min(78vw,19rem)] touch-none select-none outline-none focus-visible:ring-2 focus-visible:ring-ring", className)}
+      className={cn("t-nav-wheel relative size-[min(78vw,19rem)] touch-none select-none rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring", className)}
     >
-      <div aria-hidden="true" className="absolute inset-8 rounded-full border border-[var(--nav-ring)] shadow-[0_0_32px_var(--nav-glow)]" />
+      <div aria-hidden="true" className="t-nav-rim absolute inset-1 rounded-full" />
+      <div aria-hidden="true" className="t-nav-track absolute inset-8 rounded-full" />
       <ul role="list" className="absolute inset-0 motion-reduce:transition-none" style={{ transform: `rotate(${rotation}deg)`, transition: "transform 240ms cubic-bezier(.2,.8,.2,1)" }}>
         {items.map((item, index) => {
           const angle = index * (360 / count);
           const child = (
-            <span className={cn("flex size-14 flex-col items-center justify-center rounded-2xl border bg-[var(--nav-surface)] text-[var(--nav-foreground)] shadow-lg outline-none transition-transform focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none", item.current && "border-[var(--nav-accent)] text-[var(--nav-accent)]")}>
+            <span className={cn("t-nav-item flex size-14 flex-col items-center justify-center rounded-2xl border bg-[var(--nav-surface)] text-[var(--nav-foreground)] outline-none transition-transform focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none", item.current && "t-nav-item-active border-[var(--nav-accent)] text-[var(--nav-accent)]")}>
               <span aria-hidden="true">{item.icon}</span>
               <span className="sr-only">{item.label}</span>
             </span>
@@ -105,7 +106,7 @@ export function CircularNavigation({
           return (
             <li key={item.id} className="absolute left-1/2 top-1/2 size-0" style={{ transform: `rotate(${angle}deg) translateY(calc(-1 * min(30vw, 7rem))) rotate(${-angle - rotation}deg)` }}>
               <span className="absolute -left-7 -top-7" onClick={() => onSelect?.(item.id)}>{renderLink(item, child)}</span>
-              <span aria-hidden="true" className="pointer-events-none absolute top-8 w-24 -translate-x-1/2 rounded-lg bg-background/90 px-1.5 py-0.5 text-center text-[11px] leading-tight text-foreground">{item.label}</span>
+              <span aria-hidden="true" className="t-nav-label pointer-events-none absolute top-8 w-24 -translate-x-1/2 rounded-lg px-1.5 py-0.5 text-center text-[11px] font-extrabold uppercase leading-tight tracking-[-0.02em] text-foreground">{item.label}</span>
             </li>
           );
         })}

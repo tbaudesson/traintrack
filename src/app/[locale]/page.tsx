@@ -60,7 +60,7 @@ import { HomeInsight } from "@/components/domain/InsightCard";
 import type { ReactNode } from "react";
 import {
   type LucideIcon,
-  ArrowRight, Check, ListChecks, MessageSquare, Sparkles, Bell, ChevronRight, ClipboardList, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
+  ArrowRight, Check, ListChecks, MessageSquare, Sparkles, Bell, ChevronRight, ClipboardList, HeartPulse, Loader2, Settings, Target, TrendingUp,
   Timer,
   PartyPopper,
   Gauge,
@@ -568,7 +568,7 @@ export default function HomePage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-4 pb-28 md:px-6 md:pt-6">
-      <header className="relative flex items-center gap-3 border-b border-border/70 pb-5 pt-1">
+      <header className="t-brand-header relative flex items-center gap-3 overflow-hidden rounded-2xl px-3 py-3 md:px-4">
         <Image
           src="/images/dumbbell.webp"
           alt=""
@@ -580,13 +580,13 @@ export default function HomePage() {
         <Link
           href="/profile"
           aria-label={tm("profile")}
-          className="t-panel flex size-12 shrink-0 items-center justify-center rounded-xl text-accent-text"
+          className="t-brand-mark flex size-12 shrink-0 items-center justify-center rounded-xl text-accent-text"
         >
-          <Trophy className="size-6" aria-hidden="true" />
+          <Image src="/icons/logo.png" alt="" width={34} height={34} unoptimized priority />
         </Link>
         <div className="min-w-0 flex-1">
-          <h1 className="t-display truncate text-2xl md:text-3xl">{t("greeting", { name })}</h1>
-          <p className="truncate text-sm text-muted-foreground">{t("tagline")}</p>
+          <p className="t-wordmark" aria-hidden="true"><span>Train</span>Track</p>
+          <h1 className="truncate text-sm font-bold text-foreground/90">{t("greeting", { name })}</h1>
         </div>
         {comments.length > 0 ? (
           <Link href={sessionHref(comments[0].workoutId)} aria-label={t("newComments", { count: comments.length })} className="relative flex size-11 items-center justify-center rounded-lg text-foreground">
