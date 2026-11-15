@@ -955,6 +955,26 @@ await test("the menu wheel is gone during today's session, and stays on a past o
   await menu.waitFor({ timeout: 10000 });
 });
 
+await test("the menu wheel works from the keyboard: in, turned, opened, and closed with Escape", async () => {
+  await page.goto(`${BASE}/fr`);
+  const toggle = page.getByRole("button", { name: "Ouvrir le menu" });
+  await toggle.focus();
+  await page.keyboard.press("Enter");
+  await page.locator(WHEEL).waitFor({ timeout: 5000 });
+  // The focus goes into the wheel, not back to the top of the page.
+  expect(await page.evaluate(() => !!document.activeElement?.closest("aside")), "the focus is not in the wheel once opened");
+  const before = await wheel.rotation();
+  await page.keyboard.press("ArrowRight");
+  await page.waitForTimeout(300);
+  expect((await wheel.rotation()) !== before, "the arrows do not turn the wheel");
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Enter");
+  await page.locator('aside nav:not([aria-label="Navigation principale"])').waitFor({ timeout: 5000 });
+  await page.keyboard.press("Escape");
+  await page.locator("aside").waitFor({ state: "detached", timeout: 5000 });
+  expect(await page.evaluate(() => document.activeElement?.getAttribute("aria-label") === "Ouvrir le menu"), "the focus is not back on the menu button");
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });
