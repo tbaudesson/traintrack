@@ -122,7 +122,7 @@ function ChallengeCard({
   return (
     <Card className="t-challenge-card">
       <CardContent className="py-3">
-        <button onClick={toggle} className="flex w-full items-center gap-3 text-left">
+        <button onClick={toggle} aria-expanded={open} className="flex w-full items-center gap-3 text-left">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/30">
             <Flag className="h-5 w-5 text-orange-500" />
           </div>
