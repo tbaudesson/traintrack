@@ -765,6 +765,28 @@ await test("Performance opens on what stands out, with its dates and evidence", 
   }
 });
 
+await test("a session opened then left counts nowhere as activity, the advice included", async () => {
+  // Opened today, nothing done: it stays in the history, and nothing counts it.
+  await sessionWithSets(2, "Push-up");
+  await page.goto(`${BASE}/fr/progress`);
+  await page.getByText("Ce que disent vos 4 dernières semaines").waitFor({ timeout: 10000 });
+  // The days of the last 7 with a session done, by the same rule as the app.
+  const doneDays = await page.evaluate(async () => {
+    const db = await new Promise((resolve) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => resolve(r.result); });
+    const all = (store) => new Promise((resolve) => { const r = db.transaction(store).objectStore(store).getAll(); r.onsuccess = () => resolve(r.result); });
+    const [workouts, sets] = [await all("workouts"), await all("workoutSets")];
+    db.close();
+    const ticked = new Set(sets.filter((x) => x.completed && !x.isWarmup && !x.deletedAt).map((x) => x.workoutId));
+    const since = new Date(Date.now() - 7 * 86400000);
+    const from = `${since.getFullYear()}-${String(since.getMonth() + 1).padStart(2, "0")}-${String(since.getDate()).padStart(2, "0")}`;
+    const done = workouts.filter((w) => !w.deletedAt && w.date >= from && (ticked.has(w.id) || (w.kind === "cardio" && ((w.distanceM ?? 0) > 0 || (w.durationSec ?? 0) > 0)) || (w.durationMin ?? 0) > 0 || (w.durationSec ?? 0) > 0));
+    return new Set(done.map((w) => w.date)).size;
+  });
+  const text = await page.locator("main").innerText();
+  const said = /(\d+) séances ces 7 derniers jours/.exec(text);
+  if (said) expect(Number(said[1]) <= doneDays, `the advice counts ${said[1]} sessions, ${doneDays} days with a session done`);
+});
+
 // ── The menu wheel, with real pointer input ─────────────────────────
 // Mouse moves and touches go through the browser's own input pipeline (not
 // element.click()), so pointer capture, hit-testing and pointercancel behave

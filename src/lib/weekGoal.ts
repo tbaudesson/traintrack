@@ -1,5 +1,6 @@
 import { findWorkoutProgramDay } from "@/lib/startWorkout";
-import { isCardioDone, weeklyGoal } from "@/lib/cardio";
+import { weeklyGoal } from "@/lib/cardio";
+import { doneSessions } from "@/lib/doneSessions";
 import type { Program, ProgramDay, Workout, WorkoutSet } from "@/db";
 
 type W = Pick<Workout, "id" | "date" | "title" | "programId" | "programDayIndex" | "kind" | "distanceM" | "durationSec" | "durationMin">;
@@ -16,15 +17,9 @@ export interface WeekGoal {
   others: number;
 }
 
-/**
- * The sessions of a period with something done: a set, a distance or a time
- * (a timed session, an outing). A session opened then left is not one.
- */
+/** The sessions of a period that were done (see doneSessions): a session opened then left is not one. */
 export function doneBetween<T extends W>(input: { from: string; to: string; workouts: T[]; sets: S[] }): T[] {
-  const withSets = new Set(input.sets.filter((s) => s.completed && !s.isWarmup).map((s) => s.workoutId));
-  return input.workouts.filter(
-    (w) => w.date >= input.from && w.date <= input.to && (withSets.has(w.id!) || isCardioDone(w) || (w.durationMin ?? 0) > 0 || (w.durationSec ?? 0) > 0)
-  );
+  return doneSessions(input.workouts.filter((w) => w.date >= input.from && w.date <= input.to), input.sets);
 }
 
 /**

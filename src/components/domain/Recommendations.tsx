@@ -3,6 +3,8 @@
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { useWorkouts } from "@/hooks/useWorkouts";
+import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
+import { doneSessions } from "@/lib/doneSessions";
 import { useTodayReadiness, readinessScore } from "@/hooks/useReadiness";
 import { useNutritionForDate, sumMacros } from "@/hooks/useNutrition";
 import { useAthleteProfile } from "@/hooks/useAthleteProfile";
@@ -35,7 +37,10 @@ function dayStr(offsetDays = 0) {
 
 /** Today's advice, most useful first. */
 export function useRecommendations() {
-  const workouts = useWorkouts();
+  const all = useWorkouts();
+  const sets = useAllWorkoutSets();
+  // Only sessions done count as activity, as on the home screen and in Performance.
+  const workouts = useMemo(() => doneSessions(all, sets), [all, sets]);
   const todayReadiness = useTodayReadiness();
   const today = dayStr(0);
   const nutritionToday = useNutritionForDate(today);
