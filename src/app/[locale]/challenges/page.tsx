@@ -65,15 +65,17 @@ export default function ChallengesPage() {
           ) : undefined
         }
       />
-      <div className="space-y-3 p-4 pb-24">
+      <div className="mx-auto max-w-5xl p-4 pb-24 md:p-6">
         {loading ? (
           <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
         ) : challenges.length === 0 ? (
           <EmptyState icon={Flag} title={t("empty")} />
         ) : (
-          challenges.map((c) => (
-            <ChallengeCard key={c.id} challenge={c} currentUserId={user?.id} onDeleted={load} />
-          ))
+          <div className="grid items-start gap-4 lg:grid-cols-2">
+            {challenges.map((c) => (
+              <ChallengeCard key={c.id} challenge={c} currentUserId={user?.id} onDeleted={load} />
+            ))}
+          </div>
         )}
       </div>
 

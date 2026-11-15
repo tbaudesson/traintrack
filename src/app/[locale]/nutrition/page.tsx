@@ -192,7 +192,7 @@ export default function NutritionPage() {
           </Button>
         }
       />
-      <div className="space-y-5 p-4 pb-24">
+      <div className="mx-auto max-w-5xl space-y-5 p-4 pb-24 md:p-6">
         {/* Totals */}
         <Card>
           <CardContent className="py-4">

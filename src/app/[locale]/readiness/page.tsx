@@ -123,7 +123,7 @@ export default function ReadinessPage() {
   return (
     <>
       <PageHeader title={t("title")} />
-      <div className="space-y-5 p-4 pb-24">
+      <div className="t-health-workspace mx-auto max-w-5xl space-y-5 p-4 pb-24 md:space-y-0 md:p-6">
         {liveScore != null && (
           <Card>
             <CardContent className="flex items-center gap-4 py-4">

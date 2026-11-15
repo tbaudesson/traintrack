@@ -91,9 +91,9 @@ export default function HealthPage() {
       />
       <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={onFile} className="hidden" />
 
-      <div className="space-y-5 p-4 pb-24">
+      <div className="t-health-workspace mx-auto max-w-5xl space-y-5 p-4 pb-24 md:space-y-0 md:p-6">
         {importMsg && (
-          <p className="rounded-md bg-accent-50 px-3 py-2 text-xs text-accent-700 dark:bg-accent-950/30">{importMsg}</p>
+          <p className="t-workspace-wide rounded-md bg-accent-50 px-3 py-2 text-xs text-accent-700 dark:bg-accent-950/30">{importMsg}</p>
         )}
 
         {/* Today's metrics */}

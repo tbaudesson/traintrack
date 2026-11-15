@@ -501,6 +501,13 @@
     .t-settings-grid > .t-settings-group {
       grid-column: 1 / -1;
     }
+    .t-health-workspace {
+      align-items: start;
+      display: grid;
+      gap: 1.25rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .t-health-workspace > .t-workspace-wide { grid-column: 1 / -1; }
   }
 }
 
