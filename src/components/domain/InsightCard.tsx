@@ -1,0 +1,125 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+import { AlertTriangle, ChevronRight, LineChart, Sparkles, TrendingUp } from "lucide-react";
+import { Link } from "@/i18n/navigation";
+import { useFormat } from "@/lib/format";
+import { useExerciseLabel } from "@/lib/exerciseNames";
+import { cn } from "@/lib/utils";
+import type { Insight, InsightChart, InsightEvidence, InsightPeriod } from "@/lib/insights";
+
+const ICON = { warn: AlertTriangle, good: TrendingUp, info: Sparkles } as const;
+
+/** The words of an insight, its numbers and dates in the reader's language. */
+export function useInsightWords(exerciseName: (id: number) => string | undefined) {
+  const t = useTranslations("insights");
+  const tpain = useTranslations("pain");
+  const { num, day } = useFormat();
+  const xl = useExerciseLabel();
+  const shown = (values: Record<string, string | number>, exerciseId?: number) => {
+    const out: Record<string, string | number> = {};
+    for (const [k, v] of Object.entries(values)) {
+      if (k === "date") out[k] = day(String(v));
+      else if (k === "area") out[k] = tpain(`area_${v}`);
+      else if (k === "ratio") out[k] = num(Number(v), 2);
+      else if (typeof v === "number" && k !== "count" && k !== "needed" && k !== "done") out[k] = num(v, Number.isInteger(v) ? 0 : 1);
+      else out[k] = v;
+    }
+    if (exerciseId !== undefined) out.exercise = xl(exerciseName(exerciseId)) || "—";
+    return out;
+  };
+  return {
+    title: (i: Insight) => t(`title_${i.kind}`, shown(i.values)),
+    text: (i: Insight) => t(`text_${i.kind}`, shown(i.values)),
+    evidence: (e: InsightEvidence) => t(`ev_${e.key}`, shown(e.values, e.exerciseId)),
+    action: (i: Insight) => t(i.action.key),
+    period: (p: InsightPeriod) => t("period", { from: day(p.from), to: day(p.to), previousFrom: day(p.previousFrom), previousTo: day(p.previousTo) }),
+  };
+}
+
+/**
+ * The main insight of the last four weeks: what stands out, its evidence (each
+ * leading to its chart), and one thing to do.
+ */
+export function InsightCard({
+  insight,
+  period,
+  exerciseName,
+  canShow,
+  onShowChart,
+  children,
+}: {
+  insight: Insight;
+  period: InsightPeriod;
+  exerciseName: (id: number) => string | undefined;
+  /** Whether a chart is on the page (some need a licence). */
+  canShow: (chart: InsightChart) => boolean;
+  onShowChart: (chart: InsightChart, exerciseId?: number) => void;
+  /** What follows the evidence: the thing to do, the other readings. */
+  children?: React.ReactNode;
+}) {
+  const t = useTranslations("insights");
+  const words = useInsightWords(exerciseName);
+  const Icon = ICON[insight.tone];
+  return (
+    <section className="t-hero space-y-4 rounded-3xl p-5" aria-labelledby="insight-title">
+      <div className="space-y-1">
+        <p className="text-xs font-semibold tracking-widest text-accent-text uppercase">{t("heading")}</p>
+        <p className="text-xs text-muted-foreground">{words.period(period)}</p>
+      </div>
+      <div className="flex items-start gap-3">
+        <span
+          className={cn(
+            "flex size-10 shrink-0 items-center justify-center rounded-2xl",
+            insight.tone === "warn" ? "bg-amber-500/15 text-amber-600 dark:text-amber-400" : insight.tone === "good" ? "bg-green-500/15 text-success-text" : "bg-accent-500/15 text-accent-text"
+          )}
+        >
+          <Icon className="size-5" aria-hidden="true" />
+        </span>
+        <div className="min-w-0">
+          <h2 id="insight-title" className="text-2xl leading-tight font-bold tracking-tight">{words.title(insight)}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{words.text(insight)}</p>
+        </div>
+      </div>
+      <div>
+        <h3 className="mb-1.5 text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("evidenceTitle")}</h3>
+        <ul className="space-y-1.5">
+          {insight.evidence.map((e, i) => (
+            <li key={`${e.key}-${i}`} className="t-surface flex min-h-11 items-center gap-2 rounded-xl px-3 py-2 text-sm ring-1 ring-foreground/5">
+              <span className="min-w-0 flex-1">{words.evidence(e)}</span>
+              {e.chart && canShow(e.chart) && (
+                <button
+                  type="button"
+                  onClick={() => onShowChart(e.chart!, e.exerciseId)}
+                  aria-label={`${t("seeChart")} : ${words.evidence(e)}`}
+                  className="flex size-10 shrink-0 items-center justify-center rounded-full text-accent-text hover:bg-accent-500/10"
+                >
+                  <LineChart className="size-4" aria-hidden="true" />
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+/** The thing to do: a sentence, and where to do it. */
+export function InsightAction({ insight, exerciseName }: { insight: Insight; exerciseName: (id: number) => string | undefined }) {
+  const t = useTranslations("insights");
+  const words = useInsightWords(exerciseName);
+  return (
+    <div className="rounded-2xl bg-accent-500/10 p-3">
+      <h3 className="text-xs font-semibold tracking-widest text-accent-text uppercase">{t("actionTitle")}</h3>
+      <p className="mt-1 text-sm font-medium">{words.action(insight)}</p>
+      {insight.action.href && (
+        <Link href={insight.action.href} className="mt-1 inline-flex min-h-10 items-center gap-1 text-sm font-semibold text-accent-text">
+          {t("go")}
+          <ChevronRight className="size-4" aria-hidden="true" />
+        </Link>
+      )}
+    </div>
+  );
+}

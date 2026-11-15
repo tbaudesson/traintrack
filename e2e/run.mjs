@@ -725,6 +725,17 @@ await test("a timed session left half-way is taken up again where it stood, for 
   expect(!(await page.evaluate(() => localStorage.getItem("traintrack.timed.intervals"))), "still kept once given up");
 });
 
+await test("Performance opens on what stands out, with its dates and evidence", async () => {
+  await page.goto(`${BASE}/fr/progress`);
+  const card = page.locator("section", { has: page.getByText("Ce que disent vos 4 dernières semaines") }).first();
+  await card.waitFor({ timeout: 10000 });
+  // Five easy weeks then a much harder one: safety first.
+  await card.getByRole("heading", { name: "Charge en hausse trop rapide" }).waitFor({ timeout: 5000 });
+  await card.getByText(/^Du \d{2}\/\d{2}\/\d{4} au \d{2}\/\d{2}\/\d{4}, comparé au/).waitFor({ timeout: 5000 });
+  await card.getByText(/Ratio de charge : \d/).waitFor({ timeout: 5000 });
+  await snap("insight");
+});
+
 // ── The menu wheel, with real pointer input ─────────────────────────
 // Mouse moves and touches go through the browser's own input pipeline (not
 // element.click()), so pointer capture, hit-testing and pointercancel behave

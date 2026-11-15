@@ -11,6 +11,10 @@ import { GoalsSection } from "@/components/domain/GoalsSection";
 import { WeeklyReportCard } from "@/components/domain/WeeklyReportCard";
 import { Recommendations } from "@/components/domain/Recommendations";
 import { usePainReports } from "@/hooks/usePain";
+import { useReadiness } from "@/hooks/useReadiness";
+import { useInsights } from "@/hooks/useInsights";
+import { InsightCard } from "@/components/domain/InsightCard";
+import type { InsightChart } from "@/lib/insights";
 import { mondayOfDate } from "@/lib/weekPlan";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -57,6 +61,7 @@ export default function ProgressPage() {
   const exercises = useExercises();
   const athlete = useAthleteProfile();
   const pains = usePainReports();
+  const readiness = useReadiness();
 
   const [bw, setBw] = useState("");
   const [now] = useState(() => Date.now());
@@ -160,6 +165,9 @@ export default function ProgressPage() {
     return [...byDate.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1)).map(([date, v]) => ({ date, ...v }));
   }, [scored, activeLift, workoutDate]);
 
+  // ── The main insight of the last four weeks ────────────────────
+  const reading = useInsights({ today, workouts, sets, pains, readiness, profile: athlete });
+  const exerciseName = (id: number) => exercises.find((e) => e.id === id)?.name;
   // ── Volume by muscle group (last 30 days) ──────────────────────
   const muscleData = useMemo(() => {
     const exMg = new Map(exercises.map((e) => [e.id, e.muscleGroup]));
@@ -242,10 +250,34 @@ export default function ProgressPage() {
     </Card>
   );
 
+  // A piece of evidence opens its chart: unfolded, brought into view and focused.
+  const charts: Record<InsightChart, boolean> = {
+    volume: volumeData.length > 0,
+    exercise: advanced && liftsWithData.length > 0,
+    records: advanced && prs.length > 0,
+    load: false,
+    distance: false,
+  };
+  function showChart(chart: InsightChart, exerciseId?: number) {
+    if (chart === "exercise" && exerciseId !== undefined) setLiftId(exerciseId);
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`chart-${chart}`);
+      if (!el) return;
+      const fold = el.closest("details");
+      if (fold) fold.open = true;
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.focus({ preventScroll: true });
+    });
+  }
+
   return (
     <>
       <PageHeader title={t("title")} />
       <div className="space-y-6 p-4 pb-24">
+        {reading.insights[0] && (
+          <InsightCard insight={reading.insights[0]} period={reading.period} exerciseName={exerciseName} canShow={(c) => charts[c]} onShowChart={showChart} />
+        )}
+
         {/* Summary */}
         {scored.length > 0 && (
           <div className="grid grid-cols-2 gap-3">
@@ -333,7 +365,7 @@ export default function ProgressPage() {
 
         {/* Volume over time */}
         {volumeData.length > 0 && (
-          <ChartCard title={t("volume")}>
+          <ChartCard id="chart-volume" title={t("volume")}>
             <LineChart data={volumeData}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(120,120,120,0.15)" />
               <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(d: string) => day(d).slice(0, 5)} />
@@ -346,7 +378,7 @@ export default function ProgressPage() {
 
         {/* Per-exercise progression */}
         {advanced && liftsWithData.length > 0 && (
-          <Card>
+          <Card id="chart-exercise" tabIndex={-1} className="scroll-mt-20 outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <CardContent className="py-3">
               <div className="mb-2 flex items-center justify-between gap-2">
                 <h3 className="text-sm font-semibold">{t("byExercise")}</h3>
@@ -408,7 +440,7 @@ export default function ProgressPage() {
 
         {/* Personal records */}
         {advanced && prs.length > 0 && (
-          <Card>
+          <Card id="chart-records" tabIndex={-1} className="scroll-mt-20 outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <CardContent className="py-3">
               <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
                 <Trophy className="h-4 w-4 text-amber-500" /> {t("prs")}
@@ -455,9 +487,9 @@ function StatCard({ icon: Icon, value, label }: { icon: React.ComponentType<{ cl
   );
 }
 
-function ChartCard({ title, children }: { title: string; children: React.ReactElement }) {
+function ChartCard({ id, title, children }: { id?: string; title: string; children: React.ReactElement }) {
   return (
-    <Card>
+    <Card id={id} tabIndex={id ? -1 : undefined} className="scroll-mt-20 outline-none focus-visible:ring-2 focus-visible:ring-ring">
       <CardContent className="py-3">
         <h3 className="mb-2 text-sm font-semibold">{title}</h3>
         <div className="h-48 w-full">
