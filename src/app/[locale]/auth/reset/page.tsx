@@ -92,7 +92,7 @@ function ResetPasswordForm() {
             </div>
 
             {error && (
-              <p className="rounded-md bg-red-50 p-2 text-center text-sm text-red-600 dark:bg-red-950/40">
+              <p role="alert" className="rounded-md bg-red-50 p-2 text-center text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
                 {error}
               </p>
             )}

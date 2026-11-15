@@ -70,37 +70,41 @@ export default function LoginPage() {
         ) : (
           <form onSubmit={handleSignIn} className="space-y-4">
             <div>
-              <label className="mb-1 block text-sm font-medium">{t("email")}</label>
+              <label htmlFor="login-email" className="mb-1 block text-sm font-medium">{t("email")}</label>
               <div className="relative">
-                <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                 <input
+                  id="login-email"
                   type="email"
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t("emailPlaceholder")}
                   required
-                  className="w-full rounded-lg border border-input bg-card h-11 pl-10 pr-3 text-base outline-none focus:border-accent-500"
+                  className="w-full rounded-lg border border-input bg-card h-11 pl-10 pr-3 text-base outline-none focus:border-accent-500 focus-visible:ring-2 focus-visible:ring-accent-500/50"
                 />
               </div>
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium">{t("password")}</label>
+              <label htmlFor="login-password" className="mb-1 block text-sm font-medium">{t("password")}</label>
               <div className="relative">
-                <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                 <input
+                  id="login-password"
                   type="password"
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={t("passwordPlaceholder")}
                   required
-                  className="w-full rounded-lg border border-input bg-card h-11 pl-10 pr-3 text-base outline-none focus:border-accent-500"
+                  className="w-full rounded-lg border border-input bg-card h-11 pl-10 pr-3 text-base outline-none focus:border-accent-500 focus-visible:ring-2 focus-visible:ring-accent-500/50"
                 />
               </div>
             </div>
 
             {error && (
-              <p className="rounded-md bg-red-50 p-2 text-center text-sm text-red-600 dark:bg-red-950/40">
+              <p role="alert" className="rounded-md bg-red-50 p-2 text-center text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
                 {error}
               </p>
             )}
