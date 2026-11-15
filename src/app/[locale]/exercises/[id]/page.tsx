@@ -87,7 +87,7 @@ export default function ExerciseHistoryPage() {
                       aria-pressed={shown === m}
                       className={cn(
                         "min-h-9 rounded-full border px-3 text-xs font-medium",
-                        shown === m ? "border-accent-500 bg-accent-500 text-white" : "border-border text-muted-foreground"
+                        shown === m ? "border-accent-600 bg-accent-600 text-white" : "border-border text-muted-foreground"
                       )}
                     >
                       {t(`metric_${m}`)}

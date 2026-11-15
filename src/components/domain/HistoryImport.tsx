@@ -122,7 +122,7 @@ export function HistoryImport() {
                         }}
                         className={cn(
                           "min-h-11 rounded-lg border font-semibold",
-                          unit === u ? "border-accent-500 bg-accent-500 text-white" : "border-border text-muted-foreground"
+                          unit === u ? "border-accent-600 bg-accent-600 text-white" : "border-border text-muted-foreground"
                         )}
                       >
                         {u}

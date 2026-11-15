@@ -366,7 +366,7 @@ export default function SettingsPage() {
                       className={cn(
                         "min-h-11 rounded-lg border text-sm font-semibold transition-colors",
                         on
-                          ? "border-accent-500 bg-accent-500 text-white"
+                          ? "border-accent-600 bg-accent-600 text-white"
                           : "border-border text-muted-foreground hover:border-accent-300"
                       )}
                     >
@@ -375,8 +375,8 @@ export default function SettingsPage() {
                   );
                 })}
               </div>
-              <div className="mt-3 flex items-end gap-2">
-                <label className="flex-1 text-xs text-muted-foreground">
+              <div className="mt-3 flex flex-wrap items-end gap-2">
+                <label className="min-w-32 flex-1 text-xs text-muted-foreground">
                   {t("planTime")}
                   <Input
                     type="time"
@@ -387,7 +387,7 @@ export default function SettingsPage() {
                 </label>
                 {hasFeature("planning") && <Button
                   variant="outline"
-                  className="h-11"
+                  className="h-11 flex-1 sm:flex-none"
                   disabled={!(athlete.trainingDays ?? []).length}
                   onClick={() => {
                     const ics = trainingCalendar({
@@ -715,7 +715,7 @@ export default function SettingsPage() {
           <Section icon={Bell} title={tn("section")}>
             <p className="mb-3 text-xs text-muted-foreground">{tn("desc")}</p>
             {!isPushConfigured() ? (
-              <p className="rounded-md bg-muted p-2 text-xs text-muted-foreground">{tn("notConfigured")}</p>
+              <p className="rounded-md bg-muted p-2 text-xs text-foreground">{tn("notConfigured")}</p>
             ) : (
               <>
                 <Button
