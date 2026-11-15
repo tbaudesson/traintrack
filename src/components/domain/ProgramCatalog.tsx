@@ -61,7 +61,7 @@ function Tile({
     <>
       <span className="flex w-full items-start justify-between gap-2">
         <CategoryIcon category={category} size="lg" />
-        {mine && <span className="rounded-full bg-accent-500 px-2 py-0.5 text-[0.7rem] font-semibold text-white">{t("mySport")}</span>}
+        {mine && <span className="rounded-full bg-accent-600 px-2 py-0.5 text-[0.7rem] font-semibold text-white">{t("mySport")}</span>}
       </span>
       <span className="mt-auto flex w-full items-end justify-between gap-1">
         <span className="block">

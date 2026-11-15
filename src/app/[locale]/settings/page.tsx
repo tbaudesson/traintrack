@@ -366,7 +366,7 @@ export default function SettingsPage() {
                       className={cn(
                         "min-h-11 rounded-lg border text-sm font-semibold transition-colors",
                         on
-                          ? "border-accent-500 bg-accent-500 text-white"
+                          ? "border-accent-600 bg-accent-600 text-white"
                           : "border-border text-muted-foreground hover:border-accent-300"
                       )}
                     >
