@@ -390,7 +390,13 @@
     "analyticsHint": "Protokolliere ein Workout (mit Gewicht und Wdh.), um Volumen, Übungsfortschritt, Muskelbalance und Rekorde freizuschalten.",
     "bodyweightTitle": "Mit Körpergewicht",
     "bestSet": "Bester Satz",
-    "bodyweightHint": "Die meisten Wiederholungen (oder Sekunden) in einem Satz, Einheit für Einheit, und dein Rekord pro Übung."
+    "bodyweightHint": "Die meisten Wiederholungen (oder Sekunden) in einem Satz, Einheit für Einheit, und dein Rekord pro Übung.",
+    "sectionLoad": "Belastung und Regelmäßigkeit",
+    "sectionReport": "Berichte",
+    "sectionDetails": "Details",
+    "detailsHint": "Die Diagramme, bei Bedarf zu öffnen.",
+    "loadChart": "Trainingsbelastung",
+    "sectionMine": "Meine Zahlen"
   },
   "exercises": {
     "translations": "Übersetzungen",

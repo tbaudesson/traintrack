@@ -390,7 +390,13 @@
     "analyticsHint": "Log a workout (with weight and reps) to unlock volume, per-exercise progression, muscle balance and PRs.",
     "bodyweightTitle": "Bodyweight",
     "bestSet": "Best set",
-    "bodyweightHint": "The most reps (or seconds) in one set, session after session, and your record for each exercise."
+    "bodyweightHint": "The most reps (or seconds) in one set, session after session, and your record for each exercise.",
+    "sectionLoad": "Load and regularity",
+    "sectionReport": "Reports",
+    "sectionDetails": "Details",
+    "detailsHint": "The charts, to open when needed.",
+    "loadChart": "Training load",
+    "sectionMine": "My figures"
   },
   "exercises": {
     "translations": "Translations",

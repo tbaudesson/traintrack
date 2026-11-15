@@ -13,6 +13,8 @@ import { Recommendations } from "@/components/domain/Recommendations";
 import { usePainReports } from "@/hooks/usePain";
 import { useReadiness } from "@/hooks/useReadiness";
 import { useInsights } from "@/hooks/useInsights";
+import { trainingLoad } from "@/lib/trainingLoad";
+import { TrainingLoadCard } from "@/components/domain/TrainingLoadCard";
 import { InsightAction, InsightCard, MoreInsights } from "@/components/domain/InsightCard";
 import type { InsightChart } from "@/lib/insights";
 import { mondayOfDate } from "@/lib/weekPlan";
@@ -22,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Dumbbell, Layers, Flame, Trophy, TrendingUp, ChevronRight, FileText } from "lucide-react";
+import { Dumbbell, Trophy, TrendingUp, ChevronRight, FileText } from "lucide-react";
 import { DetailRow } from "@/components/ui/detail-row";
 import { Link } from "@/i18n/navigation";
 import { useCompetitions } from "@/hooks/useCompetitions";
@@ -102,20 +104,6 @@ export default function ProgressPage() {
   );
 
   // ── Summary stats ──────────────────────────────────────────────
-  const stats = useMemo(() => {
-    const totalVolume = scored.reduce((a, s) => a + s.weightKg! * s.reps!, 0);
-    const weekAgo = localDateIn(-7, now);
-    const weekVolume = scored.reduce((a, s) => {
-      const d = workoutDate.get(s.workoutId);
-      return d && d >= weekAgo ? a + s.weightKg! * s.reps! : a;
-    }, 0);
-    return {
-      workouts: workouts.length,
-      sets: sets.length,
-      totalVolume: Math.round(totalVolume),
-      weekVolume: Math.round(weekVolume),
-    };
-  }, [scored, sets, workouts, workoutDate, now]);
 
   // ── Volume per date ────────────────────────────────────────────
   const volumeData = useMemo(() => {
@@ -167,6 +155,8 @@ export default function ProgressPage() {
 
   // ── The main insight of the last four weeks ────────────────────
   const reading = useInsights({ today, workouts, sets, pains, readiness, profile: athlete });
+  // The training load as the app computes it, shown in its section.
+  const load = useMemo(() => trainingLoad({ today, workouts, sets }), [today, workouts, sets]);
   const exerciseName = (id: number) => exercises.find((e) => e.id === id)?.name;
   // ── Volume by muscle group (last 30 days) ──────────────────────
   const muscleData = useMemo(() => {
@@ -255,8 +245,8 @@ export default function ProgressPage() {
     volume: volumeData.length > 0,
     exercise: advanced && liftsWithData.length > 0,
     records: advanced && prs.length > 0,
-    load: false,
-    distance: false,
+    load: !!load,
+    distance: workouts.some(isCardioDone),
   };
   function showChart(chart: InsightChart, exerciseId?: number) {
     if (chart === "exercise" && exerciseId !== undefined) setLiftId(exerciseId);
@@ -265,76 +255,85 @@ export default function ProgressPage() {
       if (!el) return;
       const fold = el.closest("details");
       if (fold) fold.open = true;
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
-      el.focus({ preventScroll: true });
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      (fold?.querySelector("summary") ?? el).focus({ preventScroll: true });
     });
   }
 
   return (
     <>
       <PageHeader title={t("title")} />
-      <div className="space-y-6 p-4 pb-24">
-        {reading.insights[0] && (
-          <InsightCard insight={reading.insights[0]} period={reading.period} exerciseName={exerciseName} canShow={(c) => charts[c]} onShowChart={showChart}>
-            <InsightAction insight={reading.insights[0]} exerciseName={exerciseName} />
-          </InsightCard>
-        )}
-        <MoreInsights items={reading.insights.slice(1)} exerciseName={exerciseName} />
-
-        {/* Summary */}
-        {scored.length > 0 && (
-          <div className="grid grid-cols-2 gap-3">
-            <StatCard icon={Dumbbell} value={stats.workouts} label={t("workouts")} />
-            <StatCard icon={Layers} value={stats.sets} label={t("sets")} />
-            <StatCard icon={Flame} value={num(stats.totalVolume, 0)} label={`${t("totalVolume")} (kg)`} />
-            <StatCard icon={Flame} value={num(stats.weekVolume, 0)} label={`${t("thisWeek")} (kg)`} />
+      <div className="mx-auto max-w-5xl space-y-6 p-4 pb-24">
+        {/* What the last four weeks say: the main insight, its evidence and the thing to do; the other readings beside it. */}
+        <div className="space-y-4 md:grid md:grid-cols-[3fr_2fr] md:items-start md:gap-4 md:space-y-0">
+          {reading.insights[0] && (
+            <InsightCard insight={reading.insights[0]} period={reading.period} exerciseName={exerciseName} canShow={(c) => charts[c]} onShowChart={showChart}>
+              <InsightAction insight={reading.insights[0]} exerciseName={exerciseName} />
+            </InsightCard>
+          )}
+          <div className="space-y-4">
+            <MoreInsights items={reading.insights.slice(1)} exerciseName={exerciseName} />
+            {/* All of today's advice; the home screen shows the first one only. */}
+            <Recommendations limit={99} />
           </div>
+        </div>
+
+        {/* Load and regularity: the training load (folded) and last week's report. */}
+        {(load || hasFeature("reports")) && (
+          <section className="space-y-2">
+            <h2 className="text-lg font-semibold tracking-tight">{t("sectionLoad")}</h2>
+            {load && (
+              <Fold id="chart-load" title={t("loadChart")}>
+                <TrainingLoadCard load={load} />
+              </Fold>
+            )}
+            {hasFeature("reports") && (
+              <WeeklyReportCard
+                workouts={workouts}
+                sets={sets}
+                exercises={exercises}
+                trainingDays={athlete?.trainingDays}
+                pains={pains}
+                lastMonday={mondayOfDate(localDateIn(-7, now))}
+              />
+            )}
+          </section>
         )}
-
-        {/* All of today's advice; the home screen shows the first one only. */}
-        <Recommendations limit={99} />
-
-        {hasFeature("reports") && (
-          <>
-            <WeeklyReportCard
-              workouts={workouts}
-              sets={sets}
-              exercises={exercises}
-              trainingDays={athlete?.trainingDays}
-              pains={pains}
-              lastMonday={mondayOfDate(localDateIn(-7, now))}
-            />
-            <DetailRow href="/report" icon={FileText} title={tm("open")} subtitle={tm("openHint")} />
-          </>
-        )}
-
-        {/* An endurance or bodyweight athlete sees their own figures first. */}
-        {activity === "endurance" && <CardioProgress workouts={workouts} />}
-        {activity === "bodyweight" && bodyweightLifts.length > 0 && bodyweightSection}
 
         {/* Strength goals (an estimated 1RM to reach): for those who lift, or who set one. */}
         {(activity === "strength" || (athlete?.strengthGoals ?? []).length > 0) && (
           <GoalsSection profile={athlete} workouts={workouts} sets={sets} exercises={exercises} editable />
         )}
 
-        {/* Log bodyweight */}
-        <Card>
-          <CardContent className="flex items-end gap-2 py-3">
-            <label className="min-w-0 flex-1 text-sm font-medium">
-              {t("bodyweight")}
-              <Input
-                type="number" inputMode="decimal"
-                placeholder="kg"
-                value={bw} onChange={(e) => setBw(e.target.value)}
-                className="mt-1"
-              />
-            </label>
-            <Button onClick={logBodyweight} disabled={!bw}>{t("addBodyMetric")}</Button>
-          </CardContent>
-        </Card>
+        {hasFeature("reports") && (
+          <section className="space-y-2">
+            <h2 className="text-lg font-semibold tracking-tight">{t("sectionReport")}</h2>
+            <DetailRow href="/report" icon={FileText} title={tm("open")} subtitle={tm("openHint")} />
+          </section>
+        )}
 
-        {activity !== "endurance" && <CardioProgress workouts={workouts} />}
-        {activity !== "bodyweight" && bodyweightLifts.length > 0 && scored.length === 0 && bodyweightSection}
+        {/* One's own figures: outings, bodyweight work, bodyweight. */}
+        <section className="space-y-2">
+          <h2 className="text-lg font-semibold tracking-tight">{t("sectionMine")}</h2>
+          <div id="chart-distance" tabIndex={-1} className="scroll-mt-20 outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <CardioProgress workouts={workouts} />
+          </div>
+          {bodyweightLifts.length > 0 && (activity === "bodyweight" || scored.length === 0) && bodyweightSection}
+          <Card>
+            <CardContent className="flex items-end gap-2 py-3">
+              <label className="min-w-0 flex-1 text-sm font-medium">
+                {t("bodyweight")}
+                <Input
+                  type="number" inputMode="decimal"
+                  placeholder="kg"
+                  value={bw} onChange={(e) => setBw(e.target.value)}
+                  className="mt-1"
+                />
+              </label>
+              <Button onClick={logBodyweight} disabled={!bw}>{t("addBodyMetric")}</Button>
+            </CardContent>
+          </Card>
+        </section>
 
         {/* Vaulting competitions: shown once there is one, or for a vaulter. */}
         {hasFeature("vaulting") && (competitions.length > 0 || prefs.sport === "vaulting") && (
@@ -366,26 +365,33 @@ export default function ProgressPage() {
           </div>
         )}
 
-        {/* Volume over time */}
-        {volumeData.length > 0 && (
-          <ChartCard id="chart-volume" title={t("volume")}>
-            <LineChart data={volumeData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(120,120,120,0.15)" />
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(d: string) => day(d).slice(0, 5)} />
-              <YAxis tick={{ fontSize: 10 }} width={44} tickFormatter={(v: number) => num(v)} />
-              <Tooltip />
-              <Line type="monotone" dataKey="volume" stroke="#4F46E5" strokeWidth={2} dot={false} />
-            </LineChart>
-          </ChartCard>
-        )}
+        {/* The charts, folded on every screen; a piece of evidence opens its own. */}
+        {(volumeData.length > 0 || (advanced && (liftsWithData.length > 0 || muscleData.length > 0 || prs.length > 0)) || bwData.length > 0) && (
+          <section className="space-y-2">
+            <div>
+              <h2 className="text-lg font-semibold tracking-tight">{t("sectionDetails")}</h2>
+              <p className="text-sm text-muted-foreground">{t("detailsHint")}</p>
+            </div>
+            {volumeData.length > 0 && (
+              <Fold id="chart-volume" title={t("volume")}>
+                <ChartBox>
+                  <LineChart data={volumeData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(120,120,120,0.15)" />
+                    <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(d: string) => day(d).slice(0, 5)} />
+                    <YAxis tick={{ fontSize: 10 }} width={44} tickFormatter={(v: number) => num(v)} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="volume" stroke="#4F46E5" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ChartBox>
+              </Fold>
+            )}
 
-        {/* Per-exercise progression */}
-        {advanced && liftsWithData.length > 0 && (
-          <Card id="chart-exercise" tabIndex={-1} className="scroll-mt-20 outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            {advanced && liftsWithData.length > 0 && (
+              <Fold id="chart-exercise" title={t("byExercise")}>
             <CardContent className="py-3">
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <h3 className="text-sm font-semibold">{t("byExercise")}</h3>
+              <div className="mb-2 flex items-center justify-end gap-2">
                 <select
+                  aria-label={t("byExercise")}
                   value={activeLift ?? ""}
                   onChange={(e) => setLiftId(Number(e.target.value))}
                   className="max-w-[55%] truncate rounded-md border border-border bg-transparent px-2 py-1 text-xs"
@@ -421,33 +427,30 @@ export default function ProgressPage() {
                 </ResponsiveContainer>
               </div>
             </CardContent>
-          </Card>
-        )}
+              </Fold>
+            )}
 
-        {/* Volume by muscle group */}
-        {advanced && muscleData.length > 0 && (
-          <ChartCard title={t("muscleVolume")}>
-            <BarChart data={muscleData} layout="vertical" margin={{ left: 8, right: 8 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(120,120,120,0.15)" horizontal={false} />
-              <XAxis type="number" tick={{ fontSize: 10 }} />
-              <YAxis type="category" dataKey="label" tick={{ fontSize: 10 }} width={70} />
-              <Tooltip />
-              <Bar dataKey="vol" radius={[0, 4, 4, 0]}>
-                {muscleData.map((_, i) => (
-                  <Cell key={i} fill={MUSCLE_COLORS[i % MUSCLE_COLORS.length]} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ChartCard>
-        )}
+            {advanced && muscleData.length > 0 && (
+              <Fold id="chart-muscles" title={t("muscleVolume")}>
+                <ChartBox>
+                  <BarChart data={muscleData} layout="vertical" margin={{ left: 8, right: 8 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(120,120,120,0.15)" horizontal={false} />
+                    <XAxis type="number" tick={{ fontSize: 10 }} />
+                    <YAxis type="category" dataKey="label" tick={{ fontSize: 10 }} width={70} />
+                    <Tooltip />
+                    <Bar dataKey="vol" radius={[0, 4, 4, 0]}>
+                      {muscleData.map((_, i) => (
+                        <Cell key={i} fill={MUSCLE_COLORS[i % MUSCLE_COLORS.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ChartBox>
+              </Fold>
+            )}
 
-        {/* Personal records */}
-        {advanced && prs.length > 0 && (
-          <Card id="chart-records" tabIndex={-1} className="scroll-mt-20 outline-none focus-visible:ring-2 focus-visible:ring-ring">
-            <CardContent className="py-3">
-              <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
-                <Trophy className="h-4 w-4 text-amber-500" /> {t("prs")}
-              </h3>
+            {advanced && prs.length > 0 && (
+              <Fold id="chart-records" title={t("prs")}>
+                <div className="px-4 pb-3">
               <div className="space-y-1">
                 {prs.map((p) => (
                   <div key={p.name} className="flex items-center gap-2 text-sm">
@@ -457,50 +460,47 @@ export default function ProgressPage() {
                 ))}
               </div>
               <p className="mt-1.5 text-xs text-muted-foreground">{t("prsHint")}</p>
-            </CardContent>
-          </Card>
-        )}
+                </div>
+              </Fold>
+            )}
 
-        {/* Bodyweight */}
-        {bwData.length > 0 && (
-          <ChartCard title={t("bodyweight")}>
-            <LineChart data={bwData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(120,120,120,0.15)" />
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(d: string) => day(d).slice(0, 5)} />
-              <YAxis tick={{ fontSize: 10 }} width={44} domain={["dataMin - 2", "dataMax + 2"]} />
-              <Tooltip />
-              <Line type="monotone" dataKey="weight" stroke="#EA580C" strokeWidth={2} dot={false} />
-            </LineChart>
-          </ChartCard>
+            {bwData.length > 0 && (
+              <Fold id="chart-bodyweight" title={t("bodyweight")}>
+                <ChartBox>
+                  <LineChart data={bwData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(120,120,120,0.15)" />
+                    <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(d: string) => day(d).slice(0, 5)} />
+                    <YAxis tick={{ fontSize: 10 }} width={44} domain={["dataMin - 2", "dataMax + 2"]} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="weight" stroke="#EA580C" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ChartBox>
+              </Fold>
+            )}
+          </section>
         )}
       </div>
     </>
   );
 }
 
-function StatCard({ icon: Icon, value, label }: { icon: React.ComponentType<{ className?: string }>; value: string | number; label: string }) {
+/** A part of the page folded under its title: opened on demand, or by a piece of evidence. */
+function Fold({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
-    <Card>
-      <CardContent className="flex flex-col items-center gap-1 py-4">
-        <Icon className="h-5 w-5 text-accent-500" />
-        <p className="text-xl font-bold tabular-nums">{value}</p>
-        <p className="text-center text-xs text-muted-foreground">{label}</p>
-      </CardContent>
-    </Card>
+    <details id={id} className="t-surface scroll-mt-20 rounded-2xl ring-1 ring-foreground/5">
+      <summary className="flex min-h-12 cursor-pointer items-center gap-2 rounded-2xl px-4 text-sm font-semibold outline-none focus-visible:ring-2 focus-visible:ring-ring">{title}</summary>
+      {children}
+    </details>
   );
 }
 
-function ChartCard({ id, title, children }: { id?: string; title: string; children: React.ReactElement }) {
+/** A chart's drawing area. */
+function ChartBox({ children }: { children: React.ReactElement }) {
   return (
-    <Card id={id} tabIndex={id ? -1 : undefined} className="scroll-mt-20 outline-none focus-visible:ring-2 focus-visible:ring-ring">
-      <CardContent className="py-3">
-        <h3 className="mb-2 text-sm font-semibold">{title}</h3>
-        <div className="h-48 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            {children}
-          </ResponsiveContainer>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="h-48 w-full px-2 pb-3">
+      <ResponsiveContainer width="100%" height="100%">
+        {children}
+      </ResponsiveContainer>
+    </div>
   );
 }

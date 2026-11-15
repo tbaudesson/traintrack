@@ -737,6 +737,15 @@ await test("Performance opens on what stands out, with its dates and evidence", 
   await card.getByText("À faire").waitFor({ timeout: 5000 });
   await card.getByText(/Allégez cette semaine|semaine de décharge/).waitFor({ timeout: 5000 });
   await snap("insight");
+  // No more counters of all time; the charts folded until asked for.
+  expect(!(await page.getByText("Volume total (kg)").count()), "the all-time counters are still there");
+  const fold = page.locator("details#chart-load");
+  expect(!(await fold.evaluate((d) => d.open)), "the load chart is open from the start");
+  // A piece of evidence opens its chart, and puts the focus on it.
+  await card.getByRole("button", { name: /^Voir le graphique : Ratio de charge/ }).click();
+  await page.waitForFunction(() => document.querySelector("details#chart-load")?.open === true, null, { timeout: 5000 });
+  expect(await page.evaluate(() => document.activeElement?.closest("details")?.id === "chart-load"), "the focus is not on the load chart");
+  await fold.getByText("Charge d’entraînement").first().waitFor({ timeout: 5000 });
 });
 
 // ── The menu wheel, with real pointer input ─────────────────────────

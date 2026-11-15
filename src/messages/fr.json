@@ -390,7 +390,13 @@
     "analyticsHint": "Enregistrez une séance (avec poids et répétitions) pour débloquer le volume, la progression par exercice, l'équilibre musculaire et les records.",
     "bodyweightTitle": "Au poids du corps",
     "bestSet": "Meilleure série",
-    "bodyweightHint": "Le plus de répétitions (ou de secondes) d’une série, séance après séance, et votre record par exercice."
+    "bodyweightHint": "Le plus de répétitions (ou de secondes) d’une série, séance après séance, et votre record par exercice.",
+    "sectionLoad": "Charge et régularité",
+    "sectionReport": "Bilans",
+    "sectionDetails": "Détails",
+    "detailsHint": "Les graphiques, à ouvrir au besoin.",
+    "loadChart": "Charge d'entraînement",
+    "sectionMine": "Mes chiffres"
   },
   "exercises": {
     "translations": "Traductions",
