@@ -50,7 +50,8 @@ export default function ChallengesPage() {
     await fetchAll();
   }, [fetchAll]);
 
-  useEffect(() => { fetchAll(); }, [fetchAll]);
+  // Offline or server unreachable: keep what is shown instead of throwing.
+  useEffect(() => { fetchAll().catch(() => {}); }, [fetchAll]);
 
   return (
     <>
