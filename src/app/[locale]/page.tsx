@@ -1,7 +1,7 @@
 "use client";
 
 import { sessionHref } from "@/lib/routes";
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -9,8 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAthleteProfile } from "@/hooks/useAthleteProfile";
 import { useWorkouts } from "@/hooks/useWorkouts";
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
-import { useTrainablePrograms, createProgram } from "@/hooks/usePrograms";
-import type { ProgramTemplate } from "@/lib/programTemplates";
+import { useTrainablePrograms } from "@/hooks/usePrograms";
 import { useProgramTemplates } from "@/lib/templateService";
 import { useUnreadComments } from "@/hooks/useCoachComments";
 import { useExercises } from "@/hooks/useExercises";
@@ -33,12 +32,11 @@ import { TrainingLoadCard } from "@/components/domain/TrainingLoadCard";
 import { FirstSteps } from "@/components/domain/FirstSteps";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useTeams } from "@/hooks/useTeams";
-import { daysToOffer, findWorkoutProgramDay, lastRepeatable, nextDayIndex, repeatWorkout, startWorkoutFromDay } from "@/lib/startWorkout";
+import { findWorkoutProgramDay, nextDayIndex } from "@/lib/startWorkout";
 import { programWeek } from "@/lib/programWeek";
-import { describeTarget, isCardio, isCardioDone, weeklyGoal } from "@/lib/cardio";
+import { isCardio, isCardioDone, weeklyGoal } from "@/lib/cardio";
 import { SportPicker } from "@/components/domain/SportPicker";
 import { WeekStrip } from "@/components/domain/WeekStrip";
-import { GpxImport } from "@/components/domain/GpxImport";
 import { mondayOfDate, plannedSessions, upcomingSessions, weekPlan } from "@/lib/weekPlan";
 import { planCalendar } from "@/lib/ics";
 import { plannedPrograms, scheduleSessions, scheduleWeek, sessionChoices, sessionsPerWeek, type SessionChoice } from "@/lib/schedule";
@@ -53,18 +51,15 @@ import { downloadFile } from "@/lib/exportService";
 import { useCompetitions } from "@/hooks/useCompetitions";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { DetailRow } from "@/components/ui/detail-row";
-import { createWorkout } from "@/hooks/useWorkouts";
 import Image from "next/image";
 import { Recommendations } from "@/components/domain/Recommendations";
+import { SessionPickerDialog, useDayDetail } from "@/components/domain/SessionPickerDialog";
+import { useStartActions } from "@/hooks/useStartActions";
 import type { ReactNode } from "react";
-import type { Program, ProgramDay, Sport } from "@/db";
 import {
   type LucideIcon,
-  Activity, Upload, RotateCcw, ArrowRight, Check, ListChecks, MessageSquare, Plus, Sparkles, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
+  ArrowRight, Check, ListChecks, MessageSquare, Sparkles, Bell, ChevronRight, ClipboardList, Dumbbell, Flame, HeartPulse, Loader2, Settings, Target, TrendingUp, Trophy,
   Timer,
-  PersonStanding,
   PartyPopper,
   Gauge,
   X,
@@ -181,17 +176,12 @@ export default function HomePage() {
   const locale = useLocale();
   const tr = useTranslations("readiness");
   const tm = useTranslations("more");
-  const tl = useTranslations("log");
-  const tp = useTranslations("programs");
-  const tc = useTranslations("cardio");
-  const ti = useTranslations("intervals");
-  const tmo = useTranslations("mobility");
   const tcat = useTranslations("catalog");
   const router = useRouter();
   const { user, profile: account } = useAuth();
   const profile = useAthleteProfile();
   const readiness = useReadiness();
-  const { num, day, short } = useFormat();
+  const { num, short } = useFormat();
   const pains = usePainReports();
   const [reportClosed, setReportClosed] = useState(() => {
     try {
@@ -231,7 +221,6 @@ export default function HomePage() {
   const { hasFeature } = useFeatureAccess();
   const { memberships } = useTeams();
   const [now] = useState(() => Date.now());
-  const [starting, setStarting] = useState(false);
   const [choosing, setChoosing] = useState(false);
   const [expressOpen, setExpressOpen] = useState(false);
   // Cards closed on this device: a program's review, a round of tests due.
@@ -252,7 +241,6 @@ export default function HomePage() {
     setClosedCards(next);
   };
   const [sportOpen, setSportOpen] = useState(false);
-  const pickerTop = useRef<HTMLDivElement>(null);
 
   const today = localDate(now);
   const nutritionToday = useNutritionForDate(today);
@@ -301,6 +289,20 @@ export default function HomePage() {
   const deloading = profile?.deloadWeek === thisMonday;
   // A deload week or a day of low form: the session starts lighter.
   const lighterToday = useLighterToday();
+  const actions = useStartActions({
+    today,
+    workouts,
+    sets,
+    exercises,
+    profile,
+    lighter: lighterToday.start,
+    onStart: () => {
+      setChoosing(false);
+      setExpressOpen(false);
+      setSportOpen(false);
+    },
+  });
+  const { starting, startDay } = actions;
   // Last week's report, from Monday to Wednesday, until closed.
   const lastMonday = mondayOfDate(localDateIn(-7, now));
   const showReport =
@@ -532,88 +534,10 @@ export default function HomePage() {
     await startDay(session.program, session.index);
   }
 
-  /** Start a program day; a shorter version of it when given (still that day of the program). */
-  async function startDay(program: Program, index: number, shorter?: ProgramDay) {
-    setChoosing(false);
-    setExpressOpen(false);
-    setStarting(true);
-    try {
-      // A beginner's very first session opens in guided mode.
-      const first = workouts.length === 0 && profile?.fitnessLevel === "beginner";
-      const source = shorter ? { ...program, structure: program.structure.map((d, i) => (i === index ? shorter : d)) } : program;
-      const id = await startWorkoutFromDay(source, index, exercises, today, lighterToday.start);
-      router.push(first && !program.structure[index]?.cardio ? `${sessionHref(id)}&guided=1` : sessionHref(id));
-    } finally {
-      setStarting(false);
-    }
-  }
-
   const trainable = programs.filter((p) => (p.structure ?? []).length > 0);
 
-  // The sessions without a program, those of one's sports first.
   const runner = prefs.sport === "running" || prefs.sport2 === "running" || detected === "running";
-  const freeRows = [
-    { key: "free", rank: prefs.allSports ? 0 : activity === "strength" ? 0 : 3, node: <DetailRow key="free" onClick={startFree} disabled={starting} icon={Plus} tone="neutral" title={t("freeSession")} subtitle={t("freeSessionHint")} /> },
-    { key: "intervals", rank: prefs.allSports ? 1 : activity === "bodyweight" ? 0 : 4, node: <DetailRow key="intervals" href="/intervals" icon={Timer} tone="neutral" title={ti("title")} subtitle={ti("hint")} /> },
-    ...(runner && hasFeature("running") ? [{ key: "running", rank: 1, node: <DetailRow key="running" href="/running" icon={Footprints} tone="neutral" title={t("runIntervals")} subtitle={t("runIntervalsHint")} /> }] : []),
-    { key: "mobility", rank: prefs.allSports ? 2 : 5, node: <DetailRow key="mobility" href="/mobility" icon={PersonStanding} tone="neutral" title={tmo("title")} subtitle={tmo("hint")} /> },
-    {
-      key: "endurance",
-      rank: prefs.allSports ? 3 : activity === "endurance" || activity === "vaulting" ? 0 : 2,
-      node: <DetailRow key="endurance" onClick={() => { setChoosing(false); setSportOpen(true); }} disabled={starting} icon={Activity} tone="neutral" title={tc("newSession")} subtitle={tc("newSessionHint")} />,
-    },
-  ].sort((a, b) => a.rank - b.rank);
-  const repeatable = lastRepeatable(workouts, sets, today);
-
-  async function repeatLast() {
-    if (!repeatable) return;
-    setChoosing(false);
-    setStarting(true);
-    try {
-      const id = await repeatWorkout(repeatable, today, lighterToday.start);
-      router.push(sessionHref(id));
-    } finally {
-      setStarting(false);
-    }
-  }
-  const templateGroups = (
-    [
-      { key: "readyMadeStrength", items: templates.filter((x) => x.goal !== "endurance") },
-      { key: "readyMadeEndurance", items: templates.filter((x) => x.goal === "endurance") },
-    ] as const
-  ).filter((group) => group.items.length > 0);
-
-  async function startCardio(sport: Sport) {
-    setSportOpen(false);
-    const id = await createWorkout({ date: today, title: tc(`sport_${sport}`), kind: "cardio", sport });
-    router.push(sessionHref(id));
-  }
-
-  const dayDetail = (day: ProgramDay) =>
-    day.cardio ? describeTarget(day.cardio) : t("exerciseCount", { count: day.exercises.length });
-
-  async function buildProgram() {
-    setChoosing(false);
-    const id = await createProgram({ name: tp("untitled"), structure: [{ name: `${tp("day")} 1`, exercises: [] }] });
-    router.push(`/programs/${id}`);
-  }
-
-  // Stays in the picker: the program joins the list above, ready to start.
-  async function addTemplate(template: ProgramTemplate) {
-    await createProgram({ name: template.name, description: template.description, structure: template.structure });
-    pickerTop.current?.scrollIntoView({ behavior: "smooth" });
-  }
-
-  async function startFree() {
-    setChoosing(false);
-    setStarting(true);
-    try {
-      const id = await createWorkout({ date: today, title: tl("newWorkout") });
-      router.push(sessionHref(id));
-    } finally {
-      setStarting(false);
-    }
-  }
+  const dayDetail = useDayDetail();
 
   return (
     <div className="space-y-5 p-4 pb-28">
@@ -862,87 +786,21 @@ export default function HomePage() {
             }}
           />
 
-          <SportPicker open={sportOpen} onOpenChange={setSportOpen} onPick={startCardio} />
+          <SportPicker open={sportOpen} onOpenChange={setSportOpen} onPick={actions.startCardio} />
 
-          <Dialog open={choosing} onOpenChange={setChoosing}>
-            <DialogContent className="max-h-[80vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>{t("chooseSession")}</DialogTitle>
-              </DialogHeader>
-              <div ref={pickerTop} className="space-y-4">
-                {trainable.length > 0 && (
-                  <section className="space-y-3">
-                    <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("myPrograms")}</h3>
-                    {trainable.map((p) => (
-                      <div key={p.id} className="space-y-2">
-                        <h4 className="text-sm font-semibold">{p.name}</h4>
-                        {daysToOffer(p, workouts, today).map(({ day, index }) => (
-                          <DetailRow
-                            key={`${p.id}-${index}`}
-                            onClick={() => startDay(p, index)}
-                            disabled={starting}
-                            icon={day.cardio ? Activity : Dumbbell}
-                            title={day.name}
-                            subtitle={dayDetail(day)}
-                          />
-                        ))}
-                      </div>
-                    ))}
-                  </section>
-                )}
-
-                <section className="space-y-2">
-                  <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("noProgram")}</h3>
-                  {repeatable && (
-                    <DetailRow
-                      onClick={repeatLast}
-                      disabled={starting}
-                      icon={RotateCcw}
-                      tone="neutral"
-                      title={t("repeatLast")}
-                      subtitle={`${repeatable.title || t("freeSession")} · ${day(repeatable.date)}`}
-                    />
-                  )}
-                  {freeRows.map((row) => row.node)}
-                  <GpxImport
-                    existing={workouts}
-                    onImported={({ workoutId }) => {
-                      setChoosing(false);
-                      router.push(sessionHref(workoutId));
-                    }}
-                    trigger={(open) => (
-                      <DetailRow onClick={open} icon={Upload} tone="neutral" title={tc("importGpx")} subtitle={tc("importGpxHint")} />
-                    )}
-                  />
-                </section>
-
-                <section className="space-y-2">
-                  <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("addProgram")}</h3>
-                  <DetailRow onClick={buildProgram} icon={Plus} title={t("buildProgram")} subtitle={t("buildProgramHint")} />
-                  <DetailRow href="/programs" icon={ClipboardList} tone="neutral" title={t("managePrograms")} subtitle={t("manageProgramsHint")} />
-                </section>
-
-                {templateGroups.map(({ key, items }) => (
-                  <section key={key} className="space-y-2">
-                    <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t(key)}</h3>
-                    {items.map((template) => (
-                      <DetailRow
-                        key={template.id}
-                        onClick={() => addTemplate(template)}
-                        icon={key === "readyMadeEndurance" ? Activity : Sparkles}
-                        title={template.name}
-                        subtitle={
-                          template.structure.some((d) => d.week !== undefined)
-                            ? t("readyMadeWeeks", { count: new Set(template.structure.map((d) => d.week)).size })
-                            : t("readyMadeDays", { count: template.structure.length })
-                        }
-                      />
-                    ))}
-                  </section>
-                ))}
-              </div>
-            </DialogContent>
-          </Dialog>
+          <SessionPickerDialog
+            open={choosing}
+            onOpenChange={setChoosing}
+            programs={trainable}
+            templates={templates}
+            workouts={workouts}
+            today={today}
+            actions={actions}
+            activity={activity}
+            allSports={prefs.allSports}
+            runner={runner}
+            onEndurance={() => setSportOpen(true)}
+          />
 
           <section className="space-y-2">
             <div className="flex items-center justify-between">
