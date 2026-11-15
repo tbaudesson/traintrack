@@ -50,3 +50,20 @@ describe("a session done", () => {
     expect(steady?.values.sessions).toBe(DONE.length);
   });
 });
+
+describe("the weeks kept in a row", () => {
+  it("count only sessions done: a week of sessions opened then left breaks the streak", async () => {
+    const { weekStreak } = await import("./weekStreak");
+    // Two sessions a week planned; last week's two were opened and left.
+    const weeks = [
+      { id: 101, date: "2026-11-02" }, { id: 102, date: "2026-11-04" }, // last week, empty
+      { id: 103, date: "2026-10-26" }, { id: 104, date: "2026-10-28" }, // done
+      { id: 105, date: "2026-10-19" }, { id: 106, date: "2026-10-21" }, // done
+    ];
+    const ticked = [103, 104, 105, 106].map((workoutId) => ({ workoutId, completed: true, isWarmup: false }));
+    const all = weekStreak({ today, workouts: weeks, target: 2 });
+    const done = weekStreak({ today, workouts: doneSessions(weeks, ticked), target: 2 });
+    expect(all?.weeks).toBeGreaterThan(done?.weeks ?? 0);
+    expect(done?.weeks ?? 0).toBe(0);
+  });
+});

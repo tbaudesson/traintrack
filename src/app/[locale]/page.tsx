@@ -33,6 +33,7 @@ import { programWeek } from "@/lib/programWeek";
 import { isCardio, isCardioDone } from "@/lib/cardio";
 import { weekGoal } from "@/lib/weekGoal";
 import { weekSummary } from "@/lib/weekSummary";
+import { doneSessions } from "@/lib/doneSessions";
 import { SportPicker } from "@/components/domain/SportPicker";
 import { WeekStrip } from "@/components/domain/WeekStrip";
 import { mondayOfDate, plannedSessions, upcomingSessions, weekPlan } from "@/lib/weekPlan";
@@ -300,8 +301,9 @@ export default function HomePage() {
     const target = planned.length
       ? planned.reduce((sum, p) => sum + Math.min(p.days.length, sessionsPerWeek(p.program) || p.days.length), 0)
       : (profile?.trainingDays ?? []).length;
-    return target ? weekStreak({ today, workouts, target }) : null;
-  }, [planned, profile?.trainingDays, today, workouts]);
+    // Only sessions done count, as for the week's goal and Performance.
+    return target ? weekStreak({ today, workouts: doneSessions(workouts, sets), target }) : null;
+  }, [planned, profile?.trainingDays, today, workouts, sets]);
 
   const plan = useMemo(() => {
     if (planned.length) {
