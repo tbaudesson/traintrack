@@ -125,10 +125,10 @@ export default function ReadinessPage() {
       <PageHeader title={t("title")} />
       <div className="t-health-workspace mx-auto max-w-5xl space-y-5 p-4 pb-24 md:space-y-0 md:p-6">
         {liveScore != null && (
-          <Card>
+          <Card className="t-readiness-score">
             <CardContent className="flex items-center gap-4 py-4">
               <div className="flex flex-col items-center">
-                <span className={cn("text-3xl font-bold", scoreColor(liveScore))}>{liveScore}</span>
+                <span className={cn("t-metric text-4xl font-black md:text-5xl", scoreColor(liveScore))}>{liveScore}</span>
                 <span className="text-xs uppercase tracking-wide text-muted-foreground">{t("score")}</span>
               </div>
               <p className="flex-1 text-sm text-muted-foreground">{rec}</p>
@@ -138,7 +138,7 @@ export default function ReadinessPage() {
 
         {load && <TrainingLoadCard load={load} />}
 
-        <Card>
+        <Card className="t-health-entry">
           <CardContent className="space-y-4 py-4">
             <p className="text-sm font-medium">{t("todayPrompt")}</p>
             <Scale label={t("mood")} value={mood} onChange={setMood} />

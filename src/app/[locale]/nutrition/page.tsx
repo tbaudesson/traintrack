@@ -194,7 +194,7 @@ export default function NutritionPage() {
       />
       <div className="mx-auto max-w-5xl space-y-5 p-4 pb-24 md:p-6">
         {/* Totals */}
-        <Card>
+        <Card className="t-nutrition-summary">
           <CardContent className="py-4">
             <p className="mb-3 text-sm font-semibold text-muted-foreground">{t("today")}</p>
             <div className="flex justify-around">
@@ -207,7 +207,7 @@ export default function NutritionPage() {
         </Card>
 
         {/* Hydration */}
-        <Card>
+        <Card className="t-hydration-card">
           <CardContent className="py-4">
             <div className="mb-2 flex items-center justify-between">
               <p className="flex items-center gap-2 text-sm font-semibold">
