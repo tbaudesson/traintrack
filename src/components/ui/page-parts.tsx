@@ -9,7 +9,7 @@
 import type { ComponentType, ReactNode } from "react";
 
 export function SectionHeading({ children }: { children: ReactNode }) {
-  return <h2 className="text-base font-semibold tracking-tight text-foreground">{children}</h2>;
+  return <h2 className="t-kicker text-foreground">{children}</h2>;
 }
 
 export function EmptyState({

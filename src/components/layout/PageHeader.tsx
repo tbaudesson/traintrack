@@ -17,8 +17,8 @@ export function PageHeader({ title, showBack = false, actions }: PageHeaderProps
   const tc = useTranslations("common");
 
   return (
-    <header className="sticky top-0 z-40 rounded-b-3xl border-b border-border bg-card/70 shadow-[0_6px_16px_-10px_oklch(0.3_0.1_285/0.3)] px-4 py-3 backdrop-blur-sm">
-      <div className="mx-auto flex max-w-lg flex-wrap items-center gap-x-3 gap-y-2">
+    <header className="sticky top-0 z-40 border-b border-border/80 bg-background/88 px-4 py-3 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-3 gap-y-2">
         {showBack && (
           <Button
             variant="ghost"
@@ -30,7 +30,7 @@ export function PageHeader({ title, showBack = false, actions }: PageHeaderProps
             <ArrowLeft className="h-5 w-5" aria-hidden="true" />
           </Button>
         )}
-        <h1 className="max-w-full min-w-0 flex-auto truncate text-lg font-semibold">{title}</h1>
+        <h1 className="t-display max-w-full min-w-0 flex-auto truncate text-xl">{title}</h1>
         <SyncStatus />
         {actions && <div className="ml-auto flex flex-wrap items-center justify-end gap-2">{actions}</div>}
       </div>

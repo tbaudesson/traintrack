@@ -88,20 +88,20 @@ export default function TrainPage() {
     else setChoosing(true);
   }
 
-  const card = "t-surface flex min-w-0 flex-col gap-3 rounded-2xl p-4 ring-1 ring-foreground/5";
-  const label = "text-xs font-semibold tracking-widest text-accent-text uppercase";
+  const card = "t-panel flex min-w-0 flex-col gap-4 rounded-2xl p-5";
+  const label = "t-kicker";
 
   return (
     <>
       <PageHeader title={t("hubTitle")} />
-      <div className="mx-auto max-w-5xl space-y-6 p-4 pb-24">
+      <div className="mx-auto max-w-5xl space-y-8 p-4 pb-24 md:px-6 md:pt-7">
         {/* Three ways to train. */}
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          <section className="t-hero flex min-w-0 flex-col gap-3 rounded-3xl p-5" aria-labelledby="hub-planned">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <section className="t-hero flex min-w-0 flex-col gap-4 rounded-2xl p-5 md:min-h-80 md:p-6" aria-labelledby="hub-planned">
             <p id="hub-planned" className={label}>{t("planned")}</p>
             {session ? (
               <div className="min-w-0">
-                <h2 className="line-clamp-2 text-2xl leading-tight font-bold tracking-tight break-words">{session.day.name}</h2>
+                <h2 className="t-display mt-2 line-clamp-2 text-3xl break-words">{session.day.name}</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {session.program.name} · {dayDetail(session.day)}
                 </p>
@@ -110,7 +110,7 @@ export default function TrainPage() {
               <p className="text-sm text-muted-foreground">{t("plannedNone")}</p>
             )}
             <div className="mt-auto space-y-2">
-              <Button onClick={startPlanned} disabled={starting} className="w-full rounded-full">
+              <Button onClick={startPlanned} disabled={starting} className="w-full">
                 {starting ? (
                   <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                 ) : session ? (
@@ -139,7 +139,7 @@ export default function TrainPage() {
             <p id="hub-free" className={label}>{t("free")}</p>
             <p className="text-sm text-muted-foreground">{t("freeHint")}</p>
             <div className="mt-auto space-y-2">
-              <Button className="w-full rounded-full" onClick={startFree} disabled={starting}>
+              <Button className="w-full" onClick={startFree} disabled={starting}>
                 <Plus className="size-4" aria-hidden="true" />
                 {t("newWorkout")}
               </Button>
@@ -160,7 +160,7 @@ export default function TrainPage() {
             <p id="hub-endurance" className={label}>{t("endurance")}</p>
             <p className="text-sm text-muted-foreground">{t("enduranceHint")}</p>
             <div className="mt-auto space-y-2">
-              <Button variant="outline" className="w-full rounded-full" onClick={() => setSportOpen(true)} disabled={starting}>
+              <Button variant="outline" className="w-full" onClick={() => setSportOpen(true)} disabled={starting}>
                 <Activity className="size-4" aria-hidden="true" />
                 {tc("newSession")}
               </Button>
@@ -184,7 +184,7 @@ export default function TrainPage() {
         {/* The rest, one tap away. */}
         <section className="space-y-2">
           <SectionHeading>{t("also")}</SectionHeading>
-          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <DetailRow href="/programs" icon={ClipboardList} tone="neutral" title={tn("programs")} />
             <DetailRow href="/exercises" icon={Dumbbell} tone="neutral" title={tn("exercises")} />
             <DetailRow href="/intervals" icon={Timer} tone="neutral" title={ti("title")} subtitle={ti("hint")} />
@@ -209,7 +209,7 @@ export default function TrainPage() {
 
         {/* Every day of one's programs, as this page offered before. */}
         {trainable.length > 0 && (
-          <details className="t-surface rounded-2xl px-4 py-1 ring-1 ring-foreground/5">
+          <details className="t-panel rounded-xl px-4 py-1">
             <summary className="flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold">
               <Calendar className="size-4 text-accent-text" aria-hidden="true" />
               {t("allProgramDays")}

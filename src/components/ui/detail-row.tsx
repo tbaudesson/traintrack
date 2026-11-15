@@ -59,8 +59,8 @@ export function DetailRow({
     </>
   );
   const className = cn(
-    "flex min-h-16 w-full items-center gap-3 t-surface rounded-2xl px-4 py-3 text-left text-sm ring-1 ring-foreground/5",
-    interactive && "transition-transform active:scale-[0.99]"
+    "flex min-h-16 w-full items-center gap-3 t-surface rounded-xl px-4 py-3 text-left text-sm",
+    interactive && "transition-[transform,border-color,background-color] hover:border-accent-500/40 active:scale-[0.99] motion-reduce:transition-none"
   );
 
   if (href) return <Link href={href} className={className}>{body}</Link>;

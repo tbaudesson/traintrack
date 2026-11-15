@@ -567,25 +567,25 @@ export default function HomePage() {
   const dayDetail = useDayDetail();
 
   return (
-    <div className="mx-auto max-w-5xl space-y-5 p-4 pb-28">
-      <header className="relative flex items-center gap-3 pt-2">
+    <div className="mx-auto max-w-5xl space-y-6 p-4 pb-28 md:px-6 md:pt-6">
+      <header className="relative flex items-center gap-3 border-b border-border/70 pb-5 pt-1">
         <Image
           src="/images/dumbbell.webp"
           alt=""
           width={128}
           height={99}
           unoptimized
-          className="pointer-events-none absolute -top-8 -right-9 -z-10 opacity-40 dark:opacity-40"
+          className="pointer-events-none absolute -top-8 -right-9 -z-10 opacity-15 grayscale dark:opacity-20"
         />
         <Link
           href="/profile"
           aria-label={tm("profile")}
-          className="t-well flex size-14 shrink-0 items-center justify-center rounded-full bg-linear-to-b from-accent-50 to-accent-200 text-accent-text dark:from-accent-800/50 dark:to-accent-900/40"
+          className="t-panel flex size-12 shrink-0 items-center justify-center rounded-xl text-accent-text"
         >
           <Trophy className="size-6" aria-hidden="true" />
         </Link>
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-2xl font-bold tracking-tight">{t("greeting", { name })}</h1>
+          <h1 className="t-display truncate text-2xl md:text-3xl">{t("greeting", { name })}</h1>
           <p className="truncate text-sm text-muted-foreground">{t("tagline")}</p>
         </div>
         {comments.length > 0 ? (
@@ -602,7 +602,7 @@ export default function HomePage() {
         <Link
           href="/settings"
           aria-label={tm("settings")}
-          className="t-surface flex size-11 items-center justify-center rounded-xl text-foreground"
+          className="t-panel flex size-11 items-center justify-center rounded-xl text-foreground"
         >
           <Settings className="size-5" aria-hidden="true" />
         </Link>
@@ -633,9 +633,9 @@ export default function HomePage() {
       ) : (
         <>
           {/* Three zones: the next thing to do and the week, then the signal of the day. */}
-          <div className="space-y-5 md:grid md:grid-cols-3 md:items-start md:gap-5 md:space-y-0">
+          <div className="space-y-5 md:grid md:grid-cols-3 md:items-start md:gap-6 md:space-y-0">
             <div className="space-y-5 md:col-span-2">
-              <section className="t-hero relative overflow-hidden rounded-3xl p-5">
+              <section className="t-hero relative overflow-hidden rounded-2xl p-5 md:p-7">
                 {picture.scene ? (
                   <>
                     {/* A whole illustration: behind the card, faded on the side of the text. */}
@@ -660,12 +660,12 @@ export default function HomePage() {
                 )}
                 <div className="relative flex items-start justify-between gap-3">
                   <div className="max-w-[60%] min-w-0">
-                    <p className="text-xs font-semibold tracking-widest text-accent-text uppercase">
+                    <p className="t-kicker">
                       {session && session.date !== today
                         ? t("nextSessionOn", { date: new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", timeZone: "UTC" }).format(new Date(`${session.date}T00:00:00Z`)) })
                         : t("todaySession")}
                     </p>
-                    <h2 className="mt-1 line-clamp-2 text-3xl leading-tight font-bold tracking-tight break-words">{session?.day.name ?? t("freeSession")}</h2>
+                    <h2 className="t-display mt-2 line-clamp-2 text-4xl break-words md:text-5xl">{session?.day.name ?? t("freeSession")}</h2>
                     <p className="mt-1 text-sm text-muted-foreground">
                       {session
                         ? `${session.program.name} · ${dayDetail(session.day)}`
@@ -706,7 +706,7 @@ export default function HomePage() {
                   </div>
                 )}
                 <div className="relative mt-4 flex items-center justify-between gap-2">
-                  <Button onClick={start} disabled={starting} className="rounded-full px-5">
+                  <Button onClick={start} disabled={starting} className="px-5">
                     {starting ? (
                       <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                     ) : (
@@ -719,7 +719,7 @@ export default function HomePage() {
                   {session?.program.id !== undefined && (
                     <Link
                       href={`/programs/${session.program.id}`}
-                      className="t-surface flex h-11 items-center gap-1.5 rounded-full px-3 text-sm font-medium whitespace-nowrap"
+                      className="flex h-11 items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3 text-sm font-semibold whitespace-nowrap text-white hover:bg-white/15"
                     >
                       <ClipboardList className="size-4" aria-hidden="true" />
                       {t("details")}
@@ -772,7 +772,7 @@ export default function HomePage() {
                 onPickDay={setMoveDate}
               />
               {goal && goal.target > 0 && (
-                <section className="t-surface flex items-center gap-3 rounded-2xl p-4 ring-1 ring-foreground/5">
+                <section className="t-panel flex items-center gap-3 rounded-xl p-4">
                   <Target className="size-8 shrink-0 text-accent-text" aria-hidden="true" />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium">{t("weeklyGoal")}</p>
@@ -798,7 +798,7 @@ export default function HomePage() {
 
               {/* The week in one line; the details in Performance. */}
               <section>
-                <Link href="/progress" className="t-surface flex min-h-11 items-center gap-3 rounded-2xl px-4 py-3 ring-1 ring-foreground/5">
+                <Link href="/progress" className="t-panel flex min-h-11 items-center gap-3 rounded-xl px-4 py-3 transition-colors hover:border-accent-500/40">
                   <TrendingUp className="size-5 shrink-0 text-accent-text" aria-hidden="true" />
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-semibold">{t("overview")}</span>
@@ -821,7 +821,7 @@ export default function HomePage() {
               {/* One thing at a time: the most pressing note, the others folded under "To look at". */}
               {notes.length > 0 && notes[0].node}
               {notes.length > 1 && (
-                <details className="t-surface rounded-2xl px-4 py-1 ring-1 ring-foreground/5">
+                <details className="t-panel rounded-xl px-4 py-1">
                   <summary className="flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold">
                     <ListChecks className="size-4 text-accent-text" aria-hidden="true" />
                     {t("toLookAt", { count: notes.length - 1 })}

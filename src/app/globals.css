@@ -32,6 +32,10 @@
   /* Themeable brand accent scale (text-accent-500, bg-accent-600, …) */
   --color-accent-text: var(--accent-text);
   --color-success-text: var(--success-text);
+  --color-performance: var(--performance);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
   --color-accent-50: var(--accent-50);
   --color-accent-100: var(--accent-100);
   --color-accent-200: var(--accent-200);
@@ -65,30 +69,30 @@
 }
 
 :root {
-  --background: oklch(0.962 0.022 298);
-  --foreground: oklch(0.2 0.06 285);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --background: #eef0f4;
+  --foreground: #11141b;
+  --card: #f8f9fb;
+  --card-foreground: #11141b;
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
   --primary: var(--accent-700);
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.94 0.018 295);
-  --muted-foreground: oklch(0.5 0.015 265);
+  --secondary: #e5e8ee;
+  --secondary-foreground: #252a35;
+  --muted: #e3e6ec;
+  --muted-foreground: #626a79;
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.89 0.025 295);
-  --input: oklch(0.84 0.03 295);
+  --border: #cfd4dd;
+  --input: #b9c0cc;
   --ring: var(--accent-500);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --radius: 0.75rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -100,7 +104,12 @@
 
   /* Accent used as text: readable on the page background for every accent. */
   --accent-text: var(--accent-700);
-  --success-text: oklch(0.45 0.13 155);
+  --success-text: #476f00;
+  --performance: #7da900;
+  --surface-1: #f8f9fb;
+  --surface-2: #eef0f4;
+  --surface-3: #e4e7ed;
+  --steel: #9298a6;
 
   /* Default accent: Violet */
   --accent-50: #f5f3ff;
@@ -116,20 +125,20 @@
   --accent-950: #2e1065;
 
   /* Relief: a lit top edge, a contact shadow and a soft tinted ambient one. */
-  --card-tint: oklch(0.975 0.008 290);
-  --lift: inset 0 1px 0 oklch(1 0 0), 0 1px 2px oklch(0.3 0.08 285 / 0.1), 0 8px 20px -6px oklch(0.35 0.1 285 / 0.16);
-  --lift-lg: inset 0 1px 0 oklch(1 0 0), 0 2px 4px oklch(0.3 0.08 285 / 0.1), 0 20px 40px -12px oklch(0.35 0.12 285 / 0.28);
+  --card-tint: #eef0f4;
+  --lift: inset 0 1px 0 rgb(255 255 255 / 0.85), 0 1px 2px rgb(11 13 18 / 0.08), 0 12px 28px -20px rgb(11 13 18 / 0.32);
+  --lift-lg: inset 0 1px 0 rgb(255 255 255 / 0.9), 0 2px 4px rgb(11 13 18 / 0.08), 0 24px 52px -28px rgb(11 13 18 / 0.42);
   --well: inset 0 1px 0 oklch(1 0 0 / 0.9), inset 0 -1px 2px oklch(0.4 0.1 285 / 0.1), 0 1px 3px oklch(0.3 0.08 285 / 0.14);
   --sunken: inset 0 1px 3px oklch(0.3 0.06 285 / 0.13), inset 0 0 0 1px oklch(0.3 0.06 285 / 0.06);
 
   /* Glass panels, and what lies behind them. */
-  --glass-1: oklch(1 0 0 / 0.92);
-  --glass-2: oklch(0.985 0.012 295 / 0.82);
+  --glass-1: rgb(248 249 251 / 0.96);
+  --glass-2: rgb(238 240 244 / 0.94);
   --glass-hi: oklch(1 0 0);
-  --glass-edge: oklch(0.55 0.1 295 / 0.1);
-  --glass-drop: 0 2px 4px oklch(0.4 0.12 295 / 0.08), 0 14px 30px -10px oklch(0.4 0.14 295 / 0.24);
-  --wave-1: oklch(0.86 0.07 298 / 0.45);
-  --wave-2: oklch(0.8 0.1 298 / 0.4);
+  --glass-edge: rgb(17 20 27 / 0.1);
+  --glass-drop: 0 12px 34px -24px rgb(11 13 18 / 0.45);
+  --wave-1: rgb(124 60 255 / 0.09);
+  --wave-2: rgb(124 60 255 / 0.05);
 
   /* The wheel menu */
   --arc-rim: color-mix(in oklab, var(--accent-500) 60%, transparent);
@@ -156,6 +165,10 @@
 }
 
 .dark {
+  --surface-1: #151820;
+  --surface-2: #1b1f29;
+  --surface-3: #242936;
+  --performance: #b7ff2a;
   --glass-1: oklch(0.33 0.05 282 / 0.62);
   --glass-2: oklch(0.23 0.045 280 / 0.62);
   --glass-hi: oklch(1 0 0 / 0.14);
@@ -183,23 +196,23 @@
   --nav-foreground: var(--foreground);
   --nav-accent: var(--accent-300);
   --nav-glow: color-mix(in oklab, var(--accent-400) 38%, transparent);
-  --background: oklch(0.165 0.045 278);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.235 0.04 280);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.235 0.04 280);
-  --popover-foreground: oklch(0.985 0 0);
+  --background: #0b0d12;
+  --foreground: #f5f7fa;
+  --card: #151820;
+  --card-foreground: #f5f7fa;
+  --popover: #1b1f29;
+  --popover-foreground: #f5f7fa;
   --primary: var(--accent-400);
   --primary-foreground: var(--accent-950);
-  --secondary: oklch(0.27 0.04 280);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.27 0.04 280);
-  --muted-foreground: oklch(0.78 0.025 285);
+  --secondary: #202530;
+  --secondary-foreground: #f5f7fa;
+  --muted: #202530;
+  --muted-foreground: #9298a6;
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
+  --border: #303644;
+  --input: #414858;
   --ring: var(--accent-400);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
@@ -222,6 +235,11 @@
   }
   body {
     @apply bg-background text-foreground;
+    min-height: 100dvh;
+    background-image:
+      radial-gradient(70% 45% at 88% -5%, color-mix(in oklab, var(--accent-600) 14%, transparent), transparent 70%),
+      linear-gradient(to bottom, color-mix(in oklab, var(--surface-2) 35%, transparent), transparent 24rem);
+    font-feature-settings: "ss01", "cv02", "cv11";
   }
   html {
     @apply font-sans;
@@ -232,8 +250,9 @@
   /* A glass panel: every card, row and tile. No blur here: long lists of
      blurred panels are what makes a phone stutter. */
   .t-surface {
-    background-image: linear-gradient(155deg, var(--glass-1), var(--glass-2));
-    box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--glass-edge), var(--glass-drop);
+    background: linear-gradient(145deg, color-mix(in oklab, var(--surface-1) 96%, white), var(--surface-1));
+    border: 1px solid var(--border);
+    box-shadow: var(--lift);
   }
   /* A coloured glow in the corner of a tile; --tile sets the colour. */
   .t-tile {
@@ -250,11 +269,13 @@
   .t-well { box-shadow: var(--well); }
   /* The session card: the one place worth a real blur. */
   .t-hero {
+    --muted-foreground: #b7bdc8;
+    --accent-text: #c5a8ff;
     background-image:
-      radial-gradient(80% 90% at 75% 45%, color-mix(in oklab, var(--accent-500) 22%, transparent), transparent),
-      linear-gradient(155deg, var(--glass-1), var(--glass-2));
-    box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--glass-edge), var(--glass-drop);
-    backdrop-filter: blur(14px) saturate(140%);
+      linear-gradient(120deg, color-mix(in oklab, var(--accent-950) 94%, #0b0d12), color-mix(in oklab, var(--accent-800) 80%, #151820));
+    color: #f5f7fa;
+    border: 1px solid color-mix(in oklab, var(--accent-400) 40%, transparent);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), 0 24px 60px -32px color-mix(in oklab, var(--accent-700) 65%, transparent);
   }
   /* Hides the page behind the wheel and fades out above it. */
   .t-arc-scrim {
@@ -269,6 +290,26 @@
   .t-arc-hub { background: var(--arc-hub-bg); color: var(--arc-hub-fg); box-shadow: var(--arc-hub-ring); }
   .safe-area-pb {
     padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .t-kicker {
+    color: var(--accent-text);
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .t-display {
+    font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 850;
+    letter-spacing: -0.045em;
+    line-height: 0.96;
+  }
+  .t-metric { font-variant-numeric: tabular-nums slashed-zero; }
+  .t-performance { color: var(--performance); }
+  .t-panel {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    box-shadow: var(--lift);
   }
 }
 
