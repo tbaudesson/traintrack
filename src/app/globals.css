@@ -629,3 +629,25 @@ html.style-contrast h1,
 html.style-contrast h2 {
   font-weight: 800;
 }
+
+/* Inside the dark hero card, a surface is a translucent pane of the card,
+   not the page's light glass: its text keeps the card's light colour. */
+html .t-hero .t-surface {
+  background-image: none;
+  background-color: rgb(255 255 255 / 0.08);
+  color: inherit;
+  backdrop-filter: none;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.14);
+}
+/* High contrast: the hero card stays a solid dark card in light mode too,
+   its light text on black rather than on the white page glass. */
+html.style-contrast .t-hero {
+  background-color: oklch(0.12 0 0);
+  color: oklch(1 0 0);
+  --muted-foreground: oklch(0.88 0 0);
+  --accent-text: var(--accent-200);
+}
+html.style-contrast .t-hero .t-surface {
+  background-color: oklch(0.2 0 0);
+  box-shadow: inset 0 0 0 1.5px oklch(1 0 0 / 0.6);
+}
