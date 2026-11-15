@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Check, ChevronLeft, ChevronRight, Minus, Plus, Timer, Trophy, X } from "lucide-react";
 import { guidedCursor } from "@/lib/guided";
@@ -58,8 +58,48 @@ export function GuidedSession({
   const current = index >= 0 ? steps[index] : null;
   const next = steps.slice(index + 1).find((s) => !s.completed);
 
+  // A modal for the keyboard too: focus comes in on opening, Tab stays inside,
+  // Escape leaves guided mode, and focus goes back to what opened it.
+  const shellRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef(onClose);
+  useEffect(() => { closeRef.current = onClose; });
+  useEffect(() => {
+    const shell = shellRef.current;
+    if (!shell) return;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    shell.focus({ preventScroll: true });
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeRef.current();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const items = [...shell.querySelectorAll<HTMLElement>("button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex='-1'])")].filter((el) => el.getClientRects().length > 0);
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement;
+      if (active === shell || !shell.contains(active)) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+      } else if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      if (opener?.isConnected) opener.focus({ preventScroll: true });
+    };
+  }, []);
+
   return (
-    <div role="dialog" aria-modal="true" aria-label={t("title")} className="t-guided-shell fixed inset-0 z-[60] flex flex-col bg-background">
+    <div ref={shellRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={t("title")} className="t-guided-shell fixed inset-0 z-[60] flex flex-col bg-background outline-none">
       <div className="t-guided-header flex items-center gap-2 border-b border-border px-4 py-3">
         <p aria-live="polite" className="flex-1 text-sm font-medium text-muted-foreground tabular-nums">
           {t("progress", { done: completed.size, total: steps.length })}
