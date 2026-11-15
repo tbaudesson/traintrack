@@ -383,14 +383,14 @@ export default function OnboardingPage() {
 
             <Card className="border-accent-200 dark:border-accent-900">
               <CardContent className="py-4">
-                <button onClick={() => setConsent((c) => !c)} className="flex w-full items-start gap-3 text-left">
+                <button type="button" role="checkbox" aria-checked={consent} onClick={() => setConsent((c) => !c)} className="flex w-full items-start gap-3 text-left">
                   <span
                     className={cn(
                       "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border",
                       consent ? "border-accent-600 bg-accent-600 text-white" : "border-muted-foreground"
                     )}
                   >
-                    {consent && <Check className="h-3.5 w-3.5" />}
+                    {consent && <Check className="h-3.5 w-3.5" aria-hidden="true" />}
                   </span>
                   <span>
                     <span className="block text-sm font-medium">{t("consentTitle")}</span>
