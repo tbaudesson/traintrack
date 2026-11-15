@@ -586,15 +586,15 @@ export default function HomePage() {
         </Link>
         <div className="min-w-0 flex-1">
           <p className="t-wordmark" aria-hidden="true"><span>Train</span>Track</p>
-          <h1 className="truncate text-sm font-bold text-foreground/90">{t("greeting", { name })}</h1>
+          <h1 className="truncate text-sm font-bold text-[#f7f7fb]/90">{t("greeting", { name })}</h1>
         </div>
         {comments.length > 0 ? (
-          <Link href={sessionHref(comments[0].workoutId)} aria-label={t("newComments", { count: comments.length })} className="relative flex size-11 items-center justify-center rounded-lg text-foreground">
+          <Link href={sessionHref(comments[0].workoutId)} aria-label={t("newComments", { count: comments.length })} className="relative flex size-11 items-center justify-center rounded-lg text-[#f7f7fb]">
             <Bell className="size-6" aria-hidden="true" />
             <span className="absolute right-2 top-2 size-2.5 rounded-full bg-accent-600 ring-2 ring-background" />
           </Link>
         ) : hasTeamInvite && (
-          <Link href="/teams" aria-label={t("teamInvite")} className="relative flex size-11 items-center justify-center rounded-lg text-foreground">
+          <Link href="/teams" aria-label={t("teamInvite")} className="relative flex size-11 items-center justify-center rounded-lg text-[#f7f7fb]">
             <Bell className="size-6" aria-hidden="true" />
             <span className="absolute right-2 top-2 size-2.5 rounded-full bg-accent-600 ring-2 ring-background" />
           </Link>
