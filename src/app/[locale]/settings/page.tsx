@@ -715,7 +715,7 @@ export default function SettingsPage() {
           <Section icon={Bell} title={tn("section")}>
             <p className="mb-3 text-xs text-muted-foreground">{tn("desc")}</p>
             {!isPushConfigured() ? (
-              <p className="rounded-md bg-muted p-2 text-xs text-muted-foreground">{tn("notConfigured")}</p>
+              <p className="rounded-md bg-muted p-2 text-xs text-foreground">{tn("notConfigured")}</p>
             ) : (
               <>
                 <Button
