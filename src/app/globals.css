@@ -797,3 +797,10 @@ html.style-contrast .t-hero .t-surface {
   .t-athlete-row, .t-badge-card, .t-challenge-card { transition: none; }
   .t-athlete-row:hover, .t-badge-card:hover, .t-challenge-card:hover { transform: none; }
 }
+
+/* Style rules restyle the buttons' shadow, which also carried the focus ring:
+   an outline keeps keyboard focus visible on every button, in every style. */
+[data-slot="button"]:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
