@@ -2045,7 +2045,7 @@
     "text_distanceDown": "{km} km in 4 Wochen, weniger als in den 4 davor.",
     "title_stagnation": "Eine Übung stagniert seit {weeks} Wochen",
     "text_stagnation": "Trotz regelmäßiger Einheiten kommt das geschätzte 1RM nicht über seinen Bestwert hinaus.",
-    "title_regularity": "{avg} Einheit(en) pro Woche bei {target} geplanten",
+    "title_regularity": "{count, plural, one {# Einheit} other {# Einheiten}} pro Woche bei {target} geplanten",
     "text_regularity": "Regelmäßigkeit zählt beim Fortschritt mehr als Intensität.",
     "title_steady": "Regelmäßig dabeigeblieben",
     "text_steady": "{sessions} Einheiten in 4 Wochen, ohne Warnsignal.",

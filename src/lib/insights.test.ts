@@ -100,7 +100,7 @@ describe("insights", () => {
     const b = empty();
     for (const ago of [1, 8, 15, 22]) lift(b, ago, 2, [[0, 10]]);
     const regular = insights({ today, ...b, perWeek: 4 }).insights.find((i) => i.kind === "regularity");
-    expect(regular?.values).toEqual({ avg: 1, target: 4 });
+    expect(regular?.values).toEqual({ count: 1, target: 4 });
     expect(insights({ today, ...b, perWeek: 1 }).insights.some((i) => i.kind === "regularity")).toBe(false);
   });
 

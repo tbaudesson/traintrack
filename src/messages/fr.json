@@ -2045,7 +2045,7 @@
     "text_distanceDown": "{km} km en 4 semaines, moins que sur les 4 précédentes.",
     "title_stagnation": "Un exercice stagne depuis {weeks} semaines",
     "text_stagnation": "Malgré des efforts réguliers, le 1RM estimé ne dépasse plus son meilleur niveau.",
-    "title_regularity": "{avg} séance(s) par semaine pour {target} prévues",
+    "title_regularity": "{count, plural, one {# séance} other {# séances}} par semaine pour {target} prévues",
     "text_regularity": "La régularité compte plus que l'intensité pour progresser.",
     "title_steady": "Régularité tenue",
     "text_steady": "{sessions} séances en 4 semaines, sans signal d'alerte.",

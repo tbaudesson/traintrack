@@ -238,7 +238,7 @@ export function insights(input: {
       rank: 50,
       kind: "regularity",
       tone: "info",
-      values: { avg, target: perWeek },
+      values: { count: avg, target: perWeek },
       evidence: [
         { key: "perWeek", values: { avg, target: perWeek } },
         { key: "previousPerWeek", values: { avg: round1(before.length / 4) } },
