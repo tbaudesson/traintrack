@@ -364,7 +364,8 @@
     "exerciseShort": "Übung",
     "lastTimeSet": "Letztes Mal: {value}",
     "reuse": "Übernehmen",
-    "reuseLabel": "{value} für Satz {n} übernehmen"
+    "reuseLabel": "{value} für Satz {n} übernehmen",
+    "nextUp": "Danach: {exercise} · Satz {n}"
   },
   "progress": {
     "title": "Fortschritt",

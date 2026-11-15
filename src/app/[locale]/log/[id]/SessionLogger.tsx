@@ -1316,21 +1316,32 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
       )}
 
       {/* Rest timer */}
-      {rest !== null && (
-        <div role="timer" aria-label={t("restLabel")} className={cn("fixed left-1/2 z-[55] flex -translate-x-1/2 items-center gap-2 rounded-full bg-primary py-1 pr-1 pl-4 text-primary-foreground shadow-lg", barOffset)}>
-          <Timer className="h-4 w-4 shrink-0" aria-hidden="true" />
-          <span className="text-sm font-medium">{t("restLabel")}</span>
-          <span className="font-mono text-lg font-semibold tabular-nums">
-            {Math.floor(rest / 60)}:{String(rest % 60).padStart(2, "0")}
-          </span>
-          <button onClick={() => extendRest(30)} className="flex h-10 items-center rounded-full px-2 text-sm font-semibold">
-            +30 s
-          </button>
-          <button onClick={stopRest} aria-label={tc("close")} className="flex size-10 items-center justify-center opacity-80 hover:opacity-100">
-            <X className="h-4 w-4" aria-hidden="true" />
-          </button>
-        </div>
-      )}
+      {rest !== null && (() => {
+        // During the rest, what comes next: the set to do now, by its exercise and number.
+        const upNext = sets?.find((x) => x.id === currentSetId);
+        return (
+          <div role="timer" aria-label={t("restLabel")} className={cn("fixed left-1/2 z-[55] w-max max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-3xl bg-primary py-1 pr-1 pl-4 text-primary-foreground shadow-lg", barOffset)}>
+            <div className="flex items-center gap-2">
+              <Timer className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span className="text-sm font-medium">{t("restLabel")}</span>
+              <span className="font-mono text-lg font-semibold tabular-nums">
+                {Math.floor(rest / 60)}:{String(rest % 60).padStart(2, "0")}
+              </span>
+              <button onClick={() => extendRest(30)} className="flex h-10 items-center rounded-full px-2 text-sm font-semibold">
+                +30 s
+              </button>
+              <button onClick={stopRest} aria-label={tc("close")} className="flex size-10 items-center justify-center opacity-80 hover:opacity-100">
+                <X className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
+            {upNext && (
+              <p className="truncate pr-3 pb-1.5 text-xs opacity-90">
+                {t("nextUp", { exercise: xl(exMap.get(upNext.exerciseId)?.name), n: upNext.setNumber })}
+              </p>
+            )}
+          </div>
+        );
+      })()}
 
       {guided && groups.length > 0 && (
         <GuidedSession

@@ -619,6 +619,9 @@ await test("a session keeps what is typed and the rest running across a reload",
   expect((await current.locator("span:not(.sr-only)").first().innerText()).trim() === "2", "the current set did not move to set 2");
   const rest = page.getByRole("timer", { name: "Repos" });
   await rest.waitFor({ timeout: 5000 });
+  // The rest says what comes next, without opening anything.
+  await rest.getByText("Ensuite : Pompes · série 2").waitFor({ timeout: 5000 });
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: join(ARTIFACTS, "rest-bar.png") });
   await page.waitForTimeout(1500);
   await page.reload();
   await rest.waitFor({ timeout: 10000 });

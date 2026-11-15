@@ -364,7 +364,8 @@
     "exerciseShort": "Exercice",
     "lastTimeSet": "Dernière fois : {value}",
     "reuse": "Reprendre",
-    "reuseLabel": "Reprendre {value} pour la série {n}"
+    "reuseLabel": "Reprendre {value} pour la série {n}",
+    "nextUp": "Ensuite : {exercise} · série {n}"
   },
   "progress": {
     "title": "Progrès",
