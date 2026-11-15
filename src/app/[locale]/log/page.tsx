@@ -102,7 +102,7 @@ export default function TrainPage() {
             <p id="hub-planned" className={label}>{t("planned")}</p>
             {session ? (
               <div className="min-w-0">
-                <h2 className="t-display mt-2 line-clamp-2 text-3xl break-words">{session.day.name}</h2>
+                <h2 className="t-display mt-2 line-clamp-3 text-3xl break-words">{session.day.name}</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {session.program.name} · {dayDetail(session.day)}
                 </p>

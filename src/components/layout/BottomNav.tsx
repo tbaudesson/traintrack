@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Menu, X } from "lucide-react";
 import { usePathname, useRouter } from "@/i18n/navigation";
@@ -27,6 +27,24 @@ export function BottomNav() {
   const hidden = useGlobalNavigationHidden();
   if (hidden && open) setOpen(false);
 
+  // Opened, the focus goes into the wheel (the panel comes before the button in
+  // the page, so Tab alone would not reach it); Escape closes it and gives the
+  // focus back to the button.
+  const panelRef = useRef<HTMLElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const panel = panelRef.current;
+    (panel?.querySelector<HTMLElement>("nav") ?? panel?.querySelector<HTMLElement>("input, button"))?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setOpen(false);
+      toggleRef.current?.focus();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
   useEffect(() => {
     const sync = () => setPreferenceVersion((value) => value + 1);
     window.addEventListener("navitemschange", sync);
@@ -42,10 +60,10 @@ export function BottomNav() {
   if (hidden) return null;
   return <>
     {open && <button type="button" aria-label={common("close")} className="t-arc-scrim fixed inset-0 z-40" onClick={() => setOpen(false)} />}
-    {open && <aside onClick={(event) => { if ((event.target as HTMLElement).closest("a")) setOpen(false); }} className="t-nav-panel fixed inset-x-3 bottom-24 z-50 mx-auto flex max-w-md flex-col items-center gap-3 rounded-[2rem] border bg-[var(--nav-panel)] p-4 shadow-2xl backdrop-blur-xl" aria-label={common("mainNav")}>
+    {open && <aside ref={panelRef} onClick={(event) => { if ((event.target as HTMLElement).closest("a")) setOpen(false); }} className="t-nav-panel fixed inset-x-3 bottom-24 z-50 mx-auto flex max-w-md flex-col items-center gap-3 rounded-[2rem] border bg-[var(--nav-panel)] p-4 shadow-2xl backdrop-blur-xl" aria-label={common("mainNav")}>
       <div className="flex w-full items-center justify-between"><NavigationBreadcrumb section={selected ? section : undefined} onRoot={() => setSelected(null)} /><button type="button" onClick={() => setListMode((value) => !value)} className="rounded-full p-2 hover:bg-muted" aria-label={t("toggleList")} aria-pressed={listMode}><Menu className="size-5" /></button></div>
       {listMode ? <NavigationListFallback sections={sections} /> : selected && section ? <SectionNavigationWheel section={section} pathname={pathname} onBack={() => setSelected(null)} /> : <GlobalNavigationWheel sections={sections} onSelect={setSelected} onHome={() => { setOpen(false); router.push("/"); }} />}
     </aside>}
-    <div className="safe-area-pb fixed inset-x-0 bottom-3 z-50 flex justify-center pointer-events-none"><button type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-label={open ? common("close") : common("openNav")} className="t-arc-hub pointer-events-auto flex size-16 items-center justify-center rounded-full shadow-xl outline-none focus-visible:ring-2 focus-visible:ring-ring">{open ? <X className="size-7" /> : <Menu className="size-7" />}</button></div>
+    <div className="safe-area-pb fixed inset-x-0 bottom-3 z-50 flex justify-center pointer-events-none"><button ref={toggleRef} type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-label={open ? common("close") : common("openNav")} className="t-arc-hub pointer-events-auto flex size-16 items-center justify-center rounded-full shadow-xl outline-none focus-visible:ring-2 focus-visible:ring-ring">{open ? <X className="size-7" /> : <Menu className="size-7" />}</button></div>
   </>;
 }

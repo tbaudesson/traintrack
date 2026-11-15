@@ -586,15 +586,15 @@ export default function HomePage() {
         </Link>
         <div className="min-w-0 flex-1">
           <p className="t-wordmark" aria-hidden="true"><span>Train</span>Track</p>
-          <h1 className="truncate text-sm font-bold text-foreground/90">{t("greeting", { name })}</h1>
+          <h1 className="truncate text-sm font-bold text-[#f7f7fb]/90">{t("greeting", { name })}</h1>
         </div>
         {comments.length > 0 ? (
-          <Link href={sessionHref(comments[0].workoutId)} aria-label={t("newComments", { count: comments.length })} className="relative flex size-11 items-center justify-center rounded-lg text-foreground">
+          <Link href={sessionHref(comments[0].workoutId)} aria-label={t("newComments", { count: comments.length })} className="relative flex size-11 items-center justify-center rounded-lg text-[#f7f7fb]">
             <Bell className="size-6" aria-hidden="true" />
             <span className="absolute right-2 top-2 size-2.5 rounded-full bg-accent-600 ring-2 ring-background" />
           </Link>
         ) : hasTeamInvite && (
-          <Link href="/teams" aria-label={t("teamInvite")} className="relative flex size-11 items-center justify-center rounded-lg text-foreground">
+          <Link href="/teams" aria-label={t("teamInvite")} className="relative flex size-11 items-center justify-center rounded-lg text-[#f7f7fb]">
             <Bell className="size-6" aria-hidden="true" />
             <span className="absolute right-2 top-2 size-2.5 rounded-full bg-accent-600 ring-2 ring-background" />
           </Link>
@@ -665,7 +665,7 @@ export default function HomePage() {
                         ? t("nextSessionOn", { date: new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", timeZone: "UTC" }).format(new Date(`${session.date}T00:00:00Z`)) })
                         : t("todaySession")}
                     </p>
-                    <h2 className="t-display mt-2 line-clamp-2 text-4xl break-words md:text-5xl">{session?.day.name ?? t("freeSession")}</h2>
+                    <h2 className="t-display mt-2 line-clamp-3 text-3xl break-words sm:text-4xl md:text-5xl">{session?.day.name ?? t("freeSession")}</h2>
                     <p className="mt-1 text-sm text-muted-foreground">
                       {session
                         ? `${session.program.name} · ${dayDetail(session.day)}`

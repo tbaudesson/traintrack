@@ -136,9 +136,9 @@ function UsersTab() {
   if (users.length === 0) return <p className="py-6 text-center text-sm text-muted-foreground">{t("noUsers")}</p>;
 
   const statusColor: Record<string, string> = {
-    pending: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-    active: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
-    deactivated: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+    pending: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300",
+    active: "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300",
+    deactivated: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300",
   };
 
   return (
@@ -264,9 +264,9 @@ function InvitationsTab() {
   }
 
   const statusColor: Record<string, string> = {
-    pending: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-    accepted: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
-    revoked: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+    pending: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300",
+    accepted: "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300",
+    revoked: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300",
   };
 
   return (

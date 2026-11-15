@@ -306,6 +306,10 @@ await test("two programs planned on their own days show together in the week and
   await page.goto(`${BASE}/fr`);
   const hero = page.locator("section", { hasText: "Changer de séance ou de programme" });
   await hero.getByText(/Séance du jour|Prochaine séance · /).first().waitFor({ timeout: 10000 });
+  // Both plans loaded first: the choices of the day are only counted once the week shows them.
+  const planned = page.locator("section", { hasText: "prochaines semaines à mon agenda" });
+  await planned.getByText("· Full Body — Débutant").first().waitFor({ timeout: 10000 });
+  await planned.getByText("· program fr").first().waitFor({ timeout: 10000 });
   const choices = hero.getByRole("group", { name: "Séances prévues ce jour-là" }).getByRole("button");
   if ((await choices.count()) > 1) {
     const second = choices.nth(1);
@@ -953,6 +957,26 @@ await test("the menu wheel is gone during today's session, and stays on a past o
   // Leaving the session brings it back.
   await page.goto(`${BASE}/fr`);
   await menu.waitFor({ timeout: 10000 });
+});
+
+await test("the menu wheel works from the keyboard: in, turned, opened, and closed with Escape", async () => {
+  await page.goto(`${BASE}/fr`);
+  const toggle = page.getByRole("button", { name: "Ouvrir le menu" });
+  await toggle.focus();
+  await page.keyboard.press("Enter");
+  await page.locator(WHEEL).waitFor({ timeout: 5000 });
+  // The focus goes into the wheel, not back to the top of the page.
+  expect(await page.evaluate(() => !!document.activeElement?.closest("aside")), "the focus is not in the wheel once opened");
+  const before = await wheel.rotation();
+  await page.keyboard.press("ArrowRight");
+  await page.waitForTimeout(300);
+  expect((await wheel.rotation()) !== before, "the arrows do not turn the wheel");
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Enter");
+  await page.locator('aside nav:not([aria-label="Navigation principale"])').waitFor({ timeout: 5000 });
+  await page.keyboard.press("Escape");
+  await page.locator("aside").waitFor({ state: "detached", timeout: 5000 });
+  expect(await page.evaluate(() => document.activeElement?.getAttribute("aria-label") === "Ouvrir le menu"), "the focus is not back on the menu button");
 });
 
 await test("no page threw an error", async () => {
