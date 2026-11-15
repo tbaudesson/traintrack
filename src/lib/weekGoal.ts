@@ -2,7 +2,7 @@ import { findWorkoutProgramDay } from "@/lib/startWorkout";
 import { isCardioDone, weeklyGoal } from "@/lib/cardio";
 import type { Program, ProgramDay, Workout, WorkoutSet } from "@/db";
 
-type W = Pick<Workout, "id" | "date" | "title" | "programId" | "programDayIndex" | "kind" | "distanceM" | "durationSec">;
+type W = Pick<Workout, "id" | "date" | "title" | "programId" | "programDayIndex" | "kind" | "distanceM" | "durationSec" | "durationMin">;
 type S = Pick<WorkoutSet, "workoutId" | "completed" | "isWarmup">;
 
 export interface WeekGoal {
@@ -14,6 +14,17 @@ export interface WeekGoal {
   beyond: number;
   /** Other activities done this week: other programs, free sessions, outings. */
   others: number;
+}
+
+/**
+ * The sessions of a period with something done: a set, a distance or a time
+ * (a timed session, an outing). A session opened then left is not one.
+ */
+export function doneBetween<T extends W>(input: { from: string; to: string; workouts: T[]; sets: S[] }): T[] {
+  const withSets = new Set(input.sets.filter((s) => s.completed && !s.isWarmup).map((s) => s.workoutId));
+  return input.workouts.filter(
+    (w) => w.date >= input.from && w.date <= input.to && (withSets.has(w.id!) || isCardioDone(w) || (w.durationMin ?? 0) > 0 || (w.durationSec ?? 0) > 0)
+  );
 }
 
 /**
@@ -32,8 +43,7 @@ export function weekGoal(input: {
 }): WeekGoal {
   const { program, monday, today } = input;
   const target = weeklyGoal(program, input.day);
-  const withSets = new Set(input.sets.filter((s) => s.completed && !s.isWarmup).map((s) => s.workoutId));
-  const week = input.workouts.filter((w) => w.date >= monday && w.date <= today && (withSets.has(w.id!) || isCardioDone(w)));
+  const week = doneBetween({ from: monday, to: today, workouts: input.workouts, sets: input.sets });
   const done = week.filter((w) => findWorkoutProgramDay([program], w)).length;
   return { target, done, beyond: Math.max(0, done - target), others: week.length - done };
 }

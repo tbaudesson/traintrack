@@ -465,12 +465,15 @@ await test("running paces come from a race time, and an interval session plays a
 });
 
 await test("the home screen follows the sport practised, and offers it when another is chosen", async () => {
-  // Mostly runs lately: kilometres first, and the guided intervals among the sessions.
+  // Mostly runs lately: the guided intervals among the sessions.
   await page.goto(`${BASE}/fr`);
   const overview = page.locator("section", { hasText: "Vue d’ensemble" }).or(page.locator("section", { hasText: "Vue d'ensemble" }));
-  await overview.getByText("Distance").first().waitFor({ timeout: 10000 }).catch(async () => {
-    throw new Error(`no distance in the overview: ${(await overview.first().innerText().catch(() => "?")).replace(/\n/g, " | ")}`);
+  // The week in one line: kilos of loaded sets, or the activities done; never "0 kg" or "-100 %".
+  const line = /Volume [\d\s\u202f]+ kg cette semaine|\d+ activités? cette semaine|Aucune activité cette semaine/;
+  await overview.getByText(line).first().waitFor({ timeout: 10000 }).catch(async () => {
+    throw new Error(`no week line in the overview: ${(await overview.first().innerText().catch(() => "?")).replace(/\n/g, " | ")}`);
   });
+  expect(!/(^|\s)0 kg|-100 ?%/.test(await overview.first().innerText()), "0 kg or -100 % in the overview");
   await page.getByText("Changer de séance ou de programme").click();
   await page.getByRole("dialog").getByText("Fractionnés guidés").waitFor({ timeout: 5000 }).catch(() => {
     throw new Error("no guided intervals among the sessions");
@@ -495,7 +498,7 @@ await test("the home screen follows the sport practised, and offers it when anot
   await page.getByRole("button", { name: "Tous les sports", exact: true }).click();
   await page.getByText("Rien n’est mis en avant").waitFor({ timeout: 5000 });
   await page.goto(`${BASE}/fr`);
-  await page.locator("section", { hasText: "Vue d'ensemble" }).getByText("Volume").first().waitFor({ timeout: 10000 });
+  await page.locator("section", { hasText: "Vue d'ensemble" }).getByText(line).first().waitFor({ timeout: 10000 });
   await page.getByText("Changer de séance ou de programme").click();
   const rows = page.getByRole("dialog").locator("section", { hasText: "Sans programme" });
   await rows.getByText("Séance libre").waitFor({ timeout: 5000 });

@@ -204,7 +204,10 @@
     "toLookAt": "{count, plural, one {Auch ansehen (#)} other {Auch ansehen (#)}}",
     "goalProgram": "Einheiten von {name}",
     "goalReached": "Ziel erreicht{beyond, plural, =0 {} one { · + # Einheit} other { · + # Einheiten}}",
-    "otherActivities": "{count, plural, one {+ # weitere Aktivität diese Woche} other {+ # weitere Aktivitäten diese Woche}}"
+    "otherActivities": "{count, plural, one {+ # weitere Aktivität diese Woche} other {+ # weitere Aktivitäten diese Woche}}",
+    "weekActivities": "{count, plural, =0 {Keine Aktivität diese Woche} one {# Aktivität diese Woche} other {# Aktivitäten diese Woche}}",
+    "weekVolume": "Volumen {kg} kg diese Woche",
+    "seeAnalysis": "Analyse in Performance ansehen"
   },
   "onboarding": {
     "title": "Dein Athletenprofil",

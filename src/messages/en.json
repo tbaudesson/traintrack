@@ -204,7 +204,10 @@
     "toLookAt": "{count, plural, one {Also to look at (#)} other {Also to look at (#)}}",
     "goalProgram": "Sessions of {name}",
     "goalReached": "Goal reached{beyond, plural, =0 {} one { · + # session} other { · + # sessions}}",
-    "otherActivities": "{count, plural, one {+ # other activity this week} other {+ # other activities this week}}"
+    "otherActivities": "{count, plural, one {+ # other activity this week} other {+ # other activities this week}}",
+    "weekActivities": "{count, plural, =0 {No activity this week} one {# activity this week} other {# activities this week}}",
+    "weekVolume": "Volume {kg} kg this week",
+    "seeAnalysis": "See the analysis in Performance"
   },
   "onboarding": {
     "title": "Your athlete profile",

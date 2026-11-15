@@ -32,6 +32,7 @@ import { findWorkoutProgramDay } from "@/lib/startWorkout";
 import { programWeek } from "@/lib/programWeek";
 import { isCardio, isCardioDone } from "@/lib/cardio";
 import { weekGoal } from "@/lib/weekGoal";
+import { weekSummary } from "@/lib/weekSummary";
 import { SportPicker } from "@/components/domain/SportPicker";
 import { WeekStrip } from "@/components/domain/WeekStrip";
 import { mondayOfDate, plannedSessions, upcomingSessions, weekPlan } from "@/lib/weekPlan";
@@ -42,7 +43,7 @@ import { MoveSessionDialog } from "@/components/domain/MoveSessionDialog";
 import { ExpressDialog } from "@/components/domain/ExpressDialog";
 import { dayMinutes } from "@/lib/express";
 import { isTestProgram, testsDue } from "@/lib/levelTests";
-import { cardioSportOf, detectSport, kindOf, weekOverview } from "@/lib/activityProfile";
+import { detectSport, kindOf } from "@/lib/activityProfile";
 import { savePrefs } from "@/lib/appTheme";
 import { downloadFile } from "@/lib/exportService";
 import { useCompetitions } from "@/hooks/useCompetitions";
@@ -327,10 +328,6 @@ export default function HomePage() {
   const detected = useMemo(() => (prefs.allSports ? null : detectSport({ today, workouts, sets })), [prefs.allSports, today, workouts, sets]);
   const mainSport = prefs.sport ?? detected;
   const activity = kindOf(mainSport) ?? "strength";
-  const overview = useMemo(
-    () => weekOverview({ kind: activity, cardioSport: cardioSportOf(mainSport), monday: weekStart, today, workouts, sets }),
-    [activity, mainSport, weekStart, today, workouts, sets]
-  );
   // A sport chosen that the last weeks contradict: offer the one practised.
   const sportHint = detected && prefs.sport && kindOf(detected) !== kindOf(prefs.sport) && !closedCards.includes(`sport-${detected}`) ? detected : null;
   // Pressed for time: a shorter version of a strength session not begun, when it is long enough to shorten.
@@ -521,6 +518,8 @@ export default function HomePage() {
   // Ready-made programs the user has not added yet.
   const templates = catalogue.filter((tpl) => !programs.some((p) => p.name === tpl.name));
 
+  // The week in one line: kilos only for loaded sets, otherwise the activities done.
+  const summary = useMemo(() => weekSummary({ monday: weekStart, today, workouts, sets }), [weekStart, today, workouts, sets]);
   // The program's own sessions against its goal; the rest of the week apart.
   const goal = useMemo(
     () => (session ? weekGoal({ program: session.program, day: session.day, monday: weekStart, today, workouts, sets }) : null),
@@ -786,9 +785,11 @@ export default function HomePage() {
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-semibold">{t("overview")}</span>
                     <span className="block text-xs text-muted-foreground">
-                      {t(`metric_${overview.metric}`)} {num(overview.value, overview.unit === "km" ? 1 : 0)} {t(`unit_${overview.unit}`)}
-                      {overview.change !== null && ` · ${overview.change > 0 ? "+" : ""}${overview.change}% ${t("vsSameDay")}`}
+                      {summary.kind === "volume"
+                        ? `${t("weekVolume", { kg: num(summary.kg, 0) })}${summary.change !== null ? ` · ${summary.change > 0 ? "+" : ""}${summary.change}% ${t("vsSameDay")}` : ""}`
+                        : t("weekActivities", { count: summary.count })}
                     </span>
+                    {summary.kind === "activities" && <span className="block text-xs text-muted-foreground">{t("seeAnalysis")}</span>}
                   </span>
                   <span className="flex shrink-0 items-center gap-0.5 text-sm font-medium text-accent-text">
                     {t("seeAll")}
