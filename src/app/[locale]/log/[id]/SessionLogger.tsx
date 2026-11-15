@@ -1198,12 +1198,12 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
         >
           <div className="mx-auto flex max-w-md gap-2">
             {!isCardio(workout) && (
-              <Button variant="outline" className="h-12 min-w-0 flex-1 shrink rounded-full px-3" onClick={() => setPickerOpen(true)} aria-label={t("addExercise")}>
+              <Button variant="outline" className="h-12 min-w-0 shrink-0 rounded-full px-4" onClick={() => setPickerOpen(true)} aria-label={t("addExercise")}>
                 <Plus className="size-4 shrink-0" aria-hidden="true" />
                 <span className="truncate">{t("exerciseShort")}</span>
               </Button>
             )}
-            <Button className="h-12 min-w-0 flex-[1.3] shrink rounded-full px-3" onClick={finishWorkout}>
+            <Button className="h-12 min-w-0 flex-1 rounded-full px-3" onClick={finishWorkout}>
               <Check className="size-4 shrink-0" aria-hidden="true" />
               <span className="truncate">{t("finishWorkout")}</span>
             </Button>
