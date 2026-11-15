@@ -337,7 +337,18 @@
     "addLoad": "Gewicht",
     "platesShort": "Scheiben",
     "doneSummary": "{sets, plural, one {# Satz} other {# Sätze}} · {reps} Wdh.",
-    "reopen": "Öffnen"
+    "reopen": "Öffnen",
+    "hubTitle": "Trainieren",
+    "planned": "Geplante Einheit",
+    "plannedNone": "Nichts geplant: Wähle einen Tag deiner Programme oder ein fertiges Programm.",
+    "chooseOther": "Andere Einheit wählen",
+    "free": "Freie Einheit",
+    "freeHint": "Füge deine Übungen nach und nach hinzu.",
+    "endurance": "Ausdauer",
+    "enduranceHint": "Laufen, Rad, Schwimmen … oder eine GPX-Datei.",
+    "also": "Außerdem",
+    "importProgram": "Programm importieren (Excel)",
+    "allProgramDays": "Alle Tage meiner Programme"
   },
   "progress": {
     "title": "Fortschritt",

@@ -535,6 +535,36 @@ await test("a feature left out of the licence is locked, offline too", async () 
   expect(!(await page.getByText("Licence requise").count()), "running stays locked with the feature back");
 });
 
+await test("the training hub puts three ways to train first, and keeps every other way to start", async () => {
+  await page.goto(`${BASE}/fr/log`);
+  for (const name of ["Séance planifiée", "Séance libre", "Endurance"]) {
+    await page.locator("section", { has: page.getByText(name, { exact: true }) }).first().waitFor({ timeout: 10000 });
+  }
+  // The planned session can be swapped for another one, in the same picker as the home screen.
+  await page.getByRole("button", { name: /Choisir une autre séance|Choisir une séance/ }).first().click();
+  await page.getByRole("dialog").getByText("Sans programme").first().waitFor({ timeout: 5000 });
+  await page.keyboard.press("Escape");
+  // An outing picks its sport.
+  await page.getByRole("button", { name: "Sortie d'endurance" }).first().click();
+  await page.getByRole("dialog").waitFor({ timeout: 5000 });
+  await page.keyboard.press("Escape");
+  await page.getByRole("dialog").waitFor({ state: "detached", timeout: 5000 });
+  // Nothing wider than the phone: no sideways scrolling.
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(overflow <= 0, `the page is ${overflow}px wider than the screen`);
+  // The rest, one tap away; the programs in progress, and the history.
+  for (const name of ["Programmes", "Exercices", "Séance callisthenics"]) {
+    await page.getByRole("link", { name: new RegExp(name) }).first().waitFor({ timeout: 5000 });
+  }
+  await page.getByText("Historique", { exact: true }).waitFor({ timeout: 5000 });
+  await snap("train-hub");
+  if (process.env.E2E_SHOTS) {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await snap("train-hub-desktop");
+    await page.setViewportSize({ width: 390, height: 844 });
+  }
+});
+
 // ── The menu wheel, with real pointer input ─────────────────────────
 // Mouse moves and touches go through the browser's own input pipeline (not
 // element.click()), so pointer capture, hit-testing and pointercancel behave

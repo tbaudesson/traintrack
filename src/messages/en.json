@@ -337,7 +337,18 @@
     "addLoad": "Weight",
     "platesShort": "Plates",
     "doneSummary": "{sets, plural, one {# set} other {# sets}} · {reps} reps",
-    "reopen": "Reopen"
+    "reopen": "Reopen",
+    "hubTitle": "Train",
+    "planned": "Planned session",
+    "plannedNone": "Nothing planned: pick a day of your programs, or a ready-made one.",
+    "chooseOther": "Choose another session",
+    "free": "Free session",
+    "freeHint": "Add your exercises as you go.",
+    "endurance": "Endurance",
+    "enduranceHint": "Run, ride, swim… or a GPX file.",
+    "also": "Also",
+    "importProgram": "Import a program (Excel)",
+    "allProgramDays": "All the days of my programs"
   },
   "progress": {
     "title": "Progress",

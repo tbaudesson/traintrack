@@ -19,8 +19,6 @@ import { LOW_READINESS } from "@/lib/readinessAdjust";
 import { ReadinessBanner } from "@/components/domain/ReadinessBanner";
 import { useLighterToday } from "@/hooks/useLighterToday";
 import { WeeklyReportCard } from "@/components/domain/WeeklyReportCard";
-import { PROGRAM_TEMPLATES } from "@/lib/programTemplates";
-import { programCategory } from "@/lib/programCategories";
 import { homePicture } from "@/lib/appTheme";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
 import { usePainReports } from "@/hooks/usePain";
@@ -30,7 +28,7 @@ import { TrainingLoadCard } from "@/components/domain/TrainingLoadCard";
 import { FirstSteps } from "@/components/domain/FirstSteps";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useTeams } from "@/hooks/useTeams";
-import { findWorkoutProgramDay, nextDayIndex } from "@/lib/startWorkout";
+import { findWorkoutProgramDay } from "@/lib/startWorkout";
 import { programWeek } from "@/lib/programWeek";
 import { isCardio, isCardioDone } from "@/lib/cardio";
 import { weekGoal } from "@/lib/weekGoal";
@@ -38,7 +36,7 @@ import { SportPicker } from "@/components/domain/SportPicker";
 import { WeekStrip } from "@/components/domain/WeekStrip";
 import { mondayOfDate, plannedSessions, upcomingSessions, weekPlan } from "@/lib/weekPlan";
 import { planCalendar } from "@/lib/ics";
-import { plannedPrograms, scheduleSessions, scheduleWeek, sessionChoices, sessionsPerWeek, type SessionChoice } from "@/lib/schedule";
+import { scheduleSessions, scheduleWeek, sessionsPerWeek } from "@/lib/schedule";
 import { weekStreak } from "@/lib/weekStreak";
 import { MoveSessionDialog } from "@/components/domain/MoveSessionDialog";
 import { ExpressDialog } from "@/components/domain/ExpressDialog";
@@ -54,6 +52,7 @@ import Image from "next/image";
 import { RecommendationRow, useRecommendations } from "@/components/domain/Recommendations";
 import { SessionPickerDialog, useDayDetail } from "@/components/domain/SessionPickerDialog";
 import { useStartActions } from "@/hooks/useStartActions";
+import { useSessionOfTheDay } from "@/hooks/useSessionOfTheDay";
 import type { ReactNode } from "react";
 import {
   type LucideIcon,
@@ -218,42 +217,10 @@ export default function HomePage() {
   const name = account?.display_name ?? user?.email?.split("@")[0] ?? "";
   const readyScore = todayReadiness ? readinessScore(todayReadiness) : null;
 
-  // The programs in the planning (given days), all shown together in the week.
+  // The programs in the planning (given days), all shown together in the week,
+  // and the session of the day they lead to.
   const weekStart = mondayOfDate(today);
-  const planned = useMemo(
-    () => plannedPrograms({ programs, me: user?.id, trainingDays: profile?.trainingDays ?? [], from: weekStart, moves: profile?.scheduleMoves }),
-    [programs, user?.id, profile?.trainingDays, profile?.scheduleMoves, weekStart]
-  );
-
-  // Today's session already begun; otherwise the next one of the planning;
-  // without a planning, the program most recently trained, or the first one
-  // with days. A program started since (a coach's new plan) takes over.
-  // With several sessions on the day shown, the one picked by the athlete.
-  const [pickKey, setPickKey] = useState<string | null>(null);
-  const session = useMemo(() => {
-    // The level tests are done from their own page, never as the session of the day.
-    const usable = programs.filter((p) => (p.structure ?? []).length > 0 && !isTestProgram(p));
-    const linked = workouts.map((w) => ({ w, at: findWorkoutProgramDay(usable, w) }));
-    const lastDone = linked.find((x) => x.at && x.w.date < today);
-    const choose = (date: string, options: SessionChoice[]) => {
-      const o = options.find((x) => x.key === pickKey) ?? options[0];
-      return { program: o.program, index: o.index, day: o.program.structure[o.index], workoutId: o.workoutId, date, options };
-    };
-    // Today's sessions begun and planned, or the next day planned.
-    const day = sessionChoices({ planned, programs: usable, workouts, today });
-    if (day) return choose(day.date, day.options);
-    const newest = usable
-      .filter((p) => p.startDate && p.startDate <= today && !programWeek(p, today)?.finished)
-      .sort((a, b) => b.startDate!.localeCompare(a.startDate!))[0];
-    // With nothing going on, the program of one's favourite sport comes first.
-    const favorite = prefs.sport ? usable.find((p) => programCategory(p, [...catalogue, ...PROGRAM_TEMPLATES]) === prefs.sport) : undefined;
-    const program =
-      newest && (!lastDone || newest.startDate! > lastDone.w.date) ? newest : (lastDone?.at?.program ?? favorite ?? usable[0]);
-    if (!program) return null;
-    const next = nextDayIndex(program, workouts, today);
-    return { program, index: next, day: program.structure[next], workoutId: undefined, date: today, options: [] as SessionChoice[] };
-  }, [programs, workouts, today, prefs.sport, catalogue, planned, pickKey]);
-
+  const { planned, session, setPickKey } = useSessionOfTheDay({ programs, workouts, today, profile, userId: user?.id, sport: prefs.sport, catalogue });
   // Deload: running this week, or suggested from the weeks in a row and fatigue.
   const thisMonday = mondayOfDate(today);
   const deloading = profile?.deloadWeek === thisMonday;

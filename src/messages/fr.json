@@ -337,7 +337,18 @@
     "addLoad": "Lest",
     "platesShort": "Disques",
     "doneSummary": "{sets, plural, one {# série} other {# séries}} · {reps} rép.",
-    "reopen": "Rouvrir"
+    "reopen": "Rouvrir",
+    "hubTitle": "S’entraîner",
+    "planned": "Séance planifiée",
+    "plannedNone": "Rien de prévu : choisissez un jour de vos programmes, ou un programme tout prêt.",
+    "chooseOther": "Choisir une autre séance",
+    "free": "Séance libre",
+    "freeHint": "Ajoutez vos exercices au fil de la séance.",
+    "endurance": "Endurance",
+    "enduranceHint": "Course, vélo, natation… ou un fichier GPX.",
+    "also": "Aussi",
+    "importProgram": "Importer un programme (Excel)",
+    "allProgramDays": "Tous les jours de mes programmes"
   },
   "progress": {
     "title": "Progrès",
