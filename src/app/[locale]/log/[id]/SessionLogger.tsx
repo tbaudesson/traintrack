@@ -1357,7 +1357,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                 <X className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
-            {upNext && (
+            {upNext && exMap.get(upNext.exerciseId) && (
               <p className="truncate pr-3 pb-1.5 text-xs opacity-90">
                 {t("nextUp", { exercise: xl(exMap.get(upNext.exerciseId)?.name), n: upNext.setNumber })}
               </p>
