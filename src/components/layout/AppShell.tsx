@@ -67,7 +67,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   if (isAuthPage || (isJoinPage && !isAuthenticated)) {
-    return <>{children}</>;
+    // The skip link leads here too.
+    return <main id="main-content">{children}</main>;
   }
 
   if (!isAuthenticated) {
