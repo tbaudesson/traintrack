@@ -341,7 +341,7 @@ function TeamCard({
   return (
     <Card>
       <CardContent className="py-3">
-        <button onClick={onToggle} className="flex w-full items-center gap-3 text-left">
+        <button onClick={onToggle} aria-expanded={expanded} className="flex w-full items-center gap-3 text-left">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-100 dark:bg-accent-900/30">
             <Users className="h-5 w-5 text-accent-text" />
           </div>

@@ -158,7 +158,7 @@ export default function OnboardingPage() {
         <ol className="space-y-3">
           {(["introStep1", "introStep2", "introStep3", "introStep4"] as const).map((k, i) => (
             <li key={k} className="flex items-start gap-3 text-sm">
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-accent-500 text-xs font-bold text-white">{i + 1}</span>
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-accent-600 text-xs font-bold text-white">{i + 1}</span>
               <span className="pt-1">{tw(k)}</span>
             </li>
           ))}
@@ -360,7 +360,7 @@ export default function OnboardingPage() {
                     aria-pressed={days.includes(d)}
                     className={cn(
                       "min-h-11 rounded-lg border text-sm font-semibold",
-                      days.includes(d) ? "border-accent-500 bg-accent-500 text-white" : "border-border text-muted-foreground"
+                      days.includes(d) ? "border-accent-600 bg-accent-600 text-white" : "border-border text-muted-foreground"
                     )}
                   >
                     {weekday(locale, d)}
@@ -387,7 +387,7 @@ export default function OnboardingPage() {
                   <span
                     className={cn(
                       "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border",
-                      consent ? "border-accent-500 bg-accent-500 text-white" : "border-muted-foreground"
+                      consent ? "border-accent-600 bg-accent-600 text-white" : "border-muted-foreground"
                     )}
                   >
                     {consent && <Check className="h-3.5 w-3.5" />}

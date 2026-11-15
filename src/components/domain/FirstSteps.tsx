@@ -80,7 +80,7 @@ export function FirstSteps({ steps, onDismiss }: { steps: FirstStep[]; onDismiss
                   <span
                     className={cn(
                       "flex size-6 shrink-0 items-center justify-center rounded-full border",
-                      s.done ? "border-accent-500 bg-accent-500 text-white" : "border-muted-foreground/50"
+                      s.done ? "border-accent-600 bg-accent-600 text-white" : "border-muted-foreground/50"
                     )}
                   >
                     {s.done && <Check className="size-3.5" aria-hidden="true" />}

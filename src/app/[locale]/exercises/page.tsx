@@ -227,7 +227,7 @@ function ExerciseRow({ ex }: { ex: Exercise }) {
   return (
     <Card>
       <CardContent className="py-2.5">
-        <button onClick={() => setOpen((v) => !v)} className="flex w-full items-center gap-3 text-left">
+        <button onClick={() => setOpen((v) => !v)} aria-expanded={hasDetail || canEdit ? open : undefined} className="flex w-full items-center gap-3 text-left">
           <Dumbbell className="h-4 w-4 text-accent-500" />
           <span className="flex-1 text-sm font-medium">{ex.isCustom ? ex.name : xl(ex.name)}</span>
           {ex.isCustom && (

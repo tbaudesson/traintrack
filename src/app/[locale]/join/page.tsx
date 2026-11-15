@@ -176,7 +176,7 @@ export default function JoinPage() {
         <span
           className={cn(
             "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border",
-            consent ? "border-accent-500 bg-accent-500 text-white" : "border-muted-foreground"
+            consent ? "border-accent-600 bg-accent-600 text-white" : "border-muted-foreground"
           )}
         >
           {consent && <Check className="size-3.5" aria-hidden="true" />}

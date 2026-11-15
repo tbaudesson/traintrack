@@ -172,7 +172,7 @@ function StepView({
               aria-pressed={rpe === n}
               className={cn(
                 "h-12 rounded-xl border text-lg font-semibold",
-                rpe === n ? "border-accent-500 bg-accent-500 text-white" : "border-border text-muted-foreground"
+                rpe === n ? "border-accent-600 bg-accent-600 text-white" : "border-border text-muted-foreground"
               )}
             >
               {n}

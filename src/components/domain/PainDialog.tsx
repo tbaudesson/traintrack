@@ -89,7 +89,7 @@ export function PainDialog({
                   aria-pressed={area === a}
                   className={cn(
                     "min-h-10 rounded-full border px-3 text-sm",
-                    area === a ? "border-accent-500 bg-accent-500 text-white" : "border-border text-muted-foreground"
+                    area === a ? "border-accent-600 bg-accent-600 text-white" : "border-border text-muted-foreground"
                   )}
                 >
                   {t(`area_${a}`)}
