@@ -552,6 +552,7 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
     .t-health-workspace > .t-workspace-wide { grid-column: 1 / -1; }
+    .t-health-workspace > .t-readiness-load { grid-column: 2; grid-row: span 2; }
   }
 }
 
@@ -751,5 +752,6 @@ html.style-contrast .t-hero .t-surface {
   box-shadow: inset 0 0 0 1.5px oklch(1 0 0 / 0.6);
 }
 @media (prefers-reduced-motion: reduce) {
-  .t-athlete-row { transition: none; }
+  .t-athlete-row, .t-badge-card, .t-challenge-card { transition: none; }
+  .t-athlete-row:hover, .t-badge-card:hover, .t-challenge-card:hover { transform: none; }
 }

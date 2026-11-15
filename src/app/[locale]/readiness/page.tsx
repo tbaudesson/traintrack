@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   useReadiness,
@@ -34,22 +34,25 @@ function Scale({
   onChange: (v: number) => void;
   invert?: boolean;
 }) {
+  const id = useId();
   return (
     <div className="space-y-1.5">
-      <label className="text-sm font-medium">{label}</label>
-      <div className="flex gap-1.5">
+      <p id={id} className="text-sm font-medium">{label}</p>
+      <div role="group" aria-labelledby={id} className="flex gap-1.5">
         {[1, 2, 3, 4, 5].map((n) => {
           // For normal scales high=good (green); for soreness invert (high=bad)
           const active = value === n;
           return (
             <button
               key={n}
+              type="button"
+              aria-pressed={active}
               onClick={() => onChange(n)}
               className={cn(
                 "flex h-10 flex-1 items-center justify-center rounded-lg border text-sm font-medium transition-colors",
                 active
                   ? invert
-                    ? "border-rose-500 bg-rose-500 text-white"
+                    ? "border-rose-600 bg-rose-600 text-white"
                     : "border-accent-600 bg-accent-600 text-white"
                   : "border-border text-muted-foreground hover:bg-accent"
               )}
@@ -136,7 +139,7 @@ export default function ReadinessPage() {
           </Card>
         )}
 
-        {load && <TrainingLoadCard load={load} />}
+        {load && <div className="t-readiness-load"><TrainingLoadCard load={load} /></div>}
 
         <Card className="t-health-entry">
           <CardContent className="space-y-4 py-4">
@@ -145,10 +148,10 @@ export default function ReadinessPage() {
             <Scale label={t("energy")} value={energy} onChange={setEnergy} />
             <Scale label={t("sleep")} value={sleep} onChange={setSleep} />
             <Scale label={t("soreness")} value={soreness} onChange={setSoreness} invert />
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t("note")}</label>
+            <label className="block space-y-1.5">
+              <span className="block text-sm font-medium">{t("note")}</span>
               <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("notePlaceholder")} />
-            </div>
+            </label>
             <Button onClick={save} disabled={saving} className="w-full">
               {saving ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -162,7 +165,7 @@ export default function ReadinessPage() {
         </Card>
 
         {history.length > 0 && (
-          <section className="space-y-2">
+          <section className="t-workspace-wide space-y-2">
             <SectionHeading>{t("history")}</SectionHeading>
             {history.map((r) => {
               const s = readinessScore(r);
