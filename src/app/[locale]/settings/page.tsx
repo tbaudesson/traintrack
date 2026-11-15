@@ -375,8 +375,8 @@ export default function SettingsPage() {
                   );
                 })}
               </div>
-              <div className="mt-3 flex items-end gap-2">
-                <label className="flex-1 text-xs text-muted-foreground">
+              <div className="mt-3 flex flex-wrap items-end gap-2">
+                <label className="min-w-32 flex-1 text-xs text-muted-foreground">
                   {t("planTime")}
                   <Input
                     type="time"
@@ -387,7 +387,7 @@ export default function SettingsPage() {
                 </label>
                 {hasFeature("planning") && <Button
                   variant="outline"
-                  className="h-11"
+                  className="h-11 flex-1 sm:flex-none"
                   disabled={!(athlete.trainingDays ?? []).length}
                   onClick={() => {
                     const ics = trainingCalendar({
