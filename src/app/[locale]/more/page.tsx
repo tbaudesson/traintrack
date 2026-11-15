@@ -59,7 +59,7 @@ export default function MorePage() {
   return (
     <>
       <PageHeader title={t("title")} />
-      <div className="space-y-3 p-4 pb-24">
+      <div className="mx-auto max-w-5xl space-y-4 p-4 pb-24 md:p-6">
         {/* User header with quick-access icons */}
         <Card>
           <CardContent className="flex items-center gap-3 py-4">
@@ -91,7 +91,7 @@ export default function MorePage() {
           </CardContent>
         </Card>
 
-        <div className="space-y-2">
+        <div className="grid items-start gap-3 md:grid-cols-2">
           {items.map((it) => (
             <DetailRow key={it.href} href={it.href} icon={it.icon} title={it.label} />
           ))}

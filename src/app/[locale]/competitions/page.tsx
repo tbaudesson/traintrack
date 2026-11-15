@@ -104,7 +104,7 @@ function CompetitionsPageContent() {
           </Button>
         }
       />
-      <div className="space-y-4 p-4 pb-28">
+      <div className="mx-auto max-w-5xl space-y-4 p-4 pb-28 md:p-6">
         {results.length === 0 ? (
           <EmptyState icon={Award} title={t("empty")} />
         ) : (

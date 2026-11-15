@@ -51,8 +51,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+    <div className="t-auth-shell flex min-h-screen flex-col items-center justify-center px-4">
+      <div className="t-auth-panel w-full max-w-sm rounded-3xl p-6 md:p-8">
         <div className="mb-8 flex flex-col items-center">
           <BrandMark />
           <h1 className="mt-4 text-2xl font-bold text-foreground">

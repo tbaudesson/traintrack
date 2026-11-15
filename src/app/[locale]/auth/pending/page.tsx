@@ -11,8 +11,8 @@ export default function PendingPage() {
   const { signOut, refreshProfile } = useAuth();
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-sm">
+    <div className="t-auth-shell flex min-h-screen items-center justify-center p-4">
+      <Card className="t-auth-panel w-full max-w-sm">
         <CardContent className="flex flex-col items-center gap-4 py-8 text-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
             <Clock className="h-7 w-7 text-amber-600" />
