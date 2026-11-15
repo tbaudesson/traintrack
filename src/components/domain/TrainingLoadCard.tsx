@@ -40,7 +40,7 @@ export function TrainingLoadCard({ load, forCoach }: { load: TrainingLoad; forCo
           </h2>
           <p className={cn("text-sm font-semibold", ZONE_TEXT[load.zone])}>
             {t(`zone_${load.zone}`)} · {t("ratio", { ratio: num(load.ratio, 2) })}
-            {change !== 0 && ` · ${change > 0 ? "+" : ""}${change} %`}
+            {change !== 0 && <span className="whitespace-nowrap"> {`· ${change > 0 ? "+" : ""}${change} %`}</span>}
           </p>
           <p className="text-sm text-muted-foreground">{t(forCoach ? `coach_${load.zone}` : `advice_${load.zone}`)}</p>
         </div>
