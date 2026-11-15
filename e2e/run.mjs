@@ -263,6 +263,7 @@ await test("a stretching session names the side", async () => {
   const dialog = page.getByRole("dialog");
   await dialog.getByRole("button", { name: /Passer/ }).click();
   await dialog.getByText(/Côté gauche|Côté droit|Étirement/).first().waitFor({ timeout: 5000 });
+  expect(!(await page.getByRole("button", { name: "Ouvrir le menu" }).count()), "the menu wheel is still there during the session");
   await dialog.getByRole("button", { name: /Terminer la séance/ }).click();
 });
 
@@ -431,6 +432,8 @@ await test("level tests are set up, started, and wait for a first result", async
   await snap("tests");
   await page.getByRole("button", { name: /Test Force/ }).click();
   await page.waitForURL(/\/fr\/log\/session\?id=\d+/, { timeout: 10000 });
+  await page.getByRole("button", { name: /Terminer la séance/ }).waitFor({ timeout: 10000 });
+  expect(!(await page.getByRole("button", { name: "Ouvrir le menu" }).count()), "the menu wheel is still there during the session");
   // The tests are never put forward as the session of the day.
   await page.goto(`${BASE}/fr`);
   const hero = page.locator("section", { hasText: "Changer de séance ou de programme" });
@@ -460,6 +463,7 @@ await test("running paces come from a race time, and an interval session plays a
   await player.getByText(/Préparez-vous/).waitFor({ timeout: 5000 });
   await player.getByRole("button", { name: /Passer/ }).click();
   await player.getByText("Échauffement").first().waitFor({ timeout: 5000 });
+  expect(!(await page.getByRole("button", { name: "Ouvrir le menu" }).count()), "the menu wheel is still there during the session");
   await player.getByRole("button", { name: /Terminer la séance/ }).click();
   expect(page.url().includes("/running"), "a session of a few seconds was saved");
 });
@@ -675,6 +679,15 @@ await test("each set shows what it was last time, and takes it again in one tap"
   expect((await first.inputValue()) === "45", `set 1 not filled: "${await first.inputValue()}"`);
   // Taken: nothing more to take for that set.
   expect(!(await page.getByRole("button", { name: "Reprendre 45 pour la série 1" }).count()), "Reuse still offered once taken");
+});
+
+await test("an endurance outing of today hides the menu wheel too", async () => {
+  await page.goto(`${BASE}/fr/log`);
+  await page.getByRole("button", { name: "Sortie d'endurance" }).first().click();
+  await page.getByRole("dialog").getByText("Course à pied").first().click();
+  await page.waitForURL(/\/fr\/log\/session\?id=\d+/, { timeout: 10000 });
+  await page.getByRole("button", { name: /Terminer la séance/ }).waitFor({ timeout: 10000 });
+  expect(!(await page.getByRole("button", { name: "Ouvrir le menu" }).count()), "the menu wheel is still there during the session");
 });
 
 // ── The menu wheel, with real pointer input ─────────────────────────
