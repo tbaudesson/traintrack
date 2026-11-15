@@ -460,13 +460,36 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
   // The bottom bar gives way to the keyboard while a field is typed in.
   useEffect(() => {
     const isField = (el: EventTarget | null) => el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement;
+    // A field left by pressing something else: the bar comes back only once the press is over,
+    // so it never appears under the finger and takes the tap (short landscape screens).
+    let pressing = false;
+    let pending = false;
+    const settle = () => setTyping(isField(document.activeElement));
     const onIn = (e: FocusEvent) => isField(e.target) && setTyping(true);
-    const onOut = (e: FocusEvent) => isField(e.target) && setTyping(false);
+    const onOut = (e: FocusEvent) => {
+      if (!isField(e.target)) return;
+      if (pressing) pending = true;
+      else setTyping(false);
+    };
+    const onDown = () => { pressing = true; };
+    const onUp = () => {
+      pressing = false;
+      if (!pending) return;
+      pending = false;
+      // After the click that follows this release.
+      setTimeout(settle, 0);
+    };
     document.addEventListener("focusin", onIn);
     document.addEventListener("focusout", onOut);
+    document.addEventListener("pointerdown", onDown, true);
+    document.addEventListener("pointerup", onUp, true);
+    document.addEventListener("pointercancel", onUp, true);
     return () => {
       document.removeEventListener("focusin", onIn);
       document.removeEventListener("focusout", onOut);
+      document.removeEventListener("pointerdown", onDown, true);
+      document.removeEventListener("pointerup", onUp, true);
+      document.removeEventListener("pointercancel", onUp, true);
     };
   }, []);
 
