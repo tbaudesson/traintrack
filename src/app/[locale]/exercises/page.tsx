@@ -54,7 +54,7 @@ export default function ExercisesPage() {
           </Button>
         }
       />
-      <div className="space-y-4 p-4 pb-24">
+      <div className="mx-auto max-w-5xl space-y-4 p-4 pb-24 md:p-6">
         {adding && <AddExerciseForm onDone={() => setAdding(false)} />}
 
         <div className="relative">
@@ -62,14 +62,16 @@ export default function ExercisesPage() {
           <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("search")} className="pl-10" />
         </div>
 
-        {MUSCLE_GROUPS.filter((g) => grouped.has(g)).map((g) => (
-          <section key={g} className="space-y-1.5">
-            <SectionHeading>{t(`mg_${g}`)}</SectionHeading>
-            {grouped.get(g)!.map((e) => (
-              <ExerciseRow key={e.id} ex={e} />
-            ))}
-          </section>
-        ))}
+        <div className="grid items-start gap-5 lg:grid-cols-2">
+          {MUSCLE_GROUPS.filter((g) => grouped.has(g)).map((g) => (
+            <section key={g} className="space-y-1.5">
+              <SectionHeading>{t(`mg_${g}`)}</SectionHeading>
+              {grouped.get(g)!.map((e) => (
+                <ExerciseRow key={e.id} ex={e} />
+              ))}
+            </section>
+          ))}
+        </div>
       </div>
     </>
   );

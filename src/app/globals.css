@@ -490,6 +490,18 @@
     border-color: color-mix(in oklab, var(--performance) 48%, var(--border));
     transform: translateY(-2px);
   }
+  @media (min-width: 768px) {
+    .t-settings-grid {
+      align-items: start;
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .t-settings-grid > .t-settings-profile,
+    .t-settings-grid > .t-settings-group {
+      grid-column: 1 / -1;
+    }
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════

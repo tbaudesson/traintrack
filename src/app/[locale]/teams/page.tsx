@@ -100,7 +100,7 @@ export default function TeamsPage() {
         }
       />
 
-      <div className="space-y-6 p-4 pb-24">
+      <div className="mx-auto max-w-5xl space-y-6 p-4 pb-24 md:p-6">
         {toast && (
           <div className="fixed left-1/2 top-16 z-50 -translate-x-1/2 rounded-lg bg-accent-600 px-4 py-2 text-sm font-medium text-white shadow-lg">
             {toast}

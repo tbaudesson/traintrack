@@ -253,9 +253,9 @@ export default function SettingsPage() {
   return (
     <>
       <PageHeader title={t("title")} />
-      <div className="mx-auto max-w-lg space-y-4 p-4 pb-24">
+      <div className="t-settings-grid mx-auto max-w-5xl space-y-4 p-4 pb-24 md:space-y-0 md:p-6">
         {/* User header */}
-        <Card>
+        <Card className="t-settings-profile">
           <CardContent className="flex items-center gap-3 py-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent-500 to-accent-700 text-sm font-bold text-white">
               {initials || <User className="h-5 w-5" />}
@@ -307,7 +307,7 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <h2 className="px-1 pt-3 text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("groupTraining")}</h2>
+        <h2 className="t-settings-group t-section-heading pt-3">{t("groupTraining")}</h2>
 
         {/* Training level */}
         <Section icon={Gauge} title={t("level")}>
@@ -502,7 +502,7 @@ export default function SettingsPage() {
           {restError && <p className="mt-1 text-xs text-destructive">{restError}</p>}
         </Section>
 
-        <h2 className="px-1 pt-3 text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("groupPersonal")}</h2>
+        <h2 className="t-settings-group t-section-heading pt-3">{t("groupPersonal")}</h2>
 
         {/* My sport and the picture of the home screen */}
         <Section icon={Medal} title={ta("sport")}>
@@ -708,7 +708,7 @@ export default function SettingsPage() {
           </div>
         </Section>
 
-        <h2 className="px-1 pt-3 text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("groupAlerts")}</h2>
+        <h2 className="t-settings-group t-section-heading pt-3">{t("groupAlerts")}</h2>
 
         {/* Push notifications */}
         {isPushSupported() && (
@@ -781,7 +781,7 @@ export default function SettingsPage() {
           </div>
         </Section>
 
-        <h2 className="px-1 pt-3 text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("groupData")}</h2>
+        <h2 className="t-settings-group t-section-heading pt-3">{t("groupData")}</h2>
 
         {/* Refresh from server */}
         <Section icon={RotateCcw} title={t("resyncTitle")}>
