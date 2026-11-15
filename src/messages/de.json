@@ -1318,7 +1318,13 @@
     "voiceNext": "Danach: {what}.",
     "voiceSwitch": "Seite wechseln.",
     "voiceSeconds": "{count, plural, one {# Sekunde} other {# Sekunden}}",
-    "voiceMinutes": "{count, plural, one {# Minute} other {# Minuten}}"
+    "voiceMinutes": "{count, plural, one {# Minute} other {# Minuten}}",
+    "resumeTitle": "Zeitgesteuerte Einheit unterbrochen",
+    "resumeText": "{minutes} min · Schritt {n} von {total}",
+    "resumeExpired": "Vor mehr als 6 Stunden unterbrochen: Du kannst sie neu beginnen, nicht mehr fortsetzen.",
+    "resumeChanged": "Die Einheit hat sich seitdem geändert (z. B. deine Verletzungen): Du kannst sie neu beginnen, nicht mehr fortsetzen.",
+    "restart": "Neu beginnen",
+    "abandon": "Abbrechen"
   },
   "mobility": {
     "title": "Aufwärmen und Dehnen",

@@ -690,6 +690,41 @@ await test("an endurance outing of today hides the menu wheel too", async () => 
   expect(!(await page.getByRole("button", { name: "Ouvrir le menu" }).count()), "the menu wheel is still there during the session");
 });
 
+await test("a timed session left half-way is taken up again where it stood, for 6 hours", async () => {
+  await page.goto(`${BASE}/fr/intervals`);
+  await page.getByRole("button", { name: /Démarrer/ }).click();
+  const player = page.getByRole("dialog");
+  await player.getByText(/Préparez-vous/).waitFor({ timeout: 5000 });
+  // The countdown, then two steps skipped: the third is under way when the page is left.
+  for (let i = 0; i < 3; i++) await player.getByRole("button", { name: /Passer/ }).click();
+  const kept = await page.evaluate(() => JSON.parse(localStorage.getItem("traintrack.timed.intervals") ?? "null"));
+  expect(kept?.index === 2, `kept at step ${kept?.index}`);
+  await page.reload();
+  const left = page.locator("section", { hasText: "Séance minutée interrompue" });
+  await left.getByText(/étape 3 sur \d+/).waitFor({ timeout: 10000 });
+  await left.getByRole("button", { name: "Reprendre" }).click();
+  await player.getByText(/Préparez-vous/).waitFor({ timeout: 5000 });
+  await player.getByRole("button", { name: /Passer/ }).click();
+  const back = await page.evaluate(() => JSON.parse(localStorage.getItem("traintrack.timed.intervals") ?? "null"));
+  expect(back?.index === 2, `taken up at step ${back?.index}, not 2`);
+  // Stopped: nothing done, nothing saved, nothing left to take up.
+  await player.getByRole("button", { name: /Terminer la séance/ }).click();
+  expect(!(await page.evaluate(() => localStorage.getItem("traintrack.timed.intervals"))), "still kept once stopped");
+  // Left more than 6 hours ago: only started over or given up.
+  await page.getByRole("button", { name: /Démarrer/ }).click();
+  await player.getByRole("button", { name: /Passer/ }).click();
+  await page.evaluate(() => {
+    const k = JSON.parse(localStorage.getItem("traintrack.timed.intervals"));
+    localStorage.setItem("traintrack.timed.intervals", JSON.stringify({ ...k, updatedAt: Date.now() - 7 * 3600 * 1000 }));
+  });
+  await page.reload();
+  await left.getByText(/plus de 6 heures/).waitFor({ timeout: 10000 });
+  expect(!(await left.getByRole("button", { name: "Reprendre" }).count()), "an old session can still be taken up");
+  await left.getByRole("button", { name: "Abandonner" }).click();
+  await left.waitFor({ state: "detached", timeout: 5000 });
+  expect(!(await page.evaluate(() => localStorage.getItem("traintrack.timed.intervals"))), "still kept once given up");
+});
+
 // ── The menu wheel, with real pointer input ─────────────────────────
 // Mouse moves and touches go through the browser's own input pipeline (not
 // element.click()), so pointer capture, hit-testing and pointercancel behave

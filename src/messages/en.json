@@ -1318,7 +1318,13 @@
     "voiceNext": "Next: {what}.",
     "voiceSwitch": "Switch sides.",
     "voiceSeconds": "{count, plural, one {# second} other {# seconds}}",
-    "voiceMinutes": "{count, plural, one {# minute} other {# minutes}}"
+    "voiceMinutes": "{count, plural, one {# minute} other {# minutes}}",
+    "resumeTitle": "Timed session interrupted",
+    "resumeText": "{minutes} min · step {n} of {total}",
+    "resumeExpired": "Interrupted more than 6 hours ago: it can be started over, no longer taken up.",
+    "resumeChanged": "The session has changed since (your injuries, say): it can be started over, no longer taken up.",
+    "restart": "Start over",
+    "abandon": "Give up"
   },
   "mobility": {
     "title": "Warm-up and stretching",

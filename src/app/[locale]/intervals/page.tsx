@@ -33,6 +33,7 @@ import { SectionHeading } from "@/components/ui/page-parts";
 import { Button } from "@/components/ui/button";
 import { Choice, ChoiceField } from "@/components/ui/choice";
 import { IntervalPlayer, type IntervalResult } from "@/components/domain/IntervalPlayer";
+import { clearTimedProgress, loadTimedProgress, saveTimedProgress, type TimedResume } from "@/lib/timedResume";
 import { InjuryBadge } from "@/components/domain/InjuryBadge";
 
 const SAVED = "traintrack-interval-plan";
@@ -84,6 +85,13 @@ export default function IntervalsPage() {
   const [plan, setPlan] = useState<IntervalPlan | null>(null);
   const [playing, setPlaying] = useState(false);
   const [saving, setSaving] = useState(false);
+  // A session left half-way, found on opening; and the one taken up again, if any.
+  const [left, setLeft] = useState<TimedResume<IntervalPlan> | null>(null);
+  const [resume, setResume] = useState<{ index: number; done: number[]; elapsedSec: number } | undefined>(undefined);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reads the device's storage, only on the client
+    setLeft(loadTimedProgress<IntervalPlan>("intervals"));
+  }, []);
 
   // Once the profile is read: the link, else the last plan, else the level's.
   useEffect(() => {
@@ -134,6 +142,9 @@ export default function IntervalsPage() {
 
   async function save({ done, elapsedSec }: IntervalResult) {
     setPlaying(false);
+    // Over, saved or not: nothing left to take up.
+    clearTimedProgress("intervals");
+    setResume(undefined);
     if (!plan || !session || done.length === 0) return;
     setSaving(true);
     const { rest } = patternSeconds(plan.pattern);
@@ -166,6 +177,20 @@ export default function IntervalsPage() {
 
   if (!plan || !session || !withDemos) return <PageHeader title={t("title")} showBack />;
 
+  // The session left half-way, rebuilt from its plan: the same one only if it has as many steps.
+  const leftPlan = left ? sane(left.progress.context, plan) : null;
+  const leftSteps = leftPlan ? buildIntervalSession(leftPlan, injuryPool(leftPlan, injuries).pool).steps.length : 0;
+  const canResume = !!left && left.state === "resumable" && leftSteps === left.progress.stepCount;
+  function takeUp(again: boolean) {
+    if (!left || !leftPlan) return;
+    unlockAudio();
+    setPlan(leftPlan);
+    setResume(again ? { index: left.progress.index, done: left.progress.done, elapsedSec: left.progress.elapsedSec } : undefined);
+    if (!again) clearTimedProgress("intervals");
+    setLeft(null);
+    setPlaying(true);
+  }
+
   const { work, rest } = patternSeconds(plan.pattern);
   const circuits = session.rounds.length > 1 && plan.minutes >= 30 ? session.rounds.slice(0, 2) : session.rounds.slice(0, 1);
 
@@ -173,6 +198,42 @@ export default function IntervalsPage() {
     <>
       <PageHeader title={t("title")} showBack />
       <div className="space-y-6 p-4 pb-28">
+        {left && leftPlan && (
+          <section className="t-surface space-y-3 rounded-2xl p-4 ring-1 ring-accent-500/30" aria-labelledby="timed-left">
+            <div>
+              <h2 id="timed-left" className="font-semibold">{t("resumeTitle")}</h2>
+              <p className="text-sm text-muted-foreground">
+                {t("resumeText", { minutes: leftPlan.minutes, n: left.progress.index + 1, total: left.progress.stepCount })}
+              </p>
+              {!canResume && (
+                <p className="mt-1 text-sm text-muted-foreground">{left.state === "expired" ? t("resumeExpired") : t("resumeChanged")}</p>
+              )}
+            </div>
+            <div className="flex gap-2">
+              {canResume ? (
+                <>
+                  <Button className="h-11 flex-1 rounded-full" onClick={() => takeUp(true)}>{t("resume")}</Button>
+                  <Button variant="outline" className="h-11 flex-1 rounded-full" onClick={() => takeUp(false)}>{t("restart")}</Button>
+                </>
+              ) : (
+                <>
+                  <Button className="h-11 flex-1 rounded-full" onClick={() => takeUp(false)}>{t("restart")}</Button>
+                  <Button
+                    variant="outline"
+                    className="h-11 flex-1 rounded-full"
+                    onClick={() => {
+                      clearTimedProgress("intervals");
+                      setLeft(null);
+                    }}
+                  >
+                    {t("abandon")}
+                  </Button>
+                </>
+              )}
+            </div>
+          </section>
+        )}
+
         <p className="text-sm text-muted-foreground">{t("intro")}</p>
 
         <ChoiceField label={t("focus")}>
@@ -260,6 +321,8 @@ export default function IntervalsPage() {
           disabled={saving}
           onClick={() => {
             unlockAudio();
+            setResume(undefined);
+            setLeft(null);
             setPlaying(true);
           }}
         >
@@ -272,7 +335,15 @@ export default function IntervalsPage() {
         </p>
       </div>
 
-      {playing && <IntervalPlayer session={withDemos} onEnd={save} />}
+      {playing && (
+        <IntervalPlayer
+          key={resume ? "resumed" : "new"}
+          session={withDemos}
+          onEnd={save}
+          resume={resume}
+          onProgress={(p) => saveTimedProgress({ kind: "intervals", context: plan, stepCount: session.steps.length, ...p, updatedAt: Date.now() })}
+        />
+      )}
       <DemoDialog demo={demo} onClose={() => setDemo(null)} />
     </>
   );

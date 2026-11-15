@@ -48,9 +48,15 @@ export function IntervalPlayer({
   session,
   onEnd,
   labels,
+  resume,
+  onProgress,
 }: {
   session: { steps: PlayerStep[] };
   onEnd: (result: IntervalResult) => void;
+  /** Taken up again: from this step (played from its start), with what was done and the time spent. */
+  resume?: { index: number; done: number[]; elapsedSec: number };
+  /** Each step reached, with what was done so far: to be kept, and taken up again after a reload. */
+  onProgress?: (progress: { index: number; done: number[]; elapsedSec: number }) => void;
   /** What an effort and a rest are called: "Stretch" and "Next" for a stretching session. */
   labels?: { work: string; rest: string; counter?: (n: number, total: number) => string };
 }) {
@@ -65,8 +71,11 @@ export function IntervalPlayer({
   const [endsAt, setEndsAt] = useState(() => Date.now() + GET_READY_SEC * 1000);
   const [pausedLeft, setPausedLeft] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
-  const done = useRef<number[]>([]);
-  const elapsed = useRef(0);
+  const done = useRef<number[]>(resume ? [...resume.done] : []);
+  const elapsed = useRef(resume?.elapsedSec ?? 0);
+  // After the countdown: the first step, or the one left half-way.
+  const startAt = resume?.index ?? 0;
+  const following = (i: number) => (i === -1 ? startAt : i + 1);
   const ended = useRef(false);
   const lastBeep = useRef<number | null>(null);
   const [demo, setDemo] = useState<{ name: string; video: string | null; cue?: string } | null>(null);
@@ -123,7 +132,7 @@ export function IntervalPlayer({
       if (pausedLeft !== null || ended.current) return;
       const ms = Math.max(0, endsAt - Date.now());
       const secs = Math.ceil(ms / 1000);
-      if (ms <= 0) return goTo(index + 1, true);
+      if (ms <= 0) return goTo(following(index), true);
       if (secs <= 3 && lastBeep.current !== secs) {
         lastBeep.current = secs;
         beep("tick");
@@ -160,6 +169,14 @@ export function IntervalPlayer({
   });
   useEffect(() => {
     announce.current();
+  }, [index]);
+  // Each step reached is kept: the session can be taken up again from it.
+  const progress = useRef(onProgress);
+  useEffect(() => {
+    progress.current = onProgress;
+  });
+  useEffect(() => {
+    if (index >= 0 && !ended.current) progress.current?.({ index, done: [...done.current], elapsedSec: Math.round(elapsed.current) });
   }, [index]);
   useEffect(() => stopSpeaking, []);
 
@@ -317,7 +334,7 @@ export function IntervalPlayer({
         >
           {pausedLeft !== null ? <Play className="h-6 w-6" aria-hidden="true" /> : <Pause className="h-6 w-6" aria-hidden="true" />}
         </Button>
-        <Button variant="outline" size="lg" className="h-14 rounded-2xl" onClick={() => goTo(index + 1, false)} aria-label={t("skip")}>
+        <Button variant="outline" size="lg" className="h-14 rounded-2xl" onClick={() => goTo(following(index), false)} aria-label={t("skip")}>
           <SkipForward className="h-5 w-5" aria-hidden="true" />
         </Button>
       </div>

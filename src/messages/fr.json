@@ -1318,7 +1318,13 @@
     "voiceNext": "Ensuite : {what}.",
     "voiceSwitch": "Changez de côté.",
     "voiceSeconds": "{count, plural, one {# seconde} other {# secondes}}",
-    "voiceMinutes": "{count, plural, one {# minute} other {# minutes}}"
+    "voiceMinutes": "{count, plural, one {# minute} other {# minutes}}",
+    "resumeTitle": "Séance minutée interrompue",
+    "resumeText": "{minutes} min · étape {n} sur {total}",
+    "resumeExpired": "Interrompue il y a plus de 6 heures : elle peut être recommencée, plus reprise.",
+    "resumeChanged": "La séance a changé depuis (vos blessures, par exemple) : elle peut être recommencée, plus reprise.",
+    "restart": "Recommencer",
+    "abandon": "Abandonner"
   },
   "mobility": {
     "title": "Échauffement et étirements",
