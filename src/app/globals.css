@@ -421,6 +421,39 @@
     width: 0.28rem;
   }
   .t-insight-hero { min-height: 22rem; }
+  .t-stat-block {
+    background-image:
+      linear-gradient(145deg, transparent 52%, color-mix(in oklab, var(--accent-500) 7%, transparent) 52%),
+      repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in oklab, var(--foreground) 2.5%, transparent) 6px 7px),
+      linear-gradient(145deg, color-mix(in oklab, var(--surface-1) 96%, white), var(--surface-1));
+  }
+  .t-coach-section {
+    border-top: 1px solid color-mix(in oklab, var(--accent-500) 22%, var(--border));
+    padding-top: 1rem;
+  }
+  .t-athlete-row { transition: border-color 160ms ease, transform 160ms ease; }
+  .t-athlete-row:hover {
+    border-color: color-mix(in oklab, var(--accent-500) 45%, var(--border));
+    transform: translateY(-1px);
+  }
+  .t-admin-nav {
+    background-image:
+      repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in oklab, var(--foreground) 2.5%, transparent) 6px 7px),
+      linear-gradient(160deg, var(--surface-1), color-mix(in oklab, var(--surface-2) 88%, #08090c));
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    box-shadow: var(--lift);
+    padding: 0.65rem;
+  }
+  .t-admin-tab { position: relative; overflow: hidden; }
+  .t-admin-tab[aria-pressed="true"]::before {
+    background: var(--accent-500);
+    box-shadow: 0 0 18px color-mix(in oklab, var(--accent-500) 75%, transparent);
+    content: "";
+    inset: 0 auto 0 0;
+    position: absolute;
+    width: 3px;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════

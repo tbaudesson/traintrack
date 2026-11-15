@@ -69,8 +69,8 @@ export default function AdminPage() {
   return (
     <>
       <PageHeader title={t("title")} showBack />
-      <div className="space-y-4 p-4 pb-24">
-        <div className="grid grid-cols-3 gap-2">
+      <div className="t-admin-shell mx-auto max-w-6xl gap-5 p-4 pb-24 md:grid md:grid-cols-[14rem_minmax(0,1fr)] md:p-6">
+        <nav className="t-admin-nav grid grid-cols-3 gap-2 md:sticky md:top-24 md:grid-cols-1 md:self-start" aria-label={t("title")}>
           {TABS.map(({ id, icon: Icon }) => {
             const count =
               id === "users" ? counts.users
@@ -81,8 +81,9 @@ export default function AdminPage() {
               <button
                 key={id}
                 onClick={() => setTab(id)}
+                aria-pressed={tab === id}
                 className={cn(
-                  "flex flex-col items-center gap-1 rounded-lg border p-3 text-xs font-medium transition-colors",
+                  "t-admin-tab flex flex-col items-center gap-1 rounded-lg border p-3 text-xs font-bold transition-colors md:min-h-14 md:flex-row md:justify-start md:text-sm",
                   tab === id
                     ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-900/20"
                     : "border-border text-muted-foreground hover:border-accent-300"
@@ -93,13 +94,15 @@ export default function AdminPage() {
               </button>
             );
           })}
-        </div>
+        </nav>
 
-        {tab === "users" && <UsersTab />}
-        {tab === "invitations" && <InvitationsTab />}
-        {tab === "plans" && <PlansTab />}
-        {tab === "templates" && <TemplatesTab />}
-        {tab === "gdpr" && <GdprTab />}
+        <main className="mt-5 min-w-0 md:mt-0">
+          {tab === "users" && <UsersTab />}
+          {tab === "invitations" && <InvitationsTab />}
+          {tab === "plans" && <PlansTab />}
+          {tab === "templates" && <TemplatesTab />}
+          {tab === "gdpr" && <GdprTab />}
+        </main>
       </div>
     </>
   );

@@ -81,17 +81,18 @@ export default function CoachDashboardPage() {
   return (
     <>
       <PageHeader title={t("title")} showBack />
-      <div className="space-y-6 p-4 pb-28">
+      <div className="mx-auto max-w-6xl space-y-6 p-4 pb-28 md:p-6">
         {athletes.length === 0 ? (
           <EmptyState icon={Users} title={t("empty")} />
         ) : (
           <>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="t-coach-stats grid grid-cols-3 gap-2 md:gap-4">
               <Stat value={athletes.length} label={t("athletes")} />
               <Stat value={`${trained}/${athletes.length}`} label={t("trainedThisWeek")} />
               <Stat value={watched} label={t("toWatch")} tone={watched > 0 ? "warn" : undefined} />
             </div>
 
+            <div className="grid items-start gap-5 lg:grid-cols-2">
             <Section icon={AlertTriangle} title={t("checkIn")} empty={t("checkInEmpty")} count={toCheck.length}>
               {toCheck.map((a) => {
                 const value = adherence?.get(a.userId);
@@ -186,6 +187,7 @@ export default function CoachDashboardPage() {
                 ))}
               </Section>
             )}
+            </div>
           </>
         )}
       </div>
@@ -195,8 +197,8 @@ export default function CoachDashboardPage() {
 
 function Stat({ value, label, tone }: { value: string | number; label: string; tone?: "warn" }) {
   return (
-    <div className="t-surface rounded-2xl p-3 text-center ring-1 ring-foreground/5">
-      <p className={cn("text-xl font-bold tabular-nums", tone === "warn" && "text-amber-600 dark:text-amber-400")}>{value}</p>
+    <div className="t-stat-block t-surface rounded-2xl p-3 text-center ring-1 ring-foreground/5 md:p-5">
+      <p className={cn("t-metric text-2xl font-black tabular-nums md:text-4xl", tone === "warn" && "text-amber-600 dark:text-amber-400")}>{value}</p>
       <p className="text-xs text-muted-foreground">{label}</p>
     </div>
   );
@@ -216,8 +218,8 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="space-y-2">
-      <h2 className="flex items-center gap-2 text-sm font-semibold">
+    <section className="t-coach-section space-y-2">
+      <h2 className="t-section-heading">
         <Icon className="h-4 w-4 text-accent-text" aria-hidden="true" />
         {title}
         {count > 0 && <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground tabular-nums">{count}</span>}
@@ -229,7 +231,7 @@ function Section({
 
 function Row({ userId, name, teams, children }: { userId: string; name: string; teams: string[]; children?: ReactNode }) {
   return (
-    <div className="t-surface flex items-center gap-2 rounded-xl px-3 py-2 ring-1 ring-foreground/5">
+    <div className="t-athlete-row t-surface flex min-h-16 items-center gap-2 rounded-xl px-3 py-2 ring-1 ring-foreground/5">
       <Link href={`/client/${userId}`} className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{name}</p>
         <p className="truncate text-xs text-muted-foreground">{teams.join(", ")}</p>
