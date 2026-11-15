@@ -651,3 +651,6 @@ html.style-contrast .t-hero .t-surface {
   background-color: oklch(0.2 0 0);
   box-shadow: inset 0 0 0 1.5px oklch(1 0 0 / 0.6);
 }
+@media (prefers-reduced-motion: reduce) {
+  .t-athlete-row { transition: none; }
+}
