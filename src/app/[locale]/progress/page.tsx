@@ -281,7 +281,7 @@ export default function ProgressPage() {
         {/* Load and regularity: the training load (folded) and last week's report. */}
         {(load || hasFeature("reports")) && (
           <section className="space-y-2">
-            <h2 className="text-lg font-semibold tracking-tight">{t("sectionLoad")}</h2>
+            <h2 className="t-section-heading">{t("sectionLoad")}</h2>
             {load && (
               <Fold id="chart-load" title={t("loadChart")}>
                 <TrainingLoadCard load={load} />
@@ -307,14 +307,14 @@ export default function ProgressPage() {
 
         {hasFeature("reports") && (
           <section className="space-y-2">
-            <h2 className="text-lg font-semibold tracking-tight">{t("sectionReport")}</h2>
+            <h2 className="t-section-heading">{t("sectionReport")}</h2>
             <DetailRow href="/report" icon={FileText} title={tm("open")} subtitle={tm("openHint")} />
           </section>
         )}
 
         {/* One's own figures: outings, bodyweight work, bodyweight. */}
         <section className="space-y-2">
-          <h2 className="text-lg font-semibold tracking-tight">{t("sectionMine")}</h2>
+          <h2 className="t-section-heading">{t("sectionMine")}</h2>
           <div id="chart-distance" tabIndex={-1} className="scroll-mt-20 outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <CardioProgress workouts={workouts} />
           </div>
@@ -339,7 +339,7 @@ export default function ProgressPage() {
         {hasFeature("vaulting") && (competitions.length > 0 || prefs.sport === "vaulting") && (
           <section className="space-y-2">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold tracking-tight">{tcomp("title")}</h2>
+              <h2 className="t-section-heading">{tcomp("title")}</h2>
               <Link href="/competitions" className="flex min-h-10 items-center gap-1 text-sm font-medium text-accent-text">
                 {competitions.length ? tcomp("seeAll") : tcomp("add")}
                 <ChevronRight className="size-4" aria-hidden="true" />
@@ -369,7 +369,7 @@ export default function ProgressPage() {
         {(volumeData.length > 0 || (advanced && (liftsWithData.length > 0 || muscleData.length > 0 || prs.length > 0)) || bwData.length > 0) && (
           <section className="space-y-2">
             <div>
-              <h2 className="text-lg font-semibold tracking-tight">{t("sectionDetails")}</h2>
+              <h2 className="t-section-heading">{t("sectionDetails")}</h2>
               <p className="text-sm text-muted-foreground">{t("detailsHint")}</p>
             </div>
             {volumeData.length > 0 && (

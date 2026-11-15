@@ -62,7 +62,7 @@ export function InsightCard({
   const words = useInsightWords(exerciseName);
   const Icon = ICON[insight.tone];
   return (
-    <section className="t-hero space-y-4 rounded-3xl p-5" aria-labelledby="insight-title">
+    <section className="t-hero t-insight-hero space-y-4 rounded-3xl p-5 md:p-7" aria-labelledby="insight-title">
       <div className="space-y-1">
         <p className="text-xs font-semibold tracking-widest text-accent-text uppercase">{t("heading")}</p>
         <p className="text-xs text-muted-foreground">{words.period(period)}</p>
@@ -77,7 +77,7 @@ export function InsightCard({
           <Icon className="size-5" aria-hidden="true" />
         </span>
         <div className="min-w-0">
-          <h2 id="insight-title" className="text-2xl leading-tight font-bold tracking-tight">{words.title(insight)}</h2>
+          <h2 id="insight-title" className="t-display text-3xl leading-none md:text-4xl">{words.title(insight)}</h2>
           <p className="mt-1 text-sm text-muted-foreground">{words.text(insight)}</p>
         </div>
       </div>
