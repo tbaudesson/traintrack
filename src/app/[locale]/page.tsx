@@ -665,7 +665,7 @@ export default function HomePage() {
                         ? t("nextSessionOn", { date: new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", timeZone: "UTC" }).format(new Date(`${session.date}T00:00:00Z`)) })
                         : t("todaySession")}
                     </p>
-                    <h2 className="t-display mt-2 line-clamp-2 text-4xl break-words md:text-5xl">{session?.day.name ?? t("freeSession")}</h2>
+                    <h2 className="t-display mt-2 line-clamp-3 text-3xl break-words sm:text-4xl md:text-5xl">{session?.day.name ?? t("freeSession")}</h2>
                     <p className="mt-1 text-sm text-muted-foreground">
                       {session
                         ? `${session.program.name} · ${dayDetail(session.day)}`
