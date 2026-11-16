@@ -36,6 +36,8 @@ import { weekSummary } from "@/lib/weekSummary";
 import { doneSessions } from "@/lib/doneSessions";
 import { SportPicker } from "@/components/domain/SportPicker";
 import { WeekStrip } from "@/components/domain/WeekStrip";
+import { QuickAccessTiles } from "@/components/domain/QuickAccessTiles";
+import { sumMacros, useNutritionForDate } from "@/hooks/useNutrition";
 import { mondayOfDate, plannedSessions, upcomingSessions, weekPlan } from "@/lib/weekPlan";
 import { planCalendar } from "@/lib/ics";
 import { scheduleSessions, scheduleWeek, sessionsPerWeek } from "@/lib/schedule";
@@ -264,6 +266,8 @@ export default function HomePage() {
   );
   // The load: on the home screen only when it rises too fast.
   const load = useMemo(() => trainingLoad({ today, workouts, sets }), [today, workouts, sets]);
+  // Dynamic's quick access shows today's calories beside the other numbers.
+  const nutritionToday = useNutritionForDate(today);
 
   // The week: done, missed, and the next sessions placed on the training days ahead.
   // With a planning, the week shown can be moved; by default the next one
@@ -745,6 +749,20 @@ export default function HomePage() {
                   {t("changeSession")}
                 </button>
               </section>
+
+              {/* Dynamic: the day's numbers at a glance, as in the Performance references. */}
+              {prefs.style === "dynamic" && (
+                <QuickAccessTiles
+                  data={{
+                    week: goal && goal.target > 0 ? { done: goal.done, target: goal.target } : null,
+                    loadChange: load ? Math.round((load.ratio - 1) * 100) : null,
+                    readiness: hasFeature("readiness") ? readyScore : undefined,
+                    calories: hasFeature("nutrition") ? (nutritionToday.length ? sumMacros(nutritionToday).calories : null) : undefined,
+                    teams: memberships.length,
+                    challenges: hasFeature("challenges"),
+                  }}
+                />
+              )}
 
               {/* A new athlete's first steps, for a month, until done or hidden. */}
               {profile && !flags.stepsClosed && Date.parse(profile.createdAt) > now - 30 * 86_400_000 && (

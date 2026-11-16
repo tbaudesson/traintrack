@@ -102,6 +102,17 @@
     "backToLogin": "Back to sign in"
   },
   "home": {
+    "quickAccess": "Quick access",
+    "tileWeek": "Week",
+    "tileWeekUnit": "sessions",
+    "tileLoad": "Load",
+    "tileLoadSub": "vs 4 wks",
+    "tileForm": "Readiness",
+    "tileNutrition": "Nutrition",
+    "tileTeams": "Teams",
+    "tileTeamsSub": "{count, plural, one {team} other {teams}}",
+    "tileChallenges": "Challenges",
+    "tileOpen": "Open",
     "programStarts": "The program starts on {date}",
     "programWeekOf": "Week {week} of {total}",
     "programWeek": "Week {week}",

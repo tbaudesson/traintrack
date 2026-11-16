@@ -102,6 +102,17 @@
     "backToLogin": "Zurück zur Anmeldung"
   },
   "home": {
+    "quickAccess": "Schnellzugriff",
+    "tileWeek": "Woche",
+    "tileWeekUnit": "Einheiten",
+    "tileLoad": "Belastung",
+    "tileLoadSub": "vs. 4 Wo.",
+    "tileForm": "Form",
+    "tileNutrition": "Ernährung",
+    "tileTeams": "Teams",
+    "tileTeamsSub": "{count, plural, one {Team} other {Teams}}",
+    "tileChallenges": "Challenges",
+    "tileOpen": "Ansehen",
     "programStarts": "Das Programm beginnt am {date}",
     "programWeekOf": "Woche {week} von {total}",
     "programWeek": "Woche {week}",

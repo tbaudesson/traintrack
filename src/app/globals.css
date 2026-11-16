@@ -789,6 +789,29 @@ html.style-dynamic .t-rail-sub-link[aria-current="page"] {
   html.style-dynamic body:has(.t-dynamic-rail) .t-command-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
+/* Dynamic's quick access and density: compact tiles, tighter corners, lime for the numbers. */
+.t-quick-tile {
+  background: var(--surface-1);
+  border-color: var(--border);
+  transition: border-color 160ms ease;
+}
+.t-quick-tile:hover { border-color: color-mix(in oklab, var(--accent-500) 55%, var(--border)); }
+.t-quick-value { color: var(--foreground); }
+.t-quick-title::before { content: "// "; color: var(--accent-500); }
+html.style-dynamic .t-quick-tile {
+  background-image: linear-gradient(150deg, #1b1e26, #0d0f14);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 10px 24px -20px #000;
+}
+html.style-dynamic .t-quick-value { color: var(--performance); }
+html.style-dynamic .t-quick-title {
+  font-family: var(--font-condensed), var(--font-geist), sans-serif;
+  font-style: italic;
+  font-weight: 800;
+}
+html.style-dynamic .t-surface,
+html.style-dynamic [data-slot="card"] { border-radius: 0.9rem; }
+html.style-dynamic .t-hero { border-radius: 1rem; }
+
 /* Soft: pastel, very round, light shadows, no hard edges. */
 html.style-soft {
   --radius: 1.1rem;
