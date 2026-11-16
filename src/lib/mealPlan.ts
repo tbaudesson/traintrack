@@ -1,4 +1,5 @@
 import { INGREDIENTS, MEALS, suits, type FoodKey, type Ingredient, type MealIdea, type MealPrefs } from "./mealCatalog";
+import type { NutritionGuidance } from "./sportNutrition";
 
 export type DayType = "rest" | "training" | "long";
 export type PlanSlot = "breakfast" | "lunch" | "snack" | "dinner";
@@ -53,21 +54,14 @@ function roundGrams(k: FoodKey, g: number): number {
  * A meal to the calories wanted: the foods that make it (not the oil and the
  * vegetables) go up or down together, from half to a bit over twice the portion.
  */
-export function scaleMeal(meal: MealIdea, calories: number): [FoodKey, number][] {
+export function scaleMeal(meal: MealIdea, calories: number, [least, most]: [number, number]): [FoodKey, number][] {
   const fixed = new Set(meal.fixed ?? []);
   const fixedKcal = macrosOf(meal.items.filter(([k]) => fixed.has(k))).calories;
   const movingKcal = macrosOf(meal.items.filter(([k]) => !fixed.has(k))).calories;
-  const factor = movingKcal > 0 ? Math.min(2.2, Math.max(0.5, (calories - fixedKcal) / movingKcal)) : 1;
+  const factor = movingKcal > 0 ? Math.min(most, Math.max(least, (calories - fixedKcal) / movingKcal)) : 1;
   return meal.items.map(([k, g]) => [k, fixed.has(k) ? g : roundGrams(k, g * factor)]);
 }
 
-const SPLIT: Record<3 | 4, [PlanSlot, number][]> = {
-  4: [["breakfast", 0.25], ["lunch", 0.35], ["snack", 0.12], ["dinner", 0.28]],
-  3: [["breakfast", 0.3], ["lunch", 0.4], ["dinner", 0.3]],
-};
-
-/** More food on a hard day, less on a rest day; the difference is mostly carbohydrates. */
-export const DAY_FACTOR: Record<DayType, number> = { rest: 0.92, training: 1, long: 1.12 };
 
 const share = (m: Macros) => ({
   protein: m.calories ? (m.proteinG * 4) / m.calories : 0,
@@ -81,7 +75,7 @@ const share = (m: Macros) => ({
  * fewer on a rest day. `seed` changes the ideas from one day to the next;
  * `swaps` gives, for a slot, the next idea asked for.
  */
-export function planDay(input: {
+export function planDay(g: NutritionGuidance, input: {
   calories: number;
   protein: number;
   type: DayType;
@@ -91,25 +85,27 @@ export function planDay(input: {
   /** The day's own targets, for one's sport: the calories as they are, and the carbohydrates to aim at. */
   day?: { calories: number; carbs: number };
 }): DayPlan {
-  const calories = input.day ? input.day.calories : Math.round((input.calories * DAY_FACTOR[input.type]) / 10) * 10;
-  const proteinShare = Math.min(0.4, (input.protein * 4) / Math.max(1, calories));
-  const carbShare = input.day ? Math.min(0.75, (input.day.carbs * 4) / Math.max(1, calories)) : null;
-  const carbPull = input.type === "long" ? -0.6 : input.type === "rest" ? 0.3 : 0;
+  // Without one's sport's day, the day of a sport-less athlete in the references.
+  const calories = input.day ? input.day.calories : Math.round((input.calories * g.families.general.energy[input.type]) / 10) * 10;
+  const proteinShare = Math.min(g.meals.proteinShareMax, (input.protein * 4) / Math.max(1, calories));
+  // The day's carbohydrates: one's sport's, else what is left after protein and fat.
+  const carbs = input.day ? input.day.carbs : Math.max(0, (calories - input.protein * 4 - calories * g.fat.share) / 4);
+  const carbShare = (carbs * 4) / Math.max(1, calories);
   const meals: PlannedMeal[] = [];
-  SPLIT[input.prefs.meals].forEach(([slot, part], i) => {
+  g.meals.split[String(input.prefs.meals) as "3" | "4"].forEach(([slot, part], i) => {
     const kind = slot === "breakfast" ? "breakfast" : slot === "snack" ? "snack" : "main";
     const taken = new Set(meals.map((m) => m.meal.id));
     const ranked = MEALS.filter((m) => m.slot === kind && suits(m, input.prefs) && !taken.has(m.id))
       .map((m) => {
         const s = share(macrosOf(m.items));
-        // With the day's carbohydrates known, the meals closest to both shares; else the old pull.
-        return { m, score: Math.abs(s.protein - proteinShare) + (carbShare === null ? carbPull * s.carbs : Math.abs(s.carbs - carbShare)) };
+        // The meals closest to the day's shares of protein and carbohydrates.
+        return { m, score: Math.abs(s.protein - proteinShare) + Math.abs(s.carbs - carbShare) };
       })
       .sort((a, b) => a.score - b.score || a.m.id.localeCompare(b.m.id));
     if (!ranked.length) return;
     const pool = ranked.slice(0, Math.min(6, ranked.length));
     const pick = pool[(input.seed + i * 3 + (input.swaps?.[slot] ?? 0)) % pool.length].m;
-    const items = scaleMeal(pick, calories * part);
+    const items = scaleMeal(pick, calories * part, g.meals.portionScale);
     meals.push({ slot, meal: pick, items, macros: macrosOf(items) });
   });
   const total = meals.reduce(
@@ -120,9 +116,10 @@ export function planDay(input: {
 }
 
 /** The kind of day from its sessions: a long or hard endurance one, any training, or rest. */
-export function dayTypeOf(sessions: { cardio?: { distanceKm?: number; durationMin?: number } | null; strength?: boolean }[]): DayType {
+export function dayTypeOf(g: NutritionGuidance, sessions: { cardio?: { distanceKm?: number; durationMin?: number } | null; strength?: boolean }[]): DayType {
   if (!sessions.length) return "rest";
-  const long = sessions.some((s) => (s.cardio?.distanceKm ?? 0) >= 15 || (s.cardio?.durationMin ?? 0) >= 90);
+  const { distanceKm, minutes } = g.meals.longDay;
+  const long = sessions.some((s) => (s.cardio?.distanceKm ?? 0) >= distanceKm || (s.cardio?.durationMin ?? 0) >= minutes);
   return long ? "long" : "training";
 }
 

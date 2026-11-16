@@ -48,7 +48,7 @@ export function MealPlanCard({ targets, entries, onSetTargets }: { targets?: { c
   const [editing, setEditing] = useState(false);
 
   // Today's sessions: those planned, and those done or begun; and how long the longest lasts.
-  const { type, minutes } = useMemo(() => {
+  const { today: todaySessions, minutes } = useMemo(() => {
     const planned = plannedPrograms({ programs, me: user?.id, trainingDays: profile?.trainingDays ?? [], from: today, moves: profile?.scheduleMoves });
     const sessions = scheduleSessions({ planned, workouts, from: today, to: today, today }).map((s) => {
       const day = s.index >= 0 ? s.program.structure[s.index] : undefined;
@@ -58,8 +58,22 @@ export function MealPlanCard({ targets, entries, onSetTargets }: { targets?: { c
       .filter((w) => w.date === today)
       .map((w) => ({ cardio: w.kind === "cardio" ? { distanceKm: (w.distanceM ?? 0) / 1000, durationMin: (w.durationSec ?? 0) / 60 } : null, strength: true, minutes: Math.round((w.durationSec ?? 0) / 60) }));
     const all = [...sessions, ...done];
-    return { type: dayTypeOf(all), minutes: Math.max(0, ...all.map((s) => s.minutes)) };
+    return { today: all, minutes: Math.max(0, ...all.map((s) => s.minutes)) };
   }, [programs, user?.id, profile?.trainingDays, profile?.scheduleMoves, workouts, today]);
+
+  // The references not read yet (never online since the app was installed): nothing to work from.
+  if (!guidance) {
+    return (
+      <section className="t-surface space-y-2 rounded-2xl p-4 ring-1 ring-foreground/5">
+        <h2 className="flex items-center gap-2 text-sm font-semibold">
+          <Utensils className="h-4 w-4 text-accent-text" aria-hidden="true" />
+          {t("title")}
+        </h2>
+        <p className="text-sm text-muted-foreground">{t("noGuidance")}</p>
+      </section>
+    );
+  }
+  const type = dayTypeOf(guidance, todaySessions);
 
   if (!targets?.calories) {
     return (
@@ -78,17 +92,17 @@ export function MealPlanCard({ targets, entries, onSetTargets }: { targets?: { c
 
   // With the weight known, the day is shared out for one's sport; else as before.
   const goal = profile?.goals?.[0];
-  const day = weightKg && guidance ? sportDay(guidance, { weightKg, calories: targets.calories, type, sport, goal }) : null;
-  const plan = planDay({
+  const day = weightKg ? sportDay(guidance, { weightKg, calories: targets.calories, type, sport, goal }) : null;
+  const plan = planDay(guidance, {
     calories: targets.calories,
-    protein: day?.protein ?? targets.protein ?? Math.round((targets.calories * 0.25) / 4),
+    protein: day?.protein ?? targets.protein ?? Math.round((targets.calories * guidance.meals.proteinShareDefault) / 4),
     type,
     prefs,
     seed: daySeed(today),
     swaps,
     day: day ? { calories: day.calories, carbs: day.carbs } : undefined,
   });
-  const around = weightKg && guidance && type !== "rest" ? fuelling(guidance, { weightKg, sport, minutes, time: profile?.trainingTime }) : [];
+  const around = weightKg && type !== "rest" ? fuelling(guidance, { weightKg, sport, minutes, time: profile?.trainingTime }) : [];
   const perKg = (g: number) => num(Math.round((g / (weightKg ?? 1)) * 10) / 10);
   const added = (name: string, slot: PlanSlot) => entries.some((e) => e.name === name && e.meal === slot);
 
@@ -191,7 +205,7 @@ export function MealPlanCard({ targets, entries, onSetTargets }: { targets?: { c
           </ul>
         </div>
       )}
-      {guidance && !weightKg && <p className="text-xs text-muted-foreground">{t("needWeight")}</p>}
+      {!weightKg && <p className="text-xs text-muted-foreground">{t("needWeight")}</p>}
       <p className="text-xs text-muted-foreground">{t("hint")}</p>
 
       <Dialog open={editing} onOpenChange={setEditing}>

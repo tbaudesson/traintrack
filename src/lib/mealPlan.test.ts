@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_MEAL_PREFS, MEALS, mealTags, suits } from "./mealCatalog";
-import { dayTypeOf, macrosOf, planDay, scaleMeal } from "./mealPlan";
+import { dayTypeOf as typeOf, macrosOf, planDay as plan, scaleMeal as scale } from "./mealPlan";
+import { guidanceFromMigrations } from "./guidanceFromMigrations";
+
+const g = guidanceFromMigrations();
+const planDay = (input: Parameters<typeof plan>[1]) => plan(g, input);
+const dayTypeOf = (sessions: Parameters<typeof typeOf>[1]) => typeOf(g, sessions);
+const scaleMeal = (meal: Parameters<typeof scale>[0], calories: number) => scale(meal, calories, g.meals.portionScale);
 
 const prefs = DEFAULT_MEAL_PREFS;
 

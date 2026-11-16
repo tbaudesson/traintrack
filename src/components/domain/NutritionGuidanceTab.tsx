@@ -6,7 +6,7 @@ import { Apple, Check, Loader2 } from "lucide-react";
 import type { TrainingGoal } from "@/db";
 import { getAppSettings, setAppSetting } from "@/lib/adminService";
 import { FAVORITE_SPORTS } from "@/lib/appTheme";
-import type { DayType } from "@/lib/mealPlan";
+import type { DayType, PlanSlot } from "@/lib/mealPlan";
 import { NUTRITION_GUIDANCE_KEY, parseGuidance, type NutritionGuidance, type Range } from "@/lib/sportNutrition";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,6 +31,7 @@ export function NutritionGuidanceTab() {
   const ts = useTranslations("sync");
   const tc = useTranslations("catalog");
   const tg = useTranslations("templates");
+  const tn = useTranslations("nutrition");
   const [g, setG] = useState<NutritionGuidance | null>(null);
   const [state, setState] = useState<"loading" | "missing" | "failed" | "ready">("loading");
   const [error, setError] = useState(false);
@@ -160,6 +161,61 @@ export function NutritionGuidanceTab() {
           </div>
         </section>
 
+        <section className="space-y-2">
+          <h3 className="text-sm font-semibold">{t("targetsTitle")}</h3>
+          <p className="text-xs text-muted-foreground">{t("activityHint")}</p>
+          {g.targets.activity.map((row, i) => (
+            <div key={i} className="grid grid-cols-2 gap-2">
+              {field(t("upToDays"), row.upToDays, (v) => change({ ...g, targets: { ...g.targets, activity: g.targets.activity.map((r, j) => (j === i ? { ...r, upToDays: v } : r)) } }), "1")}
+              {field(t("activityFactor"), row.factor, (v) => change({ ...g, targets: { ...g.targets, activity: g.targets.activity.map((r, j) => (j === i ? { ...r, factor: v } : r)) } }), "0.025")}
+            </div>
+          ))}
+          <div className="grid grid-cols-[1fr_auto_auto] items-end gap-2 text-xs text-muted-foreground">
+            <span />
+            <span className="w-24">{t("goalAdjustment")}</span>
+            <span className="w-24">{t("goalProtein")}</span>
+            {GOALS.map((goal) => (
+              <GoalRow
+                key={goal}
+                label={tg(`goal_${goal === "general_fitness" ? "general" : goal}`)}
+                adjustment={g.targets.goalAdjustment[goal]}
+                protein={g.targets.proteinPerKg[goal]}
+                parse={n}
+                onAdjustment={(v) => change({ ...g, targets: { ...g.targets, goalAdjustment: { ...g.targets.goalAdjustment, [goal]: v } } })}
+                onProtein={(v) => change({ ...g, targets: { ...g.targets, proteinPerKg: { ...g.targets.proteinPerKg, [goal]: v } } })}
+              />
+            ))}
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {field(t("water"), g.targets.waterMlPerKg, (v) => change({ ...g, targets: { ...g.targets, waterMlPerKg: v } }), "1")}
+            {field(t("defaultDays"), g.targets.defaultTrainingDays, (v) => change({ ...g, targets: { ...g.targets, defaultTrainingDays: v } }), "1")}
+          </div>
+        </section>
+
+        <section className="space-y-2">
+          <h3 className="text-sm font-semibold">{t("mealsTitle")}</h3>
+          {(["4", "3"] as const).map((count) => (
+            <div key={count} className="space-y-1">
+              <p className="text-xs text-muted-foreground">{t("split", { count })}</p>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {g.meals.split[count].map(([slot, share], i) => (
+                  <div key={slot}>
+                    {field(tn(`meal_${slot as PlanSlot}`), share, (v) =>
+                      change({ ...g, meals: { ...g.meals, split: { ...g.meals.split, [count]: g.meals.split[count].map((x, j) => (j === i ? [x[0], v] : x)) } } }), "0.01")}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {field(t("longKm"), g.meals.longDay.distanceKm, (v) => change({ ...g, meals: { ...g.meals, longDay: { ...g.meals.longDay, distanceKm: v } } }), "1")}
+            {field(t("longMinutes"), g.meals.longDay.minutes, (v) => change({ ...g, meals: { ...g.meals, longDay: { ...g.meals.longDay, minutes: v } } }), "5")}
+            {field(t("proteinShareMax"), g.meals.proteinShareMax, (v) => change({ ...g, meals: { ...g.meals, proteinShareMax: v } }), "0.01")}
+            {field(t("proteinShareDefault"), g.meals.proteinShareDefault, (v) => change({ ...g, meals: { ...g.meals, proteinShareDefault: v } }), "0.01")}
+          </div>
+          {pair(t("portionScale"), g.meals.portionScale, (v) => change({ ...g, meals: { ...g.meals, portionScale: v } }), "0.1")}
+        </section>
+
         <section className="grid grid-cols-2 gap-2">
           <h3 className="col-span-2 text-sm font-semibold">{t("fatTitle")}</h3>
           {field(t("fatFloor"), g.fat.floorPerKg, (v) => change({ ...g, fat: { ...g.fat, floorPerKg: v } }), "0.05")}
@@ -184,5 +240,23 @@ export function NutritionGuidanceTab() {
         </Button>
       </CardContent>
     </Card>
+  );
+}
+
+/** One goal's calories against the upkeep, and its protein. */
+function GoalRow({ label, adjustment, protein, parse, onAdjustment, onProtein }: {
+  label: string;
+  adjustment: number;
+  protein: number;
+  parse: (v: string) => number;
+  onAdjustment: (v: number) => void;
+  onProtein: (v: number) => void;
+}) {
+  return (
+    <>
+      <span className="pb-2 text-sm text-foreground">{label}</span>
+      <Input aria-label={`${label} — calories`} type="number" inputMode="decimal" step="0.01" value={Number.isFinite(adjustment) ? adjustment : ""} onChange={(e) => onAdjustment(parse(e.target.value))} className="h-9 w-24" />
+      <Input aria-label={`${label} — g/kg`} type="number" inputMode="decimal" step="0.05" value={Number.isFinite(protein) ? protein : ""} onChange={(e) => onProtein(parse(e.target.value))} className="h-9 w-24" />
+    </>
   );
 }

@@ -1292,7 +1292,8 @@
     "macros": "Protéines {protein} g · glucides {carbs} g · lipides {fat} g · eau {water} ml",
     "apply": "Utiliser ces objectifs",
     "needData": "Indiquez votre poids, votre taille et votre âge.",
-    "disclaimer": "Un point de départ, à ajuster selon votre évolution sur 2 à 3 semaines. Ce n'est pas un avis médical."
+    "disclaimer": "Un point de départ, à ajuster selon votre évolution sur 2 à 3 semaines. Ce n'est pas un avis médical.",
+    "noGuidance": "Les repères de nutrition n’ont pas encore été chargés : ouvrez l’app une fois avec une connexion."
   },
   "intervals": {
     "title": "Séance callisthenics",
@@ -1979,7 +1980,8 @@
     "carbsPerHour": "{lo}–{hi} g de glucides/h",
     "protein": "{lo}–{hi} g de protéines",
     "water": "{lo}–{hi} ml d’eau/h",
-    "needWeight": "Ajoutez votre poids (Santé ou Progrès) pour des quantités adaptées à votre sport."
+    "needWeight": "Ajoutez votre poids (Santé ou Progrès) pour des quantités adaptées à votre sport.",
+    "noGuidance": "Les repères de nutrition n’ont pas encore été chargés : ouvrez l’app une fois avec une connexion."
   },
   "meals": {
     "porridge": "Porridge banane et miel",
@@ -2178,6 +2180,21 @@
     "fuel_recoveryCarbsPerKg": "Glucides de récupération, autres (g/kg)",
     "invalid": "Valeurs incohérentes (un minimum au-dessus du maximum, une case vide ou hors bornes) : rien n’a été enregistré.",
     "save": "Enregistrer les repères",
-    "saved": "Enregistré : appliqué à la prochaine ouverture de l’app"
+    "saved": "Enregistré : appliqué à la prochaine ouverture de l’app",
+    "targetsTitle": "Calculateur de cibles",
+    "activityHint": "Facteur d’activité selon les jours d’entraînement par semaine : la première ligne dont le nombre de jours n’est pas dépassé.",
+    "upToDays": "Jusqu’à (jours/sem.)",
+    "activityFactor": "Facteur",
+    "goalAdjustment": "Calories (−0,2 = −20 %)",
+    "goalProtein": "Protéines (g/kg)",
+    "water": "Eau (ml/kg)",
+    "defaultDays": "Jours d’entraînement par défaut",
+    "mealsTitle": "Idées de repas",
+    "split": "Part de chaque repas, {count} repas par jour (total = 1)",
+    "longKm": "Grosse séance dès (km)",
+    "longMinutes": "Grosse séance dès (min)",
+    "proteinShareMax": "Part max. des protéines (0–1)",
+    "portionScale": "Portion d’une recette (× min–max)",
+    "proteinShareDefault": "Part des protéines sans objectif enregistré (0–1)"
   }
 }

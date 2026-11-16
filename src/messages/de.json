@@ -1292,7 +1292,8 @@
     "macros": "Eiweiß {protein} g · Kohlenhydrate {carbs} g · Fett {fat} g · Wasser {water} ml",
     "apply": "Diese Ziele verwenden",
     "needData": "Gib dein Gewicht, deine Größe und dein Alter an.",
-    "disclaimer": "Ein Ausgangspunkt, nach 2 bis 3 Wochen anzupassen. Kein ärztlicher Rat."
+    "disclaimer": "Ein Ausgangspunkt, nach 2 bis 3 Wochen anzupassen. Kein ärztlicher Rat.",
+    "noGuidance": "Die Ernährungsrichtwerte wurden noch nicht geladen: Öffne die App einmal mit Internetverbindung."
   },
   "intervals": {
     "title": "Calisthenics-Einheit",
@@ -1979,7 +1980,8 @@
     "carbsPerHour": "{lo}–{hi} g Kohlenhydrate/Std.",
     "protein": "{lo}–{hi} g Eiweiß",
     "water": "{lo}–{hi} ml Wasser/Std.",
-    "needWeight": "Trage dein Gewicht ein (Gesundheit oder Fortschritt), um Mengen für deinen Sport zu erhalten."
+    "needWeight": "Trage dein Gewicht ein (Gesundheit oder Fortschritt), um Mengen für deinen Sport zu erhalten.",
+    "noGuidance": "Die Ernährungsrichtwerte wurden noch nicht geladen: Öffne die App einmal mit Internetverbindung."
   },
   "meals": {
     "porridge": "Porridge mit Banane und Honig",
@@ -2178,6 +2180,21 @@
     "fuel_recoveryCarbsPerKg": "Kohlenhydrate zur Erholung, andere (g/kg)",
     "invalid": "Die Werte passen nicht zusammen (ein Minimum über dem Maximum, ein leeres Feld oder ein Wert außerhalb der Grenzen): nichts wurde gespeichert.",
     "save": "Richtwerte speichern",
-    "saved": "Gespeichert: gilt beim nächsten Öffnen der App"
+    "saved": "Gespeichert: gilt beim nächsten Öffnen der App",
+    "targetsTitle": "Zielrechner",
+    "activityHint": "Aktivitätsfaktor nach Trainingstagen pro Woche: die erste Zeile, deren Tagesanzahl nicht überschritten wird.",
+    "upToDays": "Bis (Tage/Woche)",
+    "activityFactor": "Faktor",
+    "goalAdjustment": "Kalorien (−0,2 = −20 %)",
+    "goalProtein": "Eiweiß (g/kg)",
+    "water": "Wasser (ml/kg)",
+    "defaultDays": "Standard-Trainingstage",
+    "mealsTitle": "Mahlzeitenideen",
+    "split": "Anteil jeder Mahlzeit, {count} Mahlzeiten pro Tag (Summe = 1)",
+    "longKm": "Große Einheit ab (km)",
+    "longMinutes": "Große Einheit ab (Min.)",
+    "proteinShareMax": "Max. Eiweißanteil (0–1)",
+    "portionScale": "Portion eines Rezepts (× min–max)",
+    "proteinShareDefault": "Eiweißanteil ohne gespeichertes Ziel (0–1)"
   }
 }

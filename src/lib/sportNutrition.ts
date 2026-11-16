@@ -1,6 +1,6 @@
 import type { TrainingGoal } from "@/db";
 import { FAVORITE_SPORTS, type FavoriteSport } from "./appTheme";
-import type { DayType } from "./mealPlan";
+import type { DayType, PlanSlot } from "./mealPlan";
 
 /**
  * A day's food for one's sport. The energy comes first, as before: the
@@ -30,6 +30,31 @@ export interface FamilyGuidance {
 }
 
 export interface NutritionGuidance {
+  /** The daily targets the calculator proposes, from the body, the goal and the week. */
+  targets: {
+    /** Activity on top of an ordinary day, by training days a week: the first row whose days are not exceeded. */
+    activity: { upToDays: number; factor: number }[];
+    /** Calories against those that keep the weight, by goal (−0.2 = 20 % less). */
+    goalAdjustment: Record<TrainingGoal, number>;
+    /** Protein in g a kilo, by goal. */
+    proteinPerKg: Record<TrainingGoal, number>;
+    waterMlPerKg: number;
+    /** Training days a week assumed while the week plan is empty. */
+    defaultTrainingDays: number;
+  };
+  /** How the meal ideas share the day. */
+  meals: {
+    /** Each meal's share of the day's calories, for three and for four meals. */
+    split: Record<"3" | "4", [PlanSlot, number][]>;
+    /** A session from this distance or length makes a big day. */
+    longDay: { distanceKm: number; minutes: number };
+    /** The highest share of the calories given to protein when choosing meals. */
+    proteinShareMax: number;
+    /** The share of the calories given to protein when no protein target is saved. */
+    proteinShareDefault: number;
+    /** How far a meal's portion may go down and up to meet its calories (× the recipe). */
+    portionScale: Range;
+  };
   /** The family of each sport; a sport left out takes "general". */
   sports: Partial<Record<FavoriteSport, string>>;
   families: Record<string, FamilyGuidance>;
@@ -77,7 +102,20 @@ export function parseGuidance(text: string | null | undefined): NutritionGuidanc
   } catch {
     return null;
   }
-  if (!g || typeof g !== "object" || !g.families || !g.families.general || !g.fat || !g.fuelling || !g.sports) return null;
+  if (!g || typeof g !== "object" || !g.families || !g.families.general || !g.fat || !g.fuelling || !g.sports || !g.targets || !g.meals) return null;
+  const tg = g.targets;
+  if (!Array.isArray(tg.activity) || !tg.activity.length || !tg.activity.every((a) => num(a?.upToDays, 0, 7) && num(a?.factor, 1, 2.5))) return null;
+  for (const goal of GOALS) if (!num(tg.goalAdjustment?.[goal] + 1, 0.5, 1.5) || !num(tg.proteinPerKg?.[goal], 0.5, 4)) return null;
+  if (!num(tg.waterMlPerKg, 10, 80) || !num(tg.defaultTrainingDays, 0, 7)) return null;
+  const SLOTS: PlanSlot[] = ["breakfast", "lunch", "snack", "dinner"];
+  for (const n of ["3", "4"] as const) {
+    const split = g.meals.split?.[n];
+    if (!Array.isArray(split) || split.length !== Number(n) || !split.every(([slot, share]) => SLOTS.includes(slot) && num(share, 0.05, 0.8))) return null;
+    if (new Set(split.map(([slot]) => slot)).size !== split.length) return null;
+    const total = split.reduce((sum, [, share]) => sum + share, 0);
+    if (total < 0.98 || total > 1.02) return null;
+  }
+  if (!num(g.meals.longDay?.distanceKm, 1, 300) || !num(g.meals.longDay?.minutes, 15, 600) || !num(g.meals.proteinShareMax, 0.15, 0.6) || !num(g.meals.proteinShareDefault, 0.1, 0.5) || !range(g.meals.portionScale, 5) || g.meals.portionScale[0] <= 0) return null;
   for (const f of Object.values(g.families)) {
     if (!num(f?.protein, 0.5, 4) || typeof f.endurance !== "boolean") return null;
     for (const d of DAY_TYPES) if (!range(f.carbs?.[d], 15) || !num(f.energy?.[d], 0.5, 2)) return null;

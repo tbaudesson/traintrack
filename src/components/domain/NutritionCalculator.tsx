@@ -6,6 +6,7 @@ import { Calculator } from "lucide-react";
 import type { AthleteProfile } from "@/db";
 import { localDate } from "@/lib/dates";
 import { ageOn, nutritionPlan, type NutritionPlan } from "@/lib/nutritionCalc";
+import { useNutritionGuidance } from "@/hooks/useNutritionGuidance";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -34,8 +35,10 @@ export function NutritionCalculator({
   const a = Number(age);
   const ready = w > 30 && h > 120 && a >= 14 && a < 100;
   const goal = profile?.goals?.[0];
-  const plan = ready
-    ? nutritionPlan({ weightKg: w, heightCm: h, age: a, sex: profile?.sex, goal, trainingDays: profile?.trainingDays?.length ?? 3 })
+  const guidance = useNutritionGuidance();
+  const days = profile?.trainingDays?.length ?? guidance?.targets.defaultTrainingDays;
+  const plan = ready && guidance && days !== undefined
+    ? nutritionPlan(guidance, { weightKg: w, heightCm: h, age: a, sex: profile?.sex, goal, trainingDays: days })
     : null;
 
   if (!open) {
@@ -67,7 +70,7 @@ export function NutritionCalculator({
       <p className="text-xs text-muted-foreground">
         {t("from", {
           goal: goal ? to(`goal_${goal}`) : to("goal_general_fitness"),
-          days: profile?.trainingDays?.length ?? 3,
+          days: days ?? "—",
         })}
       </p>
 
@@ -86,7 +89,7 @@ export function NutritionCalculator({
           <Button className="w-full" onClick={() => onApply(plan)}>{t("apply")}</Button>
         </>
       ) : (
-        <p className="text-sm text-muted-foreground">{t("needData")}</p>
+        <p className="text-sm text-muted-foreground">{guidance ? t("needData") : t("noGuidance")}</p>
       )}
       <p className="text-xs text-muted-foreground">{t("disclaimer")}</p>
     </div>

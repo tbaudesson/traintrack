@@ -1,15 +1,15 @@
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { fuelling as fuel, parseGuidance, sportDay as day, type NutritionGuidance } from "./sportNutrition";
 
-// The references as migration 056 seeds them: the tests read the same data the app does.
-const sql = readFileSync("supabase/migrations/056_nutrition_guidance.sql", "utf8");
-const g = parseGuidance(sql.slice(sql.indexOf("{"), sql.lastIndexOf("}") + 1))!;
+import { guidanceFromMigrations } from "./guidanceFromMigrations";
+
+// The references as the migrations leave them: the tests read the same data the app does.
+const g = guidanceFromMigrations();
 const sportDay = (input: Parameters<typeof day>[1]) => day(g, input);
 const fuelling = (input: Parameters<typeof fuel>[1]) => fuel(g, input);
 
 describe("the nutrition references", () => {
-  it("are seeded whole by migration 056", () => {
+  it("are seeded whole by migrations 056 and 057", () => {
     expect(g).not.toBeNull();
     expect(Object.keys(g.families)).toContain("general");
   });
@@ -26,6 +26,8 @@ describe("the nutrition references", () => {
     expect(broken((x) => { x.sports.running = "nowhere"; })).toBeNull();
     expect(broken((x) => { delete (x.families as Record<string, unknown>).general; })).toBeNull();
     expect(broken((x) => { x.fat.share = 0.9; })).toBeNull();
+    expect(broken((x) => { x.meals.split["4"][0][1] = 0.6; })).toBeNull();
+    expect(broken((x) => { delete (x as Partial<NutritionGuidance>).targets; })).toBeNull();
   });
 
   it("send a sport left out to the general family", () => {

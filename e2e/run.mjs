@@ -1127,9 +1127,9 @@ await test("nutrition for one's sport: carbohydrates by the kilo, and food aroun
   const metric = await store(["bodyMetrics", "put", { userId: "00000000-0000-4000-8000-0000000000e2", uuid: "e2e-weight", date: today, weightKg: 60, _dirty: 0, createdAt: now, updatedAt: now }]);
   const long = await store(["workouts", "put", { userId: "00000000-0000-4000-8000-0000000000e2", uuid: "e2e-long-today", date: today, kind: "cardio", sport: "run", title: "Sortie longue", durationSec: 110 * 60, distanceM: 18000, _dirty: 0, createdAt: now, updatedAt: now }]);
   await page.evaluate(() => { const p = JSON.parse(localStorage.getItem("traintrack.prefs") || "{}"); p.sport = "running"; localStorage.setItem("traintrack.prefs", JSON.stringify(p)); });
-  // The references as the app keeps them after reading them online once (migration 056 seeds them).
-  const sql = readFileSync("supabase/migrations/056_nutrition_guidance.sql", "utf8");
-  const guidance = sql.slice(sql.indexOf("{"), sql.lastIndexOf("}") + 1);
+  // The references as the app keeps them after reading them online once (migrations 056 and 057).
+  const json = (file) => { const sql = readFileSync(`supabase/migrations/${file}`, "utf8"); return JSON.parse(sql.slice(sql.indexOf("{"), sql.lastIndexOf("}") + 1)); };
+  const guidance = JSON.stringify({ ...json("056_nutrition_guidance.sql"), ...json("057_nutrition_targets_guidance.sql") });
   try {
     // Without the references, the card shares nothing out by sport.
     await page.goto(`${BASE}/fr/nutrition`);

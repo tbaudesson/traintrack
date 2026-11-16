@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { activityFactor, ageOn, nutritionPlan } from "./nutritionCalc";
+import { activityFactor as factor, ageOn, nutritionPlan as plan } from "./nutritionCalc";
+import { guidanceFromMigrations } from "./guidanceFromMigrations";
+
+const g = guidanceFromMigrations();
+const nutritionPlan = (input: Parameters<typeof plan>[1]) => plan(g, input);
+const activityFactor = (days: number) => factor(g, days);
 
 describe("nutrition targets", () => {
   it("follow Mifflin-St Jeor and the activity", () => {

@@ -1292,7 +1292,8 @@
     "macros": "Protein {protein} g · carbs {carbs} g · fat {fat} g · water {water} ml",
     "apply": "Use these targets",
     "needData": "Enter your weight, height and age.",
-    "disclaimer": "A starting point, to adjust after 2 to 3 weeks. Not medical advice."
+    "disclaimer": "A starting point, to adjust after 2 to 3 weeks. Not medical advice.",
+    "noGuidance": "The nutrition references have not been loaded yet: open the app once while online."
   },
   "intervals": {
     "title": "Callisthenics session",
@@ -1979,7 +1980,8 @@
     "carbsPerHour": "{lo}–{hi} g of carbohydrates/h",
     "protein": "{lo}–{hi} g of protein",
     "water": "{lo}–{hi} ml of water/h",
-    "needWeight": "Add your weight (Health or Progress) for amounts suited to your sport."
+    "needWeight": "Add your weight (Health or Progress) for amounts suited to your sport.",
+    "noGuidance": "The nutrition references have not been loaded yet: open the app once while online."
   },
   "meals": {
     "porridge": "Banana and honey porridge",
@@ -2178,6 +2180,21 @@
     "fuel_recoveryCarbsPerKg": "Recovery carbohydrates, others (g/kg)",
     "invalid": "Values do not hold together (a minimum above its maximum, an empty or out-of-bounds field): nothing was saved.",
     "save": "Save the references",
-    "saved": "Saved: applied the next time the app opens"
+    "saved": "Saved: applied the next time the app opens",
+    "targetsTitle": "Targets calculator",
+    "activityHint": "Activity factor by training days a week: the first row whose number of days is not exceeded.",
+    "upToDays": "Up to (days/week)",
+    "activityFactor": "Factor",
+    "goalAdjustment": "Calories (−0.2 = −20 %)",
+    "goalProtein": "Protein (g/kg)",
+    "water": "Water (ml/kg)",
+    "defaultDays": "Default training days",
+    "mealsTitle": "Meal ideas",
+    "split": "Each meal’s share, {count} meals a day (total = 1)",
+    "longKm": "Big session from (km)",
+    "longMinutes": "Big session from (min)",
+    "proteinShareMax": "Max. share of protein (0–1)",
+    "portionScale": "A recipe’s portion (× min–max)",
+    "proteinShareDefault": "Share of protein without a saved target (0–1)"
   }
 }
