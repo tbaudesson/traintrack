@@ -1479,12 +1479,15 @@
     "default": "Pause nach einem Satz (wenn das Programm keine vorgibt)",
     "warmup": "Pause nach einem Aufwärmsatz",
     "sound": "Ton",
-    "soundHint": "Pieptöne in den letzten 3 Sekunden und am Ende",
+    "soundHint": "Pieptöne in den letzten 3 Sekunden und am Ende. Auf dem iPhone im Stummmodus aus.",
     "vibrate": "Vibration",
-    "vibrateHint": "Am Ende der Pause",
+    "vibrateHint": "Am Ende der Pause. Auf dem iPhone ab iOS 18.",
     "notify": "Benachrichtigung",
-    "notifyHint": "Am Ende der Pause, auch bei gesperrtem Bildschirm",
-    "notifyDenied": "Benachrichtigungen sind für TrainTrack blockiert: in den Browsereinstellungen erlauben."
+    "notifyHint": "Am Ende der Pause, auch wenn die App im Hintergrund ist. Bei gesperrtem Bildschirm kann das Telefon sie verzögern.",
+    "notifyDenied": "Benachrichtigungen sind für TrainTrack blockiert: in den Browsereinstellungen erlauben.",
+    "test": "Alarme testen",
+    "testTitle": "TrainTrack-Test",
+    "testBody": "Die Alarme am Pausenende funktionieren."
   },
   "teamMessage": {
     "button": "Nachricht an das Team",

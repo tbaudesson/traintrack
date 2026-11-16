@@ -1479,12 +1479,15 @@
     "default": "Rest after a set (when the program sets none)",
     "warmup": "Rest after a warm-up set",
     "sound": "Sound",
-    "soundHint": "Beeps on the last 3 seconds and at the end",
+    "soundHint": "Beeps on the last 3 seconds and at the end. On iPhone, muted in silent mode.",
     "vibrate": "Vibration",
-    "vibrateHint": "At the end of the rest",
+    "vibrateHint": "At the end of the rest. On iPhone, from iOS 18.",
     "notify": "Notification",
-    "notifyHint": "At the end of the rest, even with the screen locked",
-    "notifyDenied": "Notifications are blocked for TrainTrack: allow them in the browser's settings."
+    "notifyHint": "At the end of the rest, even with the app in the background. With the screen locked, the phone may delay it.",
+    "notifyDenied": "Notifications are blocked for TrainTrack: allow them in the browser's settings.",
+    "test": "Test the alerts",
+    "testTitle": "TrainTrack test",
+    "testBody": "End-of-rest alerts are working."
   },
   "teamMessage": {
     "button": "Message the team",

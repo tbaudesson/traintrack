@@ -24,6 +24,18 @@ export async function cancelRestEnd(): Promise<void> {
   (await worker())?.postMessage({ type: "CANCEL_NOTIFICATION", tag: TAG });
 }
 
+/** Show the end-of-rest notification right now, in place of the scheduled one. */
+export async function notifyRestEndNow(title: string, body: string): Promise<void> {
+  if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+  try {
+    await cancelRestEnd();
+    const reg = await navigator.serviceWorker?.ready;
+    await reg?.showNotification(title, { body, icon: "/icons/icon-192.png", badge: "/icons/icon-192.png", tag: TAG });
+  } catch {
+    // No notification: the sound and vibration remain.
+  }
+}
+
 /** Ask for the permission, from a tap: true when notifications may be shown. */
 export async function allowRestNotifications(): Promise<boolean> {
   if (typeof Notification === "undefined") return false;

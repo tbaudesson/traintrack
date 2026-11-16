@@ -33,7 +33,8 @@ import { demoVideo } from "@/lib/demoVideos";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
 import { useGlobalNavigationHidden, useSessionFocus } from "@/hooks/useSessionFocus";
 import { beep, unlockAudio } from "@/lib/beep";
-import { cancelRestEnd, scheduleRestEnd } from "@/lib/restAlerts";
+import { cancelRestEnd, notifyRestEndNow, scheduleRestEnd } from "@/lib/restAlerts";
+import { vibrate } from "@/lib/haptic";
 import { clearRestEnd, loadRestEnd, saveRestEnd } from "@/lib/restTimer";
 import { useDebouncedSave } from "@/hooks/useDebouncedSave";
 import { PlateCalculator } from "@/components/domain/PlateCalculator";
@@ -88,6 +89,12 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
   const tg = useTranslations("guided");
   const tm = useTranslations("mobility");
   const restPrefs = useAppPrefs().rest;
+  // Read when the rest ends, not when it began: a rest found again after a
+  // reload starts before the saved choices are read, and they may change since.
+  const restPrefsRef = useRef(restPrefs);
+  useEffect(() => {
+    restPrefsRef.current = restPrefs;
+  }, [restPrefs]);
   const tinj = useTranslations("injuries");
   const injuries = useInjuries();
   const { num, day, short } = useFormat();
@@ -418,7 +425,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
       const left = Math.ceil((restEndsAt.current - Date.now()) / 1000);
       if (left > 0) {
         setRest(left);
-        if (restPrefs.sound && left <= 3 && left !== lastBeep) {
+        if (restPrefsRef.current.sound && left <= 3 && left !== lastBeep) {
           lastBeep = left;
           beep("tick");
         }
@@ -427,8 +434,12 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
       if (timerRef.current) clearInterval(timerRef.current);
       setRest(null);
       clearRestEnd(workoutId);
-      if (restPrefs.sound) beep("go");
-      if (restPrefs.vibrate) navigator.vibrate?.([300, 120, 300]);
+      const prefs = restPrefsRef.current;
+      if (prefs.sound) beep("go");
+      if (prefs.vibrate) vibrate([300, 120, 300]);
+      // The service worker's own timer may have been stopped by the system:
+      // the page, still awake behind another app, shows the notification itself.
+      if (prefs.notify && document.visibilityState === "hidden") void notifyRestEndNow(t("restOverTitle"), t("restOverBody"));
     }, 500);
   }
 
@@ -636,7 +647,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
     }
     // In a superset, go straight to the next exercise: the rest comes after the last one.
     if (!current || restsAfter(current.exerciseId, slots)) startRest(restSec && restSec > 0 ? restSec : restPrefs.defaultSec);
-    else navigator.vibrate?.(60);
+    else if (restPrefs.vibrate) vibrate(60);
 
     // Read back: the weight typed just before this tap may not be in `sets` yet.
     const saved = await db.workoutSets.get(setId);

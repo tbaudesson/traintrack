@@ -29,8 +29,9 @@ import {
   type AppStyle, type ThemeMode, type Accent, type Silhouette,
 } from "@/lib/appTheme";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
-import { unlockAudio } from "@/lib/beep";
-import { allowRestNotifications } from "@/lib/restAlerts";
+import { beep, unlockAudio } from "@/lib/beep";
+import { vibrate } from "@/lib/haptic";
+import { allowRestNotifications, notifyRestEndNow } from "@/lib/restAlerts";
 import { Choice } from "@/components/ui/choice";
 import {
   WHEEL_CATALOG, getNavItemIds, setNavItemIds, resetNavItemIds, LOCKED_NAV_ID,
@@ -499,6 +500,24 @@ export default function SettingsPage() {
               </label>
             ))}
           </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="mt-2"
+            disabled={!prefs.rest.sound && !prefs.rest.vibrate && !prefs.rest.notify}
+            onClick={() => {
+              // From the tap itself: browsers only allow sound after one.
+              if (prefs.rest.sound) {
+                unlockAudio();
+                beep("go");
+              }
+              if (prefs.rest.vibrate) vibrate([300, 120, 300]);
+              if (prefs.rest.notify) void notifyRestEndNow(trest("testTitle"), trest("testBody"));
+            }}
+          >
+            {trest("test")}
+          </Button>
           {restError && <p className="mt-1 text-xs text-destructive">{restError}</p>}
         </Section>
 

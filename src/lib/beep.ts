@@ -16,7 +16,13 @@ export function unlockAudio(): void {
       if (!Ctx) return;
       context = new Ctx();
     }
-    if (context.state === "suspended") void context.resume();
+    if (context.state !== "running") void context.resume();
+    // A silent sound played from the tap is what really unlocks Web Audio on iOS.
+    const buffer = context.createBuffer(1, 1, 22050);
+    const source = context.createBufferSource();
+    source.buffer = buffer;
+    source.connect(context.destination);
+    source.start(0);
   } catch {
     // No sound on this device: the session still runs, silently.
   }
@@ -26,6 +32,8 @@ export function unlockAudio(): void {
 export function beep(kind: "tick" | "go" | "rest" = "tick"): void {
   if (!context) return;
   try {
+    // Suspended or interrupted by the system meanwhile (a call, the screen locked).
+    if (context.state !== "running") void context.resume();
     const osc = context.createOscillator();
     const gain = context.createGain();
     const length = kind === "tick" ? 0.12 : 0.4;

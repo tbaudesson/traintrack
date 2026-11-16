@@ -1479,12 +1479,15 @@
     "default": "Repos après une série (quand le programme n'en fixe pas)",
     "warmup": "Repos après une série d'échauffement",
     "sound": "Son",
-    "soundHint": "Bips sur les 3 dernières secondes et à la fin",
+    "soundHint": "Bips sur les 3 dernières secondes et à la fin. Sur iPhone, coupés en mode silencieux.",
     "vibrate": "Vibration",
-    "vibrateHint": "À la fin du repos",
+    "vibrateHint": "À la fin du repos. Sur iPhone, à partir d'iOS 18.",
     "notify": "Notification",
-    "notifyHint": "À la fin du repos, même écran verrouillé",
-    "notifyDenied": "Les notifications sont bloquées pour TrainTrack : autorisez-les dans les réglages du navigateur."
+    "notifyHint": "À la fin du repos, même app en arrière-plan. Écran verrouillé, le téléphone peut la retarder.",
+    "notifyDenied": "Les notifications sont bloquées pour TrainTrack : autorisez-les dans les réglages du navigateur.",
+    "test": "Tester les alertes",
+    "testTitle": "Test TrainTrack",
+    "testBody": "Les alertes de fin de repos fonctionnent."
   },
   "teamMessage": {
     "button": "Message à l'équipe",
