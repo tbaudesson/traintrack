@@ -138,7 +138,7 @@ function AddExerciseForm({ onDone }: { onDone: () => void }) {
           <div className="flex flex-wrap gap-1.5">
             {MUSCLE_GROUPS.map((g) => (
               <button key={g} onClick={() => setMg(g)}
-                className={cn("rounded-full border px-2.5 py-1 text-xs", mg === g ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-950/40" : "border-border text-muted-foreground")}>
+                className={cn("rounded-full border px-2.5 py-1 text-xs", mg === g ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-950/40 dark:text-accent-200" : "border-border text-muted-foreground")}>
                 {t(`mg_${g}`)}
               </button>
             ))}
@@ -149,7 +149,7 @@ function AddExerciseForm({ onDone }: { onDone: () => void }) {
           <div className="flex flex-wrap gap-1.5">
             {EQUIPMENT.map((eq) => (
               <button key={eq} onClick={() => setEquip(eq)}
-                className={cn("rounded-full border px-2.5 py-1 text-xs", equip === eq ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-950/40" : "border-border text-muted-foreground")}>
+                className={cn("rounded-full border px-2.5 py-1 text-xs", equip === eq ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-950/40 dark:text-accent-200" : "border-border text-muted-foreground")}>
                 {eq}
               </button>
             ))}

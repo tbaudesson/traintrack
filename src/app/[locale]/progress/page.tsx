@@ -408,7 +408,7 @@ export default function ProgressPage() {
                     onClick={() => setMetric(m)}
                     className={cn(
                       "rounded-full border px-2.5 py-1 text-xs",
-                      metric === m ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-950/40" : "border-border text-muted-foreground"
+                      metric === m ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-950/40 dark:text-accent-200" : "border-border text-muted-foreground"
                     )}
                   >
                     {t(`metric_${m}`)}

@@ -249,7 +249,7 @@ function CreateChallengeDialog({
                 {groups.map((g) => (
                   <button key={g.id} onClick={() => setGroupId(g.id)}
                     className={cn("rounded-full border px-2.5 py-1 text-xs",
-                      groupId === g.id ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-950/40" : "border-border text-muted-foreground")}>
+                      groupId === g.id ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-950/40 dark:text-accent-200" : "border-border text-muted-foreground")}>
                     {g.name}
                   </button>
                 ))}
@@ -266,7 +266,7 @@ function CreateChallengeDialog({
               {TYPES.map((ty) => (
                 <button key={ty} onClick={() => setType(ty)}
                   className={cn("rounded-full border px-2.5 py-1 text-xs",
-                    type === ty ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-950/40" : "border-border text-muted-foreground")}>
+                    type === ty ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-950/40 dark:text-accent-200" : "border-border text-muted-foreground")}>
                   {t(`type_${ty}`)}
                 </button>
               ))}

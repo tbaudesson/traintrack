@@ -85,7 +85,7 @@ export default function AdminPage() {
                 className={cn(
                   "t-admin-tab flex flex-col items-center gap-1 rounded-lg border p-3 text-xs font-bold transition-colors md:min-h-14 md:flex-row md:justify-start md:text-sm",
                   tab === id
-                    ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-900/20"
+                    ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-900/20 dark:text-accent-200"
                     : "border-border text-muted-foreground hover:border-accent-300"
                 )}
               >

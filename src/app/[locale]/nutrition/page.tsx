@@ -353,7 +353,7 @@ export default function NutritionPage() {
                   <button
                     key={m}
                     onClick={() => setMeal(m)}
-                    className={`rounded-full border px-2.5 py-1 text-xs ${meal === m ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-950/40" : "border-border text-muted-foreground"}`}
+                    className={`rounded-full border px-2.5 py-1 text-xs ${meal === m ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-950/40 dark:text-accent-200" : "border-border text-muted-foreground"}`}
                   >
                     {t(`meal_${m}`)}
                   </button>
