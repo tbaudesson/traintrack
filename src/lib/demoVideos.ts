@@ -114,6 +114,24 @@ export const DEMO_VIDEOS: Record<string, string> = {
   "spinal-twist": "https://www.youtube.com/watch?v=G28BnPX-tlA",
   cobra: "https://www.youtube.com/watch?v=JDcdhTuycOI",
   "childs-pose": "https://www.youtube.com/watch?v=LZgABs0IggM",
+  // Suspension straps (TRX): each checked to exist and allow embedding.
+  "TRX Row": "https://www.youtube.com/watch?v=22pCfQ3QkE8",
+  "TRX Chest Press": "https://www.youtube.com/watch?v=-vPgHzuRI7I",
+  "TRX Squat": "https://www.youtube.com/watch?v=NM-Mqg4fZ3o",
+  "TRX Suspended Lunge": "https://www.youtube.com/watch?v=1bmjTIyi7sI",
+  "TRX Hamstring Curl": "https://www.youtube.com/watch?v=RkEHyudfkyM",
+  "TRX Pike": "https://www.youtube.com/watch?v=JWWmdeySvFQ",
+  "TRX Knee Tuck": "https://www.youtube.com/watch?v=CpHwFIEmQW8",
+  "TRX Mountain Climber": "https://www.youtube.com/watch?v=CZKSquU0v-o",
+  "TRX Plank": "https://www.youtube.com/watch?v=-NcS0eujpdc",
+  "TRX Side Plank": "https://www.youtube.com/watch?v=0ezC5UNcyyg",
+  "TRX Biceps Curl": "https://www.youtube.com/watch?v=P4czugRgqbc",
+  "TRX Triceps Extension": "https://www.youtube.com/watch?v=HPe0b7Te1Bk",
+  "TRX Y-Fly": "https://www.youtube.com/watch?v=MJp7aslAXSM",
+  "TRX Jump Squat": "https://www.youtube.com/watch?v=o1OCPJeD1fw",
+  "TRX Atomic Push-up": "https://www.youtube.com/watch?v=Xc5b-MvKxQY",
+  "TRX Single-Leg Squat": "https://www.youtube.com/watch?v=TCf9uNQSzP4",
+  "TRX Sprinter Start": "https://www.youtube.com/watch?v=dkM4USjE-y4",
 };
 
 /** Warm-up moves that are library exercises share their demo. */
