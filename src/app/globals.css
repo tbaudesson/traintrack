@@ -779,6 +779,10 @@ html.style-dynamic .t-rail-sub-link[aria-current="page"] {
   html.style-dynamic body:has(.t-dynamic-rail) .t-app-main { padding-left: 16rem; }
   html.style-dynamic .t-nav-launcher { display: none; }
 }
+/* With the rail, 1024-1279 px leaves too little room for three training cards. */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  html.style-dynamic body:has(.t-dynamic-rail) .t-command-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 
 /* Soft: pastel, very round, light shadows, no hard edges. */
 html.style-soft {
