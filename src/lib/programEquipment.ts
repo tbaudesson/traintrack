@@ -1,6 +1,7 @@
 import type { Equipment, ProgramDay } from "@/db";
 import { INJURY_RULES } from "./injuries";
 import type { PainArea } from "./pain";
+import { TRX_EXERCISES } from "./trxExercises";
 
 /**
  * What each exercise of the ready-made programs needs, beyond the body:
@@ -52,6 +53,7 @@ const NEEDS: Record<string, Exclude<Equipment, "bodyweight" | "other">> = {
   "Pull-up": "pullup_bar",
   "Chin-up": "pullup_bar",
   "Hanging Leg Raise": "pullup_bar",
+  ...Object.fromEntries(TRX_EXERCISES.map((e) => [e.name, "suspension" as const])),
 };
 
 /** The equipment an exercise needs, or null for the body alone (and for exercises not known here). */
@@ -112,6 +114,23 @@ const ALTERNATIVES: Record<string, string[]> = {
   "Pull-up": ["Lat Pulldown", "Dumbbell Row", "Superman Hold"],
   "Chin-up": ["Lat Pulldown", "Dumbbell Row", "Superman Hold"],
   "Hanging Leg Raise": ["Lying Leg Raise"],
+  "TRX Row": ["Dumbbell Row", "Superman Hold"],
+  "TRX Chest Press": ["Push-up"],
+  "TRX Squat": ["Bodyweight Squat"],
+  "TRX Suspended Lunge": ["Split Squat"],
+  "TRX Hamstring Curl": ["Single-Leg Glute Bridge"],
+  "TRX Pike": ["Hollow Hold"],
+  "TRX Knee Tuck": ["Mountain Climber"],
+  "TRX Mountain Climber": ["Mountain Climber"],
+  "TRX Plank": ["Plank"],
+  "TRX Side Plank": ["Side Plank"],
+  "TRX Biceps Curl": ["Dumbbell Curl"],
+  "TRX Triceps Extension": ["Overhead Triceps Extension", "Bench Dip"],
+  "TRX Y-Fly": ["Rear Delt Fly", "Superman Hold"],
+  "TRX Jump Squat": ["Jump Squat"],
+  "TRX Atomic Push-up": ["Push-up"],
+  "TRX Single-Leg Squat": ["Split Squat"],
+  "TRX Sprinter Start": ["High Knees"],
 };
 
 export const alternativesOf = (name: string): string[] => ALTERNATIVES[name] ?? [];

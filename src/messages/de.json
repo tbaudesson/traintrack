@@ -255,6 +255,7 @@
     "equip_bodyweight": "Körpergewicht",
     "equip_kettlebell": "Kettlebells",
     "equip_bands": "Bänder",
+    "equip_suspension": "TRX-Bänder",
     "equip_other": "Andere",
     "consentTitle": "Einwilligung Gesundheitsdaten (DSGVO Art. 9)",
     "consentText": "Ich willige ausdrücklich ein, dass TrainTrack meine Gesundheits- und Fitnessdaten (Einheiten, Körpermaße) zur Bereitstellung des Dienstes verarbeitet. Du kannst die Einwilligung jederzeit in den Einstellungen widerrufen und deine Daten löschen.",
@@ -1290,7 +1291,7 @@
   },
   "intervals": {
     "title": "Calisthenics-Einheit",
-    "hint": "Auf Zeit, mit Körpergewicht oder Kurzhanteln, 10 bis 45 Min.",
+    "hint": "Auf Zeit, mit Körpergewicht, Kurzhanteln oder TRX, 10 bis 45 Min.",
     "intro": "Übungen am Stück nach der Uhr: eine Belastungszeit, eine Pause und eine Minute Erholung zwischen den Runden.",
     "focus": "Bereich",
     "focus_full": "Ganzkörper",
@@ -1299,7 +1300,9 @@
     "equipment": "Ausrüstung",
     "bodyweight": "Körpergewicht",
     "dumbbells": "Mit Kurzhanteln",
+    "trx": "TRX-Bänder",
     "withDumbbells": "Kurzhanteln",
+    "withTrx": "TRX",
     "pattern": "Rhythmus",
     "patternLabel": "{work} s / {rest} s",
     "patternHint_30-30": "30 s Belastung, 30 s Pause: ideal für den Einstieg.",
@@ -1435,7 +1438,8 @@
     "injuryCare": "Diese Programme lassen Übungen weg, die die gewählte Stelle belasten. Sie ersetzen keinen ärztlichen Rat: Brich jede Übung ab, die schmerzt.",
     "injuryOthers": "Weitere Programme ohne zu meidende Übung ({area})",
     "injuryNone": "Kein weiteres Programm passt für diese Stelle.",
-    "injuryCaution": "Einige Übungen mit Vorsicht"
+    "injuryCaution": "Einige Übungen mit Vorsicht",
+    "cat_trx": "TRX (Schlingentrainer)"
   },
   "demo": {
     "watch": "Demo ansehen",

@@ -9,7 +9,8 @@ const library =
   readFileSync("supabase/migrations/006_seed_exercises.sql", "utf8") +
   readFileSync("supabase/migrations/024_endurance.sql", "utf8") +
   readFileSync("supabase/migrations/038_interval_sessions.sql", "utf8") +
-  readFileSync("supabase/migrations/040_vaulting.sql", "utf8").split("program_templates")[0];
+  readFileSync("supabase/migrations/040_vaulting.sql", "utf8").split("program_templates")[0] +
+  readFileSync("supabase/migrations/055_trx.sql", "utf8").split("program_templates")[0];
 
 describe("built-in programs", () => {
   it("only use exercises from the seeded library", () => {
@@ -20,7 +21,7 @@ describe("built-in programs", () => {
 });
 
 describe("strength programs in every language", () => {
-  const strength = PROGRAM_TEMPLATES.filter((t) => t.goal !== "endurance" && !t.forInjury && !t.id.startsWith("vagues-force") && !t.id.startsWith("callisthenics-"));
+  const strength = PROGRAM_TEMPLATES.filter((t) => t.goal !== "endurance" && !t.forInjury && !t.id.startsWith("trx-") && !t.id.startsWith("vagues-force") && !t.id.startsWith("callisthenics-"));
   const byLocale = (locale: string) => strength.filter((t) => t.locale === locale);
 
   it("offer all fourteen in French, English and German", () => {

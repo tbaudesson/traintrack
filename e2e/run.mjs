@@ -1041,6 +1041,29 @@ await test("the injury shelf offers a program per injured area, and the others t
   await page.keyboard.press("Escape");
 });
 
+await test("TRX: a shelf of programs, and straps in the timed sessions", async () => {
+  await page.goto(`${BASE}/fr/programs`);
+  await page.getByRole("button", { name: /TRX \(sangles\)/ }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByText("TRX débutant").waitFor({ timeout: 5000 });
+  await dialog.getByText("TRX intermédiaire").waitFor({ timeout: 5000 });
+  await page.keyboard.press("Escape");
+  await page.goto(`${BASE}/fr/intervals`);
+  const straps = page.getByRole("button", { name: "Sangles TRX" });
+  await straps.click();
+  expect((await straps.getAttribute("aria-pressed")) === "true", "the straps are not chosen");
+  // About half the round with the straps, each named in the session shown.
+  const names = ["Tirage TRX", "Développé pectoraux TRX", "Squat TRX", "Pike TRX", "Genoux-poitrine TRX", "Mountain climber TRX", "Curl biceps TRX", "Extension triceps TRX", "Élévation en Y TRX", "Squat sauté TRX", "Pompe atomique TRX", "Départ de sprinteur TRX"];
+  let shown = 0;
+  for (const n of names) shown += await page.getByText(n, { exact: true }).count();
+  expect(shown >= 2, `only ${shown} TRX exercise(s) in the session`);
+  await page.getByText(/^(Tirage|Développé pectoraux|Squat|Pike|Genoux-poitrine|Mountain climber|Curl biceps|Extension triceps|Élévation en Y|Squat sauté|Pompe atomique|Départ de sprinteur) TRX$/).first().scrollIntoViewIfNeeded();
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: join(ARTIFACTS, "trx-intervals.png") });
+  // Back to the body alone, for the paths after this one.
+  await page.getByRole("button", { name: "Poids du corps" }).click();
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });

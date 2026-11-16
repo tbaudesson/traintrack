@@ -1,5 +1,6 @@
 import type { MuscleGroup } from "@/db";
 import { injuryWarning, type Injury } from "./injuries";
+import { TRX_EXERCISES } from "./trxExercises";
 
 /** What the session works: the belly, the whole body, or the legs and glutes. */
 export type IntervalFocus = "abs" | "full" | "lower";
@@ -20,6 +21,8 @@ export const GET_READY_SEC = 10;
 export interface IntervalPlan {
   focus: IntervalFocus;
   dumbbells: boolean;
+  /** Suspension straps (TRX); absent on the plans made before them. */
+  trx?: boolean;
   pattern: IntervalPattern;
   minutes: number;
   seed: number;
@@ -30,7 +33,7 @@ type Kind = "cardio" | "strength" | "core";
 export interface IntervalExercise {
   name: string;
   muscleGroup: MuscleGroup;
-  equipment: "bodyweight" | "dumbbell";
+  equipment: "bodyweight" | "dumbbell" | "suspension";
   focus: IntervalFocus[];
   kind: Kind;
   /** Done one side then the other: switch halfway. */
@@ -119,7 +122,12 @@ export const INTERVAL_EXERCISES: IntervalExercise[] = [
   { name: "Dumbbell Hammer Curl", muscleGroup: "arms", equipment: "dumbbell", focus: ["full"], kind: "strength", description: "Standing, palms facing each other, curl the dumbbells to the shoulders, lower slowly." },
   { name: "Bird Dog", muscleGroup: "core", equipment: "bodyweight", focus: ["abs"], kind: "core", sides: true, description: "" },
   { name: "Superman Hold", muscleGroup: "core", equipment: "bodyweight", focus: ["abs", "full"], kind: "core", description: "" },
+  ...TRX_EXERCISES.map((e): IntervalExercise => ({ name: e.name, muscleGroup: e.muscleGroup, equipment: "suspension", focus: e.focus, kind: e.kind, sides: e.sides, description: e.en })),
 ];
+
+/** Whether a plan's equipment allows an exercise: the body always, the rest when chosen. */
+export const allows = (plan: Pick<IntervalPlan, "dumbbells" | "trx">, e: Pick<IntervalExercise, "equipment">) =>
+  e.equipment === "bodyweight" || (e.equipment === "dumbbell" && plan.dumbbells) || (e.equipment === "suspension" && !!plan.trx);
 
 /** The exercises newly added to the library for timed sessions. */
 export const NEW_INTERVAL_EXERCISES = INTERVAL_EXERCISES.filter((e) => e.description && !["Side Plank", "Dead Bug", "Glute Bridge"].includes(e.name));
@@ -131,12 +139,12 @@ export const NEW_INTERVAL_EXERCISES = INTERVAL_EXERCISES.filter((e) => e.descrip
  * would be short of exercises for a round, and never those to avoid.
  */
 export function injuryPool(
-  plan: Pick<IntervalPlan, "focus" | "dumbbells" | "minutes">,
+  plan: Pick<IntervalPlan, "focus" | "dumbbells" | "trx" | "minutes">,
   injuries: Pick<Injury, "area" | "healedOn">[],
   all: IntervalExercise[] = INTERVAL_EXERCISES
 ): { pool: IntervalExercise[]; leftOut: number; cautious: string[] } {
   const level = (e: IntervalExercise) => injuryWarning(e.name, injuries)?.level ?? null;
-  const fits = (e: IntervalExercise) => e.focus.includes(plan.focus) && (plan.dumbbells || e.equipment === "bodyweight");
+  const fits = (e: IntervalExercise) => e.focus.includes(plan.focus) && allows(plan, e);
   const safe = all.filter((e) => !level(e));
   const short = exercisesPerRound(plan.minutes) - safe.filter(fits).length;
   const cautious = short > 0 ? all.filter((e) => fits(e) && level(e) === "caution").slice(0, short) : [];
@@ -183,18 +191,19 @@ const RHYTHM: Record<IntervalFocus, Kind[]> = {
 };
 
 /**
- * The exercises of one round: of the focus, with dumbbells when there are
- * some (about half of the round), alternating the kinds of effort, and
+ * The exercises of one round: of the focus, with the equipment chosen when
+ * there is some (about half of the round), alternating the kinds of effort, and
  * leaving out those of the other circuit while there are others.
  */
 export function pickRound(
-  plan: Pick<IntervalPlan, "focus" | "dumbbells">,
+  plan: Pick<IntervalPlan, "focus" | "dumbbells" | "trx">,
   count: number,
   rand: () => number,
   avoid: Set<string> = new Set(),
   pool: IntervalExercise[] = INTERVAL_EXERCISES
 ): IntervalExercise[] {
-  const usable = pool.filter((e) => e.focus.includes(plan.focus) && (plan.dumbbells || e.equipment === "bodyweight"));
+  const usable = pool.filter((e) => e.focus.includes(plan.focus) && allows(plan, e));
+  const equipped = plan.dumbbells || !!plan.trx;
   // Exercises of the other circuit come last, so the two differ as much as they can.
   const shuffled = shuffle(usable, rand);
   const ordered = [...shuffled.filter((e) => !avoid.has(e.name)), ...shuffled.filter((e) => avoid.has(e.name))];
@@ -204,11 +213,11 @@ export function pickRound(
   for (let i = 0; picked.length < count && i < count * 4; i++) {
     const kind = rhythm[i % rhythm.length];
     const candidates = ordered.filter((e) => e.kind === kind && !picked.includes(e));
-    // With dumbbells, about half the round uses them, the rest stays bodyweight.
-    const wantDumbbell = plan.dumbbells && picked.filter((e) => e.equipment === "dumbbell").length < dumbbellShare && i % 2 === 0;
+    // With equipment, about half the round uses it, the rest stays bodyweight.
+    const wantEquipment = equipped && picked.filter((e) => e.equipment !== "bodyweight").length < dumbbellShare && i % 2 === 0;
     const fresh = candidates.filter((e) => !avoid.has(e.name));
     const pool2 = fresh.length ? fresh : candidates;
-    const next = pool2.find((e) => (e.equipment === "dumbbell") === wantDumbbell) ?? pool2[0];
+    const next = pool2.find((e) => (e.equipment !== "bodyweight") === wantEquipment) ?? pool2[0];
     if (next) picked.push(next);
   }
   // A focus short of one kind: fill with whatever is left.

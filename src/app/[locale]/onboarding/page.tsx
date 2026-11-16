@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 const GOALS: TrainingGoal[] = ["strength", "hypertrophy", "endurance", "fat_loss", "general_fitness"];
 const LEVELS: FitnessLevel[] = ["beginner", "intermediate", "advanced"];
 const SEXES: Sex[] = ["male", "female", "other", "undisclosed"];
-const EQUIPMENT: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "pullup_bar", "bodyweight", "kettlebell", "bands", "other"];
+const EQUIPMENT: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "pullup_bar", "bodyweight", "kettlebell", "bands", "suspension", "other"];
 const GYM_SET: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "pullup_bar", "bodyweight"];
 const HOME_SET: Equipment[] = ["dumbbell", "bodyweight", "bands"];
 const STEPS = 4;

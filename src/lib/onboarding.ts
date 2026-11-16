@@ -44,6 +44,11 @@ export function recommendPrograms(
       .sort((a, b) => Number(b.level === input.level) - Number(a.level === input.level));
     if (ofSport.length) picks = [...ofSport, ...pool.filter((t) => !ofSport.includes(t))].slice(0, 3);
   }
+  // Straps at hand: a TRX program of one's level comes first, unless one's sport has its own.
+  if (input.equipment.includes("suspension") && !picks.some((t) => programCategory(t) === "trx")) {
+    const trx = catalogue.filter((t) => programCategory(t) === "trx").sort((a, b) => Number(b.level === input.level) - Number(a.level === input.level))[0];
+    if (trx) picks = input.sport ? [...picks.slice(0, 2), trx] : [trx, ...picks.slice(0, 2)];
+  }
   return picks.map((t) => {
     const { structure, swapped } = adaptToEquipment(t.structure, input.equipment, input.injured);
     return swapped ? { ...t, structure, adapted: true } : t;

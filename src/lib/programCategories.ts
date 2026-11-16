@@ -3,9 +3,9 @@ import { PROGRAM_TEMPLATES, type ProgramGoal, type ProgramTemplate } from "./pro
 import type { PainArea } from "./pain";
 
 /** The shelves of the ready-made programs, as an athlete looks for them. */
-export type ProgramCategory = "bodybuilding" | "strength" | "fitness" | "callisthenics" | "running" | "swimming" | "cycling" | "vaulting" | "injury";
+export type ProgramCategory = "bodybuilding" | "strength" | "fitness" | "callisthenics" | "running" | "swimming" | "cycling" | "vaulting" | "trx" | "injury";
 
-export const CATEGORY_ORDER: ProgramCategory[] = ["bodybuilding", "strength", "fitness", "callisthenics", "running", "swimming", "cycling", "vaulting", "injury"];
+export const CATEGORY_ORDER: ProgramCategory[] = ["bodybuilding", "strength", "fitness", "callisthenics", "running", "swimming", "cycling", "vaulting", "trx", "injury"];
 
 const BY_SPORT: Partial<Record<Sport, ProgramCategory>> = { run: "running", swim: "swimming", bike: "cycling", vaulting: "vaulting" };
 
@@ -20,6 +20,8 @@ const BY_ID: Record<string, ProgramCategory> = {
   "callisthenics-debutant": "callisthenics",
   "callisthenics-intermediaire": "callisthenics",
   "callisthenics-avance": "callisthenics",
+  "trx-debutant": "trx",
+  "trx-intermediaire": "trx",
 };
 
 const BY_GOAL: Record<ProgramGoal, ProgramCategory> = {

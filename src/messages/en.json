@@ -255,6 +255,7 @@
     "equip_bodyweight": "Bodyweight",
     "equip_kettlebell": "Kettlebells",
     "equip_bands": "Bands",
+    "equip_suspension": "TRX straps",
     "equip_other": "Other",
     "consentTitle": "Health data consent (GDPR Art. 9)",
     "consentText": "I explicitly consent to TrainTrack processing my health and fitness data (workouts, body metrics) to provide the service. You can withdraw consent and delete your data at any time in Settings.",
@@ -1290,7 +1291,7 @@
   },
   "intervals": {
     "title": "Callisthenics session",
-    "hint": "Timed, bodyweight or dumbbells, 10 to 45 min",
+    "hint": "Timed, bodyweight, dumbbells or TRX, 10 to 45 min",
     "intro": "Exercises back to back on the clock: a work time, a rest time, and a minute of recovery between rounds.",
     "focus": "Area",
     "focus_full": "Full body",
@@ -1299,7 +1300,9 @@
     "equipment": "Equipment",
     "bodyweight": "Bodyweight",
     "dumbbells": "With dumbbells",
+    "trx": "TRX straps",
     "withDumbbells": "dumbbells",
+    "withTrx": "TRX",
     "pattern": "Rhythm",
     "patternLabel": "{work} s / {rest} s",
     "patternHint_30-30": "30 s of work, 30 s of rest: ideal to start with.",
@@ -1435,7 +1438,8 @@
     "injuryCare": "These programs leave out the exercises that load the chosen area. They do not replace a health professional's advice: stop any exercise that hurts.",
     "injuryOthers": "Other programs with nothing to avoid ({area})",
     "injuryNone": "No other program suits this area.",
-    "injuryCaution": "A few exercises with care"
+    "injuryCaution": "A few exercises with care",
+    "cat_trx": "TRX (suspension)"
   },
   "demo": {
     "watch": "Watch the demo",

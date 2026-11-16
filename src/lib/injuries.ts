@@ -1,4 +1,5 @@
 import type { PainArea } from "./pain";
+import { TRX_EXERCISES } from "./trxExercises";
 
 /** An injury the athlete declared: where, and since when (YYYY-MM-DD). */
 export interface Injury {
@@ -197,6 +198,8 @@ export const INJURY_RULES: Record<string, Rules> = {
   "Bridge Hold": { lower_back: A, wrist: C, shoulder: C, neck: C },
   "Front Split Stretch": { hip: C, knee: C },
   "Pike Stretch": { lower_back: C },
+  // Suspension straps
+  ...Object.fromEntries(TRX_EXERCISES.map((e) => [e.name, e.injury])),
 };
 
 /**

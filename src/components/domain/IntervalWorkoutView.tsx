@@ -35,7 +35,7 @@ export function IntervalWorkoutView({ workout, sets, exercises }: { workout: Wor
   const minutes = Math.max(1, Math.round((workout.durationSec ?? 0) / 60));
   const rhythm = plan ? patternSeconds(plan.pattern) : null;
   const again = plan
-    ? `/intervals?focus=${plan.focus}&dumbbells=${plan.dumbbells ? 1 : 0}&pattern=${plan.pattern}&minutes=${plan.minutes}&seed=${plan.seed}`
+    ? `/intervals?focus=${plan.focus}&dumbbells=${plan.dumbbells ? 1 : 0}&trx=${plan.trx ? 1 : 0}&pattern=${plan.pattern}&minutes=${plan.minutes}&seed=${plan.seed}`
     : "/intervals";
 
   return (

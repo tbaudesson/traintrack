@@ -19,7 +19,7 @@ describe("programCategory", () => {
   });
 
   it("files the others by goal", () => {
-    for (const t of PROGRAM_TEMPLATES.filter((t) => t.goal === "hypertrophy")) expect(programCategory(t)).toBe("bodybuilding");
+    for (const t of PROGRAM_TEMPLATES.filter((t) => t.goal === "hypertrophy" && !t.id.startsWith("trx-"))) expect(programCategory(t)).toBe("bodybuilding");
     for (const t of PROGRAM_TEMPLATES.filter((t) => t.goal === "strength")) expect(programCategory(t)).toBe("strength");
   });
 

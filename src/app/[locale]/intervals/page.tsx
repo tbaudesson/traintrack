@@ -47,6 +47,7 @@ function initialPlan(): Partial<IntervalPlan> {
       return {
         focus: params.get("focus") as IntervalFocus,
         dumbbells: params.get("dumbbells") === "1",
+        trx: params.get("trx") === "1",
         pattern: params.get("pattern") as IntervalPattern,
         minutes: Number(params.get("minutes")),
         seed: Number(params.get("seed")) || undefined,
@@ -63,6 +64,7 @@ function sane(p: Partial<IntervalPlan>, fallback: IntervalPlan): IntervalPlan {
   return {
     focus: INTERVAL_FOCUSES.includes(p.focus as IntervalFocus) ? p.focus! : fallback.focus,
     dumbbells: typeof p.dumbbells === "boolean" ? p.dumbbells : fallback.dumbbells,
+    trx: typeof p.trx === "boolean" ? p.trx : fallback.trx,
     pattern: INTERVAL_PATTERNS.includes(p.pattern as IntervalPattern) ? p.pattern! : fallback.pattern,
     minutes: (INTERVAL_MINUTES as readonly number[]).includes(p.minutes ?? 0) ? p.minutes! : fallback.minutes,
     seed: p.seed && p.seed > 0 ? p.seed : fallback.seed,
@@ -99,6 +101,7 @@ export default function IntervalsPage() {
     const fallback: IntervalPlan = {
       focus: "full",
       dumbbells: !!athlete?.equipment?.includes("dumbbell"),
+      trx: !!athlete?.equipment?.includes("suspension"),
       pattern: defaultPattern(athlete?.fitnessLevel),
       minutes: 20,
       seed: newSeed(),
@@ -245,11 +248,15 @@ export default function IntervalsPage() {
         </ChoiceField>
 
         <ChoiceField label={t("equipment")}>
-          <Choice on={!plan.dumbbells} onClick={() => change({ dumbbells: false })}>
+          {/* The body alone, or with dumbbells, straps or both. */}
+          <Choice on={!plan.dumbbells && !plan.trx} onClick={() => change({ dumbbells: false, trx: false })}>
             {t("bodyweight")}
           </Choice>
-          <Choice on={plan.dumbbells} onClick={() => change({ dumbbells: true })}>
+          <Choice on={plan.dumbbells} onClick={() => change({ dumbbells: !plan.dumbbells })}>
             {t("dumbbells")}
+          </Choice>
+          <Choice on={!!plan.trx} onClick={() => change({ trx: !plan.trx })}>
+            {t("trx")}
           </Choice>
         </ChoiceField>
 
@@ -307,6 +314,7 @@ export default function IntervalsPage() {
                     <span className="flex-1">{xl(e.name)}</span>
                     {cautious.includes(e.name) && <InjuryBadge exerciseName={e.name} injuries={injuries} />}
                     {e.equipment === "dumbbell" && <span className="text-xs text-muted-foreground">{t("withDumbbells")}</span>}
+                    {e.equipment === "suspension" && <span className="text-xs text-muted-foreground">{t("withTrx")}</span>}
                     {(demoOf(e).video || demoOf(e).cue) && <DemoButton onClick={() => setDemo({ name: xl(e.name), ...demoOf(e) })} />}
                   </li>
                 ))}

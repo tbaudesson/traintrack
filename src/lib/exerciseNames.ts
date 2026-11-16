@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { useExercises } from "@/hooks/useExercises";
 import { useLocale } from "next-intl";
+import { TRX_EXERCISES } from "./trxExercises";
 
 /**
  * The library's exercises in French and German. The English name stays the
@@ -132,6 +133,7 @@ export const NAMES: Record<string, { fr: string; de: string }> = {
   "Dumbbell Lateral Lunge": { fr: "Fente latérale avec haltère", de: "Seitlicher Ausfallschritt mit Kurzhantel" },
   "Dumbbell Glute Bridge": { fr: "Pont fessier avec haltère", de: "Glute Bridge mit Kurzhantel" },
   "Dumbbell Hammer Curl": { fr: "Curl marteau aux haltères", de: "Hammer-Curl mit Kurzhanteln" },
+  ...Object.fromEntries(TRX_EXERCISES.map((e) => [e.name, { fr: e.fr.name, de: e.de.name }])),
 };
 
 export const DESCRIPTIONS: Record<string, { fr: string; de: string }> = {
@@ -471,6 +473,7 @@ export const DESCRIPTIONS: Record<string, { fr: string; de: string }> = {
     fr: "Debout, paumes face à face, monter les haltères vers les épaules, redescendre lentement.",
     de: "Im Stand, Handflächen zueinander, Kurzhanteln zu den Schultern curlen, langsam absenken.",
   },
+  ...Object.fromEntries(TRX_EXERCISES.map((e) => [e.name, { fr: e.fr.description, de: e.de.description }])),
 };
 
 type Lang = "fr" | "de";

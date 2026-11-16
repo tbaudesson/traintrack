@@ -255,6 +255,7 @@
     "equip_bodyweight": "Poids du corps",
     "equip_kettlebell": "Kettlebells",
     "equip_bands": "Élastiques",
+    "equip_suspension": "Sangles TRX",
     "equip_other": "Autre",
     "consentTitle": "Consentement données de santé (RGPD Art. 9)",
     "consentText": "Je consens explicitement à ce que TrainTrack traite mes données de santé et de fitness (séances, mensurations) pour fournir le service. Vous pouvez retirer votre consentement et supprimer vos données à tout moment dans les Réglages.",
@@ -1290,7 +1291,7 @@
   },
   "intervals": {
     "title": "Séance callisthenics",
-    "hint": "Minutée, au poids du corps ou aux haltères, de 10 à 45 min",
+    "hint": "Minutée, au poids du corps, aux haltères ou au TRX, de 10 à 45 min",
     "intro": "Des exercices enchaînés au chrono : un temps d'effort, un temps de repos, et une minute de récupération entre les tours.",
     "focus": "Zone travaillée",
     "focus_full": "Full body",
@@ -1299,7 +1300,9 @@
     "equipment": "Matériel",
     "bodyweight": "Poids du corps",
     "dumbbells": "Avec haltères",
+    "trx": "Sangles TRX",
     "withDumbbells": "haltères",
+    "withTrx": "TRX",
     "pattern": "Rythme",
     "patternLabel": "{work} s / {rest} s",
     "patternHint_30-30": "30 s d'effort, 30 s de repos : idéal pour débuter.",
@@ -1435,7 +1438,8 @@
     "injuryCare": "Ces programmes évitent les exercices qui sollicitent la zone choisie. Ils ne remplacent pas l'avis d'un professionnel de santé : arrêtez un exercice qui fait mal.",
     "injuryOthers": "Autres programmes sans exercice à éviter ({area})",
     "injuryNone": "Aucun autre programme ne convient pour cette zone.",
-    "injuryCaution": "Quelques exercices avec prudence"
+    "injuryCaution": "Quelques exercices avec prudence",
+    "cat_trx": "TRX (sangles)"
   },
   "demo": {
     "watch": "Voir la démo",
