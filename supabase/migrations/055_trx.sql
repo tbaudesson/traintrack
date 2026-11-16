@@ -1,11 +1,11 @@
 -- 055_trx.sql
 -- Suspension straps (TRX): 17 exercises in the library, in English, French
 -- and German, and two programs (beginner and intermediate) in the three
--- languages. The app files them on a TRX shelf, offers "TRX straps" in the
+-- languages. The app files them on a TRX shelf, offers TRX straps in the
 -- equipment of the sign-up and of the timed sessions.
 --
 -- Deploy: apply this file first, then the code (the app would otherwise add
--- the exercises as the athlete's own the first time).
+-- the exercises as the athlete’s own the first time).
 --
 -- Safe to re-run. All-or-nothing: wrapped in one transaction.
 
