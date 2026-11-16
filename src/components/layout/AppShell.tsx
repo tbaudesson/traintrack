@@ -81,7 +81,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <>
       <OfflineBanner />
       <OfflineWarmup />
-      <main id="main-content" className="flex-1 overflow-y-auto pb-20">
+      <main id="main-content" className="t-app-main flex-1 overflow-y-auto pb-20">
         {children}
       </main>
       <BottomNav />
