@@ -13,6 +13,7 @@ import { useBodyMetrics } from "@/hooks/useBodyMetrics";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
 import { dayMinutes } from "@/lib/express";
 import { fuelling, sportDay } from "@/lib/sportNutrition";
+import { useNutritionGuidance } from "@/hooks/useNutritionGuidance";
 import { localDate } from "@/lib/dates";
 import { useFormat } from "@/lib/format";
 import { DEFAULT_MEAL_PREFS, DIETS, EXCLUSIONS, INGREDIENTS, type Exclusion, type Ingredient, type MealPrefs } from "@/lib/mealCatalog";
@@ -35,6 +36,7 @@ export function MealPlanCard({ targets, entries, onSetTargets }: { targets?: { c
   const tc = useTranslations("catalog");
   const { sport } = useAppPrefs();
   const weightKg = useBodyMetrics().find((m) => m.weightKg)?.weightKg;
+  const guidance = useNutritionGuidance();
   const { num } = useFormat();
   const { user } = useAuth();
   const profile = useAthleteProfileOrNull();
@@ -76,7 +78,7 @@ export function MealPlanCard({ targets, entries, onSetTargets }: { targets?: { c
 
   // With the weight known, the day is shared out for one's sport; else as before.
   const goal = profile?.goals?.[0];
-  const day = weightKg ? sportDay({ weightKg, calories: targets.calories, type, sport, goal }) : null;
+  const day = weightKg && guidance ? sportDay(guidance, { weightKg, calories: targets.calories, type, sport, goal }) : null;
   const plan = planDay({
     calories: targets.calories,
     protein: day?.protein ?? targets.protein ?? Math.round((targets.calories * 0.25) / 4),
@@ -86,7 +88,7 @@ export function MealPlanCard({ targets, entries, onSetTargets }: { targets?: { c
     swaps,
     day: day ? { calories: day.calories, carbs: day.carbs } : undefined,
   });
-  const around = weightKg && type !== "rest" ? fuelling({ weightKg, sport, minutes: minutes || 60, time: profile?.trainingTime }) : [];
+  const around = weightKg && guidance && type !== "rest" ? fuelling(guidance, { weightKg, sport, minutes, time: profile?.trainingTime }) : [];
   const perKg = (g: number) => num(Math.round((g / (weightKg ?? 1)) * 10) / 10);
   const added = (name: string, slot: PlanSlot) => entries.some((e) => e.name === name && e.meal === slot);
 
@@ -189,7 +191,7 @@ export function MealPlanCard({ targets, entries, onSetTargets }: { targets?: { c
           </ul>
         </div>
       )}
-      {!weightKg && <p className="text-xs text-muted-foreground">{t("needWeight")}</p>}
+      {guidance && !weightKg && <p className="text-xs text-muted-foreground">{t("needWeight")}</p>}
       <p className="text-xs text-muted-foreground">{t("hint")}</p>
 
       <Dialog open={editing} onOpenChange={setEditing}>

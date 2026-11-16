@@ -30,17 +30,19 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Check, Trash2, Loader2, ShieldCheck, Plus, Users2, CreditCard, ClipboardList, Mail, Pencil, X, type LucideIcon } from "lucide-react";
+import { Apple, Check, Trash2, Loader2, ShieldCheck, Plus, Users2, CreditCard, ClipboardList, Mail, Pencil, X, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TemplatesTab } from "@/components/domain/TemplatesTab";
+import { NutritionGuidanceTab } from "@/components/domain/NutritionGuidanceTab";
 
-type Tab = "users" | "invitations" | "plans" | "templates" | "gdpr";
+type Tab = "users" | "invitations" | "plans" | "templates" | "nutrition" | "gdpr";
 
 const TABS: { id: Tab; icon: LucideIcon }[] = [
   { id: "users", icon: Users2 },
   { id: "invitations", icon: Mail },
   { id: "plans", icon: CreditCard },
   { id: "templates", icon: ClipboardList },
+  { id: "nutrition", icon: Apple },
   { id: "gdpr", icon: ShieldCheck },
 ];
 
@@ -101,6 +103,7 @@ export default function AdminPage() {
           {tab === "invitations" && <InvitationsTab />}
           {tab === "plans" && <PlansTab />}
           {tab === "templates" && <TemplatesTab />}
+          {tab === "nutrition" && <NutritionGuidanceTab />}
           {tab === "gdpr" && <GdprTab />}
         </main>
       </div>

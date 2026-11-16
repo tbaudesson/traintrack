@@ -1,5 +1,39 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { fuelling, sportDay } from "./sportNutrition";
+import { fuelling as fuel, parseGuidance, sportDay as day, type NutritionGuidance } from "./sportNutrition";
+
+// The references as migration 056 seeds them: the tests read the same data the app does.
+const sql = readFileSync("supabase/migrations/056_nutrition_guidance.sql", "utf8");
+const g = parseGuidance(sql.slice(sql.indexOf("{"), sql.lastIndexOf("}") + 1))!;
+const sportDay = (input: Parameters<typeof day>[1]) => day(g, input);
+const fuelling = (input: Parameters<typeof fuel>[1]) => fuel(g, input);
+
+describe("the nutrition references", () => {
+  it("are seeded whole by migration 056", () => {
+    expect(g).not.toBeNull();
+    expect(Object.keys(g.families)).toContain("general");
+  });
+
+  it("are refused when they do not hold together, so the app keeps the last good ones", () => {
+    const broken = (change: (x: NutritionGuidance) => void) => {
+      const copy = structuredClone(g);
+      change(copy);
+      return parseGuidance(JSON.stringify(copy));
+    };
+    expect(parseGuidance("not json")).toBeNull();
+    expect(broken((x) => { x.families.endurance.carbs.long = [10, 6]; })).toBeNull();
+    expect(broken((x) => { x.families.strength.protein = 9; })).toBeNull();
+    expect(broken((x) => { x.sports.running = "nowhere"; })).toBeNull();
+    expect(broken((x) => { delete (x.families as Record<string, unknown>).general; })).toBeNull();
+    expect(broken((x) => { x.fat.share = 0.9; })).toBeNull();
+  });
+
+  it("send a sport left out to the general family", () => {
+    const copy = structuredClone(g);
+    delete copy.sports.vaulting;
+    expect(day(parseGuidance(JSON.stringify(copy))!, { weightKg: 50, calories: 2000, type: "training", sport: "vaulting" }).carbsRange).toEqual(g.families.general.carbs.training);
+  });
+});
 
 describe("a day's food for one's sport", () => {
   it("keeps the calories of the goal on a training day, and shares them out by the kilo", () => {
@@ -47,6 +81,11 @@ describe("food around a session", () => {
     expect(fuelling({ weightKg: 70, sport: "running", minutes: 90 }).find((x) => x.moment === "during")).toMatchObject({ carbs: [30, 60], waterPerHour: [400, 800] });
     expect(fuelling({ weightKg: 70, sport: "cycling", minutes: 180 }).find((x) => x.moment === "during")!.carbs).toEqual([60, 90]);
     expect(fuelling({ weightKg: 70, sport: "running", minutes: 45 }).some((x) => x.moment === "during")).toBe(false);
+  });
+
+  it("takes the usual length of a session when it is not known", () => {
+    const after = fuelling({ weightKg: 70, sport: "strength", minutes: 0, time: "18:00" }).find((x) => x.moment === "after")!;
+    expect(after.at).toBe("19:30");
   });
 
   it("gives no time when the session's time is unknown", () => {
