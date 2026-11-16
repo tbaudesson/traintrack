@@ -979,6 +979,26 @@ await test("the menu wheel works from the keyboard: in, turned, opened, and clos
   expect(await page.evaluate(() => document.activeElement?.getAttribute("aria-label") === "Ouvrir le menu"), "the focus is not back on the menu button");
 });
 
+await test("in Dynamic the menu is a dial: slices turn with the arrows, the outer ring leads to a page", async () => {
+  await page.evaluate(() => { const p = JSON.parse(localStorage.getItem("traintrack.prefs") || "{}"); p.style = "dynamic"; localStorage.setItem("traintrack.prefs", JSON.stringify(p)); });
+  await page.goto(`${BASE}/fr`);
+  await page.getByRole("button", { name: "Ouvrir le menu" }).click();
+  const dial = page.getByRole("navigation", { name: "Toutes les sections" });
+  await dial.waitFor({ timeout: 5000 });
+  expect(await dial.evaluate((el) => el === document.activeElement), "the dial does not take the focus");
+  const pressed = () => dial.locator('button[aria-pressed="true"]').innerText();
+  const first = (await pressed()).trim();
+  await page.keyboard.press("ArrowRight");
+  const second = (await pressed()).trim();
+  expect(first !== second, "the arrow did not turn the dial");
+  const links = dial.getByRole("link");
+  expect((await links.count()) >= 3, "the outer ring has no destinations");
+  const href = await links.first().getAttribute("href");
+  await links.first().click();
+  await page.waitForURL((url) => url.pathname === href, { timeout: 10000 });
+  await page.evaluate(() => { const p = JSON.parse(localStorage.getItem("traintrack.prefs") || "{}"); p.style = "classic"; localStorage.setItem("traintrack.prefs", JSON.stringify(p)); });
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });
