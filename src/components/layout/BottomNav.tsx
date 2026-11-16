@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
@@ -13,6 +13,16 @@ import { NavigationBreadcrumb } from "@/components/navigation/NavigationBreadcru
 import { NavigationListFallback } from "@/components/navigation/NavigationListFallback";
 import { useGlobalNavigationHidden } from "@/hooks/useSessionFocus";
 import { navigationIcon } from "@/components/navigation/navigationIcons";
+import { useAppPrefs } from "@/hooks/useAppPrefs";
+
+// The desktop rail exists only where it shows: Dynamic, from 1024 px.
+const WIDE = "(min-width: 1024px)";
+const subscribeWide = (callback: () => void) => {
+  const query = window.matchMedia(WIDE);
+  query.addEventListener("change", callback);
+  return () => query.removeEventListener("change", callback);
+};
+const isWide = () => window.matchMedia(WIDE).matches;
 
 /** Bottom launcher for the reusable two-level circular navigation. */
 export function BottomNav() {
@@ -25,6 +35,9 @@ export function BottomNav() {
   const [listMode, setListMode] = useState(false);
   const [selected, setSelected] = useState<NavigationSectionId | null>(null);
   const [preferenceVersion, setPreferenceVersion] = useState(0);
+  const { style } = useAppPrefs();
+  const wide = useSyncExternalStore(subscribeWide, isWide, () => false);
+  const showRail = style === "dynamic" && wide;
   // During an active session the wheel is gone, and it comes back closed.
   const hidden = useGlobalNavigationHidden();
   if (hidden && open) setOpen(false);
@@ -63,13 +76,13 @@ export function BottomNav() {
 
   if (hidden) return null;
   return <>
-    <aside className="t-dynamic-rail fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border p-3" aria-label={common("mainNav")}>
+    {showRail && <aside className="t-dynamic-rail fixed inset-y-0 left-0 z-40 hidden w-64 flex-col overflow-y-auto border-r border-border p-3" aria-label={common("mainNav")}>
       <Link href="/" className="flex min-h-14 items-center gap-3 rounded-xl px-2">
         <Image src="/icons/logo.png" alt="" width={38} height={38} unoptimized />
         <span className="t-wordmark text-xl"><span>Train</span>Track</span>
       </Link>
       <p className="t-kicker mb-2 mt-5 px-3">{common("mainNav")}</p>
-      <nav className="space-y-1">
+      <nav className="space-y-1" aria-label={t("allSections")}>
         {sections.map((entry) => {
           const active = entry.id === railSection?.id;
           return (
@@ -82,7 +95,7 @@ export function BottomNav() {
       </nav>
       {railSection && <div className="mt-6 border-t border-border/70 pt-4">
         <p className="t-kicker mb-2 px-3">{t(railSection.key)}</p>
-        <nav className="space-y-0.5">
+        <nav className="space-y-0.5" aria-label={t(railSection.key)}>
           {railSection.children.map((item) => (
             <Link key={item.id} href={item.href} aria-current={item.id === railCurrent ? "page" : undefined} className="t-rail-sub-link flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm">
               <span className="text-accent-text">{navigationIcon(item.icon)}</span>
@@ -91,7 +104,7 @@ export function BottomNav() {
           ))}
         </nav>
       </div>}
-    </aside>
+    </aside>}
     {open && <button type="button" aria-label={common("close")} className="t-arc-scrim fixed inset-0 z-40" onClick={() => setOpen(false)} />}
     {open && <aside ref={panelRef} onClick={(event) => { if ((event.target as HTMLElement).closest("a")) setOpen(false); }} className="t-nav-panel fixed inset-x-3 bottom-24 z-50 mx-auto flex max-w-md flex-col items-center gap-3 rounded-[2rem] border bg-[var(--nav-panel)] p-4 shadow-2xl backdrop-blur-xl" aria-label={common("mainNav")}>
       <div className="flex w-full items-center justify-between"><NavigationBreadcrumb section={selected ? section : undefined} onRoot={() => setSelected(null)} /><button type="button" onClick={() => setListMode((value) => !value)} className="rounded-full p-2 hover:bg-muted" aria-label={t("toggleList")} aria-pressed={listMode}><Menu className="size-5" /></button></div>
