@@ -4673,7 +4673,7 @@ COMMIT;
 --
 -- Safe to re-run: an admin's changes are kept.
 
-INSERT INTO app_settings (key, value) VALUES ('nutrition_guidance', $guidance$
+INSERT INTO app_settings (key, value) VALUES ('nutrition_guidance', '
 {
   "sports": {
     "bodybuilding": "strength",
