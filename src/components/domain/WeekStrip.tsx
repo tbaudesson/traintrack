@@ -114,7 +114,7 @@ export function WeekStrip({
                 d.status === "done" && "bg-green-500 text-white",
                 d.status === "planned" && "border-2 border-accent-500 text-accent-text",
                 d.status === "missed" && "border border-dashed border-muted-foreground/60 text-muted-foreground",
-                d.status === "rest" && "text-muted-foreground/60",
+                d.status === "rest" && "text-muted-foreground",
                 d.today && d.status !== "done" && "ring-2 ring-accent-500/40 ring-offset-2 ring-offset-background"
               )}
             >
