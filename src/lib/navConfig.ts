@@ -99,7 +99,12 @@ export function sectionForPath(pathname: string): NavigationSectionDef | undefin
   const matches = NAVIGATION_CATALOG.flatMap((section) => section.children.map((item) => ({ section, item })))
     .filter(({ item }) => item.href !== "/" && (pathname === item.href || pathname.startsWith(`${item.href}/`)))
     .sort((a, b) => b.item.href.length - a.item.href.length);
-  return matches[0]?.section ?? (pathname === "/" ? NAVIGATION_CATALOG[0] : undefined);
+  // Several entries can share a page (Settings is under Training too, for Import):
+  // the one named after the page wins, as in currentItemId.
+  const page = pathname.split("/").filter(Boolean).pop();
+  const longest = matches[0]?.item.href.length;
+  const named = matches.find(({ item }) => item.href.length === longest && item.id === page);
+  return (named ?? matches[0])?.section ?? (pathname === "/" ? NAVIGATION_CATALOG[0] : undefined);
 }
 
 const KEY = "traintrack.navWheel";

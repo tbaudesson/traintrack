@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   NAVIGATION_CATALOG, canAccessNavigation, currentItemId, getNavigationPreferences, migrateNavigationPreferences,
-  navigationForAccess, saveNavigationPreferences,
+  navigationForAccess, saveNavigationPreferences, sectionForPath,
 } from "./navConfig";
 
 describe("hierarchical navigation catalog", () => {
@@ -46,6 +46,13 @@ describe("the current item of a section", () => {
     expect(currentItemId(section("performance"), "/progress")).toBe("progress");
     expect(currentItemId(section("coaching"), "/coach")).toBe("athletes");
     expect(currentItemId(section("train"), "/programs/12")).toBe("programs");
+  });
+
+  it("puts a shared page in the section of the entry named after it", () => {
+    expect(sectionForPath("/settings")?.id).toBe("profileAdmin");
+    expect(sectionForPath("/programs/12")?.id).toBe("train");
+    expect(sectionForPath("/coach")?.id).toBe("coaching");
+    expect(sectionForPath("/")?.id).toBe("train");
   });
 
   it("matches the home page exactly, and nothing for a page outside the section", () => {
