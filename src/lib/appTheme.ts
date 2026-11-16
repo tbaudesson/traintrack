@@ -86,12 +86,14 @@ export interface AppPrefs {
   rest: RestPrefs;
   /** The voice coach of the timed sessions. */
   voice: boolean;
+  /** The menu: round buttons or the dial; null follows the style (the dial in Dynamic). */
+  wheel: "pills" | "dial" | null;
 }
 
 const PREFS_KEY = "traintrack.prefs";
 const PREFS_EVENT = "traintrack-prefs";
 const DEFAULT_REST: RestPrefs = { defaultSec: 90, warmupSec: 60, sound: false, vibrate: true, notify: false };
-const DEFAULT_PREFS: AppPrefs = { style: "classic", sport: null, sport2: null, allSports: false, silhouette: "male", rest: DEFAULT_REST, voice: true };
+const DEFAULT_PREFS: AppPrefs = { style: "classic", sport: null, sport2: null, allSports: false, silhouette: "male", rest: DEFAULT_REST, voice: true, wheel: null };
 
 let cached: { raw: string | null; prefs: AppPrefs } | null = null;
 
@@ -127,12 +129,16 @@ export function getPrefs(): AppPrefs {
       notify: typeof parsed.rest?.notify === "boolean" ? parsed.rest.notify : DEFAULT_REST.notify,
     },
     voice: typeof parsed.voice === "boolean" ? parsed.voice : true,
+    wheel: parsed.wheel === "pills" || parsed.wheel === "dial" ? parsed.wheel : null,
   };
   cached = { raw, prefs };
   return prefs;
 }
 
 export const getServerPrefs = () => DEFAULT_PREFS;
+
+/** Whether the menu is the dial: chosen in Settings, otherwise Dynamic's own. */
+export const usesDial = (prefs: Pick<AppPrefs, "style" | "wheel">) => (prefs.wheel ? prefs.wheel === "dial" : prefs.style === "dynamic");
 
 export function subscribePrefs(callback: () => void): () => void {
   window.addEventListener(PREFS_EVENT, callback);

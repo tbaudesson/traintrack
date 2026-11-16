@@ -813,7 +813,11 @@ html.style-dynamic [data-slot="card"] { border-radius: 0.9rem; }
 html.style-dynamic .t-hero { border-radius: 1rem; }
 
 /* Dynamic's dial: no card around it, the metal and the slices carry it. */
-html.style-dynamic .t-nav-panel-dial {
+.t-nav-panel-dial {
+  /* Always on a dark veil: light text around the dial, whatever the style. */
+  --foreground: #f6f7fb;
+  --muted-foreground: #c3c8d2;
+  color: var(--foreground);
   inset-inline: 0.25rem;
   max-width: 25rem;
   background: transparent;
@@ -832,7 +836,7 @@ html.style-dynamic .t-nav-panel-dial {
 .t-dial-destination[aria-current="page"] { color: var(--performance); }
 .t-dial-destination:hover, .t-dial-slice:hover { filter: brightness(1.15); }
 .t-dial-active { filter: drop-shadow(0 0 6px var(--accent-500)); }
-html.style-dynamic .t-arc-scrim { background: rgb(4 5 8 / 0.88); }
+.t-arc-scrim.t-arc-scrim-dial { background: rgb(4 5 8 / 0.88); }
 
 /* Soft: pastel, very round, light shadows, no hard edges. */
 html.style-soft {

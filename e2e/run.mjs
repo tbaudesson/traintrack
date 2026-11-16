@@ -1003,6 +1003,25 @@ await test("in Dynamic the menu is a dial: slices turn with the arrows, the oute
   await page.evaluate(() => { const p = JSON.parse(localStorage.getItem("traintrack.prefs") || "{}"); p.style = "classic"; localStorage.setItem("traintrack.prefs", JSON.stringify(p)); });
 });
 
+await test("in Classic the dial can be chosen in Settings, and the round buttons back", async () => {
+  await page.goto(`${BASE}/fr/settings`);
+  const looks = page.getByRole("group", { name: "Apparence de la roue" });
+  await looks.getByRole("button", { name: "Cadran" }).click();
+  expect((await looks.getByRole("button", { name: "Cadran" }).getAttribute("aria-pressed")) === "true", "the dial is not chosen");
+  await page.goto(`${BASE}/fr`);
+  await page.getByRole("button", { name: "Ouvrir le menu" }).click();
+  await page.getByRole("navigation", { name: "Toutes les sections" }).locator(".t-dial-slice").first().waitFor({ timeout: 5000 });
+  await page.keyboard.press("Escape");
+  await page.goto(`${BASE}/fr/settings`);
+  await page.getByRole("group", { name: "Apparence de la roue" }).getByRole("button", { name: "Pastilles" }).click();
+  await page.goto(`${BASE}/fr`);
+  await page.getByRole("button", { name: "Ouvrir le menu" }).click();
+  await page.waitForTimeout(300);
+  expect(!(await page.locator(".t-dial").count()), "the dial is still there after choosing the round buttons");
+  await page.keyboard.press("Escape");
+  await page.evaluate(() => { const p = JSON.parse(localStorage.getItem("traintrack.prefs") || "{}"); delete p.wheel; localStorage.setItem("traintrack.prefs", JSON.stringify(p)); });
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });

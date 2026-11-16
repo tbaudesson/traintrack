@@ -942,6 +942,9 @@
     "b_level_5": "Reached level 5"
   },
   "appearance": {
+    "wheelLook": "Wheel look",
+    "wheelPills": "Buttons",
+    "wheelDial": "Dial",
     "section": "Appearance",
     "mode": "Theme",
     "light": "Light",

@@ -942,6 +942,9 @@
     "b_level_5": "Level 5 erreicht"
   },
   "appearance": {
+    "wheelLook": "Aussehen des Menüs",
+    "wheelPills": "Knöpfe",
+    "wheelDial": "Drehrad",
     "section": "Darstellung",
     "mode": "Design",
     "light": "Hell",

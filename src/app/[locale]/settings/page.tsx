@@ -25,7 +25,7 @@ import { useAthleteProfile, updateFitnessLevel, updateTrainingSchedule } from "@
 import { trainingCalendar } from "@/lib/ics";
 import type { FitnessLevel } from "@/db";
 import {
-  getMode, applyMode, getAccent, applyAccent, ACCENTS, APP_STYLES, FAVORITE_SPORTS, REST_DEFAULTS, REST_WARMUPS, savePrefs,
+  getMode, applyMode, getAccent, applyAccent, ACCENTS, APP_STYLES, FAVORITE_SPORTS, REST_DEFAULTS, REST_WARMUPS, savePrefs, usesDial,
   type AppStyle, type ThemeMode, type Accent, type Silhouette,
 } from "@/lib/appTheme";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
@@ -674,6 +674,16 @@ export default function SettingsPage() {
             </Button>
           }
         >
+          <div className="mb-3 space-y-1.5">
+            <p className="text-xs font-medium text-muted-foreground" id="wheel-look">{ta("wheelLook")}</p>
+            <div className="grid grid-cols-2 gap-2" role="group" aria-labelledby="wheel-look">
+              {(["pills", "dial"] as const).map((look) => (
+                <Choice key={look} on={usesDial(prefs) === (look === "dial")} onClick={() => savePrefs({ wheel: look })}>
+                  {ta(look === "dial" ? "wheelDial" : "wheelPills")}
+                </Choice>
+              ))}
+            </div>
+          </div>
           <p className="mb-3 text-xs text-muted-foreground">{ta("navDesc")}</p>
           <div className="grid grid-cols-2 gap-2">
             {WHEEL_CATALOG.filter((item) => canShowNav(item.id)).map((item) => {

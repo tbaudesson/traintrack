@@ -942,6 +942,9 @@
     "b_level_5": "Niveau 5 atteint"
   },
   "appearance": {
+    "wheelLook": "Apparence de la roue",
+    "wheelPills": "Pastilles",
+    "wheelDial": "Cadran",
     "section": "Apparence",
     "mode": "Thème",
     "light": "Clair",
