@@ -833,12 +833,12 @@ export default function SettingsPage() {
         <Card className="border-red-200 dark:border-red-900">
           <CardContent className="space-y-3 py-4">
             <div className="flex items-center gap-2">
-              <Trash2 className="h-4 w-4 text-red-600" />
-              <h2 className="text-sm font-semibold text-red-600">{t("dangerZone")}</h2>
+              <Trash2 className="h-4 w-4 text-red-700 dark:text-red-400" aria-hidden="true" />
+              <h2 className="text-sm font-semibold text-red-700 dark:text-red-400">{t("dangerZone")}</h2>
             </div>
             <p className="text-xs text-muted-foreground">{t("deleteAccountDesc")}</p>
             {!showDelete ? (
-              <Button variant="destructive" className="w-full" onClick={() => setShowDelete(true)}>
+              <Button variant="destructive" className="w-full text-red-700 dark:text-red-300" onClick={() => setShowDelete(true)}>
                 <Trash2 className="mr-2 h-4 w-4" />
                 {t("deleteAccount")}
               </Button>
