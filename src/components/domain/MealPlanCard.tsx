@@ -2,13 +2,17 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Check, Plus, RefreshCw, SlidersHorizontal, Utensils } from "lucide-react";
+import { Check, Clock, Plus, RefreshCw, SlidersHorizontal, Utensils } from "lucide-react";
 import type { NutritionEntry } from "@/db";
 import { useAuth } from "@/contexts/AuthContext";
 import { updateTrainingSchedule, useAthleteProfileOrNull } from "@/hooks/useAthleteProfile";
 import { addNutritionEntry } from "@/hooks/useNutrition";
 import { useTrainablePrograms } from "@/hooks/usePrograms";
 import { useWorkouts } from "@/hooks/useWorkouts";
+import { useBodyMetrics } from "@/hooks/useBodyMetrics";
+import { useAppPrefs } from "@/hooks/useAppPrefs";
+import { dayMinutes } from "@/lib/express";
+import { fuelling, sportDay } from "@/lib/sportNutrition";
 import { localDate } from "@/lib/dates";
 import { useFormat } from "@/lib/format";
 import { DEFAULT_MEAL_PREFS, DIETS, EXCLUSIONS, INGREDIENTS, type Exclusion, type Ingredient, type MealPrefs } from "@/lib/mealCatalog";
@@ -28,6 +32,9 @@ export function MealPlanCard({ targets, entries, onSetTargets }: { targets?: { c
   const tm = useTranslations("meals");
   const tf = useTranslations("food");
   const tn = useTranslations("nutrition");
+  const tc = useTranslations("catalog");
+  const { sport } = useAppPrefs();
+  const weightKg = useBodyMetrics().find((m) => m.weightKg)?.weightKg;
   const { num } = useFormat();
   const { user } = useAuth();
   const profile = useAthleteProfileOrNull();
@@ -38,17 +45,18 @@ export function MealPlanCard({ targets, entries, onSetTargets }: { targets?: { c
   const [swaps, setSwaps] = useState<Partial<Record<PlanSlot, number>>>({});
   const [editing, setEditing] = useState(false);
 
-  // Today's sessions: those planned, and those done or begun.
-  const type = useMemo(() => {
+  // Today's sessions: those planned, and those done or begun; and how long the longest lasts.
+  const { type, minutes } = useMemo(() => {
     const planned = plannedPrograms({ programs, me: user?.id, trainingDays: profile?.trainingDays ?? [], from: today, moves: profile?.scheduleMoves });
-    const sessions = scheduleSessions({ planned, workouts, from: today, to: today, today }).map((s) => ({
-      cardio: s.index >= 0 ? s.program.structure[s.index]?.cardio : null,
-      strength: true,
-    }));
+    const sessions = scheduleSessions({ planned, workouts, from: today, to: today, today }).map((s) => {
+      const day = s.index >= 0 ? s.program.structure[s.index] : undefined;
+      return { cardio: day?.cardio ?? null, strength: true, minutes: day?.cardio?.durationMin ?? (day?.exercises?.length ? dayMinutes(day) : 0) };
+    });
     const done = workouts
       .filter((w) => w.date === today)
-      .map((w) => ({ cardio: w.kind === "cardio" ? { distanceKm: (w.distanceM ?? 0) / 1000, durationMin: (w.durationSec ?? 0) / 60 } : null, strength: true }));
-    return dayTypeOf([...sessions, ...done]);
+      .map((w) => ({ cardio: w.kind === "cardio" ? { distanceKm: (w.distanceM ?? 0) / 1000, durationMin: (w.durationSec ?? 0) / 60 } : null, strength: true, minutes: Math.round((w.durationSec ?? 0) / 60) }));
+    const all = [...sessions, ...done];
+    return { type: dayTypeOf(all), minutes: Math.max(0, ...all.map((s) => s.minutes)) };
   }, [programs, user?.id, profile?.trainingDays, profile?.scheduleMoves, workouts, today]);
 
   if (!targets?.calories) {
@@ -66,14 +74,20 @@ export function MealPlanCard({ targets, entries, onSetTargets }: { targets?: { c
     );
   }
 
+  // With the weight known, the day is shared out for one's sport; else as before.
+  const goal = profile?.goals?.[0];
+  const day = weightKg ? sportDay({ weightKg, calories: targets.calories, type, sport, goal }) : null;
   const plan = planDay({
     calories: targets.calories,
-    protein: targets.protein ?? Math.round((targets.calories * 0.25) / 4),
+    protein: day?.protein ?? targets.protein ?? Math.round((targets.calories * 0.25) / 4),
     type,
     prefs,
     seed: daySeed(today),
     swaps,
+    day: day ? { calories: day.calories, carbs: day.carbs } : undefined,
   });
+  const around = weightKg && type !== "rest" ? fuelling({ weightKg, sport, minutes: minutes || 60, time: profile?.trainingTime }) : [];
+  const perKg = (g: number) => num(Math.round((g / (weightKg ?? 1)) * 10) / 10);
   const added = (name: string, slot: PlanSlot) => entries.some((e) => e.name === name && e.meal === slot);
 
   return (
@@ -87,8 +101,16 @@ export function MealPlanCard({ targets, entries, onSetTargets }: { targets?: { c
           <p className="text-xs text-muted-foreground">
             <span className={cn("font-semibold", type === "long" ? "text-accent-text" : "")}>{t(`day_${type}`)}</span>
             {" · "}
-            {t("target", { calories: num(plan.calories), protein: plan.protein })}
+            {day
+              ? t("targetSport", { calories: num(day.calories), protein: day.protein, carbs: day.carbs, fat: day.fat })
+              : t("target", { calories: num(plan.calories), protein: plan.protein })}
           </p>
+          {day && (
+            <p className="text-xs text-muted-foreground">
+              {t("carbsFor", { sport: sport ? tc(`cat_${sport}`) : t("anySport"), perKg: perKg(day.carbs), lo: day.carbsRange[0], hi: day.carbsRange[1] })}
+              {day.raised && ` ${t("raised")}`}
+            </p>
+          )}
         </div>
         <Button size="icon-sm" variant="ghost" onClick={() => setEditing(true)} aria-label={t("prefs")}>
           <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
@@ -140,6 +162,34 @@ export function MealPlanCard({ targets, entries, onSetTargets }: { targets?: { c
           );
         })}
       </ul>
+      {around.length > 0 && (
+        <div className="space-y-1.5 rounded-xl border border-border p-3">
+          <h3 className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            <Clock className="h-3.5 w-3.5" aria-hidden="true" />
+            {t("aroundTitle")}
+          </h3>
+          <ul className="space-y-1 text-sm">
+            {around.map((f) => (
+              <li key={f.moment} className="flex gap-2">
+                <span className="w-12 shrink-0 font-semibold tabular-nums">{f.at ?? ""}</span>
+                <span>
+                  <span className="font-medium">{t(`moment_${f.moment}`)}</span>
+                  {" · "}
+                  {[
+                    f.carbs && (f.moment === "during" ? t("carbsPerHour", { lo: f.carbs[0], hi: f.carbs[1] }) : t("carbs", { lo: f.carbs[0], hi: f.carbs[1] })),
+                    f.protein && t("protein", { lo: f.protein[0], hi: f.protein[1] }),
+                    f.waterPerHour && t("water", { lo: f.waterPerHour[0], hi: f.waterPerHour[1] }),
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                  <span className="block text-xs text-muted-foreground">{t(`momentHint_${f.moment}`)}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {!weightKg && <p className="text-xs text-muted-foreground">{t("needWeight")}</p>}
       <p className="text-xs text-muted-foreground">{t("hint")}</p>
 
       <Dialog open={editing} onOpenChange={setEditing}>

@@ -1105,6 +1105,44 @@ await test("the menu wheel brings one's sport: a runner goes straight to running
   }
 });
 
+await test("nutrition for one's sport: carbohydrates by the kilo, and food around the session", async () => {
+  // Targets, a weight, and a long run today, then all taken back for the paths after.
+  const store = (args) => page.evaluate(async ([name, op, value]) => {
+    const db = await new Promise((res, rej) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+    return new Promise((res, rej) => {
+      const tx = db.transaction(name, "readwrite");
+      const os = tx.objectStore(name);
+      let out;
+      if (op === "put") { const r = os.put(value); r.onsuccess = () => { out = r.result; }; }
+      if (op === "delete") os.delete(value);
+      if (op === "profile") { const g = os.getAll(); g.onsuccess = () => { for (const p of g.result) os.put({ ...p, nutritionTargets: value }); }; }
+      tx.oncomplete = () => res(out);
+      tx.onerror = () => rej(tx.error);
+    });
+  }, args);
+  const today = await page.evaluate(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; });
+  const now = new Date().toISOString();
+  await page.goto(`${BASE}/fr`);
+  await store(["athleteProfiles", "profile", { calories: 2400, protein: 120 }]);
+  const metric = await store(["bodyMetrics", "put", { userId: "00000000-0000-4000-8000-0000000000e2", uuid: "e2e-weight", date: today, weightKg: 60, _dirty: 0, createdAt: now, updatedAt: now }]);
+  const long = await store(["workouts", "put", { userId: "00000000-0000-4000-8000-0000000000e2", uuid: "e2e-long-today", date: today, kind: "cardio", sport: "run", title: "Sortie longue", durationSec: 110 * 60, distanceM: 18000, _dirty: 0, createdAt: now, updatedAt: now }]);
+  await page.evaluate(() => { const p = JSON.parse(localStorage.getItem("traintrack.prefs") || "{}"); p.sport = "running"; localStorage.setItem("traintrack.prefs", JSON.stringify(p)); });
+  try {
+    await page.goto(`${BASE}/fr/nutrition`);
+    await page.getByText(/Course à pied : [\d,]+ g de glucides par kg aujourd’hui \(repère 6–10 g\/kg\)/).waitFor({ timeout: 10000 });
+    await page.getByText("Autour de la séance", { exact: true }).waitFor({ timeout: 5000 });
+    // A long run: carbohydrates and water by the hour during it.
+    await page.getByText("30–60 g de glucides/h · 400–800 ml d’eau/h").waitFor({ timeout: 5000 });
+    await page.getByText("Autour de la séance", { exact: true }).scrollIntoViewIfNeeded();
+    await page.screenshot({ path: join(ARTIFACTS, "sport-nutrition.png"), fullPage: false });
+  } finally {
+    await page.evaluate(() => { const p = JSON.parse(localStorage.getItem("traintrack.prefs") || "{}"); p.sport = null; localStorage.setItem("traintrack.prefs", JSON.stringify(p)); });
+    await store(["workouts", "delete", long]);
+    await store(["bodyMetrics", "delete", metric]);
+    await store(["athleteProfiles", "profile", undefined]);
+  }
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });

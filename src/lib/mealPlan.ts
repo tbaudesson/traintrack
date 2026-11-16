@@ -88,9 +88,12 @@ export function planDay(input: {
   prefs: MealPrefs;
   seed: number;
   swaps?: Partial<Record<PlanSlot, number>>;
+  /** The day's own targets, for one's sport: the calories as they are, and the carbohydrates to aim at. */
+  day?: { calories: number; carbs: number };
 }): DayPlan {
-  const calories = Math.round((input.calories * DAY_FACTOR[input.type]) / 10) * 10;
-  const proteinShare = Math.min(0.4, (input.protein * 4) / Math.max(1, input.calories * DAY_FACTOR[input.type]));
+  const calories = input.day ? input.day.calories : Math.round((input.calories * DAY_FACTOR[input.type]) / 10) * 10;
+  const proteinShare = Math.min(0.4, (input.protein * 4) / Math.max(1, calories));
+  const carbShare = input.day ? Math.min(0.75, (input.day.carbs * 4) / Math.max(1, calories)) : null;
   const carbPull = input.type === "long" ? -0.6 : input.type === "rest" ? 0.3 : 0;
   const meals: PlannedMeal[] = [];
   SPLIT[input.prefs.meals].forEach(([slot, part], i) => {
@@ -99,7 +102,8 @@ export function planDay(input: {
     const ranked = MEALS.filter((m) => m.slot === kind && suits(m, input.prefs) && !taken.has(m.id))
       .map((m) => {
         const s = share(macrosOf(m.items));
-        return { m, score: Math.abs(s.protein - proteinShare) + carbPull * s.carbs };
+        // With the day's carbohydrates known, the meals closest to both shares; else the old pull.
+        return { m, score: Math.abs(s.protein - proteinShare) + (carbShare === null ? carbPull * s.carbs : Math.abs(s.carbs - carbShare)) };
       })
       .sort((a, b) => a.score - b.score || a.m.id.localeCompare(b.m.id));
     if (!ranked.length) return;
