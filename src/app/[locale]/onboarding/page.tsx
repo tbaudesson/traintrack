@@ -178,7 +178,7 @@ export default function OnboardingPage() {
 
   return (
     <>
-      <PageHeader title={t("title")} />
+      <PageHeader title={t("title")} showBack={false} />
       <div className="mx-auto max-w-2xl space-y-5 p-4 pb-28 md:p-6">
         <div className="space-y-2">
           <p className="text-xs font-semibold tracking-widest text-accent-text uppercase">

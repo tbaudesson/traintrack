@@ -1064,6 +1064,25 @@ await test("TRX: a shelf of programs, and straps in the timed sessions", async (
   await page.getByRole("button", { name: "Poids du corps" }).click();
 });
 
+await test("every page has a way back, home when it was opened directly", async () => {
+  for (const path of ["/settings", "/exercises", "/log", "/more", "/nutrition", "/progress", "/readiness", "/teams"]) {
+    await page.goto(`${BASE}/fr${path}`);
+    await page.getByRole("button", { name: "Retour" }).first().waitFor({ timeout: 10000 });
+  }
+  // Within the app: back to the page before.
+  await page.goto(`${BASE}/fr/more`);
+  await page.locator('main a[href$="/settings"]').first().click();
+  await page.waitForURL(/\/fr\/settings$/, { timeout: 10000 });
+  await page.getByRole("button", { name: "Retour" }).first().click();
+  await page.waitForURL(/\/fr\/more$/, { timeout: 10000 });
+  // A tab opened straight on Settings: back leads home.
+  const fresh = await context.newPage();
+  await fresh.goto(`${BASE}/fr/settings`);
+  await fresh.getByRole("button", { name: "Retour" }).first().click();
+  await fresh.waitForURL(/\/fr$/, { timeout: 10000 });
+  await fresh.close();
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });
