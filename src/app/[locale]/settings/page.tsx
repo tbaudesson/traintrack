@@ -322,7 +322,7 @@ export default function SettingsPage() {
                   className={cn(
                     "min-h-11 rounded-lg border p-2 text-xs transition-colors",
                     athlete.fitnessLevel === level
-                      ? "border-accent-500 bg-accent-50 font-semibold text-accent-700 dark:bg-accent-900/20"
+                      ? "border-accent-500 bg-accent-50 font-semibold text-accent-700 dark:bg-accent-900/20 dark:text-accent-200"
                       : "border-border text-muted-foreground hover:border-accent-300"
                   )}
                 >
@@ -555,7 +555,7 @@ export default function SettingsPage() {
                 className={cn(
                   "flex flex-col items-center gap-1 rounded-lg border p-3 text-xs transition-colors",
                   mode === opt.id
-                    ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-900/20"
+                    ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-900/20 dark:text-accent-200"
                     : "border-border text-muted-foreground hover:border-accent-300"
                 )}
               >
@@ -626,7 +626,7 @@ export default function SettingsPage() {
                 className={cn(
                   "flex items-center justify-center gap-1 rounded-lg border p-3 transition-colors",
                   textSize === s
-                    ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-900/20"
+                    ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-900/20 dark:text-accent-200"
                     : "border-border text-muted-foreground hover:border-accent-300"
                 )}
               >
@@ -647,7 +647,7 @@ export default function SettingsPage() {
                 className={cn(
                   "flex items-center justify-center gap-2 rounded-lg border p-2.5 text-xs transition-colors",
                   locale === l.id
-                    ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-900/20"
+                    ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-900/20 dark:text-accent-200"
                     : "border-border text-muted-foreground hover:border-accent-300"
                 )}
               >
@@ -690,7 +690,7 @@ export default function SettingsPage() {
                   className={cn(
                     "flex items-center gap-2 rounded-lg border p-2.5 text-xs transition-colors",
                     checked
-                      ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-900/20"
+                      ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-900/20 dark:text-accent-200"
                       : "border-border text-muted-foreground hover:border-accent-300",
                     locked && "opacity-70"
                   )}
