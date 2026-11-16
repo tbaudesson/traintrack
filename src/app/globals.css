@@ -777,6 +777,7 @@ html.style-dynamic .t-rail-sub-link[aria-current="page"] {
 @media (min-width: 1024px) {
   html.style-dynamic .t-dynamic-rail { display: flex; }
   html.style-dynamic body:has(.t-dynamic-rail) .t-app-main { padding-left: 16rem; }
+  html.style-dynamic body:has(.t-dynamic-rail) .t-offline-banner { margin-left: 16rem; }
   html.style-dynamic .t-nav-launcher { display: none; }
 }
 /* With the rail, 1024-1279 px leaves too little room for three training cards. */

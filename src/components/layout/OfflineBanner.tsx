@@ -33,7 +33,7 @@ export function OfflineBanner() {
   if (!isOffline) return null;
 
   return (
-    <div className="sticky top-0 z-50 flex items-center justify-center gap-2 bg-amber-500 px-4 py-1.5 text-xs font-semibold text-amber-950">
+    <div className="t-offline-banner sticky top-0 z-50 flex items-center justify-center gap-2 bg-amber-500 px-4 py-1.5 text-xs font-semibold text-amber-950">
       <WifiOff className="h-3.5 w-3.5" />
       {pending > 0 ? t("offlinePending", { count: pending }) : t("offlineBanner")}
     </div>
