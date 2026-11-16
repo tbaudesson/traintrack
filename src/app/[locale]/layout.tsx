@@ -1,4 +1,4 @@
-import { Geist } from "next/font/google";
+import { Barlow_Condensed, Geist } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
@@ -11,6 +11,14 @@ import { PageBackdrop } from "@/components/layout/PageBackdrop";
 const geist = Geist({
   variable: "--font-geist",
   subsets: ["latin"],
+});
+// Dynamic's titles: condensed, sporty, as in the TrainTrack Performance references.
+const condensed = Barlow_Condensed({
+  variable: "--font-condensed",
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+  style: ["normal", "italic"],
+  display: "swap",
 });
 
 export function generateStaticParams() {
@@ -35,7 +43,7 @@ export default async function LocaleLayout({
   }
 
   return (
-    <html lang={locale} className={`h-full ${geist.variable}`} suppressHydrationWarning>
+    <html lang={locale} className={`h-full ${geist.variable} ${condensed.variable}`} suppressHydrationWarning>
       <body className="h-full antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeInit />

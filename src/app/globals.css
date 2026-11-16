@@ -725,11 +725,15 @@ html.style-dynamic [data-slot="button"][data-variant="default"] {
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.38), inset 0 -4px 8px rgb(0 0 0 / 0.25), 0 0 24px -6px color-mix(in oklab, var(--accent-500) 78%, transparent);
 }
 html.style-dynamic h1,
-html.style-dynamic h2 {
+html.style-dynamic h2,
+html.style-dynamic .t-display,
+html.style-dynamic .t-wordmark {
+  font-family: var(--font-condensed), var(--font-geist), ui-sans-serif, system-ui, sans-serif;
   font-style: italic;
-  font-weight: 900;
-  letter-spacing: -0.045em;
+  font-weight: 800;
+  letter-spacing: 0;
 }
+html.style-dynamic .t-display { line-height: 0.92; }
 html.style-dynamic .t-page-header,
 html.style-dynamic .t-brand-header {
   background-color: rgb(8 9 12 / 0.94);
