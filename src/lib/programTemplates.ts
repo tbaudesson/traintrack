@@ -6,6 +6,8 @@ import { CALLISTHENICS_TEMPLATES } from "./callisthenicsTemplates";
 import { PLAN_LOCALES, type PlanLocale } from "./enduranceText";
 import { STRENGTH_ORIGINAL, STRENGTH_TEXT } from "./strengthText";
 import { PERCENT_TEMPLATES } from "./percentTemplates";
+import { INJURY_TEMPLATES } from "./injuryTemplates";
+import type { PainArea } from "./pain";
 
 /**
  * Ready-made program templates so a user can SELECT a proven program instead of
@@ -27,6 +29,8 @@ export interface ProgramTemplate {
   daysPerWeek: number;
   /** Mostly bodyweight/dumbbell — usable without a full gym. */
   homeFriendly?: boolean;
+  /** Written for an athlete with this area injured: none of its exercises loads it. */
+  forInjury?: PainArea;
   structure: ProgramDay[];
 }
 
@@ -252,7 +256,7 @@ export const STRENGTH_TEMPLATES: ProgramTemplate[] = PLAN_LOCALES.flatMap((local
   })
 );
 
-export const PROGRAM_TEMPLATES: ProgramTemplate[] = [...STRENGTH_TEMPLATES, ...PERCENT_TEMPLATES, ...ENDURANCE_TEMPLATES, ...VAULTING_TEMPLATES, ...SPINNING_TEMPLATES, ...CALLISTHENICS_TEMPLATES];
+export const PROGRAM_TEMPLATES: ProgramTemplate[] = [...STRENGTH_TEMPLATES, ...PERCENT_TEMPLATES, ...ENDURANCE_TEMPLATES, ...VAULTING_TEMPLATES, ...SPINNING_TEMPLATES, ...CALLISTHENICS_TEMPLATES, ...INJURY_TEMPLATES];
 
 /** Rank templates by closeness to the user's goal / level / days-per-week. */
 export function rankTemplates(pref: {

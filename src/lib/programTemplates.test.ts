@@ -20,7 +20,7 @@ describe("built-in programs", () => {
 });
 
 describe("strength programs in every language", () => {
-  const strength = PROGRAM_TEMPLATES.filter((t) => t.goal !== "endurance" && !t.id.startsWith("vagues-force") && !t.id.startsWith("callisthenics-"));
+  const strength = PROGRAM_TEMPLATES.filter((t) => t.goal !== "endurance" && !t.forInjury && !t.id.startsWith("vagues-force") && !t.id.startsWith("callisthenics-"));
   const byLocale = (locale: string) => strength.filter((t) => t.locale === locale);
 
   it("offer all fourteen in French, English and German", () => {

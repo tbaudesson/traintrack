@@ -1,10 +1,11 @@
 import type { ProgramDay, Sport } from "@/db";
 import { PROGRAM_TEMPLATES, type ProgramGoal, type ProgramTemplate } from "./programTemplates";
+import type { PainArea } from "./pain";
 
 /** The shelves of the ready-made programs, as an athlete looks for them. */
-export type ProgramCategory = "bodybuilding" | "strength" | "fitness" | "callisthenics" | "running" | "swimming" | "cycling" | "vaulting";
+export type ProgramCategory = "bodybuilding" | "strength" | "fitness" | "callisthenics" | "running" | "swimming" | "cycling" | "vaulting" | "injury";
 
-export const CATEGORY_ORDER: ProgramCategory[] = ["bodybuilding", "strength", "fitness", "callisthenics", "running", "swimming", "cycling", "vaulting"];
+export const CATEGORY_ORDER: ProgramCategory[] = ["bodybuilding", "strength", "fitness", "callisthenics", "running", "swimming", "cycling", "vaulting", "injury"];
 
 const BY_SPORT: Partial<Record<Sport, ProgramCategory>> = { run: "running", swim: "swimming", bike: "cycling", vaulting: "vaulting" };
 
@@ -38,15 +39,26 @@ function mainSport(days: ProgramDay[]): Sport | undefined {
 }
 
 /**
- * The shelf of a program: its sport when it has sessions of one, the sport a
- * strengthening plan is for, else its goal. A program of one's own is filed
+ * The injured area a program was written for: its own mark, or that of the
+ * built-in program of the same name (a catalogue row read from the server has
+ * no such mark).
+ */
+export function injuryAreaOf(program: { name: string; forInjury?: PainArea }): PainArea | null {
+  return program.forInjury ?? PROGRAM_TEMPLATES.find((t) => t.name === program.name)?.forInjury ?? null;
+}
+
+/**
+ * The shelf of a program: the injury shelf for one written for an injury,
+ * else its sport when it has sessions of one, the sport a strengthening plan
+ * is for, else its goal. A program of one's own is filed
  * by the ready-made program it was made from (same name); null when it was
  * built from scratch and has no sport.
  */
 export function programCategory(
-  program: { name: string; structure?: ProgramDay[]; goal?: ProgramGoal },
+  program: { name: string; structure?: ProgramDay[]; goal?: ProgramGoal; forInjury?: PainArea },
   builtIn: Pick<ProgramTemplate, "id" | "name" | "goal">[] = PROGRAM_TEMPLATES
 ): ProgramCategory | null {
+  if (injuryAreaOf(program)) return "injury";
   const sport = mainSport(program.structure ?? []);
   if (sport && BY_SPORT[sport]) return BY_SPORT[sport]!;
   const known = builtIn.find((t) => t.name === program.name);

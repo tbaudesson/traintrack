@@ -3,11 +3,14 @@
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
-  Award, Bike, BicepsFlexed, Check, ChevronRight, ClipboardList, Dumbbell, Flame, Footprints, Home, Loader2, PersonStanding, Plus, Timer, Waves, Zap,
+  Award, Bandage, Bike, BicepsFlexed, Check, ChevronRight, ClipboardList, Dumbbell, Flame, Footprints, Home, Loader2, PersonStanding, Plus, Timer, Waves, Zap,
   type LucideIcon,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { CATEGORY_ORDER, planWeeks, shelves, type ProgramCategory } from "@/lib/programCategories";
+import { CATEGORY_ORDER, injuryAreaOf, planWeeks, programCategory, shelves, type ProgramCategory } from "@/lib/programCategories";
+import { activeInjuries, INJURY_AREAS, programLoad } from "@/lib/injuries";
+import type { PainArea } from "@/lib/pain";
+import { useInjuries } from "@/hooks/useAthleteProfile";
 import type { ProgramLevel, ProgramTemplate } from "@/lib/programTemplates";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -23,6 +26,7 @@ export const CATEGORY_STYLE: Record<ProgramCategory | "timed" | "mobility" | "cu
   swimming: { icon: Waves, tone: "from-sky-100 to-sky-200 text-sky-700 dark:from-sky-900/50 dark:to-sky-950/60 dark:text-sky-300" },
   cycling: { icon: Bike, tone: "from-lime-100 to-lime-200 text-lime-700 dark:from-lime-900/50 dark:to-lime-950/60 dark:text-lime-300" },
   vaulting: { icon: Award, tone: "from-fuchsia-100 to-fuchsia-200 text-fuchsia-700 dark:from-fuchsia-900/50 dark:to-fuchsia-950/60 dark:text-fuchsia-300" },
+  injury: { icon: Bandage, tone: "from-rose-100 to-rose-200 text-rose-700 dark:from-rose-900/50 dark:to-rose-950/60 dark:text-rose-300" },
   callisthenics: { icon: Zap, tone: "from-orange-100 to-orange-200 text-orange-700 dark:from-orange-900/50 dark:to-orange-950/60 dark:text-orange-300" },
   timed: { icon: Timer, tone: "from-rose-100 to-rose-200 text-rose-700 dark:from-rose-900/50 dark:to-rose-950/60 dark:text-rose-300" },
   mobility: { icon: PersonStanding, tone: "from-teal-100 to-teal-200 text-teal-700 dark:from-teal-900/50 dark:to-teal-950/60 dark:text-teal-300" },
@@ -106,15 +110,75 @@ export function ProgramCatalog({
 }) {
   const t = useTranslations("catalog");
   const tt = useTranslations("templates");
+  const tpain = useTranslations("pain");
   const [open, setOpen] = useState<ProgramCategory | null>(null);
   const [filter, setFilter] = useState<ProgramLevel | null>(null);
   const byShelf = useMemo(() => shelves(templates, level), [templates, level]);
+  // An injury in progress: its shelf comes first and opens on its area.
+  const injured = activeInjuries(useInjuries())[0]?.area ?? null;
+  const [area, setArea] = useState<PainArea>("shoulder");
   // The favourite sport's tile first, the others in their usual order.
   const tiles = [
     ...CATEGORY_ORDER.filter((c) => (byShelf.get(c)?.length ?? 0) > 0),
     "mobility" as const,
-  ].sort((a, b) => Number(isMine(b, favorite)) - Number(isMine(a, favorite)));
+  ]
+    .sort((a, b) => Number(isMine(b, favorite)) - Number(isMine(a, favorite)))
+    .sort((a, b) => Number(!!injured && b === "injury") - Number(!!injured && a === "injury"));
   const shown = open ? (byShelf.get(open) ?? []).filter((tpl) => !filter || tpl.level === filter) : [];
+  // On the injury shelf: the programs written for the area, then the others
+  // that ask nothing to avoid of it, those that ask nothing at all first.
+  const forArea = (byShelf.get("injury") ?? []).filter((tpl) => injuryAreaOf(tpl) === area);
+  const fitting = useMemo(
+    () =>
+      templates
+        .filter((tpl) => programCategory(tpl) !== "injury" && tpl.structure.some((d) => d.exercises?.length))
+        .map((tpl) => ({ tpl, load: programLoad(tpl.structure, area) }))
+        .filter((x) => x.load !== "avoid")
+        .sort((a, b) => Number(a.load === "caution") - Number(b.load === "caution")),
+    [templates, area]
+  );
+
+  const item = (tpl: ProgramTemplate, caution = false) => {
+    const weeks = planWeeks(tpl.structure);
+    return (
+      <li key={tpl.id} className="t-surface space-y-2 rounded-2xl p-3 ring-1 ring-foreground/5">
+        <p className="font-semibold leading-tight">{tpl.name}</p>
+        <p className="text-sm text-muted-foreground">{tpl.description}</p>
+        <div className="flex flex-wrap gap-1">
+          <Tag>{tt(`level_${tpl.level}`)}</Tag>
+          <Tag>{t("perWeek", { count: tpl.daysPerWeek })}</Tag>
+          {weeks && <Tag>{t("weeks", { count: weeks })}</Tag>}
+          {tpl.homeFriendly && (
+            <Tag>
+              <Home className="mr-1 inline h-3 w-3" aria-hidden="true" />
+              {t("home")}
+            </Tag>
+          )}
+          {caution && <Tag>{t("injuryCaution")}</Tag>}
+        </div>
+        {added?.(tpl) !== undefined ? (
+          <Link
+            href={`/programs/${added(tpl)}`}
+            className="flex min-h-9 w-full items-center justify-center gap-1.5 rounded-lg bg-muted text-sm font-medium"
+          >
+            <Check className="h-4 w-4 text-accent-text" aria-hidden="true" />
+            {t("alreadyAdded")}
+          </Link>
+        ) : (
+          <Button size="sm" className="w-full" onClick={() => onUse(tpl)} disabled={busy}>
+            {busy ? (
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+            ) : (
+              <>
+                <Plus className="mr-1 h-4 w-4" aria-hidden="true" />
+                {tt("use")}
+              </>
+            )}
+          </Button>
+        )}
+      </li>
+    );
+  };
 
   return (
     <section className="space-y-3">
@@ -131,10 +195,11 @@ export function ProgramCatalog({
               key={c}
               category={c}
               label={t(`cat_${c}`)}
-              detail={t("count", { count: byShelf.get(c)!.length })}
+              detail={c === "injury" ? (injured ? tpain(`area_${injured}`) : t("injuryHint")) : t("count", { count: byShelf.get(c)!.length })}
               mine={favorite === c}
               onClick={() => {
                 setFilter(null);
+                if (c === "injury" && injured) setArea(injured);
                 setOpen(c);
               }}
             />
@@ -162,56 +227,35 @@ export function ProgramCatalog({
                   <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                 </Link>
               )}
-              <div className="flex flex-wrap gap-2">
-                <Choice on={filter === null} onClick={() => setFilter(null)}>{t("allLevels")}</Choice>
-                {(["beginner", "intermediate", "advanced"] as ProgramLevel[])
-                  .filter((l) => byShelf.get(open)!.some((tpl) => tpl.level === l))
-                  .map((l) => (
-                    <Choice key={l} on={filter === l} onClick={() => setFilter(l)}>{tt(`level_${l}`)}</Choice>
-                  ))}
-              </div>
-              <ul className="space-y-2">
-                {shown.map((tpl) => {
-                  const weeks = planWeeks(tpl.structure);
-                  return (
-                    <li key={tpl.id} className="t-surface space-y-2 rounded-2xl p-3 ring-1 ring-foreground/5">
-                      <p className="font-semibold leading-tight">{tpl.name}</p>
-                      <p className="text-sm text-muted-foreground">{tpl.description}</p>
-                      <div className="flex flex-wrap gap-1">
-                        <Tag>{tt(`level_${tpl.level}`)}</Tag>
-                        <Tag>{t("perWeek", { count: tpl.daysPerWeek })}</Tag>
-                        {weeks && <Tag>{t("weeks", { count: weeks })}</Tag>}
-                        {tpl.homeFriendly && (
-                          <Tag>
-                            <Home className="mr-1 inline h-3 w-3" aria-hidden="true" />
-                            {t("home")}
-                          </Tag>
-                        )}
-                      </div>
-                      {added?.(tpl) !== undefined ? (
-                        <Link
-                          href={`/programs/${added(tpl)}`}
-                          className="flex min-h-9 w-full items-center justify-center gap-1.5 rounded-lg bg-muted text-sm font-medium"
-                        >
-                          <Check className="h-4 w-4 text-accent-text" aria-hidden="true" />
-                          {t("alreadyAdded")}
-                        </Link>
-                      ) : (
-                        <Button size="sm" className="w-full" onClick={() => onUse(tpl)} disabled={busy}>
-                          {busy ? (
-                            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                          ) : (
-                            <>
-                              <Plus className="mr-1 h-4 w-4" aria-hidden="true" />
-                              {tt("use")}
-                            </>
-                          )}
-                        </Button>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
+              {open === "injury" ? (
+                <>
+                  <div role="group" aria-label={t("injuryArea")} className="flex flex-wrap gap-2">
+                    {INJURY_AREAS.map((a) => (
+                      <Choice key={a} on={area === a} onClick={() => setArea(a)}>{tpain(`area_${a}`)}</Choice>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">{t("injuryCare")}</p>
+                  <ul className="space-y-2">{forArea.map((tpl) => item(tpl))}</ul>
+                  <h3 className="pt-1 text-sm font-semibold">{t("injuryOthers", { area: tpain(`area_${area}`) })}</h3>
+                  {fitting.length ? (
+                    <ul className="space-y-2">{fitting.map(({ tpl, load }) => item(tpl, load === "caution"))}</ul>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">{t("injuryNone")}</p>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="flex flex-wrap gap-2">
+                    <Choice on={filter === null} onClick={() => setFilter(null)}>{t("allLevels")}</Choice>
+                    {(["beginner", "intermediate", "advanced"] as ProgramLevel[])
+                      .filter((l) => byShelf.get(open)!.some((tpl) => tpl.level === l))
+                      .map((l) => (
+                        <Choice key={l} on={filter === l} onClick={() => setFilter(l)}>{tt(`level_${l}`)}</Choice>
+                      ))}
+                  </div>
+                  <ul className="space-y-2">{shown.map((tpl) => item(tpl))}</ul>
+                </>
+              )}
             </>
           )}
         </DialogContent>

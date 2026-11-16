@@ -1426,7 +1426,14 @@
     "alreadyAdded": "Already in my programs · Open",
     "cat_callisthenics": "Callisthenics",
     "timedTitle": "Timed session on demand",
-    "timedText": "Built from the area, equipment and length you choose, without adding anything to your programs."
+    "timedText": "Built from the area, equipment and length you choose, without adding anything to your programs.",
+    "cat_injury": "For an injury",
+    "injuryHint": "By injured area",
+    "injuryArea": "Injured area",
+    "injuryCare": "These programs leave out the exercises that load the chosen area. They do not replace a health professional's advice: stop any exercise that hurts.",
+    "injuryOthers": "Other programs with nothing to avoid ({area})",
+    "injuryNone": "No other program suits this area.",
+    "injuryCaution": "A few exercises with care"
   },
   "demo": {
     "watch": "Watch the demo",

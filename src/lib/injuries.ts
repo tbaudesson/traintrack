@@ -199,6 +199,15 @@ export const INJURY_RULES: Record<string, Rules> = {
   "Pike Stretch": { lower_back: C },
 };
 
+/**
+ * What a program asks of an injured area: "avoid" if one of its exercises is
+ * to be avoided there, "caution" if one loads it less, null if none does.
+ */
+export function programLoad(structure: { exercises?: { exerciseName: string }[] }[], area: PainArea): InjuryLevel | null {
+  const levels = structure.flatMap((d) => (d.exercises ?? []).map((e) => INJURY_RULES[e.exerciseName]?.[area]));
+  return levels.includes("avoid") ? "avoid" : levels.includes("caution") ? "caution" : null;
+}
+
 export interface InjuryWarning {
   level: InjuryLevel;
   /** The injured areas the exercise loads at that level. */

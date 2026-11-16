@@ -1022,6 +1022,25 @@ await test("in Classic the dial can be chosen in Settings, and the round buttons
   await page.evaluate(() => { const p = JSON.parse(localStorage.getItem("traintrack.prefs") || "{}"); delete p.wheel; localStorage.setItem("traintrack.prefs", JSON.stringify(p)); });
 });
 
+await test("the injury shelf offers a program per injured area, and the others that suit it", async () => {
+  await page.goto(`${BASE}/fr/programs`);
+  await page.getByRole("button", { name: /Adapté à une blessure/ }).click();
+  const dialog = page.getByRole("dialog");
+  const areas = dialog.getByRole("group", { name: "Zone blessée" });
+  await areas.getByRole("button", { name: "Genou" }).click();
+  await dialog.getByText("Genou blessé : haut du corps et hanches").waitFor({ timeout: 5000 });
+  expect((await dialog.getByText("Épaule blessée : jambes et abdos").count()) === 0, "the shoulder program shows for a knee");
+  // No ready-made program spares the shoulder: only the one written for it.
+  await areas.getByRole("button", { name: "Épaule" }).click();
+  await dialog.getByText("Épaule blessée : jambes et abdos").waitFor({ timeout: 5000 });
+  await dialog.getByText("Aucun autre programme ne convient pour cette zone.").waitFor({ timeout: 5000 });
+  expect((await areas.getByRole("button", { name: "Épaule" }).getAttribute("aria-pressed")) === "true", "the shoulder chip is not marked chosen");
+  expect((await areas.getByRole("button", { name: "Genou" }).getAttribute("aria-pressed")) === "false", "the knee chip is still marked chosen");
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: join(ARTIFACTS, "injury-shelf.png") });
+  await page.keyboard.press("Escape");
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });

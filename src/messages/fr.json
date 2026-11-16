@@ -1426,7 +1426,14 @@
     "alreadyAdded": "Déjà dans mes programmes · Ouvrir",
     "cat_callisthenics": "Callisthenics",
     "timedTitle": "Séance minutée à la demande",
-    "timedText": "Générée selon la zone, le matériel et la durée choisis, sans rien ajouter à vos programmes."
+    "timedText": "Générée selon la zone, le matériel et la durée choisis, sans rien ajouter à vos programmes.",
+    "cat_injury": "Adapté à une blessure",
+    "injuryHint": "Selon la zone blessée",
+    "injuryArea": "Zone blessée",
+    "injuryCare": "Ces programmes évitent les exercices qui sollicitent la zone choisie. Ils ne remplacent pas l'avis d'un professionnel de santé : arrêtez un exercice qui fait mal.",
+    "injuryOthers": "Autres programmes sans exercice à éviter ({area})",
+    "injuryNone": "Aucun autre programme ne convient pour cette zone.",
+    "injuryCaution": "Quelques exercices avec prudence"
   },
   "demo": {
     "watch": "Voir la démo",

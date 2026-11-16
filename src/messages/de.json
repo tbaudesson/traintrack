@@ -1426,7 +1426,14 @@
     "alreadyAdded": "Schon in meinen Programmen · Öffnen",
     "cat_callisthenics": "Calisthenics",
     "timedTitle": "Zeiteinheit auf Abruf",
-    "timedText": "Nach Bereich, Ausrüstung und Dauer erstellt, ohne etwas zu deinen Programmen hinzuzufügen."
+    "timedText": "Nach Bereich, Ausrüstung und Dauer erstellt, ohne etwas zu deinen Programmen hinzuzufügen.",
+    "cat_injury": "Bei Verletzung",
+    "injuryHint": "Nach verletzter Stelle",
+    "injuryArea": "Verletzte Stelle",
+    "injuryCare": "Diese Programme lassen Übungen weg, die die gewählte Stelle belasten. Sie ersetzen keinen ärztlichen Rat: Brich jede Übung ab, die schmerzt.",
+    "injuryOthers": "Weitere Programme ohne zu meidende Übung ({area})",
+    "injuryNone": "Kein weiteres Programm passt für diese Stelle.",
+    "injuryCaution": "Einige Übungen mit Vorsicht"
   },
   "demo": {
     "watch": "Demo ansehen",
