@@ -41,7 +41,11 @@
     "allSections": "Toutes les sections",
     "breadcrumbLabel": "Fil de navigation",
     "searchNavigation": "Rechercher dans la navigation",
-    "toggleList": "Basculer entre la roue et la liste"
+    "toggleList": "Basculer entre la roue et la liste",
+    "running": "Course à pied",
+    "intervals": "Séance callisthenics",
+    "competitions": "Compétitions",
+    "horses": "Chevaux"
   },
   "sync": {
     "synced": "Synchronisé",

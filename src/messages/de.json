@@ -41,7 +41,11 @@
     "allSections": "Alle Bereiche",
     "breadcrumbLabel": "Navigationspfad",
     "searchNavigation": "Navigation durchsuchen",
-    "toggleList": "Zwischen Rad und Liste wechseln"
+    "toggleList": "Zwischen Rad und Liste wechseln",
+    "running": "Laufen",
+    "intervals": "Calisthenics-Einheit",
+    "competitions": "Turniere",
+    "horses": "Pferde"
   },
   "sync": {
     "synced": "Synchronisiert",

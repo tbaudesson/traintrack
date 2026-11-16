@@ -84,7 +84,9 @@ function useNavigationSections() {
   }, []);
   void preferenceVersion;
   const prefs = getNavigationPreferences();
-  const accessible = navigationForAccess({ role: isAdmin ? "admin" : "user", isAdmin, features: planFeatures });
+  // One's sports bring their own pages into the Training section.
+  const { sport, sport2, allSports } = useAppPrefs();
+  const accessible = navigationForAccess({ role: isAdmin ? "admin" : "user", isAdmin, features: planFeatures }, allSports ? [] : [sport, sport2]);
   return prefs.sectionOrder.map((id) => accessible.find((entry) => entry.id === id)).filter((entry): entry is NonNullable<typeof entry> => !!entry && !prefs.hiddenSections.includes(entry.id));
 }
 

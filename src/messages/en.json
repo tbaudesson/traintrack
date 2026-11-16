@@ -41,7 +41,11 @@
     "allSections": "All sections",
     "breadcrumbLabel": "Navigation path",
     "searchNavigation": "Search navigation",
-    "toggleList": "Switch between wheel and list"
+    "toggleList": "Switch between wheel and list",
+    "running": "Running",
+    "intervals": "Callisthenics session",
+    "competitions": "Competitions",
+    "horses": "Horses"
   },
   "sync": {
     "synced": "Synced",

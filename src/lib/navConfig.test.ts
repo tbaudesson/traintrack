@@ -90,3 +90,31 @@ describe("navigation preference migration", () => {
     expect(JSON.parse(store["traintrack.navWheel"])).toEqual({ version: 2, sectionOrder: ["performance", "train", "coaching", "profileAdmin"], hiddenSections: ["coaching"] });
   });
 });
+
+describe("the wheel for one's sport", () => {
+  const all = { isAdmin: false, role: "user" as const, features: ["running", "vaulting", "excel_import"] };
+  const train = (sports: Parameters<typeof navigationForAccess>[1]) => navigationForAccess(all, sports).find((s) => s.id === "train")!.children.map((c) => c.id);
+
+  it("puts one's sport's own pages after today's session, in place of Sports", () => {
+    expect(train(["running"])).toEqual(["today", "running", "programs", "exercises", "history", "import"]);
+    expect(train(["callisthenics"])).toEqual(["today", "intervals", "programs", "exercises", "history", "import"]);
+  });
+
+  it("keeps six destinations at most, and both sports' pages", () => {
+    expect(train(["vaulting", "running"])).toEqual(["today", "competitions", "horses", "running", "programs", "exercises"]);
+  });
+
+  it("changes nothing for a sport without pages of its own, or none", () => {
+    const usual = ["today", "programs", "exercises", "sports", "history", "import"];
+    expect(train([])).toEqual(usual);
+    expect(train(["bodybuilding", null])).toEqual(usual);
+  });
+
+  it("keeps Sports when the licence opens none of the sport's pages", () => {
+    expect(navigationForAccess({ role: "user", features: [] }, ["vaulting"]).find((s) => s.id === "train")!.children.map((c) => c.id)).toEqual(["today", "programs", "exercises", "sports", "history"]);
+  });
+
+  it("files a sport's pages under Training", () => {
+    for (const path of ["/running", "/intervals", "/competitions", "/horses"]) expect(sectionForPath(path)?.id).toBe("train");
+  });
+});

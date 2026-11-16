@@ -1083,6 +1083,28 @@ await test("every page has a way back, home when it was opened directly", async 
   await fresh.close();
 });
 
+await test("the menu wheel brings one's sport: a runner goes straight to running", async () => {
+  const setSport = (sport) => page.evaluate((v) => { const p = JSON.parse(localStorage.getItem("traintrack.prefs") || "{}"); p.sport = v; p.sport2 = null; p.allSports = false; localStorage.setItem("traintrack.prefs", JSON.stringify(p)); }, sport);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  try {
+    await page.goto(`${BASE}/fr`);
+    await setSport("running");
+    await page.goto(`${BASE}/fr`);
+    await wheel.open();
+    const train = await wheel.centre("S’entraîner");
+    await page.mouse.click(train.x, train.y);
+    const sub = 'nav[aria-label="S’entraîner"]';
+    await page.locator(sub).waitFor({ timeout: 5000 });
+    expect(!(await page.locator(sub).getByText("Sports", { exact: true }).count()), "the generic Sports entry is still there for a runner");
+    const running = await wheel.centre("Course à pied", sub);
+    await page.mouse.click(running.x, running.y);
+    await page.waitForURL(/\/fr\/running$/, { timeout: 10000 });
+  } finally {
+    await setSport(null);
+    await page.setViewportSize({ width: 390, height: 844 });
+  }
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });

@@ -1,4 +1,5 @@
 import type { FeatureKey, UserRole } from "@/lib/adminService";
+import type { FavoriteSport } from "@/lib/appTheme";
 
 export type NavigationSectionId = "train" | "performance" | "coaching" | "profileAdmin";
 
@@ -61,6 +62,32 @@ export const NAVIGATION_CATALOG: readonly NavigationSectionDef[] = [
   },
 ] as const;
 
+/** Where one's sport is trained: these stand in the wheel for the generic "Sports" entry. */
+export const SPORT_DESTINATIONS: Partial<Record<FavoriteSport, readonly NavItemDef[]>> = {
+  running: [{ id: "running", href: "/running", icon: "Footprints", key: "running", feature: "running" }],
+  callisthenics: [{ id: "intervals", href: "/intervals", icon: "Timer", key: "intervals" }],
+  vaulting: [
+    { id: "competitions", href: "/competitions", icon: "Award", key: "competitions", feature: "vaulting" },
+    { id: "horses", href: "/horses", icon: "PawPrint", key: "horses", feature: "vaulting" },
+  ],
+};
+const SPORT_ITEMS = Object.values(SPORT_DESTINATIONS).flat();
+const MAX_CHILDREN = 6;
+
+/**
+ * The training section for one's sports: their own pages right after today's
+ * session, in place of "Sports" (the generic list, still under Connections).
+ * A sport without pages of its own (or none the licence opens), or none
+ * chosen, keeps the usual section.
+ */
+function withSports(section: NavigationSectionDef, sports: readonly (FavoriteSport | null | undefined)[], access: NavigationAccess): NavigationSectionDef {
+  if (section.id !== "train") return section;
+  const own = [...new Set(sports.flatMap((sport) => (sport ? SPORT_DESTINATIONS[sport] ?? [] : [])))].filter((item) => canAccessNavigation(item, access));
+  if (!own.length) return section;
+  const [today, ...rest] = section.children;
+  return { ...section, children: [today, ...own, ...rest.filter((item) => item.id !== "sports")] };
+}
+
 export interface NavigationAccess {
   role?: UserRole;
   features?: readonly string[];
@@ -73,10 +100,11 @@ export function canAccessNavigation(item: Pick<NavItemDef, "feature" | "roles">,
   return !item.feature || !!access.features?.includes(item.feature);
 }
 
-export function navigationForAccess(access: NavigationAccess): NavigationSectionDef[] {
+export function navigationForAccess(access: NavigationAccess, sports: readonly (FavoriteSport | null | undefined)[] = []): NavigationSectionDef[] {
   return NAVIGATION_CATALOG
     .filter((section) => canAccessNavigation(section, access))
-    .map((section) => ({ ...section, children: section.children.filter((item) => canAccessNavigation(item, access)) }));
+    .map((section) => withSports(section, sports, access))
+    .map((section) => ({ ...section, children: section.children.filter((item) => canAccessNavigation(item, access)).slice(0, MAX_CHILDREN) }));
 }
 
 /**
@@ -96,7 +124,8 @@ export function currentItemId(section: Pick<NavigationSectionDef, "children">, p
 }
 
 export function sectionForPath(pathname: string): NavigationSectionDef | undefined {
-  const matches = NAVIGATION_CATALOG.flatMap((section) => section.children.map((item) => ({ section, item })))
+  // A sport's own pages belong to Training, wherever one's sport puts them.
+  const matches = [...NAVIGATION_CATALOG.flatMap((section) => section.children.map((item) => ({ section, item }))), ...SPORT_ITEMS.map((item) => ({ section: NAVIGATION_CATALOG[0], item }))]
     .filter(({ item }) => item.href !== "/" && (pathname === item.href || pathname.startsWith(`${item.href}/`)))
     .sort((a, b) => b.item.href.length - a.item.href.length);
   // Several entries can share a page (Settings is under Training too, for Import):
