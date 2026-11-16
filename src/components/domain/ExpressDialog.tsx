@@ -10,7 +10,8 @@ import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-const CHOICES = [20, 30, 45];
+// 15 min too: a session of half an hour still gets a real choice (15 or 20).
+const CHOICES = [15, 20, 30, 45];
 
 /**
  * The session of the day in less time: the minutes there are, and what is
@@ -31,8 +32,10 @@ export function ExpressDialog({
   const xl = useExerciseLabel();
   const full = dayMinutes(day);
   const choices = CHOICES.filter((m) => m < full);
-  const [minutes, setMinutes] = useState(choices[0] ?? CHOICES[0]);
-  const shown = choices.includes(minutes) ? minutes : (choices[0] ?? CHOICES[0]);
+  // Twenty minutes stays the first offer when the session allows it.
+  const preferred = choices.find((m) => m >= 20) ?? choices[0] ?? CHOICES[0];
+  const [minutes, setMinutes] = useState(preferred);
+  const shown = choices.includes(minutes) ? minutes : preferred;
   const plan = expressDay(day, shown);
 
   return (
@@ -45,7 +48,7 @@ export function ExpressDialog({
           </DialogTitle>
         </DialogHeader>
         <p className="text-sm text-muted-foreground">{t("intro", { minutes: full })}</p>
-        <div className="grid grid-cols-3 gap-2" role="group" aria-label={t("time")}>
+        <div className="grid grid-cols-4 gap-2" role="group" aria-label={t("time")}>
           {choices.map((m) => (
             <button
               key={m}

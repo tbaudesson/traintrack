@@ -192,8 +192,12 @@ await test("pressed for time, the session of the day has a short version", async
   await page.getByRole("button", { name: /Pas le temps \? Version courte/ }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByRole("heading", { name: "Séance express" }).waitFor({ timeout: 5000 });
-  const first = dialog.getByRole("group", { name: "Temps disponible" }).getByRole("button").first();
-  expect((await first.getAttribute("aria-pressed")) === "true", "no time chosen by default");
+  const times = dialog.getByRole("group", { name: "Temps disponible" }).getByRole("button");
+  expect((await times.count()) >= 2, "only one time offered: nothing to choose");
+  expect((await dialog.getByRole("group", { name: "Temps disponible" }).locator('[aria-pressed="true"]').count()) === 1, "no time chosen by default");
+  // Another time can be chosen, and the plan follows it.
+  await times.first().click();
+  expect((await times.first().getAttribute("aria-pressed")) === "true", "the time tapped is not chosen");
   expect((await dialog.locator("li").count()) >= 1, "the short version has no exercise");
   await dialog.getByText(/Environ \d+ min, échauffement compris/).waitFor({ timeout: 5000 });
   await snap("express");
