@@ -11,6 +11,7 @@ import { GlobalNavigationWheel } from "@/components/navigation/GlobalNavigationW
 import { SectionNavigationWheel } from "@/components/navigation/SectionNavigationWheel";
 import { NavigationBreadcrumb } from "@/components/navigation/NavigationBreadcrumb";
 import { NavigationListFallback } from "@/components/navigation/NavigationListFallback";
+import { PerformanceDial } from "@/components/navigation/PerformanceDial";
 import { useGlobalNavigationHidden } from "@/hooks/useSessionFocus";
 import { navigationIcon } from "@/components/navigation/navigationIcons";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
@@ -58,13 +59,15 @@ export function BottomNav() {
   const sections = useNavigationSections();
   const routeSection = sectionForPath(pathname);
   const section = sections.find((entry) => entry.id === selected) ?? sections.find((entry) => entry.id === routeSection?.id);
+  const { style } = useAppPrefs();
+  const dial = style === "dynamic";
 
   if (hidden) return null;
   return <>
     {open && <button type="button" aria-label={common("close")} className="t-arc-scrim fixed inset-0 z-40" onClick={() => setOpen(false)} />}
-    {open && <aside ref={panelRef} onClick={(event) => { if ((event.target as HTMLElement).closest("a")) setOpen(false); }} className="t-nav-panel fixed inset-x-3 bottom-24 z-50 mx-auto flex max-w-md flex-col items-center gap-3 rounded-[2rem] border bg-[var(--nav-panel)] p-4 shadow-2xl backdrop-blur-xl" aria-label={common("mainNav")}>
+    {open && <aside ref={panelRef} onClick={(event) => { if ((event.target as HTMLElement).closest("a")) setOpen(false); }} className={`t-nav-panel fixed inset-x-3 bottom-24 z-50 mx-auto flex max-w-md flex-col items-center gap-3 rounded-[2rem] border bg-[var(--nav-panel)] p-4 shadow-2xl backdrop-blur-xl${dial ? " t-nav-panel-dial" : ""}`} aria-label={common("mainNav")}>
       <div className="flex w-full items-center justify-between"><NavigationBreadcrumb section={selected ? section : undefined} onRoot={() => setSelected(null)} /><button type="button" onClick={() => setListMode((value) => !value)} className="rounded-full p-2 hover:bg-muted" aria-label={t("toggleList")} aria-pressed={listMode}><Menu className="size-5" /></button></div>
-      {listMode ? <NavigationListFallback sections={sections} /> : selected && section ? <SectionNavigationWheel section={section} pathname={pathname} onBack={() => setSelected(null)} /> : <GlobalNavigationWheel sections={sections} onSelect={setSelected} onHome={() => { setOpen(false); router.push("/"); }} />}
+      {listMode ? <NavigationListFallback sections={sections} /> : dial ? <PerformanceDial sections={sections} activeId={selected ?? routeSection?.id ?? sections[0]?.id} pathname={pathname} onSelect={setSelected} onHome={() => { setOpen(false); router.push("/"); }} /> : selected && section ? <SectionNavigationWheel section={section} pathname={pathname} onBack={() => setSelected(null)} /> : <GlobalNavigationWheel sections={sections} onSelect={setSelected} onHome={() => { setOpen(false); router.push("/"); }} />}
     </aside>}
     <div className="t-nav-launcher safe-area-pb fixed inset-x-0 bottom-3 z-50 flex justify-center pointer-events-none"><button ref={toggleRef} type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-label={open ? common("close") : common("openNav")} className="t-arc-hub pointer-events-auto flex size-16 items-center justify-center rounded-full shadow-xl outline-none focus-visible:ring-2 focus-visible:ring-ring">{open ? <X className="size-7" /> : <Menu className="size-7" />}</button></div>
   </>;

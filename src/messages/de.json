@@ -4,6 +4,7 @@
     "tagline": "Schlau trainieren. Alles verfolgen."
   },
   "nav": {
+    "dialHint": "Ziehen oder das Menü drehen",
     "home": "Start",
     "log": "Einheit",
     "progress": "Fortschritt",
@@ -102,6 +103,9 @@
     "backToLogin": "Zurück zur Anmeldung"
   },
   "home": {
+    "tileWeekNone": "kein Ziel",
+    "tileFormNone": "noch offen",
+    "tileNutritionNone": "nichts erfasst",
     "quickAccess": "Schnellzugriff",
     "tileWeek": "Woche",
     "tileWeekUnit": "Einheiten",
@@ -965,7 +969,7 @@
     "look_classic": "Klassisch",
     "look_classic_d": "Schlicht, Milchglas",
     "look_dynamic": "Dynamisch",
-    "look_dynamic_d": "Verläufe, Leuchten, Energie",
+    "look_dynamic_d": "Graphit, Elektroviolett, Lime",
     "look_soft": "Sanft",
     "look_soft_d": "Pastell und rund",
     "look_contrast": "Kontrast",

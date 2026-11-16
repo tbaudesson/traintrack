@@ -4,6 +4,7 @@
     "tagline": "Entraîne-toi malin. Suis tout."
   },
   "nav": {
+    "dialHint": "Fais glisser ou tourne le menu",
     "home": "Accueil",
     "log": "Séance",
     "progress": "Progrès",
@@ -102,6 +103,9 @@
     "backToLogin": "Retour à la connexion"
   },
   "home": {
+    "tileWeekNone": "pas d'objectif",
+    "tileFormNone": "à renseigner",
+    "tileNutritionNone": "rien noté",
     "quickAccess": "Accès rapide",
     "tileWeek": "Semaine",
     "tileWeekUnit": "séances",
@@ -965,7 +969,7 @@
     "look_classic": "Classique",
     "look_classic_d": "Épuré, verre dépoli",
     "look_dynamic": "Dynamique",
-    "look_dynamic_d": "Dégradés, néons, énergie",
+    "look_dynamic_d": "Graphite, violet électrique, lime",
     "look_soft": "Doux",
     "look_soft_d": "Pastel, tout en rondeur",
     "look_contrast": "Contraste",

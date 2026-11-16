@@ -812,6 +812,28 @@ html.style-dynamic .t-surface,
 html.style-dynamic [data-slot="card"] { border-radius: 0.9rem; }
 html.style-dynamic .t-hero { border-radius: 1rem; }
 
+/* Dynamic's dial: no card around it, the metal and the slices carry it. */
+html.style-dynamic .t-nav-panel-dial {
+  inset-inline: 0.25rem;
+  max-width: 25rem;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.t-dial > div { filter: drop-shadow(0 22px 34px rgb(0 0 0 / 0.65)) drop-shadow(0 0 26px color-mix(in oklab, var(--accent-500) 35%, transparent)); }
+.t-dial-label { font-family: var(--font-condensed), var(--font-geist), sans-serif; font-style: italic; font-weight: 800; letter-spacing: 0.01em; }
+.t-dial-slice .t-dial-label { font-size: 0.72rem; overflow-wrap: anywhere; hyphens: auto; }
+.t-dial-hub {
+  background: radial-gradient(circle at 35% 30%, var(--accent-400), var(--accent-800) 70%);
+  color: white;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 0 0 3px #c9ced8, 0 0 0 5px #3c414c, 0 0 28px var(--accent-500);
+}
+.t-dial-destination[aria-current="page"] { color: var(--performance); }
+.t-dial-destination:hover, .t-dial-slice:hover { filter: brightness(1.15); }
+.t-dial-active { filter: drop-shadow(0 0 6px var(--accent-500)); }
+html.style-dynamic .t-arc-scrim { background: rgb(4 5 8 / 0.88); }
+
 /* Soft: pastel, very round, light shadows, no hard edges. */
 html.style-soft {
   --radius: 1.1rem;

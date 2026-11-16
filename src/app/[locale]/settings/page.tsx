@@ -50,9 +50,9 @@ import { INJURY_AREAS, injuryState, returnPhases, toggleInjury } from "@/lib/inj
 const STYLE_PREVIEW: Record<AppStyle, { frame: string; card: string; button: string }> = {
   classic: { frame: "bg-violet-50 dark:bg-violet-950/60", card: "rounded-md bg-white/90 shadow-sm dark:bg-white/15", button: "rounded-md bg-violet-600" },
   dynamic: {
-    frame: "bg-linear-to-br from-violet-950 via-violet-800 to-orange-600",
-    card: "rounded-lg bg-white/15 ring-1 ring-orange-400/80",
-    button: "rounded-lg bg-linear-to-r from-violet-500 to-orange-500",
+    frame: "bg-linear-to-br from-[#07080b] via-[#151820] to-violet-950",
+    card: "rounded-md bg-[#1b1e26] ring-1 ring-violet-500/60",
+    button: "rounded-md bg-[#b8ff2c]",
   },
   soft: { frame: "bg-linear-to-br from-pink-50 to-indigo-50 dark:from-pink-950/40 dark:to-indigo-950/40", card: "rounded-2xl bg-white/90 dark:bg-white/15", button: "rounded-full bg-violet-400" },
   contrast: { frame: "bg-white dark:bg-black", card: "rounded-sm border-2 border-black dark:border-white", button: "rounded-sm bg-violet-700" },

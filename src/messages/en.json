@@ -4,6 +4,7 @@
     "tagline": "Train smart. Track everything."
   },
   "nav": {
+    "dialHint": "Drag or turn the menu",
     "home": "Home",
     "log": "Log",
     "progress": "Progress",
@@ -102,6 +103,9 @@
     "backToLogin": "Back to sign in"
   },
   "home": {
+    "tileWeekNone": "no goal",
+    "tileFormNone": "not logged",
+    "tileNutritionNone": "nothing logged",
     "quickAccess": "Quick access",
     "tileWeek": "Week",
     "tileWeekUnit": "sessions",
@@ -965,7 +969,7 @@
     "look_classic": "Classic",
     "look_classic_d": "Clean, frosted glass",
     "look_dynamic": "Dynamic",
-    "look_dynamic_d": "Gradients, glow, energy",
+    "look_dynamic_d": "Graphite, electric violet, lime",
     "look_soft": "Soft",
     "look_soft_d": "Pastel and rounded",
     "look_contrast": "Contrast",

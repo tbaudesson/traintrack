@@ -25,19 +25,19 @@ export interface QuickAccessData {
  */
 export function QuickAccessTiles({ data }: { data: QuickAccessData }) {
   const t = useTranslations("home");
-  const tiles: { key: string; href: string; icon: ReactNode; label: string; value: ReactNode; sub?: string; gauge?: number }[] = [
+  const tiles: { key: string; href: string; icon: ReactNode; label: string; value: ReactNode; sub?: string; gauge?: number | undefined }[] = [
     {
       key: "week", href: "/progress", icon: <TrendingUp className="size-4" aria-hidden="true" />, label: t("tileWeek"),
-      value: data.week ? `${data.week.done}/${data.week.target}` : "—", sub: t("tileWeekUnit"),
+      value: data.week ? `${data.week.done}/${data.week.target}` : "—", sub: data.week ? t("tileWeekUnit") : t("tileWeekNone"),
     },
     ...(data.loadChange !== null
       ? [{ key: "load", href: "/progress", icon: <Activity className="size-4" aria-hidden="true" />, label: t("tileLoad"), value: `${data.loadChange > 0 ? "+" : ""}${data.loadChange} %`, sub: t("tileLoadSub") }]
       : []),
     ...(data.readiness !== undefined
-      ? [{ key: "readiness", href: "/readiness", icon: <HeartPulse className="size-4" aria-hidden="true" />, label: t("tileForm"), value: data.readiness ?? "—", sub: "/ 100", gauge: data.readiness ?? 0 }]
+      ? [{ key: "readiness", href: "/readiness", icon: <HeartPulse className="size-4" aria-hidden="true" />, label: t("tileForm"), value: data.readiness ?? "—", sub: data.readiness == null ? t("tileFormNone") : "/ 100", gauge: data.readiness ?? undefined }]
       : []),
     ...(data.calories !== undefined
-      ? [{ key: "nutrition", href: "/nutrition", icon: <Apple className="size-4" aria-hidden="true" />, label: t("tileNutrition"), value: data.calories === null ? "—" : Math.round(data.calories).toLocaleString(), sub: "kcal" }]
+      ? [{ key: "nutrition", href: "/nutrition", icon: <Apple className="size-4" aria-hidden="true" />, label: t("tileNutrition"), value: data.calories === null ? "—" : Math.round(data.calories).toLocaleString(), sub: data.calories === null ? t("tileNutritionNone") : "kcal" }]
       : []),
     { key: "teams", href: "/teams", icon: <Users className="size-4" aria-hidden="true" />, label: t("tileTeams"), value: data.teams, sub: t("tileTeamsSub", { count: data.teams }) },
     ...(data.challenges
@@ -57,9 +57,9 @@ export function QuickAccessTiles({ data }: { data: QuickAccessData }) {
                 {tile.label}
               </span>
               <span className="flex items-end justify-between gap-2">
-                <span className="flex items-baseline gap-1">
-                  <span className={cn("t-quick-value text-2xl font-extrabold tabular-nums")}>{tile.value}</span>
-                  {tile.sub && <span className="text-xs text-muted-foreground">{tile.sub}</span>}
+                <span className="min-w-0">
+                  <span className={cn("t-quick-value block text-2xl leading-none font-extrabold whitespace-nowrap tabular-nums")}>{tile.value}</span>
+                  {tile.sub && <span className="mt-1 block text-xs text-muted-foreground">{tile.sub}</span>}
                 </span>
                 {tile.gauge !== undefined && (
                   <svg viewBox="0 0 40 22" className="h-6 w-11 shrink-0" aria-hidden="true">
