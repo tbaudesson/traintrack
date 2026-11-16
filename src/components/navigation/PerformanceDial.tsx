@@ -182,7 +182,7 @@ export function PerformanceDial({
               href={item.href}
               draggable={false}
               aria-current={item.id === current ? "page" : undefined}
-              className="t-dial-destination absolute flex w-[18%] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-0.5 rounded-lg text-center text-[0.7rem] font-semibold leading-tight text-[#e8ebf1] outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="t-dial-destination absolute flex w-[22%] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-0.5 rounded-lg text-center text-[0.66rem] font-semibold leading-tight text-[#e8ebf1] outline-none focus-visible:ring-2 focus-visible:ring-ring"
               style={{ left: `${p.x / 2}%`, top: `${p.y / 2}%` }}
             >
               <span aria-hidden="true">{navigationIcon(item.icon, "size-5")}</span>

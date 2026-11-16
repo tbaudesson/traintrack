@@ -195,7 +195,7 @@ export default function HomePage() {
   const todayReadiness = useTodayReadiness();
   const recommendations = useRecommendations();
   const { hasFeature } = useFeatureAccess();
-  const { memberships } = useTeams();
+  const { memberships, myGroups } = useTeams();
   const [now] = useState(() => Date.now());
   const [choosing, setChoosing] = useState(false);
   const [expressOpen, setExpressOpen] = useState(false);
@@ -758,7 +758,7 @@ export default function HomePage() {
                     loadChange: load ? Math.round((load.ratio - 1) * 100) : null,
                     readiness: hasFeature("readiness") ? readyScore : undefined,
                     calories: hasFeature("nutrition") ? (nutritionToday.length ? sumMacros(nutritionToday).calories : null) : undefined,
-                    teams: memberships.length,
+                    teams: new Set([...myGroups.map((g) => g.id), ...memberships.map((m) => m.group_id)]).size,
                     challenges: hasFeature("challenges"),
                   }}
                 />
