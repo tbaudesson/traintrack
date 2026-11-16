@@ -186,7 +186,7 @@ export function PerformanceDial({
               style={{ left: `${p.x / 2}%`, top: `${p.y / 2}%` }}
             >
               <span aria-hidden="true">{navigationIcon(item.icon, "size-5")}</span>
-              <span>{t(item.key)}</span>
+              <span className="whitespace-nowrap">{t(item.key)}</span>
             </Link>
           );
         })}
