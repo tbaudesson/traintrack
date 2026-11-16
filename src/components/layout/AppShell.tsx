@@ -5,7 +5,7 @@ import { useEffect, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePathname, useRouter } from "@/i18n/navigation";
-import { BottomNav } from "./BottomNav";
+import { BottomNav, DesktopRail } from "./BottomNav";
 import { OfflineBanner } from "./OfflineBanner";
 import { OfflineWarmup } from "./OfflineWarmup";
 import { Loader2 } from "lucide-react";
@@ -81,6 +81,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <>
       <OfflineBanner />
       <OfflineWarmup />
+      <DesktopRail />
       <main id="main-content" className="t-app-main flex-1 overflow-y-auto pb-20">
         {children}
       </main>
