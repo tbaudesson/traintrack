@@ -45,6 +45,7 @@ export type Equipment =
   | "bodyweight"
   | "kettlebell"
   | "bands"
+  | "pullup_bar"
   | "other";
 
 // ─── Entity interfaces ───────────────────────────────────────────────

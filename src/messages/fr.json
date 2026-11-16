@@ -247,10 +247,11 @@
     "injuries": "Blessures ou limitations",
     "injuriesPlaceholder": "ex. bas du dos, épaule droite…",
     "equipment": "Équipement disponible",
-    "equip_barbell": "Barre",
+    "equip_barbell": "Barre de musculation",
     "equip_dumbbell": "Haltères",
     "equip_machine": "Machines",
     "equip_cable": "Poulies",
+    "equip_pullup_bar": "Barre de traction",
     "equip_bodyweight": "Poids du corps",
     "equip_kettlebell": "Kettlebells",
     "equip_bands": "Élastiques",
@@ -1269,7 +1270,8 @@
     "introStep3": "Votre matériel",
     "introStep4": "Votre programme et vos jours d’entraînement",
     "introStart": "C’est parti",
-    "introLater": "Plus tard"
+    "introLater": "Plus tard",
+    "adapted": "Adapté à votre matériel : certains exercices sont remplacés."
   },
   "nutritionCalc": {
     "open": "Calculer pour moi",

@@ -25,8 +25,8 @@ import { cn } from "@/lib/utils";
 const GOALS: TrainingGoal[] = ["strength", "hypertrophy", "endurance", "fat_loss", "general_fitness"];
 const LEVELS: FitnessLevel[] = ["beginner", "intermediate", "advanced"];
 const SEXES: Sex[] = ["male", "female", "other", "undisclosed"];
-const EQUIPMENT: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "bodyweight", "kettlebell", "bands", "other"];
-const GYM_SET: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "bodyweight"];
+const EQUIPMENT: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "pullup_bar", "bodyweight", "kettlebell", "bands", "other"];
+const GYM_SET: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "pullup_bar", "bodyweight"];
 const HOME_SET: Equipment[] = ["dumbbell", "bodyweight", "bands"];
 const STEPS = 4;
 
@@ -73,8 +73,8 @@ export default function OnboardingPage() {
   const [saving, setSaving] = useState(false);
 
   const picks = useMemo(
-    () => (goal ? recommendPrograms({ goal, level, equipment, sport }, catalogue) : []),
-    [goal, level, equipment, sport, catalogue]
+    () => (goal ? recommendPrograms({ goal, level, equipment, sport, injured: areas }, catalogue) : []),
+    [goal, level, equipment, sport, areas, catalogue]
   );
   const chosen = picks.find((p) => p.id === programId);
 
@@ -336,6 +336,7 @@ export default function OnboardingPage() {
                   {i === 0 && ` · ${tw("best")}`}
                 </p>
                 <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>
+                {p.adapted && <p className="mt-1.5 text-xs font-medium text-accent-text">{tw("adapted")}</p>}
               </button>
             ))}
             <button

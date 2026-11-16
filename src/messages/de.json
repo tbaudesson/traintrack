@@ -251,6 +251,7 @@
     "equip_dumbbell": "Kurzhanteln",
     "equip_machine": "Maschinen",
     "equip_cable": "Kabelzug",
+    "equip_pullup_bar": "Klimmzugstange",
     "equip_bodyweight": "Körpergewicht",
     "equip_kettlebell": "Kettlebells",
     "equip_bands": "Bänder",
@@ -1269,7 +1270,8 @@
     "introStep3": "Deine Ausrüstung",
     "introStep4": "Dein Programm und deine Trainingstage",
     "introStart": "Los geht’s",
-    "introLater": "Später"
+    "introLater": "Später",
+    "adapted": "An deine Ausrüstung angepasst: einige Übungen sind ersetzt."
   },
   "nutritionCalc": {
     "open": "Für mich berechnen",

@@ -33,4 +33,16 @@ describe("sign-up suggestions", () => {
     expect(defaultTrainingDays(2)).toEqual([2, 5]);
     expect(defaultTrainingDays(9)).toHaveLength(7);
   });
+
+  it("never suggest an exercise hung from a pull-up bar to an athlete without one", () => {
+    const bar = /^(Pull-up|Chin-up|Hanging Leg Raise)$/;
+    for (const sport of [null, "callisthenics", "fitness", "bodybuilding"] as const) {
+      for (const equipment of [["bodyweight"], ["dumbbell", "bodyweight", "bands"]] as const) {
+        const picks = recommendPrograms({ goal: "general_fitness", level: "beginner", equipment: [...equipment], sport }, fr);
+        expect(picks.length).toBeGreaterThan(0);
+        const hung = picks.flatMap((t) => t.structure.flatMap((d) => d.exercises.map((e) => e.exerciseName))).filter((n) => bar.test(n));
+        expect({ sport, equipment, hung }).toEqual({ sport, equipment, hung: [] });
+      }
+    }
+  });
 });

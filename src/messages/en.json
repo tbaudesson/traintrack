@@ -251,6 +251,7 @@
     "equip_dumbbell": "Dumbbells",
     "equip_machine": "Machines",
     "equip_cable": "Cables",
+    "equip_pullup_bar": "Pull-up bar",
     "equip_bodyweight": "Bodyweight",
     "equip_kettlebell": "Kettlebells",
     "equip_bands": "Bands",
@@ -1269,7 +1270,8 @@
     "introStep3": "Your equipment",
     "introStep4": "Your program and your training days",
     "introStart": "Let’s go",
-    "introLater": "Later"
+    "introLater": "Later",
+    "adapted": "Made for your equipment: some exercises are replaced."
   },
   "nutritionCalc": {
     "open": "Work it out for me",

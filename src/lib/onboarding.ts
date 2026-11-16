@@ -1,6 +1,8 @@
 import type { Equipment, FitnessLevel, TrainingGoal } from "@/db";
 import { rankTemplates, type ProgramGoal, type ProgramTemplate } from "./programTemplates";
 import { programCategory } from "./programCategories";
+import { adaptToEquipment } from "./programEquipment";
+import type { PainArea } from "./pain";
 import type { FavoriteSport } from "./appTheme";
 
 /** The goal a sport usually comes with, chosen for the athlete who can change it. */
@@ -23,24 +25,29 @@ const GYM: Equipment[] = ["barbell", "machine", "cable"];
 /**
  * Three ready-made programs to suggest at sign-up: those of the athlete's
  * sport first, then the closest to the goal and level, and only programs for
- * home when the athlete has no gym equipment.
+ * home when the athlete has no gym equipment. Each is made for the equipment
+ * the athlete has: no pull-up without a bar, no barbell without one.
  */
 export function recommendPrograms(
-  input: { goal: TrainingGoal; level: FitnessLevel; equipment: Equipment[]; sport?: FavoriteSport | null },
+  input: { goal: TrainingGoal; level: FitnessLevel; equipment: Equipment[]; sport?: FavoriteSport | null; injured?: PainArea[] },
   catalogue: ProgramTemplate[]
-): ProgramTemplate[] {
+): (ProgramTemplate & { adapted?: boolean })[] {
   const atHome = input.equipment.length > 0 && !input.equipment.some((e) => GYM.includes(e));
   const ranked = rankTemplates({ goal: programGoalOf(input.goal), level: input.level }, catalogue);
   const fitting = atHome ? ranked.filter((t) => t.homeFriendly || t.goal === "endurance") : ranked;
   const pool = fitting.length >= 3 ? fitting : ranked;
+  let picks = pool.slice(0, 3);
   // The programs of one's sport first, the athlete's level first among them.
   if (input.sport) {
     const ofSport = catalogue
       .filter((t) => programCategory(t) === input.sport)
       .sort((a, b) => Number(b.level === input.level) - Number(a.level === input.level));
-    if (ofSport.length) return [...ofSport, ...pool.filter((t) => !ofSport.includes(t))].slice(0, 3);
+    if (ofSport.length) picks = [...ofSport, ...pool.filter((t) => !ofSport.includes(t))].slice(0, 3);
   }
-  return pool.slice(0, 3);
+  return picks.map((t) => {
+    const { structure, swapped } = adaptToEquipment(t.structure, input.equipment, input.injured);
+    return swapped ? { ...t, structure, adapted: true } : t;
+  });
 }
 
 /** Training days spread over the week for a number of sessions (1 = Monday … 7 = Sunday). */
