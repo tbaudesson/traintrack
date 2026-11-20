@@ -112,3 +112,31 @@ describe("endurance plans", () => {
     expect(empty).toEqual([]);
   });
 });
+
+describe("progress of the new sports", () => {
+  const w = (id: number, date: string, sport: "hike" | "swim", distanceM: number, durationSec: number, elevationGainM?: number) =>
+    ({ id, date, kind: "cardio", sport, distanceM, durationSec, elevationGainM }) as const;
+
+  it("keeps the longest outing in time and the biggest climb", async () => {
+    const { cardioBests } = await import("./cardio");
+    const b = cardioBests([w(1, "2026-11-01", "hike", 12000, 4 * 3600, 650), w(2, "2026-11-08", "hike", 18000, 6 * 3600, 400)], "hike");
+    expect(b).toMatchObject({ longestM: 18000, longestSec: 6 * 3600, highestClimbM: 650 });
+  });
+
+  it("gives a climbing record once climbs were noted before", async () => {
+    const { newCardioRecords } = await import("./cardio");
+    const first = w(1, "2026-11-01", "hike", 12000, 4 * 3600, 650);
+    expect(newCardioRecords(w(2, "2026-11-08", "hike", 10000, 4 * 3600, 900), [first])).toEqual(["climb"]);
+    expect(newCardioRecords(w(3, "2026-11-08", "hike", 10000, 4 * 3600, 900), [{ ...first, elevationGainM: undefined }])).toEqual([]);
+  });
+
+  it("reads the speed of the last four weeks against the four before", async () => {
+    const { speedTrend } = await import("./cardio");
+    const swims = [
+      w(1, "2026-10-01", "swim", 1000, 1200), w(2, "2026-10-10", "swim", 1000, 1200),
+      w(3, "2026-11-05", "swim", 1000, 1000), w(4, "2026-11-15", "swim", 1000, 1000),
+    ];
+    expect(speedTrend(swims, "swim", "2026-11-20")).toBeCloseTo(0.2, 5);
+    expect(speedTrend(swims.slice(1), "swim", "2026-11-20")).toBeNull();
+  });
+});

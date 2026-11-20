@@ -9,7 +9,7 @@ export const DISTANCE_SPORTS: Sport[] = SPORTS.filter(hasDistance);
 /** Shorter than this and a pace is noise, not a performance. */
 const MIN_DISTANCE_FOR_PACE: Record<Sport, number> = { run: 1000, hike: 2000, swim: 100, bike: 5000, row: 500, vaulting: Infinity, other: Infinity };
 
-type CardioFields = Pick<Workout, "id" | "kind" | "sport" | "distanceM" | "durationSec">;
+type CardioFields = Pick<Workout, "id" | "kind" | "sport" | "distanceM" | "durationSec"> & Partial<Pick<Workout, "elevationGainM" | "date">>;
 
 export function isCardio(w: Pick<Workout, "kind"> | undefined): boolean {
   return w?.kind === "cardio";
@@ -60,30 +60,60 @@ export interface CardioBests {
   longestM: number;
   /** Metres per second. */
   bestSpeed: number;
+  /** The longest outing, in seconds. */
+  longestSec: number;
+  /** The most metres climbed in one outing. */
+  highestClimbM: number;
 }
 
 export function cardioBests(workouts: CardioFields[], sport: Sport): CardioBests {
   let longestM = 0;
   let bestSpeed = 0;
+  let longestSec = 0;
+  let highestClimbM = 0;
   for (const w of workouts) {
     if (!isCardioDone(w) || w.sport !== sport) continue;
     const meters = w.distanceM ?? 0;
     longestM = Math.max(longestM, meters);
+    longestSec = Math.max(longestSec, w.durationSec ?? 0);
+    highestClimbM = Math.max(highestClimbM, w.elevationGainM ?? 0);
     if (w.durationSec && meters >= MIN_DISTANCE_FOR_PACE[sport]) bestSpeed = Math.max(bestSpeed, meters / w.durationSec);
   }
-  return { longestM, bestSpeed };
+  return { longestM, bestSpeed, longestSec, highestClimbM };
 }
 
+/**
+ * How the speed moves: the average speed of the last four weeks against the
+ * four before, as a share (+0.05 = 5 % faster). Null without two measured
+ * outings in each window.
+ */
+export function speedTrend(workouts: CardioFields[], sport: Sport, today: string): number | null {
+  const day = (offset: number) => new Date(Date.parse(`${today}T00:00:00Z`) - offset * 86_400_000).toISOString().slice(0, 10);
+  const speeds = (from: string, to: string) =>
+    workouts
+      .filter((w) => w.sport === sport && isCardioDone(w) && !!w.date && w.date > from && w.date <= to && !!w.durationSec && (w.distanceM ?? 0) >= MIN_DISTANCE_FOR_PACE[sport])
+      .map((w) => (w.distanceM ?? 0) / w.durationSec!);
+  const recent = speeds(day(28), today);
+  const before = speeds(day(56), day(28));
+  if (recent.length < 2 || before.length < 2) return null;
+  const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+  return mean(recent) / mean(before) - 1;
+}
+
+export type CardioRecord = "distance" | "pace" | "climb";
+
 /** Which records this session beat. Nothing counts without an earlier session. */
-export function newCardioRecords(session: CardioFields, others: CardioFields[]): ("distance" | "pace")[] {
+export function newCardioRecords(session: CardioFields, others: CardioFields[]): CardioRecord[] {
   if (!session.sport || !isCardioDone(session)) return [];
   const earlier = others.filter((w) => w.id !== session.id && w.sport === session.sport && isCardioDone(w));
   if (earlier.length === 0) return [];
   const before = cardioBests(earlier, session.sport);
   const now = cardioBests([session], session.sport);
-  const records: ("distance" | "pace")[] = [];
+  const records: CardioRecord[] = [];
   if (now.longestM > before.longestM) records.push("distance");
   if (now.bestSpeed > before.bestSpeed && before.bestSpeed > 0) records.push("pace");
+  // Metres climbed: a record once some were noted before.
+  if (now.highestClimbM > before.highestClimbM && before.highestClimbM > 0) records.push("climb");
   return records;
 }
 

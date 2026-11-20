@@ -1095,7 +1095,15 @@
     "zone5": "Très dur : impossible de parler, quelques minutes au maximum.",
     "sport_hike": "Randonnée",
     "climb": "Dénivelé positif (m)",
-    "checklist": "Liste avant départ"
+    "checklist": "Liste avant départ",
+    "recordClimb": "Nouveau record de dénivelé !",
+    "longestTime": "Plus longue sortie",
+    "climbWeek": "Dénivelé, 7 derniers jours",
+    "climbMonth": "Dénivelé, 28 derniers jours",
+    "highestClimb": "Plus gros dénivelé",
+    "trend": "Vitesse sur 4 semaines",
+    "faster": "+{percent} % plus rapide",
+    "slower": "−{percent} %"
   },
   "goals": {
     "titleOther": "Objectifs",

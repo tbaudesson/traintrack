@@ -1095,7 +1095,15 @@
     "zone5": "Sehr hart: Sprechen unmöglich, höchstens einige Minuten.",
     "sport_hike": "Wandern",
     "climb": "Höhenmeter bergauf (m)",
-    "checklist": "Checkliste vor dem Aufbruch"
+    "checklist": "Checkliste vor dem Aufbruch",
+    "recordClimb": "Neuer Höhenmeter-Rekord!",
+    "longestTime": "Längste Tour",
+    "climbWeek": "Höhenmeter, letzte 7 Tage",
+    "climbMonth": "Höhenmeter, letzte 28 Tage",
+    "highestClimb": "Meiste Höhenmeter",
+    "trend": "Tempo über 4 Wochen",
+    "faster": "+{percent} % schneller",
+    "slower": "−{percent} %"
   },
   "goals": {
     "titleOther": "Ziele",

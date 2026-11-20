@@ -1339,6 +1339,23 @@ await test("the pre-departure checklist: ticked items are kept, a night out on o
   await page.getByRole("button", { name: "Tout décocher" }).click();
 });
 
+await test("progress shows a hike's metres climbed and its longest outing", async () => {
+  await page.evaluate(async (user) => {
+    const db = await new Promise((res, rej) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+    const now = new Date().toISOString();
+    const d = new Date();
+    const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    await new Promise((res, rej) => { const tx = db.transaction("workouts", "readwrite"); tx.objectStore("workouts").add({ userId: user, uuid: `e2e-hike-done-${Date.now()}`, date, title: "Randonnée", kind: "cardio", sport: "hike", distanceM: 12000, durationSec: 4 * 3600, elevationGainM: 650, _dirty: 0, createdAt: now, updatedAt: now }); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+    db.close();
+  }, USER);
+  await page.goto(`${BASE}/fr/progress`);
+  const card = page.locator("div", { hasText: /^Randonnée · / }).first();
+  await page.getByText("Plus gros dénivelé").first().waitFor({ timeout: 10000 });
+  await page.getByText("+650 m").first().waitFor({ timeout: 5000 });
+  await page.getByText("Plus longue sortie").first().waitFor({ timeout: 5000 });
+  void card;
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });

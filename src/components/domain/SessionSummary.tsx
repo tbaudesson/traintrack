@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import type { CardioRecord } from "@/lib/cardio";
 import { Clock, Dumbbell, Gauge, Layers, Route, Trophy, type LucideIcon, PersonStanding } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -13,7 +14,7 @@ export interface SessionSummaryData {
   /** Percent against the previous comparable session; null if there is none. */
   change: number | null;
   records: { exercise: string; weightKg: number; reps: number }[];
-  cardio?: { distance: string | null; duration: string | null; pace: string | null; records: ("distance" | "pace")[] };
+  cardio?: { distance: string | null; duration: string | null; pace: string | null; records: CardioRecord[] };
 }
 
 function Tile({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
@@ -58,7 +59,7 @@ export function SessionSummary({
             {data.cardio.records.map((kind) => (
               <p key={kind} className="flex items-center gap-2 text-sm font-medium">
                 <Trophy className="size-4 shrink-0 text-accent-text" aria-hidden="true" />
-                {tc(kind === "distance" ? "recordDistance" : "recordPace")}
+                {tc(kind === "distance" ? "recordDistance" : kind === "climb" ? "recordClimb" : "recordPace")}
               </p>
             ))}
           </>

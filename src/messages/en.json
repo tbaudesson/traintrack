@@ -1095,7 +1095,15 @@
     "zone5": "Very hard: no talking, a few minutes at most.",
     "sport_hike": "Hiking",
     "climb": "Elevation gain (m)",
-    "checklist": "Pre-departure checklist"
+    "checklist": "Pre-departure checklist",
+    "recordClimb": "New climbing record!",
+    "longestTime": "Longest outing",
+    "climbWeek": "Climbing, last 7 days",
+    "climbMonth": "Climbing, last 28 days",
+    "highestClimb": "Biggest climb",
+    "trend": "Speed over 4 weeks",
+    "faster": "+{percent} % faster",
+    "slower": "−{percent} %"
   },
   "goals": {
     "titleOther": "Goals",
