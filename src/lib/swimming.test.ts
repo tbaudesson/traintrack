@@ -64,3 +64,16 @@ describe("the swimming programs", () => {
     expect(fr("natation-triathlon").structure.filter((d) => d.cardio!.notes?.includes("ne nagez jamais seul")).length).toBeGreaterThan(0);
   });
 });
+
+describe("the 8-week swim plan", () => {
+  it("links each session to its techniques, all of them among the sheets, and migration 061 adds them the same way", async () => {
+    const { PROGRAM_TEMPLATES } = await import("./programTemplates");
+    const migration = readFileSync("supabase/migrations/061_swim_plan_techniques.sql", "utf8");
+    const listed = JSON.parse(migration.slice(migration.indexOf("'[[") + 1, migration.indexOf("]]'") + 2));
+    for (const t of PROGRAM_TEMPLATES.filter((x) => x.id.startsWith("plan-natation-8"))) {
+      const keys = t.structure.map((d) => d.cardio?.techniques);
+      expect(keys.every((k) => k && k.length && k.every((x) => sheets.some((s) => s.key === x))), t.id).toBe(true);
+      expect(keys, t.id).toEqual(listed);
+    }
+  });
+});

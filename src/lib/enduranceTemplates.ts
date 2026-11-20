@@ -216,18 +216,24 @@ interface Lap {
   text: string;
 }
 
+/** The drill of each week of the 8-week swim plan (keys of the swim technique sheets), in the order of its drills. */
+export const SWIM_PLAN_DRILLS = ["catch-up", "fist", "side-kick", "breathing-3", "sculling", "one-arm", "catch-up", "crawl"];
+
 function swimPlan(x: EnduranceText): ProgramDay[] {
   const day = dayMaker(x);
   const s = x.swim;
-  const swimDay = (week: number, label: string, intensity: string, purpose: string, laps: Lap[], notes?: string): ProgramDay =>
+  const swimDay = (week: number, label: string, intensity: string, purpose: string, laps: Lap[], techniques: string[], notes?: string): ProgramDay =>
     day(week, label, {
       sport: "swim",
       distanceKm: laps.reduce((total, lap) => total + lap.metres, 0) / 1000,
       intensity,
       purpose,
       steps: laps.map((lap) => lap.text),
+      techniques: [...new Set(techniques)],
       notes,
     });
+  // The drill of each week's technique session, as a key of the swim technique sheets.
+  const drillKeys = SWIM_PLAN_DRILLS;
   const continuous = [600, 800, 1000, 600, 1200, 1500, 1800, 1500];
 
   return Array.from({ length: 8 }, (_, i) => i + 1).flatMap((week) => {
@@ -241,13 +247,13 @@ function swimPlan(x: EnduranceText): ProgramDay[] {
         { metres: reps * 100, text: s.full(reps) },
         { metres: 200, text: s.pull },
         { metres: 100, text: s.techniqueCoolDown },
-      ]),
+      ], ["crawl", drillKeys[week - 1], "kickboard", "pull-buoy"]),
       swimDay(week, week === 8 ? s.test : s.series, recovery ? "Zone 2" : "Zone 4", week === 8 ? s.testPurpose : s.seriesPurpose, [
         { metres: 300, text: s.seriesWarmUp },
         { metres: 100, text: s.sprints },
         s.sets[week - 1],
         { metres: 200, text: s.seriesCoolDown },
-      ]),
+      ], ["crawl", "streamline"]),
       swimDay(
         week,
         week === 8 ? s.goal : s.endurance,
@@ -258,6 +264,7 @@ function swimPlan(x: EnduranceText): ProgramDay[] {
           { metres: continuous[week - 1], text: s.continuous(continuous[week - 1]) },
           { metres: 100, text: s.enduranceCoolDown },
         ],
+        ["crawl", "breathing-3"],
         week >= 5 ? s.stopNote : undefined
       ),
     ];
