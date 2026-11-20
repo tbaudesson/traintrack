@@ -22,6 +22,10 @@ import { WeeklyReportCard } from "@/components/domain/WeeklyReportCard";
 import { homePicture } from "@/lib/appTheme";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
 import { usePainReports } from "@/hooks/usePain";
+import { useInjuryGuidance } from "@/hooks/useInjuryGuidance";
+import { InjuryCareCard } from "@/components/domain/InjuryCareCard";
+import { persistentPains } from "@/lib/injuryGuidance";
+import { activeInjuries } from "@/lib/injuries";
 import { deloadAdvice } from "@/lib/deload";
 import { trainingLoad } from "@/lib/trainingLoad";
 import { TrainingLoadCard } from "@/components/domain/TrainingLoadCard";
@@ -158,6 +162,7 @@ export default function HomePage() {
   const readiness = useReadiness();
   const { num, short } = useFormat();
   const pains = usePainReports();
+  const injuryG = useInjuryGuidance();
   const [reportClosed, setReportClosed] = useState(() => {
     try {
       return typeof window === "undefined" ? null : window.localStorage.getItem("traintrack-report-closed");
@@ -428,6 +433,8 @@ export default function HomePage() {
   const insightNote = (key: string, i: NonNullable<typeof painInsight>) => ({ key, node: <HomeInsight key={key} insight={i} exerciseName={exerciseName} /> });
   const notes: { key: string; node: ReactNode }[] = [
     ...(load && (load.zone === "caution" || load.zone === "danger") ? [{ key: "load", node: <TrainingLoadCard key="load" load={load} /> }] : []),
+    // Only with something to say: an injury in progress, or a pain coming back.
+    ...(injuryG && (activeInjuries(profile?.injuryAreas ?? []).length > 0 || persistentPains(injuryG, pains, today).length > 0) ? [{ key: "injury", node: <InjuryCareCard key="injury" guidance={injuryG} injuries={profile?.injuryAreas ?? []} pains={pains} today={today} /> }] : []),
     ...(lowForm !== null && lowForm < LOW_READINESS ? [{ key: "form", node: <Fragment key="form"><ReadinessBanner readiness={lowForm} keptNormal={lighterToday.keptNormal} onKeep={lighterToday.setKeptNormal} /></Fragment> }] : []),
     ...(painInsight ? [insightNote("insight-pain", painInsight)] : []),
     ...(commentsNode ? [{ key: "comments", node: <Fragment key="comments">{commentsNode}</Fragment> }] : []),

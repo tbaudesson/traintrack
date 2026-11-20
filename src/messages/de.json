@@ -922,7 +922,8 @@
     "featHint_challenges": "Team-Challenges erstellen (ansehen bleibt möglich)",
     "feat_vaulting": "Voltigieren",
     "featHint_vaulting": "Wettkämpfe und Pferde",
-    "nutrition": "Ernährung"
+    "nutrition": "Ernährung",
+    "injuries": "Verletzungen"
   },
   "profile": {
     "title": "Profil",
@@ -1412,11 +1413,12 @@
     "coachTitle": "Gemeldete Verletzungen",
     "coachHint": "Übungen, die diese Bereiche belasten, werden dem Athleten und in seinen Programmen markiert.",
     "declareFromPain": "Verletzung melden ({area}): Übungen, die diesen Bereich belasten, werden markiert.",
-    "returningChip": "Rückkehr W{week}/3",
+    "returningChip": "Rückkehr W{week}/{weeks}",
     "stepsHint": "Ein Tipp: aktuelle Verletzung (rot). Noch einer, wenn verheilt: schrittweise Rückkehr über 3 Wochen (orange). Ein letzter zum Entfernen.",
-    "returnLine": "Rückkehr nach Verletzung ({area}): Woche {week} von 3, Gewichte −{percent} %, um sanft einzusteigen.",
+    "returnLine": "Rückkehr nach Verletzung ({area}): Woche {week} von {weeks}, Gewichte −{percent} %, um sanft einzusteigen.",
     "returnLastWeek": "Rückkehr nach Verletzung ({area}): letzte Woche, übliche Gewichte, aufhören, wenn der Schmerz zurückkommt.",
-    "cautiousKept": "Nicht genug risikofreie Übungen für diesen Schwerpunkt: {count, plural, one {# Übung mit „Vorsicht“ bleibt} other {# Übungen mit „Vorsicht“ bleiben}}, nur schmerzfrei ausführen."
+    "cautiousKept": "Nicht genug risikofreie Übungen für diesen Schwerpunkt: {count, plural, one {# Übung mit „Vorsicht“ bleibt} other {# Übungen mit „Vorsicht“ bleiben}}, nur schmerzfrei ausführen.",
+    "returnHeld": "Rückkehr verlangsamt: kürzlich wurde ein Schmerz gemeldet."
   },
   "catalog": {
     "title": "Fertige Programme",
@@ -2202,5 +2204,38 @@
     "proteinShareMax": "Max. Eiweißanteil (0–1)",
     "portionScale": "Portion eines Rezepts (× min–max)",
     "proteinShareDefault": "Eiweißanteil ohne gespeichertes Ziel (0–1)"
+  },
+  "injuryCare": {
+    "title": "Eine Verletzung pflegen",
+    "persistent": "{area}: Schmerz {reports}-mal in {days} Tagen gemeldet (bis {worst}/10). Lass dich von einer medizinischen Fachperson untersuchen.",
+    "gentleTitle": "Sanfte Bewegungen · {area}",
+    "care": "Immer schmerzfrei, hör auf, wenn Schmerz auftritt. Diese Bewegungen erhalten die Beweglichkeit; sie ersetzen keine Reha."
+  },
+  "injuryGuidance": {
+    "title": "Richtwerte für die Verletzungsbegleitung",
+    "intro": "Alle Werte, mit denen die App einen Schmerz oder eine Verletzung begleitet. Sie stellen keine Diagnose: sie passen das Training an und sagen, wann man jemanden aufsuchen sollte.",
+    "missing": "Die Richtwerte sind noch nicht in der Datenbank: Migration 058 anwenden.",
+    "painTitle": "Schmerz (Skala 0–10)",
+    "severe": "Stark ab",
+    "moderate": "Mäßig ab",
+    "moderateLoad": "Last nach mäßigem Schmerz (×)",
+    "recentDays": "Ein Schmerz wird gemerkt (Tage)",
+    "coachDays": "Listen der Trainer (Tage)",
+    "returnTitle": "Rückkehr nach einer Verletzung",
+    "returnHint": "Eine Last pro Woche (× die übliche Last), die letzte bei 1.",
+    "week": "W{n}",
+    "addWeek": "Woche hinzufügen",
+    "removeWeek": "Letzte Woche entfernen",
+    "holdAbovePain": "Rückkehr gebremst bei Schmerz über",
+    "holdDays": "… in den letzten (Tagen)",
+    "persistentTitle": "Wiederkehrender Schmerz: zum Arztbesuch raten",
+    "persistentReports": "Anzahl Meldungen",
+    "persistentMinLevel": "Von mindestens (0–10)",
+    "persistentDays": "Innerhalb von (Tagen)",
+    "gentleTitle": "Sanfte Bewegungen nach Stelle",
+    "gentleHint": "Angeboten, solange die Stelle verletzt ist. Für die Stelle zu meidende Bewegungen werden nicht angeboten.",
+    "invalid": "Die Werte passen nicht zusammen (mäßig über stark, sinkende Lasten, letzte Woche unter 1, leeres Feld …): nichts wurde gespeichert.",
+    "save": "Richtwerte speichern",
+    "saved": "Gespeichert: gilt beim nächsten Öffnen der App"
   }
 }

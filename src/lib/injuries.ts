@@ -1,4 +1,5 @@
-import type { PainArea } from "./pain";
+import type { PainArea, PainReport } from "./pain";
+import { returnHeld, type InjuryGuidance } from "./injuryGuidance";
 import { TRX_EXERCISES } from "./trxExercises";
 
 /** An injury the athlete declared: where, and since when (YYYY-MM-DD). */
@@ -9,10 +10,6 @@ export interface Injury {
   healedOn?: string | null;
 }
 
-/** Weeks of progressive return after an injury is healed, and the load of each. */
-export const RETURN_WEEKS = 3;
-export const RETURN_LOAD = [0.7, 0.85, 1] as const;
-
 /** The injuries still in progress: healed ones no longer forbid anything. */
 export const activeInjuries = <I extends Pick<Injury, "area" | "healedOn">>(injuries: I[]): I[] => injuries.filter((i) => !i.healedOn);
 
@@ -20,23 +17,31 @@ const daysBetween = (from: string, to: string) => Math.round((Date.parse(to) - D
 
 export interface ReturnPhase {
   area: PainArea;
-  /** 1 to RETURN_WEEKS. */
+  /** 1 to the number of return weeks in the references. */
   week: number;
-  /** Share of the usual load: 0.7, then 0.85, then full. */
+  /** Share of the usual load, from the references (the last week is full). */
   load: number;
   /** Last day of the return. */
   until: string;
+  /** A recent pain on the area keeps the load of the week before. */
+  held?: boolean;
 }
 
-/** The injuries in their return weeks, today. */
-export function returnPhases(injuries: Pick<Injury, "area" | "healedOn">[], today: string): ReturnPhase[] {
+/**
+ * The injuries in their return weeks, today: one load a week from the
+ * references. A pain reported on the area lately holds the load back a week.
+ */
+export function returnPhases(g: InjuryGuidance | null, injuries: Pick<Injury, "area" | "healedOn">[], today: string, pains: PainReport[] = []): ReturnPhase[] {
+  if (!g) return [];
+  const weeks = g.return.loads.length;
   return injuries.flatMap((i) => {
     if (!i.healedOn) return [];
     const days = daysBetween(i.healedOn, today);
-    if (days < 0 || days >= RETURN_WEEKS * 7) return [];
+    if (days < 0 || days >= weeks * 7) return [];
     const week = Math.floor(days / 7) + 1;
-    const until = new Date(Date.parse(i.healedOn) + (RETURN_WEEKS * 7 - 1) * 86_400_000).toISOString().slice(0, 10);
-    return [{ area: i.area, week, load: RETURN_LOAD[week - 1], until }];
+    const until = new Date(Date.parse(i.healedOn) + (weeks * 7 - 1) * 86_400_000).toISOString().slice(0, 10);
+    const held = week > 1 && returnHeld(g, pains, i.area, today);
+    return [{ area: i.area, week, load: g.return.loads[held ? week - 2 : week - 1], until, ...(held ? { held } : {}) }];
   });
 }
 
@@ -44,10 +49,16 @@ export function returnPhases(injuries: Pick<Injury, "area" | "healedOn">[], toda
  * How an exercise comes back after an injury: if it loads an area in its
  * return weeks, the lightest load of those areas and the week it is in.
  */
-export function returnAdjust(exerciseName: string | undefined, injuries: Pick<Injury, "area" | "healedOn">[], today: string): ReturnPhase | null {
+export function returnAdjust(
+  g: InjuryGuidance | null,
+  exerciseName: string | undefined,
+  injuries: Pick<Injury, "area" | "healedOn">[],
+  today: string,
+  pains: PainReport[] = []
+): ReturnPhase | null {
   const rules = exerciseName ? INJURY_RULES[exerciseName] : undefined;
   if (!rules) return null;
-  const phases = returnPhases(injuries, today).filter((p) => rules[p.area]);
+  const phases = returnPhases(g, injuries, today, pains).filter((p) => rules[p.area]);
   return phases.sort((a, b) => a.load - b.load)[0] ?? null;
 }
 
@@ -249,12 +260,12 @@ export function bySafety<E extends { name: string }>(list: E[], injuries: Pick<I
  * which starts the return weeks; in its return → done (removed). An area
  * healed long ago counts as not injured.
  */
-export function toggleInjury(injuries: Injury[], area: PainArea, today: string): Injury[] {
+export function toggleInjury(g: InjuryGuidance | null, injuries: Injury[], area: PainArea, today: string): Injury[] {
   const current = injuries.find((i) => i.area === area);
   const others = injuries.filter((i) => i.area !== area);
   if (!current) return [...others, { area, since: today }];
   if (!current.healedOn) return [...others, { ...current, healedOn: today }];
-  const returning = returnPhases([current], today).length > 0;
+  const returning = returnPhases(g, [current], today).length > 0;
   return returning ? others : [...others, { area, since: today }];
 }
 
@@ -264,9 +275,9 @@ export function declareInjury(injuries: Injury[], area: PainArea, today: string)
 }
 
 /** What an area is for the athlete today. */
-export function injuryState(injuries: Injury[], area: PainArea, today: string): "injured" | "returning" | "none" {
+export function injuryState(g: InjuryGuidance | null, injuries: Injury[], area: PainArea, today: string): "injured" | "returning" | "none" {
   const current = injuries.find((i) => i.area === area);
   if (!current) return "none";
   if (!current.healedOn) return "injured";
-  return returnPhases([current], today).length ? "returning" : "none";
+  return returnPhases(g, [current], today).length ? "returning" : "none";
 }

@@ -922,7 +922,8 @@
     "featHint_challenges": "Créer des défis d’équipe (les voir reste possible)",
     "feat_vaulting": "Voltige",
     "featHint_vaulting": "Compétitions et chevaux",
-    "nutrition": "Nutrition"
+    "nutrition": "Nutrition",
+    "injuries": "Blessures"
   },
   "profile": {
     "title": "Profil",
@@ -1412,11 +1413,12 @@
     "coachTitle": "Blessures déclarées",
     "coachHint": "Les exercices qui sollicitent ces zones sont signalés à l'athlète, et dans ses programmes.",
     "declareFromPain": "Déclarer une blessure ({area}) : les exercices qui sollicitent cette zone seront signalés.",
-    "returningChip": "reprise S{week}/3",
+    "returningChip": "reprise S{week}/{weeks}",
     "stepsHint": "Un tap : blessure en cours (rouge). Un autre une fois guéri : reprise progressive sur 3 semaines (orange). Un dernier pour la retirer.",
-    "returnLine": "Reprise après blessure ({area}) : semaine {week} sur 3, charges −{percent} % pour revenir en douceur.",
+    "returnLine": "Reprise après blessure ({area}) : semaine {week} sur {weeks}, charges −{percent} % pour revenir en douceur.",
     "returnLastWeek": "Reprise après blessure ({area}) : dernière semaine, charges habituelles, arrêtez si la douleur revient.",
-    "cautiousKept": "Pas assez d’exercices sans risque pour ce thème : {count, plural, one {# exercice marqué « Prudence » est gardé} other {# exercices marqués « Prudence » sont gardés}}, à faire sans douleur."
+    "cautiousKept": "Pas assez d’exercices sans risque pour ce thème : {count, plural, one {# exercice marqué « Prudence » est gardé} other {# exercices marqués « Prudence » sont gardés}}, à faire sans douleur.",
+    "returnHeld": "Reprise ralentie : une douleur a été signalée récemment."
   },
   "catalog": {
     "title": "Programmes tout faits",
@@ -2202,5 +2204,38 @@
     "proteinShareMax": "Part max. des protéines (0–1)",
     "portionScale": "Portion d’une recette (× min–max)",
     "proteinShareDefault": "Part des protéines sans objectif enregistré (0–1)"
+  },
+  "injuryCare": {
+    "title": "Prendre soin d’une blessure",
+    "persistent": "{area} : douleur signalée {reports} fois en {days} jours (jusqu’à {worst}/10). Faites-vous examiner par un professionnel de santé.",
+    "gentleTitle": "Mouvements doux · {area}",
+    "care": "Toujours sans douleur, arrêtez si elle apparaît. Ces mouvements entretiennent la mobilité ; ils ne remplacent pas une rééducation."
+  },
+  "injuryGuidance": {
+    "title": "Repères du suivi des blessures",
+    "intro": "Toutes les valeurs que l’app utilise pour suivre une douleur ou une blessure. Elles ne posent aucun diagnostic : elles adaptent l’entraînement et disent quand consulter.",
+    "missing": "Les repères ne sont pas encore en base : appliquez la migration 058.",
+    "painTitle": "Douleur (échelle 0–10)",
+    "severe": "Forte à partir de",
+    "moderate": "Modérée à partir de",
+    "moderateLoad": "Charge après douleur modérée (×)",
+    "recentDays": "Mémoire d’une douleur (jours)",
+    "coachDays": "Listes du coach (jours)",
+    "returnTitle": "Reprise après blessure",
+    "returnHint": "Une charge par semaine (× la charge habituelle), la dernière à 1.",
+    "week": "S{n}",
+    "addWeek": "Ajouter une semaine",
+    "removeWeek": "Retirer la dernière semaine",
+    "holdAbovePain": "Reprise freinée si douleur au-dessus de",
+    "holdDays": "…dans les derniers (jours)",
+    "persistentTitle": "Douleur qui revient : conseiller de consulter",
+    "persistentReports": "Nombre de signalements",
+    "persistentMinLevel": "D’au moins (0–10)",
+    "persistentDays": "Sur (jours)",
+    "gentleTitle": "Mouvements doux par zone",
+    "gentleHint": "Proposés tant que la zone est blessée. Les mouvements à éviter pour la zone ne sont pas proposés.",
+    "invalid": "Valeurs incohérentes (douleur modérée au-dessus de forte, charges qui baissent, dernière semaine sous 1, case vide…) : rien n’a été enregistré.",
+    "save": "Enregistrer les repères",
+    "saved": "Enregistré : appliqué à la prochaine ouverture de l’app"
   }
 }

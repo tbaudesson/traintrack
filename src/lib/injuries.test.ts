@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { INJURY_RULES, bySafety, declareInjury, injuryState, injuryWarning, isAvoided, returnAdjust, toggleInjury } from "./injuries";
 import { NAMES } from "./exerciseNames";
+import { injuryGuidanceFromMigrations } from "./injuryGuidanceFromMigrations";
+
+const g = injuryGuidanceFromMigrations();
 import { INTERVAL_EXERCISES, buildIntervalSession, injuryPool } from "./intervals";
 
 describe("injuryWarning", () => {
@@ -32,18 +35,18 @@ describe("bySafety", () => {
 
 describe("toggleInjury", () => {
   it("moves an area on: injured, then healed, then done", () => {
-    const injured = toggleInjury([], "knee", "2026-11-01");
+    const injured = toggleInjury(g, [], "knee", "2026-11-01");
     expect(injured).toEqual([{ area: "knee", since: "2026-11-01" }]);
-    const healed = toggleInjury(injured, "knee", "2026-11-14");
+    const healed = toggleInjury(g, injured, "knee", "2026-11-14");
     expect(healed).toEqual([{ area: "knee", since: "2026-11-01", healedOn: "2026-11-14" }]);
-    expect(injuryState(healed, "knee", "2026-11-20")).toBe("returning");
-    expect(toggleInjury(healed, "knee", "2026-11-20")).toEqual([]);
+    expect(injuryState(g, healed, "knee", "2026-11-20")).toBe("returning");
+    expect(toggleInjury(g, healed, "knee", "2026-11-20")).toEqual([]);
   });
 
   it("treats an area healed long ago as not injured", () => {
     const old = [{ area: "knee" as const, since: "2026-01-01", healedOn: "2026-02-01" }];
-    expect(injuryState(old, "knee", "2026-11-14")).toBe("none");
-    expect(toggleInjury(old, "knee", "2026-11-14")).toEqual([{ area: "knee", since: "2026-11-14" }]);
+    expect(injuryState(g, old, "knee", "2026-11-14")).toBe("none");
+    expect(toggleInjury(g, old, "knee", "2026-11-14")).toEqual([{ area: "knee", since: "2026-11-14" }]);
   });
 });
 
@@ -56,11 +59,11 @@ describe("return after an injury", () => {
   });
 
   it("brings the load back over three weeks on the exercises that load the area", () => {
-    expect(returnAdjust("Overhead Press", healed, "2026-11-05")).toMatchObject({ week: 1, load: 0.7, until: "2026-11-22" });
-    expect(returnAdjust("Overhead Press", healed, "2026-11-12")).toMatchObject({ week: 2, load: 0.85 });
-    expect(returnAdjust("Overhead Press", healed, "2026-11-20")).toMatchObject({ week: 3, load: 1 });
-    expect(returnAdjust("Overhead Press", healed, "2026-11-23")).toBeNull();
-    expect(returnAdjust("Leg Curl", healed, "2026-11-05")).toBeNull();
+    expect(returnAdjust(g, "Overhead Press", healed, "2026-11-05")).toMatchObject({ week: 1, load: 0.7, until: "2026-11-22" });
+    expect(returnAdjust(g, "Overhead Press", healed, "2026-11-12")).toMatchObject({ week: 2, load: 0.85 });
+    expect(returnAdjust(g, "Overhead Press", healed, "2026-11-20")).toMatchObject({ week: 3, load: 1 });
+    expect(returnAdjust(g, "Overhead Press", healed, "2026-11-23")).toBeNull();
+    expect(returnAdjust(g, "Leg Curl", healed, "2026-11-05")).toBeNull();
   });
 
   it("starts over when the area is injured again", () => {

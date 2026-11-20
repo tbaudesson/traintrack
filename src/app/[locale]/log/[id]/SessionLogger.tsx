@@ -17,7 +17,8 @@ import { getCurrentUserIdSync } from "@/db";
 import { mondayOfDate } from "@/lib/weekPlan";
 import { lighter } from "@/lib/startWorkout";
 import { usePainReports } from "@/hooks/usePain";
-import { recentPainOn, SEVERE_PAIN } from "@/lib/pain";
+import { recentPainOn } from "@/lib/pain";
+import { useInjuryGuidance } from "@/hooks/useInjuryGuidance";
 import { PainDialog } from "@/components/domain/PainDialog";
 import { InjuryBadge } from "@/components/domain/InjuryBadge";
 import { bySafety, declareInjury, injuryWarning, returnAdjust } from "@/lib/injuries";
@@ -99,6 +100,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
   const injuries = useInjuries();
   const { num, day, short } = useFormat();
   const pains = usePainReports();
+  const injuryG = useInjuryGuidance();
   const { profile: account } = useAuth();
   const [openGuide, setOpenGuide] = useState<number | null>(null);
   // Exercises reopened once done, and bodyweight exercises given a load.
@@ -855,7 +857,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
         {groups.map(([exerciseId, exSets], index) => {
           const ex = exMap.get(exerciseId);
           const injuryWarn = injuryWarning(ex?.name, injuries);
-          const comeback = returnAdjust(ex?.name, injuries, workout?.date ?? localDate());
+          const comeback = returnAdjust(injuryG, ex?.name, injuries, workout?.date ?? localDate(), pains);
           const work = exSets.filter((s) => !s.isWarmup);
           const warmups = exSets.filter((s) => s.isWarmup);
           const last = work[work.length - 1];
@@ -868,7 +870,8 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
               : [];
           const plannedFor = (s: (typeof sets)[number]) => (s.isWarmup ? undefined : percentPlan?.weights[work.indexOf(s)]);
           const inSuperset = supersetOf(exerciseId, slots).length > 1;
-          const pain = workout ? recentPainOn(pains, { uuid: ex?.uuid, name: ex?.name }, workout.date) : undefined;
+          const pain = workout && injuryG ? recentPainOn(pains, { uuid: ex?.uuid, name: ex?.name }, workout.date, injuryG.pain.recentDays) : undefined;
+          const severePain = !!pain && !!injuryG && pain.level >= injuryG.pain.severe;
           const chained = chainedNext(exerciseId, slots);
           const linkedToNext = slots[index].group != null && slots[index].group === slots[index + 1]?.group;
           const guideOpen = openGuide === exerciseId;
@@ -943,13 +946,13 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                   <p
                     className={cn(
                       "flex items-start gap-1.5 rounded-lg p-2 text-sm",
-                      pain.level >= SEVERE_PAIN
+                      severePain
                         ? "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300"
                         : "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
                     )}
                   >
                     <Bandage className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-                    {t(pain.level >= SEVERE_PAIN ? "painSevere" : "painRecent", {
+                    {t(severePain ? "painSevere" : "painRecent", {
                       area: tpain(`area_${pain.area}`),
                       level: pain.level,
                       date: short(pain.date),
@@ -963,8 +966,10 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                     {tinj(comeback.load < 1 ? "returnLine" : "returnLastWeek", {
                       area: locale === "de" ? tpain(`area_${comeback.area}`) : tpain(`area_${comeback.area}`).toLowerCase(),
                       week: comeback.week,
+                      weeks: injuryG?.return.loads.length ?? comeback.week,
                       percent: Math.round((1 - comeback.load) * 100),
                     })}
+                    {comeback.held && ` ${tinj("returnHeld")}`}
                   </p>
                 )}
 

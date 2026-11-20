@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, type ReactNode } from "react";
+import { useInjuryGuidance } from "@/hooks/useInjuryGuidance";
 import { useTranslations } from "next-intl";
 import { Activity, AlertTriangle, Bandage, BatteryLow, Goal, HeartPulse, Loader2, Trophy, Users } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -12,7 +13,6 @@ import { useExercises } from "@/hooks/useExercises";
 import { byAttention } from "@/lib/adherence";
 import { useExerciseLabel } from "@/lib/exerciseNames";
 import { nudgeFor } from "@/lib/nudge";
-import { SEVERE_PAIN } from "@/lib/pain";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { NudgeButton } from "@/components/domain/NudgeButton";
 import { EmptyState } from "@/components/ui/page-parts";
@@ -45,7 +45,9 @@ export default function CoachDashboardPage() {
   }, [clients]);
   const ids = athletes.map((a) => a.userId);
   const adherence = useTeamAdherence(ids);
-  const pains = useTeamPain(ids);
+  const injuryG = useInjuryGuidance();
+  const severe = injuryG?.pain.severe ?? Infinity;
+  const pains = useTeamPain(ids, injuryG?.pain.coachDays);
   const digest = useCoachDigest(ids);
   const names = new Map(exercises.map((e) => [e.id, xl(e.name)]));
 
@@ -119,7 +121,7 @@ export default function CoachDashboardPage() {
                 const pain = pains!.get(a.userId)!;
                 return (
                   <Row key={a.userId} userId={a.userId} name={a.name} teams={a.teams}>
-                    <span className={cn("text-xs font-semibold", pain.level >= SEVERE_PAIN ? "text-rose-600 dark:text-rose-400" : "text-amber-600 dark:text-amber-400")}>
+                    <span className={cn("text-xs font-semibold", pain.level >= severe ? "text-rose-600 dark:text-rose-400" : "text-amber-600 dark:text-amber-400")}>
                       {tpain(`area_${pain.area}`)} {pain.level}/10 · {xl(pain.exerciseName)} · {short(pain.date)}
                     </span>
                   </Row>

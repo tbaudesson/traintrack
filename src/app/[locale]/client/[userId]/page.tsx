@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useInjuryGuidance } from "@/hooks/useInjuryGuidance";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -37,7 +38,6 @@ import { trainingLoad } from "@/lib/trainingLoad";
 import { programWeek } from "@/lib/programWeek";
 import { Link } from "@/i18n/navigation";
 import { usePainReports } from "@/hooks/usePain";
-import { SEVERE_PAIN } from "@/lib/pain";
 import { useExerciseLabel } from "@/lib/exerciseNames";
 import { useFormat } from "@/lib/format";
 
@@ -84,12 +84,14 @@ export default function ClientDetailPage() {
   const adherence = useTeamAdherence([userId])?.get(userId);
   const tpain = useTranslations("pain");
   const painHistory = usePainReports(userId);
+  const injuryG = useInjuryGuidance();
+  const severe = injuryG?.pain.severe ?? Infinity;
   const pains = painHistory.filter((p) => p.date >= localDateIn(-30));
   const injuries = useInjuriesOf(userId);
   // Injuries in progress, and healed ones still in their return weeks.
   const shownInjuries = injuries.flatMap((injury): { injury: Injury; phase: ReturnPhase | null }[] => {
     if (!injury.healedOn) return [{ injury, phase: null }];
-    const phase = returnPhases([injury], localDate())[0];
+    const phase = returnPhases(injuryG, [injury], localDate(), painHistory)[0];
     return phase ? [{ injury, phase }] : [];
   });
   const competitions = useCompetitions(userId);
@@ -217,7 +219,7 @@ export default function ClientDetailPage() {
                       <span
                         className={cn(
                           "rounded-full px-1.5 py-0.5 text-xs font-semibold tabular-nums",
-                          p.level >= SEVERE_PAIN ? "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300" : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+                          p.level >= severe ? "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300" : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
                         )}
                       >
                         {p.level}/10

@@ -137,6 +137,13 @@ await page.evaluate(async (user) => {
   }
 }, USER);
 
+// The injury references as the app keeps them after reading them online once (migration 058).
+{
+  const sql = readFileSync("supabase/migrations/058_injury_guidance.sql", "utf8");
+  const injuryGuidance = sql.slice(sql.indexOf("{"), sql.lastIndexOf("}") + 1);
+  await page.evaluate((g) => localStorage.setItem("traintrack.guidance.injury_guidance", JSON.stringify(JSON.parse(g))), injuryGuidance);
+}
+
 await context.setOffline(true);
 console.log("  offline from here on\n");
 
@@ -339,8 +346,16 @@ await test("a session of the week moves to another day, and back", async () => {
   await page.goto(`${BASE}/fr`);
   const week = page.locator("section", { hasText: "prochaines semaines à mon agenda" });
   await week.getByText("Touchez un jour pour déplacer ou rattraper sa séance.").waitFor({ timeout: 10000 });
-  const day = week.locator("button[data-date]").first();
-  const from = await day.getAttribute("data-date");
+  // The week fills in as the plans load: wait until its first day holds still, then click that very day.
+  const firstDay = () => week.locator("button[data-date]").first().getAttribute("data-date");
+  let from = await firstDay();
+  for (let i = 0; i < 20; i++) {
+    await page.waitForTimeout(300);
+    const now = await firstDay();
+    if (now === from) break;
+    from = now;
+  }
+  const day = week.locator(`button[data-date="${from}"]`).first();
   await day.evaluate((el) => el.scrollIntoView({ block: "center" }));
   await day.click();
   const dialog = page.getByRole("dialog");
@@ -1135,7 +1150,7 @@ await test("nutrition for one's sport: carbohydrates by the kilo, and food aroun
     await page.goto(`${BASE}/fr/nutrition`);
     await page.getByText("Idées de repas", { exact: false }).first().waitFor({ timeout: 10000 });
     expect(!(await page.getByText("Autour de la séance", { exact: true }).count()), "food around the session shown without the references");
-    await page.evaluate((g) => localStorage.setItem("traintrack.nutritionGuidance", g), guidance);
+    await page.evaluate((g) => localStorage.setItem("traintrack.guidance.nutrition_guidance", g), guidance);
     await page.goto(`${BASE}/fr/nutrition`);
     await page.getByText(/Course à pied : [\d,]+ g de glucides par kg aujourd’hui \(repère 6–10 g\/kg\)/).waitFor({ timeout: 10000 });
     await page.getByText("Autour de la séance", { exact: true }).waitFor({ timeout: 5000 });
@@ -1144,7 +1159,7 @@ await test("nutrition for one's sport: carbohydrates by the kilo, and food aroun
     await page.getByText("Autour de la séance", { exact: true }).scrollIntoViewIfNeeded();
     await page.screenshot({ path: join(ARTIFACTS, "sport-nutrition.png"), fullPage: false });
   } finally {
-    await page.evaluate(() => { const p = JSON.parse(localStorage.getItem("traintrack.prefs") || "{}"); p.sport = null; localStorage.setItem("traintrack.prefs", JSON.stringify(p)); localStorage.removeItem("traintrack.nutritionGuidance"); });
+    await page.evaluate(() => { const p = JSON.parse(localStorage.getItem("traintrack.prefs") || "{}"); p.sport = null; localStorage.setItem("traintrack.prefs", JSON.stringify(p)); localStorage.removeItem("traintrack.guidance.nutrition_guidance"); });
     await store(["workouts", "delete", long]);
     await store(["bodyMetrics", "delete", metric]);
     await store(["athleteProfiles", "profile", undefined]);
@@ -1179,6 +1194,37 @@ await test("timed sets follow each other by themselves: count down, rest, next s
   await effort.getByText("Série 2", { exact: true }).waitFor({ timeout: 10000 });
   // Both held to the end: the exercise folds, its two sets of 3 seconds done.
   await page.getByText(/2 séries · 3, 3 s/).waitFor({ timeout: 10000 });
+});
+
+await test("an injured knee gets gentle moves on the home screen, and a pain coming back says to see someone", async () => {
+  const setProfile = (fields) => page.evaluate(async (fields) => {
+    const db = await new Promise((res, rej) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+    await new Promise((res, rej) => {
+      const tx = db.transaction("athleteProfiles", "readwrite");
+      const os = tx.objectStore("athleteProfiles");
+      const all = os.getAll();
+      all.onsuccess = () => { for (const p of all.result) os.put({ ...p, ...fields }); };
+      tx.oncomplete = res;
+      tx.onerror = () => rej(tx.error);
+    });
+    db.close();
+  }, fields);
+  await page.goto(`${BASE}/fr`);
+  await setProfile({ injuryAreas: [{ area: "knee", since: "2026-11-01" }] });
+  try {
+    await page.goto(`${BASE}/fr`);
+    // Behind more pressing notes, it may be folded under "To look at".
+    await page.getByText("Ma semaine").first().waitFor({ timeout: 10000 });
+    const more = page.locator("details", { hasText: "À voir aussi" });
+    if ((await more.count()) && !(await more.getAttribute("open"))) await more.locator("summary").click();
+    const card = page.locator("section", { hasText: "Prendre soin d’une blessure" });
+    await card.getByText("Mouvements doux · Genou").waitFor({ timeout: 10000 });
+    await card.getByText("Ponts fessiers").waitFor({ timeout: 5000 });
+    // A move to avoid for a knee is never offered.
+    expect(!(await card.getByText("Étirement des quadriceps debout").count()), "a move to avoid for the knee is offered");
+  } finally {
+    await setProfile({ injuryAreas: null });
+  }
 });
 
 await test("no page threw an error", async () => {

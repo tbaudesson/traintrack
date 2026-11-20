@@ -1,9 +1,6 @@
 export const PAIN_AREAS = ["shoulder", "elbow", "wrist", "neck", "upper_back", "lower_back", "hip", "knee", "ankle", "other"] as const;
 export type PainArea = (typeof PAIN_AREAS)[number];
 
-/** From this level on, the app advises to stop the exercise and see a professional. */
-export const SEVERE_PAIN = 7;
-
 export interface PainReport {
   date: string;
   area: PainArea;
@@ -39,8 +36,8 @@ export function painReports(
     .sort((a, b) => b.date.localeCompare(a.date) || b.level - a.level);
 }
 
-/** The latest pain on an exercise within the last two weeks, to warn before loading it again. */
-export function recentPainOn(reports: PainReport[], exercise: { uuid?: string; name?: string }, today: string, days = 14): PainReport | undefined {
+/** The latest pain on an exercise within the last days (the references say how many), to warn before loading it again. */
+export function recentPainOn(reports: PainReport[], exercise: { uuid?: string; name?: string }, today: string, days: number): PainReport | undefined {
   return reports.find(
     (r) =>
       ((exercise.uuid && r.exerciseUuid === exercise.uuid) || (!!exercise.name && r.exerciseName === exercise.name)) &&
@@ -49,8 +46,8 @@ export function recentPainOn(reports: PainReport[], exercise: { uuid?: string; n
   );
 }
 
-/** The worst pain of the last week, for the coach's team list. */
-export function worstRecentPain(reports: PainReport[], today: string, days = 7): PainReport | undefined {
+/** The worst pain of the last days (the references say how many), for the coach's team list. */
+export function worstRecentPain(reports: PainReport[], today: string, days: number): PainReport | undefined {
   return reports
     .filter((r) => daysBetween(r.date, today) <= days && daysBetween(r.date, today) >= 0)
     .sort((a, b) => b.level - a.level)[0];

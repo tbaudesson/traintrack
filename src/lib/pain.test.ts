@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { painReports, recentPainOn, worstRecentPain } from "./pain";
+import { injuryGuidanceFromMigrations } from "./injuryGuidanceFromMigrations";
+
+const g = injuryGuidanceFromMigrations();
 
 const workouts = [{ id: 1, date: "2026-11-02" }, { id: 2, date: "2026-11-10" }, { id: 3, date: "2026-10-01" }];
 const notes = [
@@ -21,14 +24,14 @@ describe("pain reports", () => {
     ]);
   });
 
-  it("warn on an exercise for two weeks", () => {
-    expect(recentPainOn(reports, { uuid: "squat" }, "2026-11-13")?.level).toBe(4);
-    expect(recentPainOn(reports, { uuid: "squat" }, "2026-11-20")).toBeUndefined();
-    expect(recentPainOn(reports, { name: "Bench" }, "2026-11-13")?.note).toBe("Sharp");
+  it("warn on an exercise for the days the references say", () => {
+    expect(recentPainOn(reports, { uuid: "squat" }, "2026-11-13", g.pain.recentDays)?.level).toBe(4);
+    expect(recentPainOn(reports, { uuid: "squat" }, "2026-11-20", g.pain.recentDays)).toBeUndefined();
+    expect(recentPainOn(reports, { name: "Bench" }, "2026-11-13", g.pain.recentDays)?.note).toBe("Sharp");
   });
 
-  it("give the coach the worst pain of the week", () => {
-    expect(worstRecentPain(reports, "2026-11-13")).toMatchObject({ area: "shoulder", level: 8 });
-    expect(worstRecentPain(reports, "2026-11-30")).toBeUndefined();
+  it("give the coach the worst pain of the days the references say", () => {
+    expect(worstRecentPain(reports, "2026-11-13", g.pain.coachDays)).toMatchObject({ area: "shoulder", level: 8 });
+    expect(worstRecentPain(reports, "2026-11-30", g.pain.coachDays)).toBeUndefined();
   });
 });

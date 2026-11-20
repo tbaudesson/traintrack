@@ -922,7 +922,8 @@
     "featHint_challenges": "Create team challenges (seeing them stays possible)",
     "feat_vaulting": "Vaulting",
     "featHint_vaulting": "Competitions and horses",
-    "nutrition": "Nutrition"
+    "nutrition": "Nutrition",
+    "injuries": "Injuries"
   },
   "profile": {
     "title": "Profile",
@@ -1412,11 +1413,12 @@
     "coachTitle": "Declared injuries",
     "coachHint": "The exercises that load these areas are flagged to the athlete, and in their programs.",
     "declareFromPain": "Declare an injury ({area}): the exercises that load this area will be flagged.",
-    "returningChip": "return W{week}/3",
+    "returningChip": "return W{week}/{weeks}",
     "stepsHint": "One tap: injury in progress (red). Another once healed: a progressive return over 3 weeks (orange). One more to remove it.",
-    "returnLine": "Coming back from injury ({area}): week {week} of 3, loads −{percent} % to ease back in.",
+    "returnLine": "Coming back from injury ({area}): week {week} of {weeks}, loads −{percent} % to ease back in.",
     "returnLastWeek": "Coming back from injury ({area}): last week, usual loads, stop if the pain comes back.",
-    "cautiousKept": "Not enough risk-free exercises for this focus: {count, plural, one {# exercise marked “Caution” is kept} other {# exercises marked “Caution” are kept}}, to do without pain."
+    "cautiousKept": "Not enough risk-free exercises for this focus: {count, plural, one {# exercise marked “Caution” is kept} other {# exercises marked “Caution” are kept}}, to do without pain.",
+    "returnHeld": "Return slowed down: a pain was reported recently."
   },
   "catalog": {
     "title": "Ready-made programs",
@@ -2202,5 +2204,38 @@
     "proteinShareMax": "Max. share of protein (0–1)",
     "portionScale": "A recipe’s portion (× min–max)",
     "proteinShareDefault": "Share of protein without a saved target (0–1)"
+  },
+  "injuryCare": {
+    "title": "Looking after an injury",
+    "persistent": "{area}: pain reported {reports} times in {days} days (up to {worst}/10). Have it checked by a health professional.",
+    "gentleTitle": "Gentle moves · {area}",
+    "care": "Always without pain, stop if it comes. These moves keep you moving; they do not replace rehabilitation."
+  },
+  "injuryGuidance": {
+    "title": "Injury follow-up references",
+    "intro": "Every figure the app uses to follow a pain or an injury. They make no diagnosis: they adapt the training and say when to see someone.",
+    "missing": "The references are not in the database yet: apply migration 058.",
+    "painTitle": "Pain (0–10 scale)",
+    "severe": "Strong from",
+    "moderate": "Moderate from",
+    "moderateLoad": "Load after a moderate pain (×)",
+    "recentDays": "A pain is remembered (days)",
+    "coachDays": "Coach lists (days)",
+    "returnTitle": "Return after an injury",
+    "returnHint": "One load a week (× the usual load), the last one at 1.",
+    "week": "W{n}",
+    "addWeek": "Add a week",
+    "removeWeek": "Remove the last week",
+    "holdAbovePain": "Return held back if pain above",
+    "holdDays": "…within the last (days)",
+    "persistentTitle": "Pain coming back: advise to see someone",
+    "persistentReports": "Number of reports",
+    "persistentMinLevel": "Of at least (0–10)",
+    "persistentDays": "Within (days)",
+    "gentleTitle": "Gentle moves by area",
+    "gentleHint": "Offered while the area is injured. Moves to avoid for the area are not offered.",
+    "invalid": "Values do not hold together (moderate above strong, loads going down, last week under 1, an empty field…): nothing was saved.",
+    "save": "Save the references",
+    "saved": "Saved: applied the next time the app opens"
   }
 }

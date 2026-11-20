@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useInjuryGuidance } from "@/hooks/useInjuryGuidance";
 import { useLocale, useTranslations } from "next-intl";
 import { Bandage, Loader2 } from "lucide-react";
 import { addWorkoutNote } from "@/hooks/useWorkoutNotes";
-import { PAIN_AREAS, SEVERE_PAIN, type PainArea } from "@/lib/pain";
+import { PAIN_AREAS, type PainArea } from "@/lib/pain";
 import type { Injury } from "@/lib/injuries";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -43,9 +44,10 @@ export function PainDialog({
   const [declare, setDeclare] = useState(true);
   const tinj = useTranslations("injuries");
   const locale = useLocale();
+  const severe = useInjuryGuidance()?.pain.severe ?? Infinity;
   // A strong pain on an area not declared yet: offer to declare it as an injury.
   const canDeclare =
-    !!onDeclareInjury && !!injuries && !!area && area !== "other" && level !== null && level >= SEVERE_PAIN && !injuries.some((i) => i.area === area && !i.healedOn);
+    !!onDeclareInjury && !!injuries && !!area && area !== "other" && level !== null && level >= severe && !injuries.some((i) => i.area === area && !i.healedOn);
 
   async function save(replace: boolean) {
     if (!area || !level) return;
@@ -110,7 +112,7 @@ export function PainDialog({
                   className={cn(
                     "h-10 rounded-md border text-sm font-semibold tabular-nums",
                     level === n
-                      ? n >= SEVERE_PAIN ? "border-rose-500 bg-rose-500 text-white" : "border-amber-500 bg-amber-500 text-white"
+                      ? n >= severe ? "border-rose-500 bg-rose-500 text-white" : "border-amber-500 bg-amber-500 text-white"
                       : "border-border text-muted-foreground"
                   )}
                 >
@@ -124,7 +126,7 @@ export function PainDialog({
             </p>
           </fieldset>
 
-          {level !== null && level >= SEVERE_PAIN && (
+          {level !== null && level >= severe && (
             <p className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">{t("severeAdvice")}</p>
           )}
 

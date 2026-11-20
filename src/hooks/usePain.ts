@@ -17,8 +17,8 @@ export function usePainReports(userId?: string): PainReport[] {
   );
 }
 
-/** For each athlete of a team, the worst pain of the last week, if any. */
-export function useTeamPain(userIds: string[]): Map<string, PainReport> | undefined {
+/** For each athlete of a team, the worst pain of the last days the references say, if any. */
+export function useTeamPain(userIds: string[], days: number | undefined): Map<string, PainReport> | undefined {
   const key = [...userIds].sort().join(",");
   return useLiveQuery(async () => {
     const ids = key ? key.split(",") : [];
@@ -28,9 +28,10 @@ export function useTeamPain(userIds: string[]): Map<string, PainReport> | undefi
     const today = localDate();
     const result = new Map<string, PainReport>();
     for (const id of ids) {
-      const worst = worstRecentPain(painReports(notes, workouts.filter((w) => w.userId === id), id), today);
+      if (days === undefined) continue;
+      const worst = worstRecentPain(painReports(notes, workouts.filter((w) => w.userId === id), id), today, days);
       if (worst) result.set(id, worst);
     }
     return result;
-  }, [key]);
+  }, [key, days]);
 }

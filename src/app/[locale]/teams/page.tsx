@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useInjuryGuidance } from "@/hooks/useInjuryGuidance";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useTeams } from "@/hooks/useTeams";
@@ -18,7 +19,6 @@ import { byAttention, type Adherence } from "@/lib/adherence";
 import { NudgeButton } from "@/components/domain/NudgeButton";
 import { TeamMessage } from "@/components/domain/TeamMessage";
 import { useTeamPain } from "@/hooks/usePain";
-import { SEVERE_PAIN } from "@/lib/pain";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -311,7 +311,9 @@ function TeamCard({
   }, [expanded, groupId]);
 
   const adherenceByUser = useTeamAdherence(members.filter((m) => m.status === "active" && m.user_id).map((m) => m.user_id!));
-  const painByUser = useTeamPain(members.filter((m) => m.status === "active" && m.user_id).map((m) => m.user_id!));
+  const injuryG = useInjuryGuidance();
+  const severe = injuryG?.pain.severe ?? Infinity;
+  const painByUser = useTeamPain(members.filter((m) => m.status === "active" && m.user_id).map((m) => m.user_id!), injuryG?.pain.coachDays);
   // A recent pain needs the coach's eye first, whatever the attendance.
   const ordered = byAttention(members, (m) =>
     m.user_id && painByUser?.has(m.user_id) ? "alert" : m.user_id ? adherenceByUser?.get(m.user_id)?.status : undefined
@@ -397,7 +399,7 @@ function TeamCard({
                       <span
                         className={cn(
                           "shrink-0 rounded-full px-1.5 py-0.5 text-xs font-medium",
-                          painByUser.get(m.user_id)!.level >= SEVERE_PAIN
+                          painByUser.get(m.user_id)!.level >= severe
                             ? "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300"
                             : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
                         )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useInjuryGuidance } from "@/hooks/useInjuryGuidance";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter, usePathname, Link } from "@/i18n/navigation";
 import { useAuth } from "@/contexts/AuthContext";
@@ -134,6 +135,7 @@ export default function SettingsPage() {
   const [accent, setAccent] = useState<Accent>(() => getAccent());
   const prefs = useAppPrefs();
   const trest = useTranslations("restTimer");
+  const injuryG = useInjuryGuidance();
   const [restError, setRestError] = useState<string | null>(null);
   const restLabel = (sec: number) => (sec % 60 === 0 ? `${sec / 60} min` : sec > 60 ? `${Math.floor(sec / 60)} min ${sec % 60}` : `${sec} s`);
   const tcat = useTranslations("catalog");
@@ -429,13 +431,13 @@ export default function SettingsPage() {
               {INJURY_AREAS.map((area) => {
                 const injuries = athlete.injuryAreas ?? [];
                 const injury = injuries.find((i) => i.area === area);
-                const state = injuryState(injuries, area, localDate());
-                const phase = state === "returning" ? returnPhases([injury!], localDate())[0] : null;
+                const state = injuryState(injuryG, injuries, area, localDate());
+                const phase = state === "returning" ? returnPhases(injuryG, [injury!], localDate())[0] : null;
                 return (
                   <button
                     key={area}
                     type="button"
-                    onClick={() => updateTrainingSchedule({ injuryAreas: toggleInjury(injuries, area, localDate()) })}
+                    onClick={() => updateTrainingSchedule({ injuryAreas: toggleInjury(injuryG, injuries, area, localDate()) })}
                     aria-pressed={state !== "none"}
                     className={cn(
                       "min-h-10 rounded-full border px-3 text-sm transition-colors",
@@ -448,7 +450,7 @@ export default function SettingsPage() {
                   >
                     {tpain(`area_${area}`)}
                     {state === "injured" && <span className="ml-1 text-xs font-normal opacity-90">· {tinj("since", { date: short(injury!.since) })}</span>}
-                    {phase && <span className="ml-1 text-xs font-normal opacity-90">· {tinj("returningChip", { week: phase.week })}</span>}
+                    {phase && <span className="ml-1 text-xs font-normal opacity-90">· {tinj("returningChip", { week: phase.week, weeks: injuryG?.return.loads.length ?? phase.week })}</span>}
                   </button>
                 );
               })}
