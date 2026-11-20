@@ -386,7 +386,8 @@
     "lastTimeSet": "Dernière fois : {value}",
     "reuse": "Reprendre",
     "reuseLabel": "Reprendre {value} pour la série {n}",
-    "nextUp": "Ensuite : {exercise} · série {n}"
+    "nextUp": "Ensuite : {exercise} · série {n}",
+    "doneSummaryTimed": "{sets, plural, one {# série} other {# séries}} · {reps} s"
   },
   "progress": {
     "title": "Progrès",
@@ -1214,7 +1215,10 @@
     "rpe": "Difficulté (RPE)",
     "done": "Série terminée",
     "warmupStep": "Échauffement {n}",
-    "setOf": "Série {n} sur {total}"
+    "setOf": "Série {n} sur {total}",
+    "timerLabel": "Chrono de la série",
+    "stopTimer": "Arrêter le chrono",
+    "startTimer": "Lancer le chrono ({seconds} s)"
   },
   "coach": {
     "title": "Tableau de bord",
@@ -1506,7 +1510,9 @@
     "notifyDenied": "Les notifications sont bloquées pour TrainTrack : autorisez-les dans les réglages du navigateur.",
     "test": "Tester les alertes",
     "testTitle": "Test TrainTrack",
-    "testBody": "Les alertes de fin de repos fonctionnent."
+    "testBody": "Les alertes de fin de repos fonctionnent.",
+    "autoChain": "Enchaîner les séries minutées",
+    "autoChainHint": "Gainage, callisthenics… : le chrono descend, puis le repos et la série suivante s’enchaînent sans toucher l’écran."
   },
   "teamMessage": {
     "button": "Message à l'équipe",

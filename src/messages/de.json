@@ -386,7 +386,8 @@
     "lastTimeSet": "Letztes Mal: {value}",
     "reuse": "Übernehmen",
     "reuseLabel": "{value} für Satz {n} übernehmen",
-    "nextUp": "Danach: {exercise} · Satz {n}"
+    "nextUp": "Danach: {exercise} · Satz {n}",
+    "doneSummaryTimed": "{sets, plural, one {# Satz} other {# Sätze}} · {reps} s"
   },
   "progress": {
     "title": "Fortschritt",
@@ -1214,7 +1215,10 @@
     "rpe": "Anstrengung (RPE)",
     "done": "Satz erledigt",
     "warmupStep": "Aufwärmen {n}",
-    "setOf": "Satz {n} von {total}"
+    "setOf": "Satz {n} von {total}",
+    "timerLabel": "Satz-Timer",
+    "stopTimer": "Timer stoppen",
+    "startTimer": "Timer starten ({seconds} s)"
   },
   "coach": {
     "title": "Übersicht",
@@ -1506,7 +1510,9 @@
     "notifyDenied": "Benachrichtigungen sind für TrainTrack blockiert: in den Browsereinstellungen erlauben.",
     "test": "Alarme testen",
     "testTitle": "TrainTrack-Test",
-    "testBody": "Die Alarme am Pausenende funktionieren."
+    "testBody": "Die Alarme am Pausenende funktionieren.",
+    "autoChain": "Zeitsätze verketten",
+    "autoChainHint": "Planks, Calisthenics …: der Timer läuft ab, dann folgen Pause und nächster Satz, ohne den Bildschirm zu berühren."
   },
   "teamMessage": {
     "button": "Nachricht an das Team",

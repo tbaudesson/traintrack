@@ -73,6 +73,13 @@ export function isTimedTarget(target: string | undefined): boolean {
   return !!target && /s\s*$/i.test(target.trim());
 }
 
+/** The seconds a timed target asks for: "30s" → 30, "20-30s" → 30. Null for a counted target. */
+export function targetSeconds(target: string | undefined): number | null {
+  if (!isTimedTarget(target)) return null;
+  const n = Number(target!.match(/(\d+)\s*s\s*$/i)?.[1]);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
 /** The bottom of a rep target: "8-10" → 8, "12" → 12. Timed targets have none. */
 export function bottomOfRepRange(target: string | undefined): number | null {
   if (!target || /s\s*$/i.test(target.trim())) return null;

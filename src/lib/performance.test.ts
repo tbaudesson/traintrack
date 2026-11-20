@@ -97,3 +97,14 @@ describe("isTimedTarget", () => {
     expect(isTimedTarget(undefined)).toBe(false);
   });
 });
+
+describe("targetSeconds", () => {
+  it("reads the seconds a timed target asks for, the top of a range", async () => {
+    const { targetSeconds } = await import("./performance");
+    expect(targetSeconds("30s")).toBe(30);
+    expect(targetSeconds("20-30s")).toBe(30);
+    expect(targetSeconds("45 s")).toBe(45);
+    expect(targetSeconds("8-10")).toBeNull();
+    expect(targetSeconds(undefined)).toBeNull();
+  });
+});

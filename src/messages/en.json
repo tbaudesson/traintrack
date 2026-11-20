@@ -386,7 +386,8 @@
     "lastTimeSet": "Last time: {value}",
     "reuse": "Reuse",
     "reuseLabel": "Reuse {value} for set {n}",
-    "nextUp": "Next: {exercise} · set {n}"
+    "nextUp": "Next: {exercise} · set {n}",
+    "doneSummaryTimed": "{sets, plural, one {# set} other {# sets}} · {reps} s"
   },
   "progress": {
     "title": "Progress",
@@ -1214,7 +1215,10 @@
     "rpe": "Effort (RPE)",
     "done": "Set done",
     "warmupStep": "Warm-up {n}",
-    "setOf": "Set {n} of {total}"
+    "setOf": "Set {n} of {total}",
+    "timerLabel": "Set timer",
+    "stopTimer": "Stop the timer",
+    "startTimer": "Start the timer ({seconds} s)"
   },
   "coach": {
     "title": "Dashboard",
@@ -1506,7 +1510,9 @@
     "notifyDenied": "Notifications are blocked for TrainTrack: allow them in the browser's settings.",
     "test": "Test the alerts",
     "testTitle": "TrainTrack test",
-    "testBody": "End-of-rest alerts are working."
+    "testBody": "End-of-rest alerts are working.",
+    "autoChain": "Chain timed sets",
+    "autoChainHint": "Planks, callisthenics…: the timer counts down, then the rest and the next set follow without touching the screen."
   },
   "teamMessage": {
     "button": "Message the team",

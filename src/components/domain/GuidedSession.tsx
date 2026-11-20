@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Check, ChevronLeft, ChevronRight, Minus, Plus, Timer, Trophy, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Minus, Play, Plus, Timer, Trophy, X } from "lucide-react";
 import { guidedCursor } from "@/lib/guided";
 import { useSessionFocus } from "@/hooks/useSessionFocus";
 import { cn } from "@/lib/utils";
@@ -39,6 +39,9 @@ export function GuidedSession({
   onSkipRest,
   onFinish,
   onClose,
+  timer = null,
+  onStartTimer,
+  onStopTimer,
 }: {
   steps: GuidedStep[];
   rest: number | null;
@@ -47,6 +50,10 @@ export function GuidedSession({
   onSkipRest: () => void;
   onFinish: () => void;
   onClose: () => void;
+  /** The countdown of a timed set under way: it ends the set by itself. */
+  timer?: { setId: number; left: number } | null;
+  onStartTimer?: (id: number) => void;
+  onStopTimer?: () => void;
 }) {
   const t = useTranslations("guided");
   useSessionFocus(true);
@@ -135,6 +142,9 @@ export function GuidedSession({
               setChosen(null);
             }}
             nextLabel={next ? t("upNext", { name: next.exerciseName, label: next.label }) : t("lastSet")}
+            left={timer?.setId === current.id ? timer.left : null}
+            onStartTimer={onStartTimer && current.timed && !current.completed ? () => onStartTimer(current.id) : undefined}
+            onStopTimer={onStopTimer}
           />
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
@@ -175,10 +185,17 @@ function StepView({
   step,
   onDone,
   nextLabel,
+  left = null,
+  onStartTimer,
+  onStopTimer,
 }: {
   step: GuidedStep;
   onDone: (values: { weightKg?: number; reps?: number; rpe?: number }) => Promise<void>;
   nextLabel: string;
+  /** Seconds left of this set's countdown, when it runs. */
+  left?: number | null;
+  onStartTimer?: () => void;
+  onStopTimer?: () => void;
 }) {
   const t = useTranslations("guided");
   const [weight, setWeight] = useState(step.weightKg ?? 0);
@@ -198,6 +215,25 @@ function StepView({
 
       {!step.timed && (
         <Stepper label={t("weight")} unit="kg" value={weight} step={step.step} onChange={setWeight} />
+      )}
+      {/* A timed set: a countdown that ends the set by itself, the rest and the next set following. */}
+      {left !== null ? (
+        <div role="timer" aria-label={t("timerLabel")} className="space-y-2 text-center">
+          <p className="t-display font-mono text-7xl tabular-nums">
+            {Math.floor(left / 60)}:{String(left % 60).padStart(2, "0")}
+          </p>
+          <Button variant="outline" onClick={onStopTimer}>
+            <X className="mr-1 h-4 w-4" aria-hidden="true" />
+            {t("stopTimer")}
+          </Button>
+        </div>
+      ) : (
+        onStartTimer && (
+          <Button size="lg" variant="outline" className="h-14 w-full rounded-2xl text-base" onClick={onStartTimer}>
+            <Play className="mr-2 h-5 w-5" aria-hidden="true" />
+            {t("startTimer", { seconds: reps })}
+          </Button>
+        )
       )}
       <Stepper label={step.timed ? t("seconds") : t("reps")} value={reps} step={step.timed ? 5 : 1} onChange={setReps} />
 

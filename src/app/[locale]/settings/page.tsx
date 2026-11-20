@@ -476,7 +476,7 @@ export default function SettingsPage() {
             ))}
           </div>
           <div className="space-y-1">
-            {(["sound", "vibrate", "notify"] as const).map((key) => (
+            {(["autoChain", "sound", "vibrate", "notify"] as const).map((key) => (
               <label key={key} className="flex min-h-11 items-center gap-3 text-sm">
                 <input
                   type="checkbox"

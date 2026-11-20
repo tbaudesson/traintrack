@@ -69,6 +69,8 @@ export interface RestPrefs {
   /** Beeps on the last three seconds and at the end. */
   sound: boolean;
   vibrate: boolean;
+  /** Timed sets count down and follow each other, rests between, without a tap. */
+  autoChain: boolean;
   /** A system notification at the end, for a phone left locked. */
   notify: boolean;
 }
@@ -92,7 +94,7 @@ export interface AppPrefs {
 
 const PREFS_KEY = "traintrack.prefs";
 const PREFS_EVENT = "traintrack-prefs";
-const DEFAULT_REST: RestPrefs = { defaultSec: 90, warmupSec: 60, sound: false, vibrate: true, notify: false };
+const DEFAULT_REST: RestPrefs = { defaultSec: 90, warmupSec: 60, sound: false, vibrate: true, notify: false, autoChain: true };
 const DEFAULT_PREFS: AppPrefs = { style: "classic", sport: null, sport2: null, allSports: false, silhouette: "male", rest: DEFAULT_REST, voice: true, wheel: null };
 
 let cached: { raw: string | null; prefs: AppPrefs } | null = null;
@@ -126,6 +128,7 @@ export function getPrefs(): AppPrefs {
       warmupSec: (REST_WARMUPS as readonly number[]).includes(parsed.rest?.warmupSec ?? 0) ? parsed.rest!.warmupSec : DEFAULT_REST.warmupSec,
       sound: typeof parsed.rest?.sound === "boolean" ? parsed.rest.sound : DEFAULT_REST.sound,
       vibrate: typeof parsed.rest?.vibrate === "boolean" ? parsed.rest.vibrate : DEFAULT_REST.vibrate,
+      autoChain: typeof parsed.rest?.autoChain === "boolean" ? parsed.rest.autoChain : DEFAULT_REST.autoChain,
       notify: typeof parsed.rest?.notify === "boolean" ? parsed.rest.notify : DEFAULT_REST.notify,
     },
     voice: typeof parsed.voice === "boolean" ? parsed.voice : true,

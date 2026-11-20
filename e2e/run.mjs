@@ -1151,6 +1151,36 @@ await test("nutrition for one's sport: carbohydrates by the kilo, and food aroun
   }
 });
 
+await test("timed sets follow each other by themselves: count down, rest, next set", async () => {
+  const id = await page.evaluate(async (user) => {
+    const db = await new Promise((res, rej) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+    const all = (store) => new Promise((res) => { const r = db.transaction(store).objectStore(store).getAll(); r.onsuccess = () => res(r.result); });
+    const add = (store, value) => new Promise((res, rej) => { const tx = db.transaction(store, "readwrite"); const r = tx.objectStore(store).add(value); tx.oncomplete = () => res(r.result); tx.onerror = () => rej(tx.error); });
+    const now = new Date().toISOString();
+    const plank = (await all("exercises")).find((e) => e.name === "Plank");
+    const programId = await add("programs", {
+      userId: user, uuid: `e2e-hold-${Date.now()}`, name: "Gainage e2e", _dirty: 0, createdAt: now, updatedAt: now,
+      structure: [{ name: "Jour", exercises: [{ exerciseName: "Plank", targetSets: 2, targetReps: "3s", restSec: 3 }] }],
+    });
+    const d = new Date();
+    const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const workoutId = await add("workouts", { userId: user, uuid: `e2e-hold-w-${Date.now()}`, date, title: "Gainage e2e — Jour", programId, programDayIndex: 0, _dirty: 0, createdAt: now, updatedAt: now });
+    for (const n of [1, 2]) await add("workoutSets", { userId: user, uuid: `e2e-hold-${workoutId}-${n}`, workoutId, exerciseId: plank.id, setNumber: n, completed: false, restSec: 3, _dirty: 0, createdAt: now, updatedAt: now });
+    db.close();
+    return workoutId;
+  }, USER);
+  await page.goto(`${BASE}/fr/log/session?id=${id}`);
+  await page.getByRole("button", { name: "Démarrer la série 1" }).click();
+  // Counting down from the target, then nothing more to tap: rest, set 2, done.
+  const effort = page.getByRole("timer", { name: "Effort" });
+  await effort.waitFor({ timeout: 5000 });
+  expect(/0:0[1-3]/.test(await effort.innerText()), `not counting down from 3 s: ${await effort.innerText()}`);
+  await page.getByRole("timer", { name: "Repos" }).waitFor({ timeout: 8000 });
+  await effort.getByText("Série 2", { exact: true }).waitFor({ timeout: 10000 });
+  // Both held to the end: the exercise folds, its two sets of 3 seconds done.
+  await page.getByText(/2 séries · 3, 3 s/).waitFor({ timeout: 10000 });
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });

@@ -43,7 +43,7 @@ import { formatDistance, formatDuration, formatPace, isCardio, isCardioDone, new
 import { SessionSummary, type SessionSummaryData } from "@/components/domain/SessionSummary";
 import db from "@/db";
 import {
-  beatsRecord, bestLifts, elapsedMinutes, isTimedTarget, timestampIn, valuesForTick, lastPerformance, recordHistory, recentPerformances, topWeight, totalVolume,
+  beatsRecord, bestLifts, elapsedMinutes, isTimedTarget, targetSeconds, timestampIn, valuesForTick, lastPerformance, recordHistory, recentPerformances, topWeight, totalVolume,
 } from "@/lib/performance";
 import Image from "next/image";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -135,7 +135,13 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
     hint: { weightKg?: number | null; targetReps?: string };
     startedAt: number;
     seconds: number;
+    /** A timed set counts down to this, then ends by itself. */
+    goal?: number;
   } | null>(null);
+  // The next timed set starts by itself once the rest is over (or at once in a circuit):
+  // the set just ended, so as not to start it again before it shows as done.
+  const chainNext = useRef<number | null>(null);
+  const finishEffortRef = useRef<() => void>(() => {});
 
   // Web Bluetooth heart rate
   const [hr, setHr] = useState<number | null>(null);
@@ -515,28 +521,57 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function startEffort(next: { setId: number; setNumber: number; restSec?: number; timed: boolean; hint: { weightKg?: number | null; targetReps?: string } }) {
+  function startEffort(next: { setId: number; setNumber: number; restSec?: number; timed: boolean; hint: { weightKg?: number | null; targetReps?: string }; goal?: number }) {
     stopRest();
     if (effortRef.current) clearInterval(effortRef.current);
     const startedAt = timestampIn(0);
     setEffort({ ...next, startedAt, seconds: 0 });
+    let lastTick = 0;
     effortRef.current = setInterval(() => {
-      setEffort((e) => (e ? { ...e, seconds: Math.floor((timestampIn(0) - e.startedAt) / 1000) } : e));
-    }, 500);
+      const seconds = Math.floor((timestampIn(0) - startedAt) / 1000);
+      setEffort((e) => (e ? { ...e, seconds } : e));
+      if (!next.goal) return;
+      const left = next.goal - seconds;
+      if (left > 0 && left <= 3 && left !== lastTick) {
+        lastTick = left;
+        if (restPrefsRef.current.sound) beep("tick");
+      }
+      // A timed set ends by itself: the time held is the result, and the rest follows.
+      if (left <= 0) finishEffortRef.current();
+    }, 250);
   }
 
+  /** The ✕ of the timer: this set is not done, and nothing starts by itself until the next tap. */
   function cancelEffort() {
     if (effortRef.current) clearInterval(effortRef.current);
     setEffort(null);
+    chainNext.current = null;
+  }
+
+  /** A timed set ready to start (the next one to do by default), or null when it is not timed. */
+  function timedNext(id = currentSetId) {
+    const set = sets.find((s) => s.id === id);
+    if (!set?.id) return null;
+    const target = targetFor(set.exerciseId);
+    if (!isTimedTarget(target?.targetReps)) return null;
+    const fill = prefillAll.find((f) => f.id === set.id)?.values;
+    const goal = (set.reps && set.reps > 0 ? set.reps : fill?.reps) || targetSeconds(target?.targetReps) || undefined;
+    return { setId: set.id, setNumber: set.setNumber, restSec: set.restSec, timed: true, hint: { targetReps: target?.targetReps }, goal };
   }
 
   async function finishEffort() {
     if (!effort) return;
-    const { setId, restSec, timed, hint, seconds } = effort;
-    cancelEffort();
-    // For a held position the time measured is the result of the set.
-    if (timed && seconds > 0) await updateWorkoutSet(setId, { reps: seconds });
+    const { setId, restSec, timed, hint, goal, startedAt } = effort;
+    // From the clock, not the last tick shown: that one may be a second behind.
+    const seconds = Math.floor((timestampIn(0) - startedAt) / 1000);
+    if (effortRef.current) clearInterval(effortRef.current);
+    setEffort(null);
+    // For a held position the time measured is the result of the set (the goal, once reached).
+    const held = goal ? Math.min(seconds, goal) : seconds;
+    if (timed && held > 0) await updateWorkoutSet(setId, { reps: held });
     await toggleDone(setId, false, restSec, hint);
+    // A timed set that ran to its end leads to the next one by itself.
+    if (timed && goal && seconds >= goal && restPrefsRef.current.autoChain) chainNext.current = setId;
   }
 
   function extendRest(seconds: number) {
@@ -659,6 +694,23 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
       setTimeout(() => setNewRecord(null), 4500);
     }
   }
+
+  // The timer's own tick ends the set, with the latest state of the page.
+  useEffect(() => {
+    finishEffortRef.current = () => void finishEffort();
+  });
+
+  // Once the rest is over (or at once, in a circuit), the next timed set starts by itself.
+  useEffect(() => {
+    const after = chainNext.current;
+    if (after === null || rest !== null || effort) return;
+    // The set just ended not yet shown as done: wait for the next render.
+    if (currentSetId === after) return;
+    chainNext.current = null;
+    const next = timedNext();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the timer of the next set, started by the end of the rest
+    if (next) startEffort(next);
+  });
 
   if (workout?.kind === "interval") return <IntervalWorkoutView workout={workout} sets={sets ?? []} exercises={exercises} />;
 
@@ -870,7 +922,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                       <Check className="size-3.5" aria-hidden="true" />
                     </span>
                     <span className="min-w-0 flex-1 truncate text-muted-foreground">
-                      {t("doneSummary", {
+                      {t(isTimedTarget(target?.targetReps) ? "doneSummaryTimed" : "doneSummary", {
                         sets: work.length,
                         reps: work.map((x) => x.reps ?? "–").join(", "),
                       })}
@@ -1133,6 +1185,10 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                         restSec: nextSet.restSec,
                         timed: isTimedTarget(target?.targetReps),
                         hint: nextSet.isWarmup ? {} : { weightKg: plannedFor(nextSet) ?? suggestion ?? previousTop, targetReps: target?.targetReps },
+                        // A timed set counts down from what is planned for it, when chaining is on.
+                        goal: restPrefs.autoChain && isTimedTarget(target?.targetReps)
+                          ? (nextSet.reps && nextSet.reps > 0 ? nextSet.reps : prefillAll.find((f) => f.id === nextSet.id)?.values.reps) || targetSeconds(target?.targetReps) || undefined
+                          : undefined,
                       })
                     }
                   >
@@ -1337,8 +1393,12 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
         <div role="timer" aria-label={t("effortLabel")} className={cn("t-effort-timer fixed left-1/2 z-[55] flex -translate-x-1/2 items-center gap-2 rounded-full bg-success-text py-1 pr-1 pl-4 whitespace-nowrap text-background shadow-lg", barOffset)}>
           <Timer className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span className="text-sm font-medium">{t("effortOfSet", { set: effort.setNumber })}</span>
+          {/* Counting down to the goal of a timed set, up otherwise. */}
           <span className="font-mono text-lg font-semibold tabular-nums">
-            {Math.floor(effort.seconds / 60)}:{String(effort.seconds % 60).padStart(2, "0")}
+            {(() => {
+              const s = effort.goal ? Math.max(0, effort.goal - effort.seconds) : effort.seconds;
+              return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+            })()}
           </span>
           <button onClick={finishEffort} className="flex h-10 items-center rounded-full px-2 text-sm font-semibold">
             {t("finishSet")}
@@ -1384,6 +1444,12 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
           onDone={guidedDone}
           onExtendRest={() => extendRest(30)}
           onSkipRest={stopRest}
+          timer={effort?.goal ? { setId: effort.setId, left: Math.max(0, effort.goal - effort.seconds) } : null}
+          onStartTimer={(id) => {
+            const next = timedNext(id);
+            if (next) startEffort(next);
+          }}
+          onStopTimer={cancelEffort}
           onFinish={() => {
             setGuided(false);
             finishWorkout();
