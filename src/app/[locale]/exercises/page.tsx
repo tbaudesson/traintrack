@@ -19,7 +19,7 @@ import { Link } from "@/i18n/navigation";
 import { demoVideo } from "@/lib/demoVideos";
 import { cn } from "@/lib/utils";
 import { SectionHeading } from "@/components/ui/page-parts";
-import { useExerciseLabel, exerciseDescription, NAMES, DESCRIPTIONS } from "@/lib/exerciseNames";
+import { useExerciseLabel, exerciseDescription } from "@/lib/exerciseNames";
 
 const MUSCLE_GROUPS: MuscleGroup[] = ["chest", "back", "legs", "shoulders", "arms", "core", "full_body", "other"];
 const EQUIPMENT: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "bodyweight", "kettlebell", "bands", "other"];
@@ -186,10 +186,10 @@ function ExerciseRow({ ex }: { ex: Exercise }) {
   const [name, setName] = useState(ex.name);
   const [description, setDescription] = useState(ex.description ?? "");
   const [videoUrl, setVideoUrl] = useState(ex.videoUrl ?? "");
-  const [nameFr, setNameFr] = useState(ex.nameFr ?? (ex.isCustom ? "" : (NAMES[ex.name]?.fr ?? "")));
-  const [nameDe, setNameDe] = useState(ex.nameDe ?? (ex.isCustom ? "" : (NAMES[ex.name]?.de ?? "")));
-  const [descriptionFr, setDescriptionFr] = useState(ex.descriptionFr ?? (DESCRIPTIONS[ex.name]?.fr ?? ""));
-  const [descriptionDe, setDescriptionDe] = useState(ex.descriptionDe ?? (DESCRIPTIONS[ex.name]?.de ?? ""));
+  const [nameFr, setNameFr] = useState(ex.nameFr ?? "");
+  const [nameDe, setNameDe] = useState(ex.nameDe ?? "");
+  const [descriptionFr, setDescriptionFr] = useState(ex.descriptionFr ?? "");
+  const [descriptionDe, setDescriptionDe] = useState(ex.descriptionDe ?? "");
   const [injuryRules, setInjuryRules] = useState<ExerciseRules>(ex.injuryRules ?? {});
   const [error, setError] = useState<string | null>(null);
   const hasDetail = !!ex.description || !!ex.videoUrl;
@@ -276,7 +276,7 @@ function ExerciseRow({ ex }: { ex: Exercise }) {
             ) : (
               <>
                 {exerciseDescription(ex, locale) && <p className="text-sm text-muted-foreground">{exerciseDescription(ex, locale)}</p>}
-                {(demoVideo(ex.name, ex.videoUrl) ?? ex.videoUrl) && <VideoEmbed url={(demoVideo(ex.name, ex.videoUrl) ?? ex.videoUrl)!} />}
+                {(demoVideo(ex.videoUrl) ?? ex.videoUrl) && <VideoEmbed url={(demoVideo(ex.videoUrl) ?? ex.videoUrl)!} />}
                 <Link href={`/exercises/${ex.id}`} className="flex min-h-10 items-center gap-1.5 text-sm font-semibold text-accent-text">
                   <History className="h-4 w-4" aria-hidden="true" />
                   {t("myHistory")}

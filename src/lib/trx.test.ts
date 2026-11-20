@@ -1,21 +1,24 @@
 import { describe, expect, it } from "vitest";
 import { TRX_EXERCISES } from "./trxExercises";
 import { TRX_TEMPLATES } from "./trxTemplates";
-import { NAMES, DESCRIPTIONS } from "./exerciseNames";
 import { buildIntervalSession, INTERVAL_EXERCISES } from "./intervals";
 import { missingEquipment } from "./programEquipment";
 import { programCategory } from "./programCategories";
 import { recommendPrograms } from "./onboarding";
 import { PROGRAM_TEMPLATES } from "./programTemplates";
 import { injuryRulesFromMigrations } from "./injuryGuidanceFromMigrations";
+import { libraryFromMigrations } from "./libraryFromMigrations";
+
+const LIBRARY = new Map(libraryFromMigrations().map((r) => [r.name, r]));
+
 
 const INJURY_RULES = injuryRulesFromMigrations();
 
 describe("TRX", () => {
   it("has every exercise named, described and ruled for injuries", () => {
     for (const e of TRX_EXERCISES) {
-      expect(NAMES[e.name]?.fr, e.name).toBeTruthy();
-      expect(DESCRIPTIONS[e.name]?.de, e.name).toBeTruthy();
+      expect(LIBRARY.get(e.name)?.nameFr, e.name).toBeTruthy();
+      expect(LIBRARY.get(e.name)?.descriptionDe, e.name).toBeTruthy();
       expect(INJURY_RULES[e.name], e.name).toBeDefined();
     }
   });

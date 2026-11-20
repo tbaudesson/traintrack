@@ -1064,8 +1064,8 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                       </ul>
                     )}
                     {exerciseDescription(ex, locale) && <p className="text-sm text-muted-foreground">{exerciseDescription(ex, locale)}</p>}
-                    {(demoVideo(ex?.name ?? "", ex?.videoUrl) ?? ex?.videoUrl) && <VideoEmbed url={(demoVideo(ex?.name ?? "", ex?.videoUrl) ?? ex?.videoUrl)!} />}
-                    {!exerciseDescription(ex, locale) && !ex?.videoUrl && !demoVideo(ex?.name ?? "") && <p className="text-sm text-muted-foreground">{t("noGuide")}</p>}
+                    {(demoVideo(ex?.videoUrl) ?? ex?.videoUrl) && <VideoEmbed url={(demoVideo(ex?.videoUrl) ?? ex?.videoUrl)!} />}
+                    {!exerciseDescription(ex, locale) && !ex?.videoUrl && !demoVideo(ex?.videoUrl) && <p className="text-sm text-muted-foreground">{t("noGuide")}</p>}
                     <Link href={`/exercises/${exerciseId}`} className="flex min-h-10 items-center gap-1.5 text-sm font-semibold text-accent-text">
                       <History className="h-4 w-4" aria-hidden="true" />
                       {t("fullHistory")}

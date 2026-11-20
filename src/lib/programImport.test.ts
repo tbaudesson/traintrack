@@ -2,6 +2,9 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { columnOf, libraryName, parsePercents, parseProgramRows, parseReps, parseRest, templateRows } from "./programImport";
 import { readXlsx, writeXlsx, XlsxError } from "./xlsx";
+import { libraryFromMigrations } from "./libraryFromMigrations";
+
+const LIB = libraryFromMigrations();
 
 const fixture = (name: string) => readFileSync(new URL(`./__fixtures__/${name}`, import.meta.url));
 const dayName = (n: number) => `Session ${n}`;
@@ -23,7 +26,7 @@ describe("readXlsx", () => {
   });
 
   it("reads back what it writes", async () => {
-    const bytes = writeXlsx({ sheet: "Programme", rows: templateRows("fr"), widths: [9, 18, 32, 8, 13, 10, 14], textColumns: [4, 6] });
+    const bytes = writeXlsx({ sheet: "Programme", rows: templateRows("fr", (n) => LIB.find((e) => e.name === n)?.nameFr ?? n), widths: [9, 18, 32, 8, 13, 10, 14], textColumns: [4, 6] });
     const rows = await readXlsx(bytes);
     expect(rows[0][1]).toBe("Séance");
     expect(rows[1]).toEqual(["1", "Haut du corps", "Développé couché à la barre", "4", "6-8", "120", "70/75/80/80"]);
@@ -36,7 +39,7 @@ describe("readXlsx", () => {
 
 describe("parseProgramRows", () => {
   it("turns a French sheet into a plan in weeks", async () => {
-    const result = parseProgramRows(await readXlsx(fixture("program-fr.xlsx")), dayName);
+    const result = parseProgramRows(await readXlsx(fixture("program-fr.xlsx")), dayName, LIB);
     expect(result.weeks).toBe(2);
     expect(result.unknown).toEqual(["Curl araignée maison"]);
     expect(result.badReps).toBe(1);
@@ -63,7 +66,7 @@ describe("parseProgramRows", () => {
   });
 
   it("reads German headers and fills in what is missing", async () => {
-    const result = parseProgramRows(await readXlsx(fixture("program-de.xlsx")), dayName);
+    const result = parseProgramRows(await readXlsx(fixture("program-de.xlsx")), dayName, LIB);
     expect(result.structure).toEqual([
       {
         name: "A & B",
@@ -78,7 +81,7 @@ describe("parseProgramRows", () => {
   });
 
   it("makes a rotation without weeks, naming sessions when the sheet does not", () => {
-    const result = parseProgramRows([["Exercise", "Sets"], ["Pull-up", "5"], ["Push-up", "4"]], dayName);
+    const result = parseProgramRows([["Exercise", "Sets"], ["Pull-up", "5"], ["Push-up", "4"]], dayName, LIB);
     expect(result.weeks).toBe(0);
     expect(result.structure).toEqual([
       { name: "Session 1", exercises: [{ exerciseName: "Pull-up", targetSets: 5, targetReps: "8-12" }, { exerciseName: "Push-up", targetSets: 4, targetReps: "8-12" }] },
@@ -86,14 +89,14 @@ describe("parseProgramRows", () => {
   });
 
   it("refuses a sheet without an exercise column, or without exercises", () => {
-    expect(() => parseProgramRows([["Name", "Date"]], dayName)).toThrow("NO_HEADER");
-    expect(() => parseProgramRows([["Exercice"], [""]], dayName)).toThrow("EMPTY");
+    expect(() => parseProgramRows([["Name", "Date"]], dayName, LIB)).toThrow("NO_HEADER");
+    expect(() => parseProgramRows([["Exercice"], [""]], dayName, LIB)).toThrow("EMPTY");
   });
 
   it("reads the template of each language", async () => {
     for (const locale of ["fr", "en", "de"]) {
-      const rows = await readXlsx(writeXlsx({ sheet: "P", rows: templateRows(locale), widths: [10], textColumns: [4] }));
-      const result = parseProgramRows(rows, dayName);
+      const rows = await readXlsx(writeXlsx({ sheet: "P", rows: templateRows(locale, (n) => (locale === "fr" ? LIB.find((e) => e.name === n)?.nameFr : locale === "de" ? LIB.find((e) => e.name === n)?.nameDe : null) ?? n), widths: [10], textColumns: [4] }));
+      const result = parseProgramRows(rows, dayName, LIB);
       expect(result.unknown, locale).toEqual([]);
       expect(result.structure.length, locale).toBe(4);
     }
@@ -116,10 +119,10 @@ describe("cells", () => {
   });
 
   it("finds library exercises under any of their names", () => {
-    expect(libraryName("  développé COUCHÉ à la barre ")).toEqual({ name: "Barbell Bench Press", known: true });
-    expect(libraryName("Bench Press (Barbell)")).toEqual({ name: "Barbell Bench Press", known: true });
-    expect(libraryName("Kniebeuge")).toEqual({ name: "Back Squat", known: true });
-    expect(libraryName("Mon exo")).toEqual({ name: "Mon exo", known: false });
+    expect(libraryName("  développé COUCHÉ à la barre ", LIB)).toEqual({ name: "Barbell Bench Press", known: true });
+    expect(libraryName("Bench Press (Barbell)", LIB)).toEqual({ name: "Barbell Bench Press", known: true });
+    expect(libraryName("Kniebeuge", LIB)).toEqual({ name: "Back Squat", known: true });
+    expect(libraryName("Mon exo", LIB)).toEqual({ name: "Mon exo", known: false });
   });
 
   it("reads rests, loads and reps however they are written", () => {

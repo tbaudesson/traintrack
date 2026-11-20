@@ -11,7 +11,10 @@ import {
   patternSeconds,
   type IntervalPlan,
 } from "./intervals";
-import { NAMES, DESCRIPTIONS } from "./exerciseNames";
+import { libraryFromMigrations } from "./libraryFromMigrations";
+
+const LIBRARY = new Map(libraryFromMigrations().map((r) => [r.name, r]));
+
 
 const plan = (over: Partial<IntervalPlan> = {}): IntervalPlan => ({ focus: "full", dumbbells: false, pattern: "45-15", minutes: 20, seed: 7, ...over });
 
@@ -98,7 +101,7 @@ describe("defaultPattern", () => {
 
 describe("the exercises", () => {
   it("are all translated, with a description for the new ones", () => {
-    for (const e of INTERVAL_EXERCISES) expect(NAMES[e.name], e.name).toBeDefined();
-    for (const e of NEW_INTERVAL_EXERCISES) expect(DESCRIPTIONS[e.name], e.name).toBeDefined();
+    for (const e of INTERVAL_EXERCISES) expect(LIBRARY.get(e.name)?.nameFr, e.name).toBeTruthy();
+    for (const e of NEW_INTERVAL_EXERCISES) expect(LIBRARY.get(e.name)?.descriptionFr, e.name).toBeTruthy();
   });
 });

@@ -125,7 +125,7 @@ export default function IntervalsPage() {
   const demoOf = useCallback(
     (e: IntervalExercise) => {
       const row = exercises.find((x) => !x.isCustom && x.name === e.name);
-      return { video: demoVideo(e.name, row?.videoUrl), cue: exerciseDescription(row ?? { name: e.name, description: e.description || undefined }, locale) };
+      return { video: demoVideo(row?.videoUrl), cue: exerciseDescription(row ?? { name: e.name, description: e.description || undefined }, locale) };
     },
     [exercises, locale]
   );

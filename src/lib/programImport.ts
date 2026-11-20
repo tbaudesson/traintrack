@@ -10,7 +10,6 @@
  * become custom exercises at the first session. Pure.
  */
 import type { ProgramDay } from "@/db";
-import { NAMES } from "./exerciseNames";
 import { matchExercise } from "./importCsv";
 import { sanitizeStructure } from "./programSanitize";
 
@@ -43,14 +42,17 @@ export function columnOf(header: string): Column | null {
   return null;
 }
 
+/** A library exercise as the device holds it: its English name (the key) and its translations. */
+export type LibraryEntry = { name: string; nameFr?: string | null; nameDe?: string | null };
+
 /** The library exercise a name stands for, in English (the key), or the name as written. */
-export function libraryName(name: string): { name: string; known: boolean } {
+export function libraryName(name: string, library: LibraryEntry[]): { name: string; known: boolean } {
   const trimmed = name.trim().replace(/\s+/g, " ");
   const folded = fold(trimmed);
-  for (const [key, t] of Object.entries(NAMES)) {
-    if (fold(key) === folded || fold(t.fr) === folded || fold(t.de) === folded) return { name: key, known: true };
+  for (const e of library) {
+    if (fold(e.name) === folded || (e.nameFr && fold(e.nameFr) === folded) || (e.nameDe && fold(e.nameDe) === folded)) return { name: e.name, known: true };
   }
-  const match = matchExercise(trimmed, Object.keys(NAMES).map((key) => ({ name: key })));
+  const match = matchExercise(trimmed, library.map((e) => ({ name: e.name })));
   return match ? { name: match.name, known: true } : { name: trimmed, known: false };
 }
 
@@ -101,7 +103,7 @@ export class ProgramImportError extends Error {}
  * The program in the rows of a sheet (or a CSV). `defaultDay` names the
  * session when the sheet has no session column filled ("Session 1"…).
  */
-export function parseProgramRows(rows: string[][], defaultDay: (n: number) => string): ProgramImport {
+export function parseProgramRows(rows: string[][], defaultDay: (n: number) => string, library: LibraryEntry[]): ProgramImport {
   // The header: the first of the ten top rows naming an exercise column.
   const headerAt = rows.slice(0, 10).findIndex((row) => row.some((cell) => columnOf(cell ?? "") === "exercise"));
   if (headerAt < 0) throw new ProgramImportError("NO_HEADER");
@@ -132,7 +134,7 @@ export function parseProgramRows(rows: string[][], defaultDay: (n: number) => st
       key = rowKey;
       days.push({ name: (dayName || defaultDay(days.length + 1)).slice(0, 80), exercises: [], ...(week ? { week } : {}) });
     }
-    const { name, known } = libraryName(exercise);
+    const { name, known } = libraryName(exercise, library);
     if (!known) unknown.add(name);
     const reps = parseReps(read(row, "reps"));
     if (reps === null) badReps++;
@@ -154,14 +156,15 @@ export function parseProgramRows(rows: string[][], defaultDay: (n: number) => st
 }
 
 /** The rows of the template offered for download, in the app's language. */
-export function templateRows(locale: string): (string | number)[][] {
+export function templateRows(locale: string, label: (name: string) => string = (name) => name): (string | number)[][] {
   const words: Record<string, { head: string[]; a: string; b: string }> = {
     fr: { head: ["Semaine", "Séance", "Exercice", "Séries", "Répétitions", "Repos (s)", "% 1RM"], a: "Haut du corps", b: "Bas du corps" },
     de: { head: ["Woche", "Einheit", "Übung", "Sätze", "Wiederholungen", "Pause (s)", "% 1RM"], a: "Oberkörper", b: "Unterkörper" },
     en: { head: ["Week", "Session", "Exercise", "Sets", "Reps", "Rest (s)", "% 1RM"], a: "Upper body", b: "Lower body" },
   };
   const w = words[locale] ?? words.en;
-  const ex = (key: string) => (locale === "fr" || locale === "de" ? NAMES[key][locale] : key);
+  // The library's names in the app's language, as the device holds them.
+  const ex = label;
   return [
     w.head,
     [1, w.a, ex("Barbell Bench Press"), 4, "6-8", 120, "70/75/80/80"],

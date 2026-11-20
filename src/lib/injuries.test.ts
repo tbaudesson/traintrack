@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { bySafety, declareInjury, injuryState, injuryWarning, isAvoided, returnAdjust, toggleInjury } from "./injuries";
-import { NAMES } from "./exerciseNames";
 
 const g = injuryGuidanceFromMigrations();
 import { INTERVAL_EXERCISES, buildIntervalSession, injuryPool } from "./intervals";
 import { injuryGuidanceFromMigrations, injuryRulesFromMigrations } from "./injuryGuidanceFromMigrations";
+import { libraryFromMigrations } from "./libraryFromMigrations";
+
+const LIBRARY = new Map(libraryFromMigrations().map((r) => [r.name, r]));
+
 
 const INJURY_RULES = injuryRulesFromMigrations();
 
@@ -74,7 +77,7 @@ describe("return after an injury", () => {
 });
 
 it("knows only exercises of the library", () => {
-  for (const name of Object.keys(INJURY_RULES)) expect(NAMES[name], name).toBeDefined();
+  for (const name of Object.keys(INJURY_RULES)) expect(LIBRARY.get(name)?.nameFr, name).toBeTruthy();
 });
 
 it("leaves the exercises to avoid out of the timed sessions", () => {

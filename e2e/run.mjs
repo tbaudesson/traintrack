@@ -99,8 +99,43 @@ const exerciseRules = Object.fromEntries(
     .map((m) => [m[2].replace(/''/g, "'"), JSON.parse(m[1].replace(/''/g, "'"))])
 );
 
-// A signed-in user as the app caches it, a profile, and a few library exercises.
-await page.evaluate(async ({ user, exerciseRules }) => {
+// The exercise library as the migrations leave it, as a synced device holds it:
+// names, groups, equipment, descriptions and translations, videos, injury rules.
+const sqlValues = (tuple) => [...tuple.matchAll(/'((?:[^']|'')*)'|\bNULL\b/g)].map((m) => (m[1] === undefined ? null : m[1].replace(/''/g, "'")));
+const library = new Map();
+const addExercise = ([name, muscleGroup, equipment, description, nameFr, nameDe, descriptionFr, descriptionDe]) => {
+  if (name && !library.has(name)) library.set(name, { name, muscleGroup, equipment, description, nameFr, nameDe, descriptionFr, descriptionDe });
+};
+for (const file of ["006_seed_exercises", "024_endurance", "038_interval_sessions", "040_vaulting", "053_more_timed_exercises"]) {
+  let inExercises = false;
+  for (const line of readFileSync(`supabase/migrations/${file}.sql`, "utf8").split("\n")) {
+    if (line.startsWith("INSERT INTO exercises")) inExercises = true;
+    else if (/^\) AS v\(/.test(line)) inExercises = false;
+    else if (inExercises && /^\s+\('/.test(line)) addExercise(sqlValues(line));
+  }
+}
+for (const m of readFileSync("supabase/migrations/055_trx.sql", "utf8").matchAll(/SELECT NULL, (.+?), false, (.+)\nWHERE NOT EXISTS \(SELECT 1 FROM exercises/g)) {
+  const [name, group, equipment] = sqlValues(m[1]);
+  addExercise([name, group, equipment, ...sqlValues(m[2])]);
+}
+for (const line of readFileSync("supabase/migrations/064_exercise_content.sql", "utf8").split("\n")) {
+  if (!line.startsWith("UPDATE exercises SET name_fr")) continue;
+  const row = library.get(sqlValues(line.slice(line.indexOf("AND name =")))[0]);
+  if (!row) continue;
+  const pick = (col) => {
+    const m = line.match(new RegExp(`${col} = COALESCE\\(${col}, ('(?:[^']|'')*'|NULL)\\)`));
+    return m && m[1] !== "NULL" ? m[1].slice(1, -1).replace(/''/g, "'") : null;
+  };
+  row.nameFr ??= pick("name_fr");
+  row.nameDe ??= pick("name_de");
+  row.descriptionFr ??= pick("description_fr");
+  row.descriptionDe ??= pick("description_de");
+  row.videoUrl ??= pick("video_url") ?? undefined;
+}
+const libraryRows = [...library.values()].map((e) => ({ ...e, injuryRules: exerciseRules[e.name] ?? null }));
+
+// A signed-in user as the app caches it, a profile, and the exercise library.
+await page.evaluate(async ({ user, libraryRows }) => {
   const db = await new Promise((resolve, reject) => {
     const req = indexedDB.open("TrainTrack");
     req.onsuccess = () => resolve(req.result);
@@ -120,10 +155,8 @@ await page.evaluate(async ({ user, exerciseRules }) => {
     userId: user, uuid: "e2e-profile", goals: ["general_fitness"], fitnessLevel: "beginner", equipment: ["dumbbell"],
     trainingDays: [1, 3, 5], trainingTime: "18:30", _dirty: 0, createdAt: now, updatedAt: now,
   });
-  for (const [i, [name, muscleGroup, equipment]] of [
-    ["Back Squat", "legs", "barbell"], ["Barbell Bench Press", "chest", "barbell"], ["Plank", "core", "bodyweight"], ["Push-up", "chest", "bodyweight"],
-  ].entries()) {
-    await put("exercises", { name, muscleGroup, equipment, isCustom: false, userId: null, uuid: `e2e-ex-${i}`, injuryRules: exerciseRules[name] ?? null, _dirty: 0, createdAt: now, updatedAt: now });
+  for (const [i, e] of libraryRows.entries()) {
+    await put("exercises", { ...e, isCustom: false, userId: null, uuid: `e2e-ex-${i}`, _dirty: 0, createdAt: now, updatedAt: now });
   }
   // Five weeks of easy runs, then a much harder week: the load jumps.
   const day = (ago) => {
@@ -141,7 +174,7 @@ await page.evaluate(async ({ user, exerciseRules }) => {
       durationSec: r.min * 60, distanceM: r.min * 180, _dirty: 0, createdAt: now, updatedAt: now,
     });
   }
-}, { user: USER, exerciseRules });
+}, { user: USER, libraryRows });
 
 // The injury references as the app keeps them after reading them online once (migration 058).
 {
@@ -253,7 +286,7 @@ await test("an empty session takes an exercise from the library", async () => {
   await page.getByRole("button", { name: /Nouvelle séance/ }).first().click();
   await page.waitForURL(/\/fr\/log\/session\?id=\d+/, { timeout: 15000 });
   await page.getByRole("button", { name: /Ajouter un exercice/ }).click();
-  await page.getByRole("dialog").getByText("Pompes").click();
+  await page.getByRole("dialog").getByText("Pompes", { exact: true }).click();
   await page.getByText("Pompes").first().waitFor({ timeout: 5000 });
 });
 

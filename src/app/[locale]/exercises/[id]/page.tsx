@@ -53,7 +53,7 @@ export default function ExerciseHistoryPage() {
     );
   }
 
-  const video = demoVideo(exercise.name, exercise.videoUrl);
+  const video = demoVideo(exercise.videoUrl);
   const { records } = history;
   const metrics: Metric[] = weighted ? ["oneRepMax", "topKg", "volume", "bestReps"] : ["bestReps"];
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { useExercises } from "@/hooks/useExercises";
 import { useLocale, useTranslations } from "next-intl";
 import { AlertTriangle, Download, FileSpreadsheet, Loader2 } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
@@ -38,6 +39,8 @@ export function ProgramImportDialog({ open, onOpenChange }: { open: boolean; onO
   const locale = useLocale();
   const router = useRouter();
   const xl = useExerciseLabel();
+  // The library on the device, with its translations: what an imported name is matched against.
+  const library = useExercises().filter((e) => !e.isCustom);
   const inputId = useId();
   const [result, setResult] = useState<ProgramImport | null>(null);
   const [name, setName] = useState("");
@@ -51,7 +54,7 @@ export function ProgramImportDialog({ open, onOpenChange }: { open: boolean; onO
   }
 
   function downloadTemplate() {
-    const bytes = writeXlsx({ sheet: t("sheetName"), rows: templateRows(locale), widths: [9, 18, 34, 8, 14, 10, 14], textColumns: [4, 6] });
+    const bytes = writeXlsx({ sheet: t("sheetName"), rows: templateRows(locale, xl), widths: [9, 18, 34, 8, 14, 10, 14], textColumns: [4, 6] });
     const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
     const link = document.createElement("a");
     link.href = url;
@@ -71,7 +74,7 @@ export function ProgramImportDialog({ open, onOpenChange }: { open: boolean; onO
       const bytes = await file.arrayBuffer();
       const isCsv = lower.endsWith(".csv") || lower.endsWith(".tsv") || lower.endsWith(".txt");
       const rows = isCsv ? (() => { const text = decodeText(bytes); return parseCsv(text, separatorOf(text)); })() : await readXlsx(bytes);
-      setResult(parseProgramRows(rows, (n) => t("session", { n })));
+      setResult(parseProgramRows(rows, (n) => t("session", { n }), library));
       setName(file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim().slice(0, 120) || t("untitled"));
     } catch (e) {
       const code = e instanceof XlsxError || e instanceof ProgramImportError ? e.message : "";

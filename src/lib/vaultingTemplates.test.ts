@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { VAULTING_TEMPLATES, vaultingPhase, vaultingTemplates } from "./vaultingTemplates";
 import { VAULTING_EXERCISES } from "./vaultingExercises";
-import { NAMES, DESCRIPTIONS } from "./exerciseNames";
 import { PROGRAM_TEMPLATES } from "./programTemplates";
 import { programKind } from "./programCards";
 import { injuryRulesFromMigrations } from "./injuryGuidanceFromMigrations";
+import { libraryFromMigrations } from "./libraryFromMigrations";
+
+const LIBRARY = new Map(libraryFromMigrations().map((r) => [r.name, r]));
+
 
 const INJURY_RULES = injuryRulesFromMigrations();
 
@@ -43,9 +46,9 @@ describe("vaulting plans", () => {
 
   it("use only exercises the library knows, translated and with injury rules", () => {
     const used = new Set(VAULTING_TEMPLATES.flatMap((t) => t.structure.flatMap((d) => d.exercises.map((e) => e.exerciseName))));
-    for (const name of used) expect(NAMES[name], name).toBeDefined();
+    for (const name of used) expect(LIBRARY.get(name)?.nameFr, name).toBeTruthy();
     for (const e of VAULTING_EXERCISES) {
-      expect(DESCRIPTIONS[e.name], e.name).toBeDefined();
+      expect(LIBRARY.get(e.name)?.descriptionFr, e.name).toBeTruthy();
       expect(INJURY_RULES[e.name], e.name).toBeDefined();
     }
   });

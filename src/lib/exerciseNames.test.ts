@@ -1,35 +1,34 @@
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { exerciseDescription, exerciseLabel } from "./exerciseNames";
+import { libraryFromMigrations } from "./libraryFromMigrations";
 
-const library = [
-  ...readFileSync("supabase/migrations/006_seed_exercises.sql", "utf8").matchAll(/^\s+\('([^']+)', '[a-z_]+', '[a-z]+'/gm),
-  ...readFileSync("supabase/migrations/024_endurance.sql", "utf8").matchAll(/^\s+\('([^']+)', '[a-z_]+', '[a-z]+'/gm),
-].map((m) => m[1]);
+// The library as the migrations leave it: names and descriptions are its data, not the app's.
+const library = libraryFromMigrations();
+const row = (name: string) => library.find((e) => e.name === name)!;
 
 describe("exercise names", () => {
-  it("translate every exercise of the library", () => {
-    expect(library.length).toBeGreaterThanOrEqual(49);
+  it("translate every exercise of the library, in French and German", () => {
+    expect(library.length).toBeGreaterThanOrEqual(130);
     for (const locale of ["fr", "de"]) {
-      expect(library.filter((name) => exerciseLabel(name, locale) === name && !["Hip Thrust", "Face Pull", "Russian Twist", "Dead Bug", "Glute Bridge", "Step-up", "Leg extension", "Leg curl"].includes(name))).toEqual([]);
+      expect(library.filter((e) => !(locale === "fr" ? e.nameFr : e.nameDe)).map((e) => e.name), locale).toEqual([]);
     }
   });
 
-  it("keep English, and custom names, as they are", () => {
-    expect(exerciseLabel("Back Squat", "en")).toBe("Back Squat");
-    expect(exerciseLabel("Back Squat", "fr")).toBe("Squat arrière");
+  it("read the library's translation, keep English and custom names as they are", () => {
+    expect(exerciseLabel("Back Squat", "en", row("Back Squat"))).toBe("Back Squat");
+    expect(exerciseLabel("Back Squat", "fr", row("Back Squat"))).toBe("Squat arrière");
+    expect(exerciseLabel("Back Squat", "de", row("Back Squat"))).toBe("Kniebeuge");
     expect(exerciseLabel("Mon exercice", "fr")).toBe("Mon exercice");
     expect(exerciseLabel(undefined, "fr")).toBe("?");
   });
 
   it("translate the descriptions the library has", () => {
-    expect(exerciseDescription({ name: "Side Plank", description: "On one forearm…" }, "de")).toMatch(/^Auf einem Unterarm/);
+    expect(exerciseDescription(row("Side Plank"), "de")).toMatch(/^Auf einem Unterarm/);
     expect(exerciseDescription({ name: "Mon exercice", description: "Ma description" }, "fr")).toBe("Ma description");
   });
 
-  it("prefer the admin's translations", () => {
-    expect(exerciseLabel("Back Squat", "fr", { nameFr: "Squat barre haute" })).toBe("Squat barre haute");
-    expect(exerciseLabel("Back Squat", "de", { nameFr: "Squat barre haute" })).toBe("Kniebeuge");
-    expect(exerciseDescription({ name: "Side Plank", descriptionFr: "Ma version" }, "fr")).toBe("Ma version");
+  it("follow an admin's change", () => {
+    expect(exerciseLabel("Back Squat", "fr", { ...row("Back Squat"), nameFr: "Squat barre haute" })).toBe("Squat barre haute");
+    expect(exerciseDescription({ ...row("Side Plank"), descriptionFr: "Ma version" }, "fr")).toBe("Ma version");
   });
 });
