@@ -1,5 +1,5 @@
 import type { MuscleGroup } from "@/db";
-import { injuryWarning, type Injury } from "./injuries";
+import { injuryWarning, type Injury, type InjuryRules } from "./injuries";
 import { TRX_EXERCISES } from "./trxExercises";
 
 /** What the session works: the belly, the whole body, or the legs and glutes. */
@@ -141,9 +141,10 @@ export const NEW_INTERVAL_EXERCISES = INTERVAL_EXERCISES.filter((e) => e.descrip
 export function injuryPool(
   plan: Pick<IntervalPlan, "focus" | "dumbbells" | "trx" | "minutes">,
   injuries: Pick<Injury, "area" | "healedOn">[],
+  rules: InjuryRules,
   all: IntervalExercise[] = INTERVAL_EXERCISES
 ): { pool: IntervalExercise[]; leftOut: number; cautious: string[] } {
-  const level = (e: IntervalExercise) => injuryWarning(e.name, injuries)?.level ?? null;
+  const level = (e: IntervalExercise) => injuryWarning(rules, e.name, injuries)?.level ?? null;
   const fits = (e: IntervalExercise) => e.focus.includes(plan.focus) && allows(plan, e);
   const safe = all.filter((e) => !level(e));
   const short = exercisesPerRound(plan.minutes) - safe.filter(fits).length;

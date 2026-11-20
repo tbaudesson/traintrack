@@ -155,6 +155,12 @@ export async function adminUpdateExerciseI18n(
   if (error) throw new Error(error.message);
 }
 
+/** Admin: the areas an exercise loads when injured ("avoid" / "caution"), on any exercise. */
+export async function adminSetExerciseInjuryRules(exerciseUuid: string, rules: Record<string, "avoid" | "caution">): Promise<void> {
+  const { error } = await supabase.rpc("admin_set_exercise_injury_rules", { p_uuid: exerciseUuid, p_rules: rules });
+  if (error) throw new Error(error.message);
+}
+
 /** Admin: add an exercise to the shared library; returns its id. */
 export async function adminCreateLibraryExercise(e: {
   name: string;

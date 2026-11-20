@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { useInjuryRules } from "@/hooks/useInjuryRules";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useWorkout, useWorkouts, updateWorkout, deleteWorkout } from "@/hooks/useWorkouts";
@@ -101,6 +102,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
   const { num, day, short } = useFormat();
   const pains = usePainReports();
   const injuryG = useInjuryGuidance();
+  const injuryRules = useInjuryRules();
   const { profile: account } = useAuth();
   const [openGuide, setOpenGuide] = useState<number | null>(null);
   // Exercises reopened once done, and bodyweight exercises given a load.
@@ -637,6 +639,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
     swapFor === null
       ? []
       : bySafety(
+          injuryRules,
           substitutes(
             exMap.get(swapFor),
             exercises.filter((e) => !groups.some(([id]) => id === e.id)),
@@ -856,8 +859,8 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
 
         {groups.map(([exerciseId, exSets], index) => {
           const ex = exMap.get(exerciseId);
-          const injuryWarn = injuryWarning(ex?.name, injuries);
-          const comeback = returnAdjust(injuryG, ex?.name, injuries, workout?.date ?? localDate(), pains);
+          const injuryWarn = injuryWarning(injuryRules, ex?.name, injuries);
+          const comeback = returnAdjust(injuryG, injuryRules, ex?.name, injuries, workout?.date ?? localDate(), pains);
           const work = exSets.filter((s) => !s.isWarmup);
           const warmups = exSets.filter((s) => s.isWarmup);
           const last = work[work.length - 1];

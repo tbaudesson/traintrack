@@ -1,13 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { TRX_EXERCISES } from "./trxExercises";
 import { TRX_TEMPLATES } from "./trxTemplates";
-import { INJURY_RULES } from "./injuries";
 import { NAMES, DESCRIPTIONS } from "./exerciseNames";
 import { buildIntervalSession, INTERVAL_EXERCISES } from "./intervals";
 import { missingEquipment } from "./programEquipment";
 import { programCategory } from "./programCategories";
 import { recommendPrograms } from "./onboarding";
 import { PROGRAM_TEMPLATES } from "./programTemplates";
+import { injuryRulesFromMigrations } from "./injuryGuidanceFromMigrations";
+
+const INJURY_RULES = injuryRulesFromMigrations();
 
 describe("TRX", () => {
   it("has every exercise named, described and ruled for injuries", () => {

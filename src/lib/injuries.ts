@@ -1,6 +1,5 @@
 import type { PainArea, PainReport } from "./pain";
 import { returnHeld, type InjuryGuidance } from "./injuryGuidance";
-import { TRX_EXERCISES } from "./trxExercises";
 
 /** An injury the athlete declared: where, and since when (YYYY-MM-DD). */
 export interface Injury {
@@ -51,12 +50,13 @@ export function returnPhases(g: InjuryGuidance | null, injuries: Pick<Injury, "a
  */
 export function returnAdjust(
   g: InjuryGuidance | null,
+  allRules: InjuryRules,
   exerciseName: string | undefined,
   injuries: Pick<Injury, "area" | "healedOn">[],
   today: string,
   pains: PainReport[] = []
 ): ReturnPhase | null {
-  const rules = exerciseName ? INJURY_RULES[exerciseName] : undefined;
+  const rules = exerciseName ? allRules[exerciseName] : undefined;
   if (!rules) return null;
   const phases = returnPhases(g, injuries, today, pains).filter((p) => rules[p.area]);
   return phases.sort((a, b) => a.load - b.load)[0] ?? null;
@@ -68,157 +68,24 @@ export const INJURY_AREAS: PainArea[] = ["shoulder", "elbow", "wrist", "neck", "
 /** "avoid": better left out while injured. "caution": possible, lighter and without pain. */
 export type InjuryLevel = "avoid" | "caution";
 
-type Rules = Partial<Record<PainArea, InjuryLevel>>;
-const A = "avoid" as const;
-const C = "caution" as const;
+/** What one exercise loads, by area. */
+export type ExerciseRules = Partial<Record<PainArea, InjuryLevel>>;
 
 /**
- * What each library exercise loads, by area. Kept simple on purpose: an
- * exercise is "avoid" where it loads the injured joint heavily or in its
- * riskiest position (overhead pressing for a shoulder, spinal loading for the
- * lower back, jumping for a knee or an ankle), "caution" where it loads it
- * less. Exercises left out load nothing worth a warning.
+ * What each exercise loads, by its English name: "avoid" where it loads the
+ * injured area heavily or in its riskiest position, "caution" where it loads
+ * it less. Data, not code: each exercise carries its own (exercises.injury_rules,
+ * edited by an admin, migration 059), gathered by useInjuryRules(). An exercise
+ * without rules loads nothing worth a warning.
  */
-export const INJURY_RULES: Record<string, Rules> = {
-  // Chest
-  "Barbell Bench Press": { shoulder: C, elbow: C, wrist: C },
-  "Incline Barbell Bench Press": { shoulder: C, elbow: C, wrist: C },
-  "Dumbbell Bench Press": { shoulder: C, elbow: C },
-  "Incline Dumbbell Press": { shoulder: C, elbow: C },
-  "Cable Fly": { shoulder: C },
-  "Push-up": { shoulder: A, wrist: C, elbow: C },
-  "Chest Dip": { shoulder: A, elbow: C, wrist: C },
-  // Back
-  Deadlift: { lower_back: A, shoulder: A, upper_back: C, hip: C, knee: C },
-  "Barbell Row": { lower_back: A, upper_back: C, shoulder: C, elbow: C },
-  "Pull-up": { shoulder: A, elbow: C, wrist: C },
-  "Chin-up": { shoulder: A, elbow: C, wrist: C },
-  "Lat Pulldown": { shoulder: C, elbow: C },
-  "Seated Cable Row": { lower_back: C, shoulder: C },
-  "Dumbbell Row": { lower_back: C, shoulder: C },
-  "T-Bar Row": { lower_back: A, upper_back: C, shoulder: C },
-  "Straight-Arm Pulldown": { shoulder: C },
-  // Legs
-  "Back Squat": { knee: A, lower_back: A, shoulder: C, neck: C, hip: C, ankle: C },
-  "Front Squat": { knee: A, lower_back: C, wrist: C, hip: C, ankle: C },
-  "Romanian Deadlift": { lower_back: A, shoulder: C, hip: C },
-  "Leg Press": { knee: C, lower_back: C, hip: C },
-  "Leg Extension": { knee: A },
-  "Leg Curl": { knee: C },
-  "Walking Lunge": { knee: A, hip: C, ankle: C },
-  "Bulgarian Split Squat": { knee: A, hip: C, ankle: C },
-  "Standing Calf Raise": { ankle: C, lower_back: C },
-  "Hip Thrust": { hip: C, lower_back: C },
-  "Single-Leg Calf Raise": { ankle: C },
-  "Step-up": { knee: C, ankle: C },
-  "Single-Leg Romanian Deadlift": { lower_back: C, hip: C, ankle: C },
-  "Glute Bridge": { hip: C },
-  // Shoulders
-  "Overhead Press": { shoulder: A, lower_back: C, neck: C, elbow: C, wrist: C },
-  "Seated Dumbbell Press": { shoulder: A, elbow: C },
-  "Lateral Raise": { shoulder: C },
-  "Rear Delt Fly": { shoulder: C, lower_back: C },
-  "Face Pull": { shoulder: C },
-  // Arms
-  "Barbell Curl": { elbow: C, wrist: C },
-  "Dumbbell Curl": { elbow: C },
-  "Hammer Curl": { elbow: C },
-  "Triceps Pushdown": { elbow: C },
-  "Skull Crusher": { elbow: A, shoulder: C },
-  "Overhead Triceps Extension": { elbow: C, shoulder: A },
-  // Core
-  Plank: { shoulder: A, elbow: C, lower_back: C },
-  "Hanging Leg Raise": { shoulder: A, lower_back: C, elbow: C, wrist: C },
-  "Cable Crunch": { lower_back: C, neck: C },
-  "Russian Twist": { lower_back: A },
-  "Side Plank": { shoulder: A, elbow: C },
-  "Bird Dog": { wrist: C, shoulder: C },
-  // Timed sessions
-  Burpee: { shoulder: A, wrist: A, knee: C, ankle: C, lower_back: C },
-  "Bodyweight Squat": { knee: C },
-  "Jump Squat": { knee: A, ankle: A, hip: C, lower_back: C },
-  "Mountain Climber": { shoulder: A, wrist: A, hip: C },
-  "Jumping Jack": { knee: C, ankle: C, shoulder: A },
-  "High Knees": { knee: C, ankle: C, hip: C },
-  "Reverse Lunge": { knee: C, hip: C },
-  "Jumping Lunge": { knee: A, ankle: A, hip: C },
-  "Skater Jump": { knee: A, ankle: A, hip: C },
-  "Wall Sit": { knee: C },
-  Inchworm: { shoulder: A, wrist: A, lower_back: C },
-  "Plank Shoulder Tap": { shoulder: A, wrist: A },
-  "Bicycle Crunch": { neck: C, lower_back: C },
-  "Flutter Kicks": { lower_back: C, hip: C },
-  Crunch: { neck: C },
-  "Lying Leg Raise": { lower_back: C, hip: C },
-  "Hollow Hold": { lower_back: C },
-  "Goblet Squat": { knee: C, lower_back: C },
-  "Dumbbell Thruster": { shoulder: A, knee: C, lower_back: C, wrist: C },
-  "Dumbbell Swing": { lower_back: A, shoulder: C },
-  "Renegade Row": { shoulder: A, wrist: A, lower_back: C },
-  "Dumbbell Romanian Deadlift": { lower_back: A, hip: C },
-  "Dumbbell Reverse Lunge": { knee: C, hip: C },
-  "Dumbbell Sumo Squat": { knee: C, hip: C },
-  "Dumbbell Push Press": { shoulder: A, lower_back: C, wrist: C },
-  "Dumbbell Woodchop": { lower_back: C, shoulder: A },
-  "Butt Kicks": { knee: C, ankle: C },
-  "Fast Feet": { ankle: C },
-  "Lateral Shuffle": { knee: C, ankle: C },
-  "Standing Knee Drive": { hip: C },
-  "Star Jump": { knee: A, ankle: A, shoulder: A },
-  "Broad Jump": { knee: A, ankle: A, lower_back: C },
-  "Shadow Boxing": { shoulder: A, elbow: C, wrist: C },
-  "Squat Thrust": { shoulder: A, wrist: A, knee: C, lower_back: C },
-  "Plank Jack": { shoulder: A, wrist: A, lower_back: C },
-  "Bear Crawl": { shoulder: A, wrist: A, knee: C },
-  "Sumo Squat": { knee: C, hip: C },
-  "Squat Pulse": { knee: C },
-  "Lateral Lunge": { knee: C, hip: C, ankle: C },
-  "Curtsy Lunge": { knee: C, hip: C },
-  "Split Squat": { knee: C, hip: C },
-  "Cossack Squat": { knee: A, hip: C, ankle: C },
-  "Single-Leg Glute Bridge": { hip: C, lower_back: C },
-  "Bodyweight Calf Raise": { ankle: C },
-  "Good Morning": { lower_back: C, hip: C },
-  "Donkey Kick": { wrist: C, shoulder: C, knee: C },
-  "Fire Hydrant": { wrist: C, shoulder: C, hip: C },
-  "Knee Push-up": { shoulder: A, wrist: C, elbow: C },
-  "Incline Push-up": { shoulder: A, wrist: C, elbow: C },
-  "Diamond Push-up": { shoulder: A, wrist: A, elbow: A },
-  "Pike Push-up": { shoulder: A, wrist: A, elbow: C, neck: C },
-  "Bench Dip": { shoulder: A, elbow: C, wrist: C },
-  "Heel Taps": { neck: C },
-  "Reverse Crunch": { lower_back: C },
-  "Scissor Kicks": { lower_back: C, hip: C },
-  "V-up": { lower_back: C, hip: C, neck: C },
-  "Sit-up": { lower_back: C, neck: C },
-  "Standing Oblique Crunch": { hip: C, shoulder: C },
-  "Glute Bridge Hold": { hip: C, lower_back: C },
-  "Side Plank Hip Dip": { shoulder: A, elbow: C, lower_back: C },
-  "Dumbbell Bent-Over Row": { lower_back: C, shoulder: C, elbow: C },
-  "Dumbbell Floor Press": { shoulder: C, elbow: C, wrist: C },
-  "Dumbbell Curl to Press": { shoulder: A, elbow: C, wrist: C },
-  "Dumbbell Lateral Lunge": { knee: C, hip: C, ankle: C },
-  "Dumbbell Glute Bridge": { hip: C, lower_back: C },
-  "Dumbbell Hammer Curl": { elbow: C, wrist: C },
-  // Vaulting
-  "Handstand Hold": { shoulder: A, wrist: A, elbow: C, neck: C },
-  "Single-Leg Balance": { ankle: C, knee: C },
-  "Arabesque Hold": { ankle: C, hip: C, lower_back: C },
-  "Superman Hold": { lower_back: C, neck: C, shoulder: C },
-  "Tuck Jump": { knee: A, ankle: A, lower_back: C },
-  "Bridge Hold": { lower_back: A, wrist: C, shoulder: C, neck: C },
-  "Front Split Stretch": { hip: C, knee: C },
-  "Pike Stretch": { lower_back: C },
-  // Suspension straps
-  ...Object.fromEntries(TRX_EXERCISES.map((e) => [e.name, e.injury])),
-};
+export type InjuryRules = Record<string, ExerciseRules | null | undefined>;
 
 /**
  * What a program asks of an injured area: "avoid" if one of its exercises is
  * to be avoided there, "caution" if one loads it less, null if none does.
  */
-export function programLoad(structure: { exercises?: { exerciseName: string }[] }[], area: PainArea): InjuryLevel | null {
-  const levels = structure.flatMap((d) => (d.exercises ?? []).map((e) => INJURY_RULES[e.exerciseName]?.[area]));
+export function programLoad(rules: InjuryRules, structure: { exercises?: { exerciseName: string }[] }[], area: PainArea): InjuryLevel | null {
+  const levels = structure.flatMap((d) => (d.exercises ?? []).map((e) => rules[e.exerciseName]?.[area]));
   return levels.includes("avoid") ? "avoid" : levels.includes("caution") ? "caution" : null;
 }
 
@@ -233,10 +100,10 @@ export interface InjuryWarning {
  * to be avoided for any of them, else "caution", else none. Custom exercises
  * have no rules, so no warning: the athlete knows what they made.
  */
-export function injuryWarning(exerciseName: string | undefined, all: Pick<Injury, "area" | "healedOn">[]): InjuryWarning | null {
+export function injuryWarning(allRules: InjuryRules, exerciseName: string | undefined, all: Pick<Injury, "area" | "healedOn">[]): InjuryWarning | null {
   const injuries = activeInjuries(all);
   if (!exerciseName || !injuries.length) return null;
-  const rules = INJURY_RULES[exerciseName];
+  const rules = allRules[exerciseName];
   if (!rules) return null;
   const hit = (level: InjuryLevel) => injuries.map((i) => i.area).filter((a) => rules[a] === level);
   const avoid = hit("avoid");
@@ -246,12 +113,12 @@ export function injuryWarning(exerciseName: string | undefined, all: Pick<Injury
 }
 
 /** Whether an exercise is fine to propose, in a generator or as a replacement. */
-export const isAvoided = (exerciseName: string | undefined, injuries: Pick<Injury, "area" | "healedOn">[]) =>
-  injuryWarning(exerciseName, injuries)?.level === "avoid";
+export const isAvoided = (rules: InjuryRules, exerciseName: string | undefined, injuries: Pick<Injury, "area" | "healedOn">[]) =>
+  injuryWarning(rules, exerciseName, injuries)?.level === "avoid";
 
 /** Rank exercises for a replacement: safe first, then "caution", then "avoid". */
-export function bySafety<E extends { name: string }>(list: E[], injuries: Pick<Injury, "area" | "healedOn">[]): E[] {
-  const rank = (e: E) => ({ none: 0, caution: 1, avoid: 2 })[injuryWarning(e.name, injuries)?.level ?? "none"];
+export function bySafety<E extends { name: string }>(rules: InjuryRules, list: E[], injuries: Pick<Injury, "area" | "healedOn">[]): E[] {
+  const rank = (e: E) => ({ none: 0, caution: 1, avoid: 2 })[injuryWarning(rules, e.name, injuries)?.level ?? "none"];
   return [...list].sort((a, b) => rank(a) - rank(b));
 }
 

@@ -2,6 +2,7 @@ import type { Equipment, FitnessLevel, TrainingGoal } from "@/db";
 import { rankTemplates, type ProgramGoal, type ProgramTemplate } from "./programTemplates";
 import { programCategory } from "./programCategories";
 import { adaptToEquipment } from "./programEquipment";
+import type { InjuryRules } from "./injuries";
 import type { PainArea } from "./pain";
 import type { FavoriteSport } from "./appTheme";
 
@@ -29,7 +30,7 @@ const GYM: Equipment[] = ["barbell", "machine", "cable"];
  * the athlete has: no pull-up without a bar, no barbell without one.
  */
 export function recommendPrograms(
-  input: { goal: TrainingGoal; level: FitnessLevel; equipment: Equipment[]; sport?: FavoriteSport | null; injured?: PainArea[] },
+  input: { goal: TrainingGoal; level: FitnessLevel; equipment: Equipment[]; sport?: FavoriteSport | null; injured?: PainArea[]; rules?: InjuryRules },
   catalogue: ProgramTemplate[]
 ): (ProgramTemplate & { adapted?: boolean })[] {
   const atHome = input.equipment.length > 0 && !input.equipment.some((e) => GYM.includes(e));
@@ -50,7 +51,7 @@ export function recommendPrograms(
     if (trx) picks = input.sport ? [...picks.slice(0, 2), trx] : [trx, ...picks.slice(0, 2)];
   }
   return picks.map((t) => {
-    const { structure, swapped } = adaptToEquipment(t.structure, input.equipment, input.injured);
+    const { structure, swapped } = adaptToEquipment(t.structure, input.equipment, input.injured, input.rules);
     return swapped ? { ...t, structure, adapted: true } : t;
   });
 }

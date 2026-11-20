@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { INJURY_TEMPLATES } from "./injuryTemplates";
-import { INJURY_AREAS, INJURY_RULES, programLoad } from "./injuries";
+import { INJURY_AREAS, programLoad } from "./injuries";
 import { injuryAreaOf, programCategory, shelves } from "./programCategories";
 import { PROGRAM_TEMPLATES } from "./programTemplates";
+import { injuryRulesFromMigrations } from "./injuryGuidanceFromMigrations";
+
+const INJURY_RULES = injuryRulesFromMigrations();
 
 describe("programs for an injury", () => {
   it("offer one program per area, in French, English and German", () => {
@@ -15,7 +18,7 @@ describe("programs for an injury", () => {
     for (const tpl of INJURY_TEMPLATES) {
       const loading = tpl.structure.flatMap((d) => d.exercises.map((e) => e.exerciseName)).filter((n) => INJURY_RULES[n]?.[tpl.forInjury!]);
       expect({ id: tpl.id, loading }).toEqual({ id: tpl.id, loading: [] });
-      expect(programLoad(tpl.structure, tpl.forInjury!)).toBeNull();
+      expect(programLoad(INJURY_RULES, tpl.structure, tpl.forInjury!)).toBeNull();
     }
   });
 
@@ -44,9 +47,9 @@ describe("programs for an injury", () => {
 describe("programLoad", () => {
   it("is the worst level of the program's exercises for the area", () => {
     const day = (...names: string[]) => ({ exercises: names.map((exerciseName) => ({ exerciseName })) });
-    expect(programLoad([day("Leg Press", "Crunch")], "shoulder")).toBeNull();
-    expect(programLoad([day("Leg Press"), day("Lateral Raise")], "shoulder")).toBe("caution");
-    expect(programLoad([day("Lateral Raise", "Overhead Press")], "shoulder")).toBe("avoid");
+    expect(programLoad(INJURY_RULES, [day("Leg Press", "Crunch")], "shoulder")).toBeNull();
+    expect(programLoad(INJURY_RULES, [day("Leg Press"), day("Lateral Raise")], "shoulder")).toBe("caution");
+    expect(programLoad(INJURY_RULES, [day("Lateral Raise", "Overhead Press")], "shoulder")).toBe("avoid");
   });
 });
 

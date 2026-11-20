@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useInjuryRules } from "@/hooks/useInjuryRules";
 import { useAthleteProfile } from "@/hooks/useAthleteProfile";
 import { readinessScore, useTodayReadiness } from "@/hooks/useReadiness";
 import { lighterReason, type LighterReason } from "@/lib/readinessAdjust";
@@ -56,10 +57,11 @@ export function useLighterToday(): {
   const reason = lighterReason({ deloadWeek: profile?.deloadWeek === mondayOfDate(today), readiness, keptNormal });
   const injuries = profile?.injuryAreas ?? [];
   const injuryG = useInjuryGuidance();
+  const injuryRules = useInjuryRules();
   const pains = usePainReports();
   // The lighter of: the return after an injury, and a moderate pain lately on this very exercise.
   const loadFactor = (name: string) => {
-    const comeback = returnAdjust(injuryG, name, injuries, today, pains)?.load ?? 1;
+    const comeback = returnAdjust(injuryG, injuryRules, name, injuries, today, pains)?.load ?? 1;
     const pain = injuryG ? recentPainOn(pains, { name }, today, injuryG.pain.recentDays) : undefined;
     const hurt = pain && injuryG && pain.level >= injuryG.pain.moderate ? injuryG.pain.moderateLoad : 1;
     return Math.min(comeback, hurt);

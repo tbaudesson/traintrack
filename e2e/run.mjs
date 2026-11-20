@@ -93,8 +93,14 @@ const warmed = await page.evaluate(async (pages) => {
 }, PAGES);
 console.log(`  ${PAGES.length} pages and ${warmed} files cached`);
 
+// What the library's exercises load when injured, as migration 059 fills it.
+const exerciseRules = Object.fromEntries(
+  [...readFileSync("supabase/migrations/059_exercise_injury_rules.sql", "utf8").matchAll(/SET injury_rules = '(.+?)'::jsonb, updated_at = now\(\) WHERE user_id IS NULL AND name = '((?:[^']|'')+)'/g)]
+    .map((m) => [m[2].replace(/''/g, "'"), JSON.parse(m[1].replace(/''/g, "'"))])
+);
+
 // A signed-in user as the app caches it, a profile, and a few library exercises.
-await page.evaluate(async (user) => {
+await page.evaluate(async ({ user, exerciseRules }) => {
   const db = await new Promise((resolve, reject) => {
     const req = indexedDB.open("TrainTrack");
     req.onsuccess = () => resolve(req.result);
@@ -117,7 +123,7 @@ await page.evaluate(async (user) => {
   for (const [i, [name, muscleGroup, equipment]] of [
     ["Back Squat", "legs", "barbell"], ["Barbell Bench Press", "chest", "barbell"], ["Plank", "core", "bodyweight"], ["Push-up", "chest", "bodyweight"],
   ].entries()) {
-    await put("exercises", { name, muscleGroup, equipment, isCustom: false, userId: null, uuid: `e2e-ex-${i}`, _dirty: 0, createdAt: now, updatedAt: now });
+    await put("exercises", { name, muscleGroup, equipment, isCustom: false, userId: null, uuid: `e2e-ex-${i}`, injuryRules: exerciseRules[name] ?? null, _dirty: 0, createdAt: now, updatedAt: now });
   }
   // Five weeks of easy runs, then a much harder week: the load jumps.
   const day = (ago) => {
@@ -135,13 +141,17 @@ await page.evaluate(async (user) => {
       durationSec: r.min * 60, distanceM: r.min * 180, _dirty: 0, createdAt: now, updatedAt: now,
     });
   }
-}, USER);
+}, { user: USER, exerciseRules });
 
 // The injury references as the app keeps them after reading them online once (migration 058).
 {
   const sql = readFileSync("supabase/migrations/058_injury_guidance.sql", "utf8");
-  const injuryGuidance = sql.slice(sql.indexOf("{"), sql.lastIndexOf("}") + 1);
-  await page.evaluate((g) => localStorage.setItem("traintrack.guidance.injury_guidance", JSON.stringify(JSON.parse(g))), injuryGuidance);
+  const base = JSON.parse(sql.slice(sql.indexOf("{"), sql.lastIndexOf("}") + 1));
+  // Migration 059 adds what each warm-up and stretch move loads.
+  const rules = readFileSync("supabase/migrations/059_exercise_injury_rules.sql", "utf8");
+  const tail = rules.slice(rules.indexOf("UPDATE app_settings"));
+  const added = JSON.parse(tail.slice(tail.indexOf("{"), tail.lastIndexOf("}") + 1));
+  await page.evaluate((g) => localStorage.setItem("traintrack.guidance.injury_guidance", g), JSON.stringify({ ...base, ...added }));
 }
 
 await context.setOffline(true);
@@ -1038,6 +1048,32 @@ await test("in Classic the dial can be chosen in Settings, and the round buttons
 });
 
 await test("the injury shelf offers a program per injured area, and the others that suit it", async () => {
+  // The whole library and what each exercise loads, as a device holds it once synced; taken back after.
+  const library = (op) => page.evaluate(async ({ op, exerciseRules }) => {
+    const db = await new Promise((res, rej) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+    const now = new Date().toISOString();
+    await new Promise((res, rej) => {
+      const tx = db.transaction("exercises", "readwrite");
+      const os = tx.objectStore("exercises");
+      const all = os.getAll();
+      all.onsuccess = () => {
+        const have = new Set(all.result.map((e) => e.name));
+        if (op === "add") {
+          for (const [name, injuryRules] of Object.entries(exerciseRules)) {
+            if (!have.has(name)) os.add({ name, muscleGroup: "other", isCustom: false, userId: null, uuid: `e2e-rules-${name}`, injuryRules, _dirty: 0, createdAt: now, updatedAt: now });
+          }
+        } else {
+          for (const e of all.result) if (String(e.uuid).startsWith("e2e-rules-")) os.delete(e.id);
+        }
+      };
+      tx.oncomplete = res;
+      tx.onerror = () => rej(tx.error);
+    });
+    db.close();
+  }, { op, exerciseRules });
+  await page.goto(`${BASE}/fr/programs`);
+  await library("add");
+  try {
   await page.goto(`${BASE}/fr/programs`);
   await page.getByRole("button", { name: /Adapté à une blessure/ }).click();
   const dialog = page.getByRole("dialog");
@@ -1054,6 +1090,9 @@ await test("the injury shelf offers a program per injured area, and the others t
   await page.waitForTimeout(400);
   await page.screenshot({ path: join(ARTIFACTS, "injury-shelf.png") });
   await page.keyboard.press("Escape");
+  } finally {
+    await library("remove");
+  }
 });
 
 await test("TRX: a shelf of programs, and straps in the timed sessions", async () => {

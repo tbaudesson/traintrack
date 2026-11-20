@@ -1,6 +1,7 @@
 "use client";
 
 import { sessionHref } from "@/lib/routes";
+import { useMobilityRules } from "@/hooks/useInjuryRules";
 import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { CheckCircle2, Play } from "lucide-react";
@@ -88,8 +89,9 @@ export default function MobilityPage() {
     [target, fromSession]
   );
   const injuries = useInjuries();
-  const session = useMemo(() => buildMobilitySession(mode, minutes, muscles, locale, injuries), [mode, minutes, muscles, locale, injuries]);
-  const leftOut = MOBILITY_EXERCISES.filter((e) => e.mode === mode && mobilityWarning(e.key, injuries)?.level === "avoid").length;
+  const mobilityRules = useMobilityRules();
+  const session = useMemo(() => buildMobilitySession(mode, minutes, muscles, locale, injuries, mobilityRules), [mode, minutes, muscles, locale, injuries, mobilityRules]);
+  const leftOut = MOBILITY_EXERCISES.filter((e) => e.mode === mode && mobilityWarning(mobilityRules, e.key, injuries)?.level === "avoid").length;
   const areaWords = (areas: string[]) => areas.map((a) => (locale === "de" ? tpain(`area_${a}`) : tpain(`area_${a}`).toLowerCase())).join(", ");
   const back = link?.workoutId ? sessionHref(link.workoutId) : "/";
 
@@ -163,9 +165,9 @@ export default function MobilityPage() {
                 <span className="flex-1">
                   <span className="font-medium">{e.name[locale as "fr" | "de" | "en"] ?? e.name.en}</span>
                   {e.sides && <span className="text-xs text-muted-foreground"> · {t("bothSides")}</span>}
-                  {mobilityWarning(e.key, injuries) && (
+                  {mobilityWarning(mobilityRules, e.key, injuries) && (
                     <span className="mt-0.5 block text-xs font-medium text-amber-700 dark:text-amber-300">
-                      {tinj("caution", { areas: areaWords(mobilityWarning(e.key, injuries)!.areas) })}
+                      {tinj("caution", { areas: areaWords(mobilityWarning(mobilityRules, e.key, injuries)!.areas) })}
                     </span>
                   )}
                 </span>

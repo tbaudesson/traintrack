@@ -6,7 +6,8 @@ import { Bandage, Check, Loader2, Minus, Plus } from "lucide-react";
 import { getAppSettings, setAppSetting } from "@/lib/adminService";
 import { INJURY_AREAS } from "@/lib/injuries";
 import { INJURY_GUIDANCE_KEY, parseInjuryGuidance, type InjuryGuidance } from "@/lib/injuryGuidance";
-import { MOBILITY_EXERCISES, MOBILITY_INJURY_RULES } from "@/lib/mobility";
+import { MOBILITY_EXERCISES } from "@/lib/mobility";
+import { AreaRulesEditor } from "@/components/domain/AreaRulesEditor";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -123,7 +124,7 @@ export function InjuryGuidanceTab() {
               <div key={area} className="space-y-1">
                 <p className="text-sm font-medium">{tpain(`area_${area}`)}</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {MOBILITY_EXERCISES.filter((m) => MOBILITY_INJURY_RULES[m.key]?.[area] !== "avoid").map((m) => {
+                  {MOBILITY_EXERCISES.filter((m) => g.mobility[m.key]?.[area] !== "avoid").map((m) => {
                     const on = chosen.includes(m.key);
                     return (
                       <button
@@ -141,6 +142,32 @@ export function InjuryGuidanceTab() {
               </div>
             );
           })}
+        </section>
+
+        <section className="space-y-2">
+          <h3 className="text-sm font-semibold">{t("mobilityTitle")}</h3>
+          <p className="text-xs text-muted-foreground">{t("mobilityHint")}</p>
+          {MOBILITY_EXERCISES.map((m) => (
+            <details key={m.key} className="rounded-lg border border-border p-2">
+              <summary className="cursor-pointer text-sm">
+                {m.name[locale]}
+                <span className="ml-2 text-xs text-muted-foreground">
+                  {Object.entries(g.mobility[m.key] ?? {}).map(([a, l]) => `${tpain(`area_${a}`)} ${l === "avoid" ? "✕" : "!"}`).join(" · ")}
+                </span>
+              </summary>
+              <div className="pt-2">
+                <AreaRulesEditor
+                  value={g.mobility[m.key] ?? {}}
+                  onChange={(next) => {
+                    const mobility = { ...g.mobility };
+                    if (Object.keys(next).length) mobility[m.key] = next;
+                    else delete mobility[m.key];
+                    change({ ...g, mobility });
+                  }}
+                />
+              </div>
+            </details>
+          ))}
         </section>
 
         {error && <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t("invalid")}</p>}

@@ -2236,6 +2236,16 @@
     "gentleHint": "Angeboten, solange die Stelle verletzt ist. Für die Stelle zu meidende Bewegungen werden nicht angeboten.",
     "invalid": "Die Werte passen nicht zusammen (mäßig über stark, sinkende Lasten, letzte Woche unter 1, leeres Feld …): nichts wurde gespeichert.",
     "save": "Richtwerte speichern",
-    "saved": "Gespeichert: gilt beim nächsten Öffnen der App"
+    "saved": "Gespeichert: gilt beim nächsten Öffnen der App",
+    "mobilityTitle": "Aufwärmen und Dehnen: belastete Stellen",
+    "mobilityHint": "Was jede Bewegung belastet, um sie bei einer Verletzung wegzulassen (meiden) oder zu markieren (Vorsicht)."
+  },
+  "injuryRules": {
+    "none": "—",
+    "caution": "Vorsicht",
+    "avoid": "Meiden",
+    "label": "Belastete Stellen (bei Verletzung)",
+    "hint": "„Meiden“: bei Verletzung der Stelle weggelassen. „Vorsicht“: möglich, leichter und schmerzfrei.",
+    "saved": "Stellen gespeichert"
   }
 }

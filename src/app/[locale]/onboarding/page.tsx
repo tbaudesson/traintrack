@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useInjuryRules } from "@/hooks/useInjuryRules";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { saveAthleteProfile } from "@/hooks/useAthleteProfile";
@@ -72,9 +73,10 @@ export default function OnboardingPage() {
   const [consent, setConsent] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const injuryRules = useInjuryRules();
   const picks = useMemo(
-    () => (goal ? recommendPrograms({ goal, level, equipment, sport, injured: areas }, catalogue) : []),
-    [goal, level, equipment, sport, areas, catalogue]
+    () => (goal ? recommendPrograms({ goal, level, equipment, sport, injured: areas, rules: injuryRules }, catalogue) : []),
+    [goal, level, equipment, sport, areas, injuryRules, catalogue]
   );
   const chosen = picks.find((p) => p.id === programId);
 

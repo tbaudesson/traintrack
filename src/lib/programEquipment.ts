@@ -1,5 +1,5 @@
 import type { Equipment, ProgramDay } from "@/db";
-import { INJURY_RULES } from "./injuries";
+import type { InjuryRules } from "./injuries";
 import type { PainArea } from "./pain";
 import { TRX_EXERCISES } from "./trxExercises";
 
@@ -142,10 +142,10 @@ export const alternativesOf = (name: string): string[] => ALTERNATIVES[name] ?? 
  * day when the day keeps two exercises, and stays otherwise (to be swapped
  * in the session). Nothing changes when the equipment is not known.
  */
-export function adaptToEquipment(structure: ProgramDay[], has: Equipment[], injured: PainArea[] = []): { structure: ProgramDay[]; swapped: number } {
+export function adaptToEquipment(structure: ProgramDay[], has: Equipment[], injured: PainArea[] = [], rules: InjuryRules = {}): { structure: ProgramDay[]; swapped: number } {
   if (!has.length) return { structure, swapped: 0 };
   let swapped = 0;
-  const safe = (name: string) => !injured.some((a) => INJURY_RULES[name]?.[a] === "avoid");
+  const safe = (name: string) => !injured.some((a) => rules[name]?.[a] === "avoid");
   const days = structure.map((day) => {
     if (!day.exercises?.length) return day;
     const names = day.exercises.map((e) => e.exerciseName);

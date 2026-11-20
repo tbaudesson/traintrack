@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import { VAULTING_TEMPLATES, vaultingPhase, vaultingTemplates } from "./vaultingTemplates";
 import { VAULTING_EXERCISES } from "./vaultingExercises";
 import { NAMES, DESCRIPTIONS } from "./exerciseNames";
-import { INJURY_RULES } from "./injuries";
 import { PROGRAM_TEMPLATES } from "./programTemplates";
 import { programKind } from "./programCards";
+import { injuryRulesFromMigrations } from "./injuryGuidanceFromMigrations";
+
+const INJURY_RULES = injuryRulesFromMigrations();
 
 describe("vaulting plans", () => {
   it("come in every language, with the same shape", () => {

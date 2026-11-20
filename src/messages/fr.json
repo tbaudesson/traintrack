@@ -2236,6 +2236,16 @@
     "gentleHint": "Proposés tant que la zone est blessée. Les mouvements à éviter pour la zone ne sont pas proposés.",
     "invalid": "Valeurs incohérentes (douleur modérée au-dessus de forte, charges qui baissent, dernière semaine sous 1, case vide…) : rien n’a été enregistré.",
     "save": "Enregistrer les repères",
-    "saved": "Enregistré : appliqué à la prochaine ouverture de l’app"
+    "saved": "Enregistré : appliqué à la prochaine ouverture de l’app",
+    "mobilityTitle": "Échauffements et étirements : zones sollicitées",
+    "mobilityHint": "Ce que chaque mouvement sollicite, pour l’écarter (à éviter) ou le signaler (prudence) pendant une blessure."
+  },
+  "injuryRules": {
+    "none": "—",
+    "caution": "Prudence",
+    "avoid": "À éviter",
+    "label": "Zones sollicitées (si blessure)",
+    "hint": "« À éviter » : écarté pendant une blessure de la zone. « Prudence » : possible, plus léger et sans douleur.",
+    "saved": "Zones enregistrées"
   }
 }

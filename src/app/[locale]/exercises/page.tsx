@@ -1,10 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { AreaRulesEditor } from "@/components/domain/AreaRulesEditor";
+import type { ExerciseRules } from "@/lib/injuries";
 import { useLocale, useTranslations } from "next-intl";
 import { useExercises, createCustomExercise, updateExercise, deleteExercise, patchExerciseLocal } from "@/hooks/useExercises";
 import { useAuth } from "@/contexts/AuthContext";
-import { adminCreateLibraryExercise, adminUpdateExerciseContent, adminUpdateExerciseI18n } from "@/lib/adminService";
+import { adminCreateLibraryExercise, adminSetExerciseInjuryRules, adminUpdateExerciseContent, adminUpdateExerciseI18n } from "@/lib/adminService";
 import db from "@/db";
 import type { Exercise, MuscleGroup, Equipment } from "@/db";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -174,6 +176,7 @@ function AddExerciseForm({ onDone }: { onDone: () => void }) {
 
 function ExerciseRow({ ex }: { ex: Exercise }) {
   const t = useTranslations("exercises");
+  const tr = useTranslations("injuryRules");
   const xl = useExerciseLabel();
   const locale = useLocale();
   const { isAdmin } = useAuth();
@@ -187,6 +190,7 @@ function ExerciseRow({ ex }: { ex: Exercise }) {
   const [nameDe, setNameDe] = useState(ex.nameDe ?? (ex.isCustom ? "" : (NAMES[ex.name]?.de ?? "")));
   const [descriptionFr, setDescriptionFr] = useState(ex.descriptionFr ?? (DESCRIPTIONS[ex.name]?.fr ?? ""));
   const [descriptionDe, setDescriptionDe] = useState(ex.descriptionDe ?? (DESCRIPTIONS[ex.name]?.de ?? ""));
+  const [injuryRules, setInjuryRules] = useState<ExerciseRules>(ex.injuryRules ?? {});
   const [error, setError] = useState<string | null>(null);
   const hasDetail = !!ex.description || !!ex.videoUrl;
   // Custom exercises are fully editable by their owner; admins can also curate
@@ -206,7 +210,9 @@ function ExerciseRow({ ex }: { ex: Exercise }) {
         // Built-in row: write server-side via the admin RPCs, then reflect locally.
         await adminUpdateExerciseContent(ex.uuid, description.trim(), videoUrl.trim());
         await adminUpdateExerciseI18n(ex.uuid, { nameFr, nameDe, descriptionFr, descriptionDe });
+        await adminSetExerciseInjuryRules(ex.uuid, injuryRules as Record<string, "avoid" | "caution">);
         await patchExerciseLocal(ex.id!, {
+          injuryRules: Object.keys(injuryRules).length ? injuryRules : null,
           description: description.trim() || undefined,
           videoUrl: videoUrl.trim() || undefined,
           nameFr: nameFr.trim() || null,
@@ -251,6 +257,12 @@ function ExerciseRow({ ex }: { ex: Exercise }) {
                     <Input value={descriptionFr} onChange={(e) => setDescriptionFr(e.target.value)} placeholder={t("descriptionFr")} aria-label={t("descriptionFr")} />
                     <Input value={nameDe} onChange={(e) => setNameDe(e.target.value)} placeholder={t("nameDe")} aria-label={t("nameDe")} />
                     <Input value={descriptionDe} onChange={(e) => setDescriptionDe(e.target.value)} placeholder={t("descriptionDe")} aria-label={t("descriptionDe")} />
+                  </div>
+                )}
+                {!ex.isCustom && isAdmin && (
+                  <div className="space-y-1 rounded-lg bg-muted/40 p-2">
+                    <AreaRulesEditor value={injuryRules} onChange={setInjuryRules} label={tr("label")} />
+                    <p className="text-xs text-muted-foreground">{tr("hint")}</p>
                   </div>
                 )}
                 {error && <p className="text-xs text-destructive">{error}</p>}

@@ -2236,6 +2236,16 @@
     "gentleHint": "Offered while the area is injured. Moves to avoid for the area are not offered.",
     "invalid": "Values do not hold together (moderate above strong, loads going down, last week under 1, an empty field…): nothing was saved.",
     "save": "Save the references",
-    "saved": "Saved: applied the next time the app opens"
+    "saved": "Saved: applied the next time the app opens",
+    "mobilityTitle": "Warm-ups and stretches: areas loaded",
+    "mobilityHint": "What each move loads, to leave it out (avoid) or flag it (caution) during an injury."
+  },
+  "injuryRules": {
+    "none": "—",
+    "caution": "Caution",
+    "avoid": "Avoid",
+    "label": "Areas loaded (when injured)",
+    "hint": "“Avoid”: left out while the area is injured. “Caution”: possible, lighter and without pain.",
+    "saved": "Areas saved"
   }
 }

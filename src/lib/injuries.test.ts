@@ -1,35 +1,37 @@
 import { describe, expect, it } from "vitest";
-import { INJURY_RULES, bySafety, declareInjury, injuryState, injuryWarning, isAvoided, returnAdjust, toggleInjury } from "./injuries";
+import { bySafety, declareInjury, injuryState, injuryWarning, isAvoided, returnAdjust, toggleInjury } from "./injuries";
 import { NAMES } from "./exerciseNames";
-import { injuryGuidanceFromMigrations } from "./injuryGuidanceFromMigrations";
 
 const g = injuryGuidanceFromMigrations();
 import { INTERVAL_EXERCISES, buildIntervalSession, injuryPool } from "./intervals";
+import { injuryGuidanceFromMigrations, injuryRulesFromMigrations } from "./injuryGuidanceFromMigrations";
+
+const INJURY_RULES = injuryRulesFromMigrations();
 
 describe("injuryWarning", () => {
   it("advises against what loads the injured area most", () => {
     const shoulder = [{ area: "shoulder" as const }];
-    expect(injuryWarning("Deadlift", shoulder)).toEqual({ level: "avoid", areas: ["shoulder"] });
-    expect(injuryWarning("Burpee", shoulder)?.level).toBe("avoid");
-    expect(injuryWarning("Barbell Bench Press", shoulder)?.level).toBe("caution");
-    expect(injuryWarning("Leg Curl", shoulder)).toBeNull();
+    expect(injuryWarning(INJURY_RULES, "Deadlift", shoulder)).toEqual({ level: "avoid", areas: ["shoulder"] });
+    expect(injuryWarning(INJURY_RULES, "Burpee", shoulder)?.level).toBe("avoid");
+    expect(injuryWarning(INJURY_RULES, "Barbell Bench Press", shoulder)?.level).toBe("caution");
+    expect(injuryWarning(INJURY_RULES, "Leg Curl", shoulder)).toBeNull();
   });
 
   it("keeps the strongest warning across several injuries", () => {
-    const w = injuryWarning("Back Squat", [{ area: "shoulder" }, { area: "knee" }, { area: "lower_back" }]);
+    const w = injuryWarning(INJURY_RULES, "Back Squat", [{ area: "shoulder" }, { area: "knee" }, { area: "lower_back" }]);
     expect(w).toEqual({ level: "avoid", areas: ["knee", "lower_back"] });
   });
 
   it("says nothing without injury, or for a custom exercise", () => {
-    expect(injuryWarning("Deadlift", [])).toBeNull();
-    expect(injuryWarning("My cable thing", [{ area: "shoulder" }])).toBeNull();
+    expect(injuryWarning(INJURY_RULES, "Deadlift", [])).toBeNull();
+    expect(injuryWarning(INJURY_RULES, "My cable thing", [{ area: "shoulder" }])).toBeNull();
   });
 });
 
 describe("bySafety", () => {
   it("puts the safe replacements first", () => {
     const list = [{ name: "Overhead Press" }, { name: "Lateral Raise" }, { name: "Face Pull" }, { name: "External Shoulder Rotation" }];
-    expect(bySafety(list, [{ area: "shoulder" }]).map((e) => e.name)).toEqual(["External Shoulder Rotation", "Lateral Raise", "Face Pull", "Overhead Press"]);
+    expect(bySafety(INJURY_RULES, list, [{ area: "shoulder" }]).map((e) => e.name)).toEqual(["External Shoulder Rotation", "Lateral Raise", "Face Pull", "Overhead Press"]);
   });
 });
 
@@ -54,16 +56,16 @@ describe("return after an injury", () => {
   const healed = [{ area: "shoulder" as const, since: "2026-10-01", healedOn: "2026-11-02" }];
 
   it("lifts the bans once healed", () => {
-    expect(injuryWarning("Deadlift", healed)).toBeNull();
-    expect(isAvoided("Burpee", healed)).toBe(false);
+    expect(injuryWarning(INJURY_RULES, "Deadlift", healed)).toBeNull();
+    expect(isAvoided(INJURY_RULES, "Burpee", healed)).toBe(false);
   });
 
   it("brings the load back over three weeks on the exercises that load the area", () => {
-    expect(returnAdjust(g, "Overhead Press", healed, "2026-11-05")).toMatchObject({ week: 1, load: 0.7, until: "2026-11-22" });
-    expect(returnAdjust(g, "Overhead Press", healed, "2026-11-12")).toMatchObject({ week: 2, load: 0.85 });
-    expect(returnAdjust(g, "Overhead Press", healed, "2026-11-20")).toMatchObject({ week: 3, load: 1 });
-    expect(returnAdjust(g, "Overhead Press", healed, "2026-11-23")).toBeNull();
-    expect(returnAdjust(g, "Leg Curl", healed, "2026-11-05")).toBeNull();
+    expect(returnAdjust(g, INJURY_RULES, "Overhead Press", healed, "2026-11-05")).toMatchObject({ week: 1, load: 0.7, until: "2026-11-22" });
+    expect(returnAdjust(g, INJURY_RULES, "Overhead Press", healed, "2026-11-12")).toMatchObject({ week: 2, load: 0.85 });
+    expect(returnAdjust(g, INJURY_RULES, "Overhead Press", healed, "2026-11-20")).toMatchObject({ week: 3, load: 1 });
+    expect(returnAdjust(g, INJURY_RULES, "Overhead Press", healed, "2026-11-23")).toBeNull();
+    expect(returnAdjust(g, INJURY_RULES, "Leg Curl", healed, "2026-11-05")).toBeNull();
   });
 
   it("starts over when the area is injured again", () => {
@@ -77,9 +79,9 @@ it("knows only exercises of the library", () => {
 
 it("leaves the exercises to avoid out of the timed sessions", () => {
   const injuries = [{ area: "shoulder" as const }];
-  const pool = INTERVAL_EXERCISES.filter((e) => !isAvoided(e.name, injuries));
+  const pool = INTERVAL_EXERCISES.filter((e) => !isAvoided(INJURY_RULES, e.name, injuries));
   const s = buildIntervalSession({ focus: "full", dumbbells: true, pattern: "45-15", minutes: 45, seed: 3 }, pool);
-  expect(s.rounds.flat().some((e) => isAvoided(e.name, injuries))).toBe(false);
+  expect(s.rounds.flat().some((e) => isAvoided(INJURY_RULES, e.name, injuries))).toBe(false);
 });
 
 describe("timed sessions with an injury", () => {
@@ -88,7 +90,7 @@ describe("timed sessions with an injury", () => {
     for (const focus of ["full", "abs", "lower"] as const)
       for (const dumbbells of [false, true]) {
         const plan = { focus, dumbbells, pattern: "45-15" as const, minutes: 45, seed: 7 };
-        const { pool, cautious } = injuryPool(plan, shoulder);
+        const { pool, cautious } = injuryPool(plan, shoulder, INJURY_RULES);
         const names = buildIntervalSession(plan, pool).rounds.flat().map((e) => e.name);
         for (const banned of ["Push-up", "Plank", "Jumping Jack", "Burpee", "Mountain Climber", "Knee Push-up", "Bear Crawl"]) expect(names).not.toContain(banned);
         expect(cautious, `${focus} ${dumbbells}`).toEqual([]);
@@ -100,8 +102,8 @@ describe("timed sessions with an injury", () => {
   it("keep a few cautious ones only when the focus runs short, never those to avoid", () => {
     const knees = [{ area: "knee" as const }, { area: "hip" as const }, { area: "ankle" as const }];
     const plan = { focus: "lower" as const, dumbbells: false, minutes: 45 };
-    const { pool, cautious } = injuryPool(plan, knees);
+    const { pool, cautious } = injuryPool(plan, knees, INJURY_RULES);
     expect(cautious.length).toBeGreaterThan(0);
-    expect(pool.some((e) => isAvoided(e.name, knees))).toBe(false);
+    expect(pool.some((e) => isAvoided(INJURY_RULES, e.name, knees))).toBe(false);
   });
 });

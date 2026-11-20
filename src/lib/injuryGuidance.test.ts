@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { injuryGuidanceFromMigrations } from "./injuryGuidanceFromMigrations";
 import { parseInjuryGuidance, persistentPains, returnHeld, type InjuryGuidance } from "./injuryGuidance";
 import { INJURY_AREAS, returnPhases } from "./injuries";
-import { MOBILITY_EXERCISES, MOBILITY_INJURY_RULES } from "./mobility";
+import { MOBILITY_EXERCISES } from "./mobility";
 import type { PainReport } from "./pain";
+import { injuryGuidanceFromMigrations } from "./injuryGuidanceFromMigrations";
+
+const MOBILITY_INJURY_RULES = injuryGuidanceFromMigrations().mobility;
 
 const g = injuryGuidanceFromMigrations();
 const MOVES = MOBILITY_EXERCISES.map((e) => e.key);

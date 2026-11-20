@@ -1,6 +1,7 @@
 "use client";
 
 import { sessionHref } from "@/lib/routes";
+import { useInjuryRules } from "@/hooks/useInjuryRules";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Play, Shuffle, Timer } from "lucide-react";
@@ -112,9 +113,10 @@ export default function IntervalsPage() {
 
   // An injury leaves out the exercises that load the injured area most.
   const injuries = useMemo(() => athlete?.injuryAreas ?? [], [athlete]);
+  const injuryRules = useInjuryRules();
   const { pool, leftOut, cautious } = useMemo(
-    () => (plan ? injuryPool(plan, injuries) : { pool: INTERVAL_EXERCISES, leftOut: 0, cautious: [] as string[] }),
-    [plan, injuries]
+    () => (plan ? injuryPool(plan, injuries, injuryRules) : { pool: INTERVAL_EXERCISES, leftOut: 0, cautious: [] as string[] }),
+    [plan, injuries, injuryRules]
   );
   const session = useMemo(() => (plan ? buildIntervalSession(plan, pool) : null), [plan, pool]);
 
@@ -182,7 +184,7 @@ export default function IntervalsPage() {
 
   // The session left half-way, rebuilt from its plan: the same one only if it has as many steps.
   const leftPlan = left ? sane(left.progress.context, plan) : null;
-  const leftSteps = leftPlan ? buildIntervalSession(leftPlan, injuryPool(leftPlan, injuries).pool).steps.length : 0;
+  const leftSteps = leftPlan ? buildIntervalSession(leftPlan, injuryPool(leftPlan, injuries, injuryRules).pool).steps.length : 0;
   const canResume = !!left && left.state === "resumable" && leftSteps === left.progress.stepCount;
   function takeUp(again: boolean) {
     if (!left || !leftPlan) return;

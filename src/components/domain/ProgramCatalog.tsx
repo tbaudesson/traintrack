@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useInjuryRules } from "@/hooks/useInjuryRules";
 import { useTranslations } from "next-intl";
 import {
   Award, Bandage, Bike, Cable, BicepsFlexed, Check, ChevronRight, ClipboardList, Dumbbell, Flame, Footprints, Home, Loader2, PersonStanding, Plus, Timer, Waves, Zap,
@@ -117,6 +118,7 @@ export function ProgramCatalog({
   const byShelf = useMemo(() => shelves(templates, level), [templates, level]);
   // An injury in progress: its shelf comes first and opens on its area.
   const injured = activeInjuries(useInjuries())[0]?.area ?? null;
+  const injuryRules = useInjuryRules();
   const [area, setArea] = useState<PainArea>("shoulder");
   // The favourite sport's tile first, the others in their usual order.
   const tiles = [
@@ -133,10 +135,10 @@ export function ProgramCatalog({
     () =>
       templates
         .filter((tpl) => programCategory(tpl) !== "injury" && tpl.structure.some((d) => d.exercises?.length))
-        .map((tpl) => ({ tpl, load: programLoad(tpl.structure, area) }))
+        .map((tpl) => ({ tpl, load: programLoad(injuryRules, tpl.structure, area) }))
         .filter((x) => x.load !== "avoid")
         .sort((a, b) => Number(a.load === "caution") - Number(b.load === "caution")),
-    [templates, area]
+    [templates, area, injuryRules]
   );
 
   const item = (tpl: ProgramTemplate, caution = false) => {

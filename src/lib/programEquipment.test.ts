@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { PROGRAM_TEMPLATES } from "./programTemplates";
 import { adaptToEquipment, alternativesOf, exerciseNeeds, missingEquipment } from "./programEquipment";
+import { injuryRulesFromMigrations } from "./injuryGuidanceFromMigrations";
+
+const INJURY_RULES = injuryRulesFromMigrations();
 
 const library = ["006_seed_exercises", "024_endurance", "038_interval_sessions", "040_vaulting", "053_more_timed_exercises"]
   .map((f) => readFileSync(`supabase/migrations/${f}.sql`, "utf8"))
@@ -47,7 +50,7 @@ describe("a program made for the athlete's equipment", () => {
 
   it("does not repeat an exercise of the day, nor pick one to avoid for an injury", () => {
     expect(adaptToEquipment([day("Lat Pulldown", "Dumbbell Row", "Plank")], ["dumbbell"]).structure[0].exercises.map((e) => e.exerciseName)).toEqual(["Superman Hold", "Dumbbell Row", "Plank"]);
-    expect(adaptToEquipment([day("Barbell Bench Press", "Crunch")], ["bodyweight"], ["shoulder"]).structure[0].exercises.map((e) => e.exerciseName)).toEqual(["Barbell Bench Press", "Crunch"]);
+    expect(adaptToEquipment([day("Barbell Bench Press", "Crunch")], ["bodyweight"], ["shoulder"], INJURY_RULES).structure[0].exercises.map((e) => e.exerciseName)).toEqual(["Barbell Bench Press", "Crunch"]);
     // Push-up is to be avoided with an injured shoulder: with nothing else possible the bench press stays, to be swapped in the session.
   });
 

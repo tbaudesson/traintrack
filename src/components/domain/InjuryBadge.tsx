@@ -1,6 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import { useInjuryRules } from "@/hooks/useInjuryRules";
 import { AlertTriangle, Bandage } from "lucide-react";
 import { injuryWarning, type Injury } from "@/lib/injuries";
 import { cn } from "@/lib/utils";
@@ -14,7 +15,7 @@ export function InjuryBadge({ exerciseName, injuries, className }: { exerciseNam
   const t = useTranslations("injuries");
   const tp = useTranslations("pain");
   const locale = useLocale();
-  const warning = injuryWarning(exerciseName, injuries);
+  const warning = injuryWarning(useInjuryRules(), exerciseName, injuries);
   if (!warning) return null;
   const Icon = warning.level === "avoid" ? AlertTriangle : Bandage;
   const areas = warning.areas.map((a) => (locale === "de" ? tp(`area_${a}`) : tp(`area_${a}`).toLowerCase())).join(", ");

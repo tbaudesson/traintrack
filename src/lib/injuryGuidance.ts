@@ -1,4 +1,4 @@
-import { INJURY_AREAS } from "./injuries";
+import { INJURY_AREAS, type ExerciseRules } from "./injuries";
 import type { PainArea, PainReport } from "./pain";
 
 /**
@@ -32,6 +32,8 @@ export interface InjuryGuidance {
   persistent: { days: number; reports: number; minLevel: number };
   /** Gentle moves offered while an area heals (keys of the warm-ups and stretches). */
   gentle: Partial<Record<PainArea, string[]>>;
+  /** What each warm-up and stretch move loads, by its key (migration 059). */
+  mobility: Record<string, ExerciseRules>;
 }
 
 export const INJURY_GUIDANCE_KEY = "injury_guidance";
@@ -47,7 +49,12 @@ export function parseInjuryGuidance(text: string | null | undefined, moves?: rea
   } catch {
     return null;
   }
-  if (!g?.pain || !g.return || !g.persistent || !g.gentle) return null;
+  if (!g?.pain || !g.return || !g.persistent || !g.gentle || !g.mobility || typeof g.mobility !== "object") return null;
+  for (const [key, rules] of Object.entries(g.mobility)) {
+    if (moves && !moves.includes(key)) return null;
+    if (!rules || typeof rules !== "object") return null;
+    for (const [area, level] of Object.entries(rules)) if (!INJURY_AREAS.includes(area as PainArea) || (level !== "avoid" && level !== "caution")) return null;
+  }
   const p = g.pain;
   if (!num(p.severe, 1, 10) || !num(p.moderate, 1, 10) || p.moderate > p.severe || !num(p.moderateLoad, 0.1, 1)) return null;
   if (!num(p.recentDays, 1, 90) || !num(p.coachDays, 1, 90)) return null;
@@ -60,6 +67,8 @@ export function parseInjuryGuidance(text: string | null | undefined, moves?: rea
   for (const [area, keys] of Object.entries(g.gentle)) {
     if (!INJURY_AREAS.includes(area as PainArea) || !Array.isArray(keys)) return null;
     if (moves && !keys.every((k) => moves.includes(k))) return null;
+    // A gentle move is never one to avoid for its own area.
+    if (keys.some((k) => g.mobility[k]?.[area as PainArea] === "avoid")) return null;
   }
   return g;
 }

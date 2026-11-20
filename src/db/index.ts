@@ -149,6 +149,8 @@ export interface Exercise extends SyncFields {
   nameDe?: string | null;
   descriptionFr?: string | null;
   descriptionDe?: string | null;
+  /** The areas it loads when injured ("avoid" / "caution"), edited by an admin; none for a custom one. */
+  injuryRules?: Partial<Record<"shoulder" | "elbow" | "wrist" | "neck" | "upper_back" | "lower_back" | "hip" | "knee" | "ankle", "avoid" | "caution">> | null;
   /** true = user-created custom exercise; false = seeded library row */
   isCustom: boolean;
   createdAt: string;
