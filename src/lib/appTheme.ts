@@ -54,8 +54,8 @@ export type AppStyle = "classic" | "dynamic" | "soft" | "contrast";
 export const APP_STYLES: AppStyle[] = ["classic", "dynamic", "soft", "contrast"];
 
 /** The sport put first: its programs, its session, its picture. */
-export type FavoriteSport = "bodybuilding" | "strength" | "fitness" | "running" | "swimming" | "cycling" | "vaulting" | "callisthenics";
-export const FAVORITE_SPORTS: FavoriteSport[] = ["bodybuilding", "strength", "fitness", "running", "swimming", "cycling", "vaulting", "callisthenics"];
+export type FavoriteSport = "bodybuilding" | "strength" | "fitness" | "running" | "hiking" | "swimming" | "cycling" | "vaulting" | "callisthenics";
+export const FAVORITE_SPORTS: FavoriteSport[] = ["bodybuilding", "strength", "fitness", "running", "hiking", "swimming", "cycling", "vaulting", "callisthenics"];
 
 /** Whose picture the home screen shows. */
 export type Silhouette = "male" | "female";

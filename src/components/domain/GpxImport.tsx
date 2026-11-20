@@ -77,6 +77,7 @@ export function GpxImport({
         durationSec: activity.durationSec || null,
         avgHr: activity.avgHr,
         maxHr: activity.maxHr,
+        elevationGainM: activity.elevationGainM > 0 ? activity.elevationGainM : null,
       };
       const climb = activity.elevationGainM > 0 ? t("gpxElevation", { m: activity.elevationGainM }) : undefined;
       let workoutId = workout?.id;

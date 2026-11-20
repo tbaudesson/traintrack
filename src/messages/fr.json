@@ -1090,7 +1090,9 @@
     "zone2": "Facile : vous parlez en phrases complètes.",
     "zone3": "Modéré : les phrases deviennent courtes.",
     "zone4": "Soutenu : quelques mots seulement, l'effort est tenable 20 à 40 min.",
-    "zone5": "Très dur : impossible de parler, quelques minutes au maximum."
+    "zone5": "Très dur : impossible de parler, quelques minutes au maximum.",
+    "sport_hike": "Randonnée",
+    "climb": "Dénivelé positif (m)"
   },
   "goals": {
     "titleOther": "Objectifs",
@@ -1455,7 +1457,8 @@
     "injuryCaution": "Quelques exercices avec prudence",
     "cat_trx": "TRX (sangles)",
     "swimTechTitle": "Techniques de nage",
-    "swimTechText": "Les nages et les éducatifs, en vidéo"
+    "swimTechText": "Les nages et les éducatifs, en vidéo",
+    "cat_hiking": "Randonnée"
   },
   "demo": {
     "watch": "Voir la démo",

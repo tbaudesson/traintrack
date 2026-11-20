@@ -170,7 +170,7 @@ export interface ProgramExercise {
   percents?: number[];
 }
 
-export type Sport = "run" | "swim" | "bike" | "row" | "vaulting" | "other";
+export type Sport = "run" | "swim" | "bike" | "row" | "hike" | "vaulting" | "other";
 
 /** What an endurance day asks for, instead of a list of exercises. */
 export interface CardioTarget {
@@ -241,6 +241,8 @@ export interface Workout extends SyncFields {
   intervalPlan?: IntervalPlan | null;
   distanceM?: number | null;
   durationSec?: number | null;
+  /** Metres climbed (D+), from a GPS track or typed: the measure of a hike. */
+  elevationGainM?: number | null;
   title?: string;
   notes?: string;
   durationMin?: number;

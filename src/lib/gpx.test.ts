@@ -55,3 +55,10 @@ describe("GPX import", () => {
     expect(Math.round(between({ lat: 49.6116, lon: 6.1319 }, { lat: 49.1193, lon: 6.1757 }) / 1000)).toBe(55);
   });
 });
+
+describe("a hike from a GPS file", () => {
+  it("is filed as a hike, a trail run stays a run", () => {
+    for (const type of ["hiking", "Walking", "trekking", "11"]) expect(parseGpx(track({ type }))!.sport, type).toBe("hike");
+    for (const type of ["running", "trail_running", "9"]) expect(parseGpx(track({ type }))!.sport, type).toBe("run");
+  });
+});

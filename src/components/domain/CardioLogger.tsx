@@ -32,6 +32,9 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
   );
   const [minutes, setMinutes] = useState(workout.durationSec ? String(Math.floor(workout.durationSec / 60)) : "");
   const [seconds, setSeconds] = useState(workout.durationSec ? String(workout.durationSec % 60) : "");
+  const [climb, setClimb] = useState(workout.elevationGainM ? String(workout.elevationGainM) : "");
+  // The metres climbed: for a hike above all, kept for any outing that has them.
+  const showClimb = workout.sport === "hike" || !!workout.elevationGainM;
 
   const distanceM = (Number(distance.replace(",", ".")) || 0) * (swim ? 1 : 1000);
   const durationSec = (Number(minutes) || 0) * 60 + (Number(seconds) || 0);
@@ -55,7 +58,12 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
   const runBlocks = target && paces ? planRunBlocks(target) : null;
   const [running, setRunning] = useState(false);
 
-  const save = () => updateWorkout(workout.id!, { distanceM: distanceM || undefined, durationSec: durationSec || undefined });
+  const save = () =>
+    updateWorkout(workout.id!, {
+      distanceM: distanceM || undefined,
+      durationSec: durationSec || undefined,
+      ...(showClimb ? { elevationGainM: Math.max(0, Math.round(Number(climb) || 0)) || null } : {}),
+    });
   // Saved as it is typed (on the device), and at once when a field is left.
   const { schedule, flush } = useDebouncedSave<null>(() => save());
 
@@ -178,12 +186,19 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
               <Input type="number" inputMode="numeric" min={0} max={59} value={seconds} onChange={(e) => { setSeconds(e.target.value); schedule(null); }} onBlur={() => { schedule(null); flush(); }} className="mt-1" />
             </label>
           </div>
+          {showClimb && (
+            <label className="block text-sm font-medium">
+              {t("climb")}
+              <Input type="number" inputMode="numeric" min={0} value={climb} onChange={(e) => { setClimb(e.target.value); schedule(null); }} onBlur={() => { schedule(null); flush(); }} className="mt-1" />
+            </label>
+          )}
           {measured && <GpxImport
             workout={workout}
             onImported={({ activity }) => {
               setDistance(String(swim ? activity.distanceM : Math.round(activity.distanceM / 10) / 100));
               setMinutes(String(Math.floor(activity.durationSec / 60)));
               setSeconds(String(activity.durationSec % 60));
+              if (activity.elevationGainM > 0) setClimb(String(activity.elevationGainM));
             }}
             trigger={(open) => (
               <button

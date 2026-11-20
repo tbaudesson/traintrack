@@ -1090,7 +1090,9 @@
     "zone2": "Easy: you can speak in full sentences.",
     "zone3": "Moderate: sentences get short.",
     "zone4": "Hard: only a few words, sustainable for 20 to 40 min.",
-    "zone5": "Very hard: no talking, a few minutes at most."
+    "zone5": "Very hard: no talking, a few minutes at most.",
+    "sport_hike": "Hiking",
+    "climb": "Elevation gain (m)"
   },
   "goals": {
     "titleOther": "Goals",
@@ -1455,7 +1457,8 @@
     "injuryCaution": "A few exercises with care",
     "cat_trx": "TRX (suspension)",
     "swimTechTitle": "Swimming techniques",
-    "swimTechText": "The strokes and the drills, on video"
+    "swimTechText": "The strokes and the drills, on video",
+    "cat_hiking": "Hiking"
   },
   "demo": {
     "watch": "Watch the demo",

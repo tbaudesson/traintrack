@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useInjuryRules } from "@/hooks/useInjuryRules";
 import { useTranslations } from "next-intl";
 import {
-  Award, Bandage, Bike, Cable, BicepsFlexed, Check, ChevronRight, ClipboardList, Dumbbell, Flame, Footprints, Home, Loader2, PersonStanding, Plus, Timer, Waves, Zap,
+  Award, Bandage, Bike, Cable, Mountain, BicepsFlexed, Check, ChevronRight, ClipboardList, Dumbbell, Flame, Footprints, Home, Loader2, PersonStanding, Plus, Timer, Waves, Zap,
   type LucideIcon,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -24,6 +24,7 @@ export const CATEGORY_STYLE: Record<ProgramCategory | "timed" | "mobility" | "cu
   strength: { icon: BicepsFlexed, tone: "from-indigo-100 to-indigo-200 text-indigo-700 dark:from-indigo-900/50 dark:to-indigo-950/60 dark:text-indigo-300" },
   fitness: { icon: Flame, tone: "from-orange-100 to-orange-200 text-orange-700 dark:from-orange-900/50 dark:to-orange-950/60 dark:text-orange-300" },
   running: { icon: Footprints, tone: "from-emerald-100 to-emerald-200 text-emerald-700 dark:from-emerald-900/50 dark:to-emerald-950/60 dark:text-emerald-300" },
+  hiking: { icon: Mountain, tone: "from-stone-100 to-stone-200 text-stone-700 dark:from-stone-800/50 dark:to-stone-900/60 dark:text-stone-300" },
   swimming: { icon: Waves, tone: "from-sky-100 to-sky-200 text-sky-700 dark:from-sky-900/50 dark:to-sky-950/60 dark:text-sky-300" },
   cycling: { icon: Bike, tone: "from-lime-100 to-lime-200 text-lime-700 dark:from-lime-900/50 dark:to-lime-950/60 dark:text-lime-300" },
   vaulting: { icon: Award, tone: "from-fuchsia-100 to-fuchsia-200 text-fuchsia-700 dark:from-fuchsia-900/50 dark:to-fuchsia-950/60 dark:text-fuchsia-300" },

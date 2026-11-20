@@ -1,13 +1,13 @@
 import type { CardioTarget, Program, ProgramDay, Sport, Workout } from "@/db";
 
-export const SPORTS: Sport[] = ["run", "swim", "bike", "row", "vaulting", "other"];
+export const SPORTS: Sport[] = ["run", "hike", "swim", "bike", "row", "vaulting", "other"];
 
 /** Sports measured in distance; vaulting is a time on the horse or the barrel only. */
 export const hasDistance = (sport: Sport | null | undefined) => sport !== "vaulting";
 export const DISTANCE_SPORTS: Sport[] = SPORTS.filter(hasDistance);
 
 /** Shorter than this and a pace is noise, not a performance. */
-const MIN_DISTANCE_FOR_PACE: Record<Sport, number> = { run: 1000, swim: 100, bike: 5000, row: 500, vaulting: Infinity, other: Infinity };
+const MIN_DISTANCE_FOR_PACE: Record<Sport, number> = { run: 1000, hike: 2000, swim: 100, bike: 5000, row: 500, vaulting: Infinity, other: Infinity };
 
 type CardioFields = Pick<Workout, "id" | "kind" | "sport" | "distanceM" | "durationSec">;
 
@@ -39,6 +39,8 @@ function minutesSeconds(seconds: number) {
 export function formatPace(sport: Sport | null | undefined, meters?: number, seconds?: number): string | null {
   if (!sport || !meters || !seconds) return null;
   if (sport === "run") return `${minutesSeconds(seconds / (meters / 1000))} /km`;
+  // On foot over hills a pace says little: the speed, as walkers read it.
+  if (sport === "hike") return `${((meters / 1000) / (seconds / 3600)).toFixed(1)} km/h`;
   if (sport === "swim") return `${minutesSeconds(seconds / (meters / 100))} /100 m`;
   if (sport === "row") return `${minutesSeconds(seconds / (meters / 500))} /500 m`;
   if (sport === "bike") return `${((meters / 1000) / (seconds / 3600)).toFixed(1)} km/h`;

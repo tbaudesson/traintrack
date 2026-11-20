@@ -1,6 +1,6 @@
 import type { CardioTarget, ProgramDay, ProgramExercise, SpinBlock, SpinKind, Sport } from "@/db";
 
-const SPORTS: Sport[] = ["run", "swim", "bike", "row", "vaulting", "other"];
+const SPORTS: Sport[] = ["run", "hike", "swim", "bike", "row", "vaulting", "other"];
 const SPIN_KINDS: SpinKind[] = ["warmup", "seated", "fast", "climb", "standing", "sprint", "recovery", "cooldown"];
 
 const text = (v: unknown, max: number): string | undefined => (typeof v === "string" && v.trim() ? v.slice(0, max) : undefined);

@@ -13,6 +13,7 @@ export const GOAL_OF_SPORT: Record<FavoriteSport, TrainingGoal> = {
   fitness: "fat_loss",
   callisthenics: "general_fitness",
   running: "endurance",
+  hiking: "endurance",
   swimming: "endurance",
   cycling: "endurance",
   vaulting: "general_fitness",

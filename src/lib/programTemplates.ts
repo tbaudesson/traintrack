@@ -9,6 +9,7 @@ import { PERCENT_TEMPLATES } from "./percentTemplates";
 import { INJURY_TEMPLATES } from "./injuryTemplates";
 import { TRX_TEMPLATES } from "./trxTemplates";
 import { SWIM_TEMPLATES } from "./swimTemplates";
+import { HIKING_TEMPLATES } from "./hikingTemplates";
 import type { PainArea } from "./pain";
 
 /**
@@ -258,7 +259,7 @@ export const STRENGTH_TEMPLATES: ProgramTemplate[] = PLAN_LOCALES.flatMap((local
   })
 );
 
-export const PROGRAM_TEMPLATES: ProgramTemplate[] = [...STRENGTH_TEMPLATES, ...PERCENT_TEMPLATES, ...ENDURANCE_TEMPLATES, ...VAULTING_TEMPLATES, ...SPINNING_TEMPLATES, ...CALLISTHENICS_TEMPLATES, ...TRX_TEMPLATES, ...SWIM_TEMPLATES, ...INJURY_TEMPLATES];
+export const PROGRAM_TEMPLATES: ProgramTemplate[] = [...STRENGTH_TEMPLATES, ...PERCENT_TEMPLATES, ...ENDURANCE_TEMPLATES, ...VAULTING_TEMPLATES, ...SPINNING_TEMPLATES, ...CALLISTHENICS_TEMPLATES, ...TRX_TEMPLATES, ...SWIM_TEMPLATES, ...HIKING_TEMPLATES, ...INJURY_TEMPLATES];
 
 /** Rank templates by closeness to the user's goal / level / days-per-week. */
 export function rankTemplates(pref: {

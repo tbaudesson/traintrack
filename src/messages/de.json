@@ -1090,7 +1090,9 @@
     "zone2": "Leicht: Sie sprechen in ganzen Sätzen.",
     "zone3": "Mittel: die Sätze werden kurz.",
     "zone4": "Hart: nur noch wenige Worte, 20 bis 40 min durchhaltbar.",
-    "zone5": "Sehr hart: Sprechen unmöglich, höchstens einige Minuten."
+    "zone5": "Sehr hart: Sprechen unmöglich, höchstens einige Minuten.",
+    "sport_hike": "Wandern",
+    "climb": "Höhenmeter bergauf (m)"
   },
   "goals": {
     "titleOther": "Ziele",
@@ -1455,7 +1457,8 @@
     "injuryCaution": "Einige Übungen mit Vorsicht",
     "cat_trx": "TRX (Schlingentrainer)",
     "swimTechTitle": "Schwimmtechniken",
-    "swimTechText": "Lagen und Technikübungen im Video"
+    "swimTechText": "Lagen und Technikübungen im Video",
+    "cat_hiking": "Wandern"
   },
   "demo": {
     "watch": "Demo ansehen",

@@ -36,11 +36,12 @@ const attr = (xml: string, name: string) => xml.match(new RegExp(`\\b${name}="([
 const decode = (text: string) =>
   text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&");
 
-/** The sport named by the file: Garmin writes "running", Strava "9" or "1". */
+/** The sport named by the file: Garmin writes "running" or "hiking", Strava "9", "1" or "11" (a walk). */
 function sportOf(type: string | undefined): Sport | undefined {
   if (!type) return undefined;
   const t = type.toLowerCase();
-  if (/run|trail|walk|hik|^9$/.test(t)) return "run";
+  if (/hik|walk|trek|^11$/.test(t)) return "hike";
+  if (/run|trail|^9$/.test(t)) return "run";
   if (/cycl|bik|ride|^1$/.test(t)) return "bike";
   if (/swim/.test(t)) return "swim";
   if (/row/.test(t)) return "row";

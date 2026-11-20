@@ -6,7 +6,7 @@ export type ActivityKind = "endurance" | "strength" | "bodyweight" | "vaulting";
 
 export function kindOf(sport: FavoriteSport | null | undefined): ActivityKind | null {
   if (!sport) return null;
-  if (sport === "running" || sport === "cycling" || sport === "swimming") return "endurance";
+  if (sport === "running" || sport === "hiking" || sport === "cycling" || sport === "swimming") return "endurance";
   if (sport === "callisthenics") return "bodyweight";
   if (sport === "vaulting") return "vaulting";
   return "strength";
@@ -14,12 +14,12 @@ export function kindOf(sport: FavoriteSport | null | undefined): ActivityKind | 
 
 /** The endurance sport of a favourite sport, for its distances. */
 export const cardioSportOf = (sport: FavoriteSport | null | undefined): Sport | null =>
-  sport === "running" ? "run" : sport === "cycling" ? "bike" : sport === "swimming" ? "swim" : null;
+  sport === "running" ? "run" : sport === "hiking" ? "hike" : sport === "cycling" ? "bike" : sport === "swimming" ? "swim" : null;
 
 type W = { id?: number; date: string; kind?: string; sport?: Sport | null; distanceM?: number | null; durationSec?: number | null; durationMin?: number };
 type S = { workoutId: number; completed: boolean; isWarmup?: boolean; weightKg?: number | null; reps?: number | null };
 
-const FAVORITE_OF: Partial<Record<Sport, FavoriteSport>> = { run: "running", bike: "cycling", swim: "swimming", vaulting: "vaulting" };
+const FAVORITE_OF: Partial<Record<Sport, FavoriteSport>> = { run: "running", hike: "hiking", bike: "cycling", swim: "swimming", vaulting: "vaulting" };
 
 /**
  * The sport one actually practises, from the last four weeks: the one of at

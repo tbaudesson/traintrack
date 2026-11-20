@@ -1287,6 +1287,36 @@ await test("swimming: the shelf leads to the technique sheets, each with its key
   await page.keyboard.press("Escape");
 });
 
+await test("hiking: its shelf, its place among the sports, and the metres climbed on an outing", async () => {
+  await page.goto(`${BASE}/fr/programs`);
+  await page.getByRole("button", { name: /^Randonnée/ }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByText("Préparer un trek de plusieurs jours").waitFor({ timeout: 5000 });
+  await dialog.getByText("Randonnée en montagne").waitFor({ timeout: 5000 });
+  await page.keyboard.press("Escape");
+  await page.goto(`${BASE}/fr/settings`);
+  await page.getByRole("button", { name: "Randonnée", exact: true }).first().waitFor({ timeout: 10000 });
+  // An outing on foot: the metres climbed are asked, and kept.
+  const id = await page.evaluate(async (user) => {
+    const db = await new Promise((res, rej) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+    const now = new Date().toISOString();
+    const d = new Date();
+    const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const out = await new Promise((res, rej) => { const tx = db.transaction("workouts", "readwrite"); const r = tx.objectStore("workouts").add({ userId: user, uuid: `e2e-hike-${Date.now()}`, date, title: "Randonnée", kind: "cardio", sport: "hike", _dirty: 0, createdAt: now, updatedAt: now }); tx.oncomplete = () => res(r.result); tx.onerror = () => rej(tx.error); });
+    db.close();
+    return out;
+  }, USER);
+  await page.goto(`${BASE}/fr/log/session?id=${id}`);
+  const climb = page.getByLabel("Dénivelé positif (m)");
+  await climb.waitFor({ timeout: 10000 });
+  await climb.fill("650");
+  await climb.blur();
+  await page.waitForTimeout(800);
+  await page.reload();
+  await climb.waitFor({ timeout: 10000 });
+  expect((await climb.inputValue()) === "650", `the metres climbed were not kept: "${await climb.inputValue()}"`);
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });
