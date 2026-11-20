@@ -45,7 +45,8 @@
     "running": "Laufen",
     "intervals": "Calisthenics-Einheit",
     "competitions": "Turniere",
-    "horses": "Pferde"
+    "horses": "Pferde",
+    "swimTechniques": "Schwimmtechniken"
   },
   "sync": {
     "synced": "Synchronisiert",
@@ -923,7 +924,8 @@
     "feat_vaulting": "Voltigieren",
     "featHint_vaulting": "Wettkämpfe und Pferde",
     "nutrition": "Ernährung",
-    "injuries": "Verletzungen"
+    "injuries": "Verletzungen",
+    "swimming": "Schwimmen"
   },
   "profile": {
     "title": "Profil",
@@ -1451,7 +1453,9 @@
     "injuryOthers": "Weitere Programme ohne zu meidende Übung ({area})",
     "injuryNone": "Kein weiteres Programm passt für diese Stelle.",
     "injuryCaution": "Einige Übungen mit Vorsicht",
-    "cat_trx": "TRX (Schlingentrainer)"
+    "cat_trx": "TRX (Schlingentrainer)",
+    "swimTechTitle": "Schwimmtechniken",
+    "swimTechText": "Lagen und Technikübungen im Video"
   },
   "demo": {
     "watch": "Demo ansehen",
@@ -2247,5 +2251,35 @@
     "label": "Belastete Stellen (bei Verletzung)",
     "hint": "„Meiden“: bei Verletzung der Stelle weggelassen. „Vorsicht“: möglich, leichter und schmerzfrei.",
     "saved": "Stellen gespeichert"
+  },
+  "swimTechniques": {
+    "title": "Schwimmtechniken",
+    "intro": "Die vier Lagen und die Technikübungen der Schwimmprogramme: Kernpunkte, häufige Fehler und ein Video zu jeder.",
+    "notLoaded": "Die Karten wurden noch nicht geladen: Öffne die App einmal mit Internetverbindung.",
+    "strokes": "Die Lagen",
+    "drills": "Die Technikübungen",
+    "points": "Kernpunkte",
+    "mistakes": "Häufige Fehler",
+    "inSession": "Techniken der Einheit"
+  },
+  "swimTechniquesAdmin": {
+    "title": "Karten der Schwimmtechniken",
+    "intro": "Die Lagen und Technikübungen der Seite „Schwimmtechniken“ und der Einheiten der Schwimmprogramme (über ihren Schlüssel).",
+    "missing": "Die Karten sind noch nicht in der Datenbank: Migration 060 anwenden.",
+    "untitled": "Neue Karte",
+    "key": "Schlüssel (Buchstaben, Ziffern, Bindestriche)",
+    "kind": "Art",
+    "stroke": "Lage",
+    "drill": "Technikübung",
+    "video": "Video (YouTube-Link)",
+    "name": "Name",
+    "points": "Kernpunkte, einer pro Zeile",
+    "mistakes": "Häufige Fehler, einer pro Zeile",
+    "remove": "Diese Karte entfernen",
+    "add": "Karte hinzufügen",
+    "linesHint": "Alle drei Sprachen sind Pflicht. Ein Schlüssel, den ein Programm nutzt, darf sich nicht ändern.",
+    "invalid": "Unvollständige Karten (fehlender oder doppelter Schlüssel, leerer Name oder Punkt in einer Sprache, Videolink ohne https): nichts wurde gespeichert.",
+    "save": "Karten speichern",
+    "saved": "Gespeichert: gilt beim nächsten Öffnen der App"
   }
 }

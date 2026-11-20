@@ -45,7 +45,8 @@
     "running": "Course à pied",
     "intervals": "Séance callisthenics",
     "competitions": "Compétitions",
-    "horses": "Chevaux"
+    "horses": "Chevaux",
+    "swimTechniques": "Techniques de nage"
   },
   "sync": {
     "synced": "Synchronisé",
@@ -923,7 +924,8 @@
     "feat_vaulting": "Voltige",
     "featHint_vaulting": "Compétitions et chevaux",
     "nutrition": "Nutrition",
-    "injuries": "Blessures"
+    "injuries": "Blessures",
+    "swimming": "Natation"
   },
   "profile": {
     "title": "Profil",
@@ -1451,7 +1453,9 @@
     "injuryOthers": "Autres programmes sans exercice à éviter ({area})",
     "injuryNone": "Aucun autre programme ne convient pour cette zone.",
     "injuryCaution": "Quelques exercices avec prudence",
-    "cat_trx": "TRX (sangles)"
+    "cat_trx": "TRX (sangles)",
+    "swimTechTitle": "Techniques de nage",
+    "swimTechText": "Les nages et les éducatifs, en vidéo"
   },
   "demo": {
     "watch": "Voir la démo",
@@ -2247,5 +2251,35 @@
     "label": "Zones sollicitées (si blessure)",
     "hint": "« À éviter » : écarté pendant une blessure de la zone. « Prudence » : possible, plus léger et sans douleur.",
     "saved": "Zones enregistrées"
+  },
+  "swimTechniques": {
+    "title": "Techniques de nage",
+    "intro": "Les quatre nages et les éducatifs des programmes de natation : les points clés, les erreurs fréquentes et une vidéo pour chacun.",
+    "notLoaded": "Les fiches n’ont pas encore été chargées : ouvrez l’app une fois avec une connexion.",
+    "strokes": "Les nages",
+    "drills": "Les éducatifs",
+    "points": "Points clés",
+    "mistakes": "Erreurs fréquentes",
+    "inSession": "Techniques de la séance"
+  },
+  "swimTechniquesAdmin": {
+    "title": "Fiches des techniques de nage",
+    "intro": "Les nages et les éducatifs que montrent la page « Techniques de nage » et les séances des programmes de natation (par leur clé).",
+    "missing": "Les fiches ne sont pas encore en base : appliquez la migration 060.",
+    "untitled": "Nouvelle fiche",
+    "key": "Clé (lettres, chiffres, tirets)",
+    "kind": "Type",
+    "stroke": "Nage",
+    "drill": "Éducatif",
+    "video": "Vidéo (lien YouTube)",
+    "name": "Nom",
+    "points": "Points clés, un par ligne",
+    "mistakes": "Erreurs fréquentes, une par ligne",
+    "remove": "Retirer cette fiche",
+    "add": "Ajouter une fiche",
+    "linesHint": "Les trois langues sont obligatoires. Une clé utilisée par un programme ne doit pas changer.",
+    "invalid": "Fiches incomplètes (clé manquante ou en double, un nom ou un point vide dans une langue, lien vidéo non https) : rien n’a été enregistré.",
+    "save": "Enregistrer les fiches",
+    "saved": "Enregistré : appliqué à la prochaine ouverture de l’app"
   }
 }

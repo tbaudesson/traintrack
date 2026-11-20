@@ -183,6 +183,8 @@ export interface CardioTarget {
   purpose?: string;
   /** Ordered steps: warm-up, main set, cool-down. */
   steps?: string[];
+  /** The techniques the session uses (keys of the swim technique sheets), shown as links. */
+  techniques?: string[];
   /** A guided indoor-cycling session: the blocks the timer plays one by one. */
   blocks?: SpinBlock[];
 }

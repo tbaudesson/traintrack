@@ -220,6 +220,16 @@ export function ProgramCatalog({
                   {t(`cat_${open}`)}
                 </DialogTitle>
               </DialogHeader>
+              {open === "swimming" && (
+                <Link href="/swim-techniques" className="t-surface flex items-center gap-3 rounded-2xl p-3 ring-1 ring-foreground/5">
+                  <CategoryIcon category="swimming" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-semibold leading-tight">{t("swimTechTitle")}</span>
+                    <span className="block text-xs text-muted-foreground">{t("swimTechText")}</span>
+                  </span>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                </Link>
+              )}
               {open === "callisthenics" && (
                 <Link href="/intervals" className="t-surface flex items-center gap-3 rounded-2xl p-3 ring-1 ring-foreground/5">
                   <CategoryIcon category="timed" />

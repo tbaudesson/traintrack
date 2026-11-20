@@ -45,7 +45,8 @@
     "running": "Running",
     "intervals": "Callisthenics session",
     "competitions": "Competitions",
-    "horses": "Horses"
+    "horses": "Horses",
+    "swimTechniques": "Swimming techniques"
   },
   "sync": {
     "synced": "Synced",
@@ -923,7 +924,8 @@
     "feat_vaulting": "Vaulting",
     "featHint_vaulting": "Competitions and horses",
     "nutrition": "Nutrition",
-    "injuries": "Injuries"
+    "injuries": "Injuries",
+    "swimming": "Swimming"
   },
   "profile": {
     "title": "Profile",
@@ -1451,7 +1453,9 @@
     "injuryOthers": "Other programs with nothing to avoid ({area})",
     "injuryNone": "No other program suits this area.",
     "injuryCaution": "A few exercises with care",
-    "cat_trx": "TRX (suspension)"
+    "cat_trx": "TRX (suspension)",
+    "swimTechTitle": "Swimming techniques",
+    "swimTechText": "The strokes and the drills, on video"
   },
   "demo": {
     "watch": "Watch the demo",
@@ -2247,5 +2251,35 @@
     "label": "Areas loaded (when injured)",
     "hint": "“Avoid”: left out while the area is injured. “Caution”: possible, lighter and without pain.",
     "saved": "Areas saved"
+  },
+  "swimTechniques": {
+    "title": "Swimming techniques",
+    "intro": "The four strokes and the drills of the swimming programs: key points, usual mistakes and a video for each.",
+    "notLoaded": "The sheets have not been loaded yet: open the app once while online.",
+    "strokes": "The strokes",
+    "drills": "The drills",
+    "points": "Key points",
+    "mistakes": "Usual mistakes",
+    "inSession": "Techniques of the session"
+  },
+  "swimTechniquesAdmin": {
+    "title": "Swimming technique sheets",
+    "intro": "The strokes and drills shown on the “Swimming techniques” page and in the swimming programs’ sessions (by their key).",
+    "missing": "The sheets are not in the database yet: apply migration 060.",
+    "untitled": "New sheet",
+    "key": "Key (letters, digits, dashes)",
+    "kind": "Type",
+    "stroke": "Stroke",
+    "drill": "Drill",
+    "video": "Video (YouTube link)",
+    "name": "Name",
+    "points": "Key points, one per line",
+    "mistakes": "Usual mistakes, one per line",
+    "remove": "Remove this sheet",
+    "add": "Add a sheet",
+    "linesHint": "All three languages are required. A key a program uses must not change.",
+    "invalid": "Incomplete sheets (missing or duplicate key, an empty name or point in a language, a non-https video link): nothing was saved.",
+    "save": "Save the sheets",
+    "saved": "Saved: applied the next time the app opens"
   }
 }

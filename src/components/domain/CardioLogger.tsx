@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SwimTechniqueChips } from "@/components/domain/SwimTechniqueSheet";
 import { useTranslations } from "next-intl";
 import { Footprints, Gauge, Info, Play, Target, Upload } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -106,6 +107,7 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
               </ol>
             )}
             {target.notes && <p className="pt-1 text-sm text-muted-foreground">{target.notes}</p>}
+            {target.techniques?.length ? <SwimTechniqueChips keys={target.techniques} /> : null}
             {runBlocks && (
               <Button
                 className="mt-2 h-12 w-full rounded-full"

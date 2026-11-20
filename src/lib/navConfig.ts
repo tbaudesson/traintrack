@@ -66,6 +66,7 @@ export const NAVIGATION_CATALOG: readonly NavigationSectionDef[] = [
 export const SPORT_DESTINATIONS: Partial<Record<FavoriteSport, readonly NavItemDef[]>> = {
   running: [{ id: "running", href: "/running", icon: "Footprints", key: "running", feature: "running" }],
   callisthenics: [{ id: "intervals", href: "/intervals", icon: "Timer", key: "intervals" }],
+  swimming: [{ id: "swimTechniques", href: "/swim-techniques", icon: "Waves", key: "swimTechniques" }],
   vaulting: [
     { id: "competitions", href: "/competitions", icon: "Award", key: "competitions", feature: "vaulting" },
     { id: "horses", href: "/horses", icon: "PawPrint", key: "horses", feature: "vaulting" },

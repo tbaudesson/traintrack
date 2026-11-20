@@ -81,7 +81,7 @@ await page.waitForLoadState("load");
 expect(await page.evaluate(() => !!navigator.serviceWorker.controller), "the service worker never took control");
 
 // What the background warm-up does once signed in: every page and its files.
-const PAGES = ["", "/log", "/log/session", "/programs", "/progress", "/intervals", "/mobility", "/exercises", "/competitions", "/report", "/settings", "/more", "/horses", "/onboarding", "/readiness", "/join", "/tests", "/running"];
+const PAGES = ["", "/log", "/log/session", "/programs", "/progress", "/intervals", "/mobility", "/exercises", "/competitions", "/report", "/settings", "/more", "/horses", "/swim-techniques", "/onboarding", "/readiness", "/join", "/tests", "/running"];
 const warmed = await page.evaluate(async (pages) => {
   const files = new Set();
   for (const p of pages) {
@@ -152,6 +152,10 @@ await page.evaluate(async ({ user, exerciseRules }) => {
   const tail = rules.slice(rules.indexOf("UPDATE app_settings"));
   const added = JSON.parse(tail.slice(tail.indexOf("{"), tail.lastIndexOf("}") + 1));
   await page.evaluate((g) => localStorage.setItem("traintrack.guidance.injury_guidance", g), JSON.stringify({ ...base, ...added }));
+  // The swim technique sheets, as migration 060 seeds them.
+  const swim = readFileSync("supabase/migrations/060_swimming.sql", "utf8");
+  const sheets = swim.slice(swim.indexOf("'", swim.indexOf("'swim_techniques',") + 18) + 1, swim.indexOf("')\nON CONFLICT")).replace(/''/g, "'");
+  await page.evaluate((v) => localStorage.setItem("traintrack.guidance.swim_techniques", v), JSON.stringify(JSON.parse(sheets)));
 }
 
 await context.setOffline(true);
@@ -1262,6 +1266,25 @@ await test("an injured knee gets gentle moves on the home screen, and a pain com
   } finally {
     await setProfile({ injuryAreas: null });
   }
+});
+
+await test("swimming: the shelf leads to the technique sheets, each with its key points and video", async () => {
+  await page.goto(`${BASE}/fr/programs`);
+  await page.getByRole("button", { name: /^Natation/ }).click();
+  const dialog = page.getByRole("dialog");
+  for (const name of ["Apprendre le crawl en 8 semaines", "Natation forme", "Vers 1 500 m et 2 km de crawl", "Prépa triathlon et eau libre"]) {
+    await dialog.getByText(name).first().waitFor({ timeout: 5000 });
+  }
+  await dialog.getByRole("link", { name: /Techniques de nage/ }).click();
+  await page.waitForURL(/\/fr\/swim-techniques$/, { timeout: 10000 });
+  await page.getByRole("heading", { name: "Les nages" }).waitFor({ timeout: 10000 });
+  await page.getByRole("button", { name: /^Crawl/ }).click();
+  const sheet = page.getByRole("dialog");
+  await sheet.getByText("Points clés").waitFor({ timeout: 5000 });
+  await sheet.getByText("Erreurs fréquentes").waitFor({ timeout: 5000 });
+  // The video waits behind its thumbnail until tapped.
+  expect((await sheet.getByRole("button", { name: "Voir la vidéo" }).count()) === 1, "no video on the crawl sheet");
+  await page.keyboard.press("Escape");
 });
 
 await test("no page threw an error", async () => {

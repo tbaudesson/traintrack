@@ -44,6 +44,8 @@ function cardio(v: unknown): CardioTarget | undefined {
   const sport = SPORTS.find((s) => s === c.sport);
   if (!sport) return undefined;
   const steps = list(c.steps, 12).map((s) => text(s, 300)).filter((s): s is string => !!s);
+  // Keys of the swim technique sheets: short, plain and few.
+  const techniques = list(c.techniques, 12).map((s) => text(s, 40)).filter((s): s is string => !!s && /^[a-z0-9-]+$/.test(s));
   const blocks = list(c.blocks, 120).map(block).filter((b): b is SpinBlock => !!b);
   return {
     sport,
@@ -53,6 +55,7 @@ function cardio(v: unknown): CardioTarget | undefined {
     ...(text(c.notes, 600) ? { notes: text(c.notes, 600) } : {}),
     ...(text(c.purpose, 300) ? { purpose: text(c.purpose, 300) } : {}),
     ...(steps.length ? { steps } : {}),
+    ...(techniques.length ? { techniques } : {}),
     ...(blocks.length ? { blocks } : {}),
   };
 }
