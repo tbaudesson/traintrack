@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Pause, Play, PlayCircle, SkipForward, Square, Volume2, VolumeX } from "lucide-react";
-import { GET_READY_SEC } from "@/lib/intervals";
 import { beep } from "@/lib/beep";
 import { speak, stepAnnouncement, stopSpeaking, voiceSupported } from "@/lib/voice";
 import { savePrefs } from "@/lib/appTheme";
@@ -50,8 +49,11 @@ export function IntervalPlayer({
   labels,
   resume,
   onProgress,
+  getReadySec,
 }: {
   session: { steps: PlayerStep[] };
+  /** The countdown before the first step (the timed-session reference). */
+  getReadySec: number;
   onEnd: (result: IntervalResult) => void;
   /** Taken up again: from this step (played from its start), with what was done and the time spent. */
   resume?: { index: number; done: number[]; elapsedSec: number };
@@ -68,7 +70,7 @@ export function IntervalPlayer({
   const canSpeak = voiceSupported();
   const { steps } = session;
   const [index, setIndex] = useState(-1);
-  const [endsAt, setEndsAt] = useState(() => Date.now() + GET_READY_SEC * 1000);
+  const [endsAt, setEndsAt] = useState(() => Date.now() + getReadySec * 1000);
   const [pausedLeft, setPausedLeft] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const done = useRef<number[]>(resume ? [...resume.done] : []);
@@ -101,7 +103,7 @@ export function IntervalPlayer({
   }
 
   const step = index >= 0 ? steps[index] : null;
-  const length = step ? step.seconds : GET_READY_SEC;
+  const length = step ? step.seconds : getReadySec;
   const leftMs = pausedLeft ?? Math.max(0, endsAt - now);
   const left = Math.ceil(leftMs / 1000);
 

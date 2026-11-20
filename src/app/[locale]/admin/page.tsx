@@ -30,15 +30,17 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Apple, Bandage, Check, Mountain, Waves, Trash2, Loader2, ShieldCheck, Plus, Users2, CreditCard, ClipboardList, Mail, Pencil, X, type LucideIcon } from "lucide-react";
+import { Apple, Bandage, Check, Mountain, PersonStanding, Timer, Waves, Trash2, Loader2, ShieldCheck, Plus, Users2, CreditCard, ClipboardList, Mail, Pencil, X, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TemplatesTab } from "@/components/domain/TemplatesTab";
 import { NutritionGuidanceTab } from "@/components/domain/NutritionGuidanceTab";
 import { InjuryGuidanceTab } from "@/components/domain/InjuryGuidanceTab";
 import { SwimTechniquesTab } from "@/components/domain/SwimTechniquesTab";
 import { OutingChecklistTab } from "@/components/domain/OutingChecklistTab";
+import { MobilityMovesTab } from "@/components/domain/MobilityMovesTab";
+import { TimedSessionsTab } from "@/components/domain/TimedSessionsTab";
 
-type Tab = "users" | "invitations" | "plans" | "templates" | "nutrition" | "injuries" | "swimming" | "hiking" | "gdpr";
+type Tab = "users" | "invitations" | "plans" | "templates" | "nutrition" | "injuries" | "mobility" | "timed" | "swimming" | "hiking" | "gdpr";
 
 const TABS: { id: Tab; icon: LucideIcon }[] = [
   { id: "users", icon: Users2 },
@@ -47,6 +49,8 @@ const TABS: { id: Tab; icon: LucideIcon }[] = [
   { id: "templates", icon: ClipboardList },
   { id: "nutrition", icon: Apple },
   { id: "injuries", icon: Bandage },
+  { id: "mobility", icon: PersonStanding },
+  { id: "timed", icon: Timer },
   { id: "swimming", icon: Waves },
   { id: "hiking", icon: Mountain },
   { id: "gdpr", icon: ShieldCheck },
@@ -111,6 +115,8 @@ export default function AdminPage() {
           {tab === "templates" && <TemplatesTab />}
           {tab === "nutrition" && <NutritionGuidanceTab />}
           {tab === "injuries" && <InjuryGuidanceTab />}
+          {tab === "mobility" && <MobilityMovesTab />}
+          {tab === "timed" && <TimedSessionsTab />}
           {tab === "swimming" && <SwimTechniquesTab />}
           {tab === "hiking" && <OutingChecklistTab />}
           {tab === "gdpr" && <GdprTab />}

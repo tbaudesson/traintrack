@@ -1,6 +1,8 @@
 "use client";
 
+import { useTimedGuidance } from "@/hooks/useTimedGuidance";
 import { sessionHref } from "@/lib/routes";
+import { useMobilityGuidance } from "@/hooks/useMobilityGuidance";
 import { useMobilityRules } from "@/hooks/useInjuryRules";
 import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
@@ -12,9 +14,6 @@ import { useWorkoutSets } from "@/hooks/useWorkoutSets";
 import { useExercises } from "@/hooks/useExercises";
 import { useInjuries } from "@/hooks/useAthleteProfile";
 import {
-  MOBILITY_EXERCISES,
-  MOBILITY_MINUTES,
-  TARGET_MUSCLES,
   buildMobilitySession,
   mobilityWarning,
   sessionMuscles,
@@ -22,7 +21,6 @@ import {
   type MobilityTarget,
 } from "@/lib/mobility";
 import { unlockAudio } from "@/lib/beep";
-import { mobilityDemo } from "@/lib/demoVideos";
 import { DemoButton, DemoDialog } from "@/components/domain/DemoDialog";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SectionHeading } from "@/components/ui/page-parts";
@@ -50,6 +48,8 @@ function fromLink(): { mode: MobilityMode; workoutId?: number } {
  */
 export default function MobilityPage() {
   const t = useTranslations("mobility");
+  // The countdown before the first step; without the reference yet, none.
+  const readySec = useTimedGuidance()?.getReadySec ?? 0;
   const tinj = useTranslations("injuries");
   const tpain = useTranslations("pain");
   const locale = useLocale();
@@ -84,14 +84,18 @@ export default function MobilityPage() {
     return sessionMuscles(sets.map((s) => groups.get(s.exerciseId)));
   }, [workout, sets, exercises]);
 
+  const mobility = useMobilityGuidance();
   const muscles = useMemo(
-    () => (target === "session" ? (fromSession.length ? fromSession : TARGET_MUSCLES.full) : TARGET_MUSCLES[target]),
-    [target, fromSession]
+    () => (target === "session" ? (fromSession.length ? fromSession : (mobility?.targets.full ?? [])) : (mobility?.targets[target] ?? [])),
+    [target, fromSession, mobility]
   );
   const injuries = useInjuries();
   const mobilityRules = useMobilityRules();
-  const session = useMemo(() => buildMobilitySession(mode, minutes, muscles, locale, injuries, mobilityRules), [mode, minutes, muscles, locale, injuries, mobilityRules]);
-  const leftOut = MOBILITY_EXERCISES.filter((e) => e.mode === mode && mobilityWarning(mobilityRules, e.key, injuries)?.level === "avoid").length;
+  const session = useMemo(
+    () => (mobility ? buildMobilitySession(mobility, mode, minutes, muscles, locale, injuries, mobilityRules) : { exercises: [], steps: [], totalSec: 0 }),
+    [mobility, mode, minutes, muscles, locale, injuries, mobilityRules]
+  );
+  const leftOut = (mobility?.moves ?? []).filter((e) => e.mode === mode && mobilityWarning(mobilityRules, e.key, injuries)?.level === "avoid").length;
   const areaWords = (areas: string[]) => areas.map((a) => (locale === "de" ? tpain(`area_${a}`) : tpain(`area_${a}`).toLowerCase())).join(", ");
   const back = link?.workoutId ? sessionHref(link.workoutId) : "/";
 
@@ -146,7 +150,7 @@ export default function MobilityPage() {
         </ChoiceField>
 
         <ChoiceField label={t("duration")}>
-          {MOBILITY_MINUTES[mode].map((m) => (
+          {(mobility?.minutes[mode] ?? []).map((m) => (
             <Choice key={m} on={minutes === m} onClick={() => setMinutes(m)}>
               {m} min
             </Choice>
@@ -155,6 +159,7 @@ export default function MobilityPage() {
 
         <section className="space-y-2">
           <SectionHeading>{t("moves", { count: session.exercises.length })}</SectionHeading>
+          {!mobility && <p role="status" className="text-sm text-muted-foreground">{t("notLoaded")}</p>}
           {leftOut > 0 && (
             <p className="rounded-lg bg-rose-50 p-2 text-xs text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">{t("leftOut", { count: leftOut })}</p>
           )}
@@ -171,9 +176,9 @@ export default function MobilityPage() {
                     </span>
                   )}
                 </span>
-                {mobilityDemo(e.key) && (
+                {e.video && (
                   <DemoButton
-                    onClick={() => setDemo({ name: e.name[locale as "fr" | "de" | "en"] ?? e.name.en, video: mobilityDemo(e.key), cue: e.cue[locale as "fr" | "de" | "en"] ?? e.cue.en })}
+                    onClick={() => setDemo({ name: e.name[locale as "fr" | "de" | "en"] ?? e.name.en, video: e.video ?? null, cue: e.cue[locale as "fr" | "de" | "en"] ?? e.cue.en })}
                   />
                 )}
               </li>
@@ -199,6 +204,7 @@ export default function MobilityPage() {
       {playing && (
         <IntervalPlayer
           session={session}
+          getReadySec={readySec}
           labels={{ work: t(mode === "warmup" ? "work_warmup" : "work_stretch"), rest: t("transition") }}
           onEnd={({ done }) => {
             setPlaying(false);

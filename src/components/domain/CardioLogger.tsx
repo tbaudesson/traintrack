@@ -1,5 +1,6 @@
 "use client";
 
+import { useTimedGuidance } from "@/hooks/useTimedGuidance";
 import { useState } from "react";
 import { OutingChecklist } from "@/components/domain/OutingChecklist";
 import { SwimTechniqueChips } from "@/components/domain/SwimTechniqueSheet";
@@ -25,6 +26,8 @@ import { IntervalPlayer, type IntervalResult, type PlayerStep } from "@/componen
 /** Log an endurance session: what was planned, then distance and time. */
 export function CardioLogger({ workout, target }: { workout: Workout; target?: CardioTarget }) {
   const t = useTranslations("cardio");
+  // The countdown before the first step; without the reference yet, none.
+  const readySec = useTimedGuidance()?.getReadySec ?? 0;
   const swim = workout.sport === "swim";
   // Vaulting is timed only: no distance, no pace, no GPS track, no heart-rate zones.
   const measured = hasDistance(workout.sport);
@@ -249,6 +252,7 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
       {guided && (
         <IntervalPlayer
           session={{ steps: guidedSteps }}
+          getReadySec={readySec}
           onEnd={endGuided}
           labels={{ work: ts("block"), rest: ts("block"), counter: (n, total) => ts("counter", { n, total }) }}
         />

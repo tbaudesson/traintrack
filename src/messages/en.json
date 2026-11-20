@@ -927,7 +927,9 @@
     "nutrition": "Nutrition",
     "injuries": "Injuries",
     "swimming": "Swimming",
-    "hiking": "Hiking"
+    "hiking": "Hiking",
+    "mobility": "Warm-ups",
+    "timed": "Timed sessions"
   },
   "profile": {
     "title": "Profile",
@@ -1379,7 +1381,8 @@
     "resumeExpired": "Interrupted more than 6 hours ago: it can be started over, no longer taken up.",
     "resumeChanged": "The session has changed since (your injuries, say): it can be started over, no longer taken up.",
     "restart": "Start over",
-    "abandon": "Give up"
+    "abandon": "Give up",
+    "notLoaded": "Timed sessions have not been loaded yet: open the app once with a connection."
   },
   "mobility": {
     "title": "Warm-up and stretching",
@@ -1410,7 +1413,8 @@
     "home": "Back to home",
     "warmupButton": "Warm up",
     "stretchButton": "Stretch",
-    "leftOut": "{count, plural, one {# move left out} other {# moves left out}} because of your injury."
+    "leftOut": "{count, plural, one {# move left out} other {# moves left out}} because of your injury.",
+    "notLoaded": "The warm-ups and stretches have not been loaded yet: open the app once while online."
   },
   "injuries": {
     "title": "Injuries",
@@ -2326,5 +2330,67 @@
     "invalid": "Incomplete list (an empty title or item in a language, a section without items): nothing was saved.",
     "save": "Save the list",
     "saved": "Saved: applied the next time the app opens"
+  },
+  "mobilityAdmin": {
+    "title": "Warm-ups and stretches",
+    "intro": "What the app offers before and after a session: the lengths, how long each move is held, the muscles of each target and the moves, in the order they are done.",
+    "missing": "The warm-ups are not in the database yet: apply migration 065.",
+    "minutes": "Lengths offered (min)",
+    "hold": "Hold (s)",
+    "sideHold": "Hold per side (s)",
+    "transition": "Pause between (s)",
+    "targets": "Muscles of each target",
+    "moves": "{count, plural, one {# move} other {# moves}}",
+    "untitled": "New move",
+    "key": "Key (letters, digits, dashes)",
+    "muscles": "Muscles",
+    "sides": "One side then the other",
+    "name": "Name",
+    "cue": "Cue",
+    "video": "Demo video (https://…)",
+    "up": "Move up",
+    "remove": "Remove",
+    "add": "Add a move",
+    "invalid": "Incomplete (a length, an empty text in one language, a duplicate key, a video without https, no move for a moment): nothing was saved.",
+    "usedByInjuries": "A move removed or renamed is used by the injury references (gentle moves): nothing was saved.",
+    "save": "Save the warm-ups",
+    "saved": "Saved: applied next time the app opens"
+  },
+  "timedAdmin": {
+    "title": "Timed sessions",
+    "intro": "What timed sessions are made of: lengths, rhythms, rests, exercises per round, order of efforts and exercises. Names, descriptions and videos come from the library.",
+    "missing": "Timed sessions are not in the database yet: apply migration 065.",
+    "minutes": "Lengths offered (min)",
+    "patterns": "Work-rest rhythms (e.g. 30-30, 45-15)",
+    "roundRestSec": "Recovery between rounds (s)",
+    "getReadySec": "Countdown before starting (s)",
+    "perRound": "Exercises per round, by length",
+    "upToMinutes": "Up to (min)",
+    "count": "Exercises",
+    "addStep": "Add a step",
+    "rhythm": "Order of efforts",
+    "rhythmHint": "For each focus, the repeated sequence of cardio, strength and core.",
+    "patternForLevel": "Rhythm offered by level",
+    "level_beginner": "Beginner",
+    "level_intermediate": "Intermediate",
+    "level_advanced": "Advanced",
+    "exercises": "{count, plural, one {# exercise} other {# exercises}}",
+    "untitled": "New exercise",
+    "name": "Name in the library (English)",
+    "muscleGroup": "Muscles",
+    "kind": "Effort",
+    "kind_cardio": "Cardio",
+    "kind_strength": "Strength",
+    "kind_core": "Core",
+    "equipment_bodyweight": "Bodyweight",
+    "equipment_dumbbell": "Dumbbells",
+    "equipment_suspension": "TRX straps",
+    "sides": "One side then the other",
+    "remove": "Remove",
+    "add": "Add an exercise",
+    "invalid": "Incomplete (a length without a step, a badly written rhythm, a level without a rhythm, a focus without a bodyweight exercise, a duplicate name…): nothing was saved.",
+    "unknown": "Not in the library: {names}. Add them first; nothing was saved.",
+    "save": "Save the timed sessions",
+    "saved": "Saved: applied next time the app opens"
   }
 }

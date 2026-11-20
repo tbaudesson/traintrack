@@ -927,7 +927,9 @@
     "nutrition": "Ernährung",
     "injuries": "Verletzungen",
     "swimming": "Schwimmen",
-    "hiking": "Wandern"
+    "hiking": "Wandern",
+    "mobility": "Aufwärmen",
+    "timed": "Intervall-Einheiten"
   },
   "profile": {
     "title": "Profil",
@@ -1379,7 +1381,8 @@
     "resumeExpired": "Vor mehr als 6 Stunden unterbrochen: Du kannst sie neu beginnen, nicht mehr fortsetzen.",
     "resumeChanged": "Die Einheit hat sich seitdem geändert (z. B. deine Verletzungen): Du kannst sie neu beginnen, nicht mehr fortsetzen.",
     "restart": "Neu beginnen",
-    "abandon": "Abbrechen"
+    "abandon": "Abbrechen",
+    "notLoaded": "Die Intervall-Einheiten wurden noch nicht geladen: Öffne die App einmal mit Verbindung."
   },
   "mobility": {
     "title": "Aufwärmen und Dehnen",
@@ -1410,7 +1413,8 @@
     "home": "Zur Startseite",
     "warmupButton": "Aufwärmen",
     "stretchButton": "Dehnen",
-    "leftOut": "{count, plural, one {# Übung} other {# Übungen}} wegen deiner Verletzung weggelassen."
+    "leftOut": "{count, plural, one {# Übung} other {# Übungen}} wegen deiner Verletzung weggelassen.",
+    "notLoaded": "Aufwärmen und Dehnen wurden noch nicht geladen: Öffne die App einmal mit Internetverbindung."
   },
   "injuries": {
     "title": "Aktuelle Verletzungen",
@@ -2325,6 +2329,68 @@
     "addSection": "Abschnitt hinzufügen",
     "invalid": "Unvollständige Liste (leerer Titel oder Punkt in einer Sprache, Abschnitt ohne Punkte): nichts wurde gespeichert.",
     "save": "Liste speichern",
+    "saved": "Gespeichert: gilt beim nächsten Öffnen der App"
+  },
+  "mobilityAdmin": {
+    "title": "Aufwärmen und Dehnen",
+    "intro": "Was die App vor und nach einer Einheit anbietet: Dauer, Haltezeit jeder Übung, Muskeln jedes Ziels und die Übungen in ihrer Reihenfolge.",
+    "missing": "Das Aufwärmen ist noch nicht in der Datenbank: Migration 065 anwenden.",
+    "minutes": "Angebotene Dauer (Min.)",
+    "hold": "Halten (s)",
+    "sideHold": "Halten pro Seite (s)",
+    "transition": "Pause dazwischen (s)",
+    "targets": "Muskeln jedes Ziels",
+    "moves": "{count, plural, one {# Übung} other {# Übungen}}",
+    "untitled": "Neue Übung",
+    "key": "Schlüssel (Buchstaben, Ziffern, Bindestriche)",
+    "muscles": "Muskeln",
+    "sides": "Erst eine Seite, dann die andere",
+    "name": "Name",
+    "cue": "Anleitung",
+    "video": "Demo-Video (https://…)",
+    "up": "Nach oben",
+    "remove": "Entfernen",
+    "add": "Übung hinzufügen",
+    "invalid": "Unvollständig (eine Dauer, ein leerer Text in einer Sprache, ein doppelter Schlüssel, ein Video ohne https, keine Übung für einen Zeitpunkt): nichts gespeichert.",
+    "usedByInjuries": "Eine entfernte oder umbenannte Übung wird in den Verletzungs-Richtwerten (sanfte Übungen) verwendet: nichts gespeichert.",
+    "save": "Aufwärmen speichern",
+    "saved": "Gespeichert: gilt beim nächsten Öffnen der App"
+  },
+  "timedAdmin": {
+    "title": "Intervall-Einheiten",
+    "intro": "Woraus Intervall-Einheiten bestehen: Dauer, Rhythmen, Pausen, Übungen pro Runde, Reihenfolge der Belastungen und Übungen. Namen, Beschreibungen und Videos kommen aus der Bibliothek.",
+    "missing": "Die Intervall-Einheiten sind noch nicht in der Datenbank: Migration 065 anwenden.",
+    "minutes": "Angebotene Dauer (Min.)",
+    "patterns": "Belastung-Pause-Rhythmen (z. B. 30-30, 45-15)",
+    "roundRestSec": "Erholung zwischen Runden (s)",
+    "getReadySec": "Countdown vor dem Start (s)",
+    "perRound": "Übungen pro Runde, nach Dauer",
+    "upToMinutes": "Bis (Min.)",
+    "count": "Übungen",
+    "addStep": "Stufe hinzufügen",
+    "rhythm": "Reihenfolge der Belastungen",
+    "rhythmHint": "Für jeden Bereich die wiederholte Folge aus cardio, strength (Kraft) und core (Rumpf).",
+    "patternForLevel": "Rhythmus je Niveau",
+    "level_beginner": "Einsteiger",
+    "level_intermediate": "Fortgeschritten",
+    "level_advanced": "Erfahren",
+    "exercises": "{count, plural, one {# Übung} other {# Übungen}}",
+    "untitled": "Neue Übung",
+    "name": "Name in der Bibliothek (Englisch)",
+    "muscleGroup": "Muskeln",
+    "kind": "Belastung",
+    "kind_cardio": "Cardio",
+    "kind_strength": "Kraft",
+    "kind_core": "Rumpf",
+    "equipment_bodyweight": "Körpergewicht",
+    "equipment_dumbbell": "Kurzhanteln",
+    "equipment_suspension": "TRX-Bänder",
+    "sides": "Erst eine Seite, dann die andere",
+    "remove": "Entfernen",
+    "add": "Übung hinzufügen",
+    "invalid": "Unvollständig (eine Dauer ohne Stufe, ein falsch geschriebener Rhythmus, ein Niveau ohne Rhythmus, ein Bereich ohne Körpergewichtsübung, ein doppelter Name…): nichts gespeichert.",
+    "unknown": "Nicht in der Bibliothek: {names}. Zuerst hinzufügen; nichts gespeichert.",
+    "save": "Intervall-Einheiten speichern",
     "saved": "Gespeichert: gilt beim nächsten Öffnen der App"
   }
 }

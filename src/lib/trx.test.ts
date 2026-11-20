@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { TRX_EXERCISES } from "./trxExercises";
 import { TRX_TEMPLATES } from "./trxTemplates";
-import { buildIntervalSession, INTERVAL_EXERCISES } from "./intervals";
+import { buildIntervalSession } from "./intervals";
+import { timedFromMigrations } from "./injuryGuidanceFromMigrations";
+
+const TIMED = timedFromMigrations();
 import { missingEquipment } from "./programEquipment";
 import { programCategory } from "./programCategories";
 import { recommendPrograms } from "./onboarding";
@@ -35,13 +38,13 @@ describe("TRX", () => {
   it("puts straps in a timed session only when they are chosen", () => {
     const base = { focus: "full" as const, dumbbells: false, pattern: "45-15" as const, minutes: 20 };
     for (let seed = 1; seed <= 20; seed++) {
-      const without = buildIntervalSession({ ...base, seed }).rounds.flat();
+      const without = buildIntervalSession(TIMED, { ...base, seed }).rounds.flat();
       expect(without.some((e) => e.equipment !== "bodyweight")).toBe(false);
-      const withTrx = buildIntervalSession({ ...base, trx: true, seed }).rounds.flat();
+      const withTrx = buildIntervalSession(TIMED, { ...base, trx: true, seed }).rounds.flat();
       expect(withTrx.some((e) => e.equipment === "suspension")).toBe(true);
       expect(withTrx.some((e) => e.equipment === "dumbbell")).toBe(false);
     }
-    expect(INTERVAL_EXERCISES.filter((e) => e.equipment === "suspension")).toHaveLength(TRX_EXERCISES.length);
+    expect(TIMED.exercises.filter((e) => e.equipment === "suspension")).toHaveLength(TRX_EXERCISES.length);
   });
 
   it("is suggested at sign-up to an athlete with straps", () => {

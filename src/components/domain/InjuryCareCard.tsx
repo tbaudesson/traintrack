@@ -6,8 +6,7 @@ import { Bandage, Stethoscope } from "lucide-react";
 import type { Injury } from "@/lib/injuries";
 import { activeInjuries } from "@/lib/injuries";
 import { persistentPains, type InjuryGuidance } from "@/lib/injuryGuidance";
-import { MOBILITY_EXERCISES } from "@/lib/mobility";
-import { mobilityDemo } from "@/lib/demoVideos";
+import { useMobilityGuidance } from "@/hooks/useMobilityGuidance";
 import type { PainReport } from "@/lib/pain";
 import { DemoButton, DemoDialog } from "@/components/domain/DemoDialog";
 
@@ -21,6 +20,7 @@ export function InjuryCareCard({ guidance, injuries, pains, today }: { guidance:
   const t = useTranslations("injuryCare");
   const tpain = useTranslations("pain");
   const locale = useLocale() as "fr" | "en" | "de";
+  const mobility = useMobilityGuidance();
   const [demo, setDemo] = useState<{ name: string; video: string | null; cue?: string } | null>(null);
   const persistent = persistentPains(guidance, pains, today);
   const injured = activeInjuries(injuries).map((i) => i.area);
@@ -42,7 +42,7 @@ export function InjuryCareCard({ guidance, injuries, pains, today }: { guidance:
       ))}
 
       {injured.map((a) => {
-        const moves = (guidance.gentle[a] ?? []).map((key) => MOBILITY_EXERCISES.find((e) => e.key === key)).filter((e): e is NonNullable<typeof e> => !!e);
+        const moves = (guidance.gentle[a] ?? []).map((key) => mobility?.moves.find((e) => e.key === key)).filter((e): e is NonNullable<typeof e> => !!e);
         if (!moves.length) return null;
         return (
           <div key={a} className="space-y-1.5">
@@ -54,7 +54,7 @@ export function InjuryCareCard({ guidance, injuries, pains, today }: { guidance:
                     <span className="block font-medium">{m.name[locale]}</span>
                     <span className="block text-xs text-muted-foreground">{m.cue[locale]}</span>
                   </span>
-                  <DemoButton onClick={() => setDemo({ name: m.name[locale], video: mobilityDemo(m.key), cue: m.cue[locale] })} />
+                  <DemoButton onClick={() => setDemo({ name: m.name[locale], video: m.video ?? null, cue: m.cue[locale] })} />
                 </li>
               ))}
             </ul>

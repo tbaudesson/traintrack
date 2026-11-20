@@ -11,11 +11,8 @@ import { useExercises, createCustomExercise } from "@/hooks/useExercises";
 import { createWorkout } from "@/hooks/useWorkouts";
 import { addWorkoutSet } from "@/hooks/useWorkoutSets";
 import {
-  INTERVAL_EXERCISES,
   injuryPool,
   INTERVAL_FOCUSES,
-  INTERVAL_MINUTES,
-  INTERVAL_PATTERNS,
   buildIntervalSession,
   defaultPattern,
   patternSeconds,
@@ -23,7 +20,9 @@ import {
   type IntervalExercise,
   type IntervalPattern,
   type IntervalPlan,
+  type TimedGuidance,
 } from "@/lib/intervals";
+import { useTimedGuidance } from "@/hooks/useTimedGuidance";
 import { localDate } from "@/lib/dates";
 import { unlockAudio } from "@/lib/beep";
 import { exerciseDescription, useExerciseLabel } from "@/lib/exerciseNames";
@@ -61,13 +60,13 @@ function initialPlan(): Partial<IntervalPlan> {
 }
 
 /** A plan read from a link or storage, kept to the values the app knows. */
-function sane(p: Partial<IntervalPlan>, fallback: IntervalPlan): IntervalPlan {
+function sane(p: Partial<IntervalPlan>, fallback: IntervalPlan, g: TimedGuidance): IntervalPlan {
   return {
     focus: INTERVAL_FOCUSES.includes(p.focus as IntervalFocus) ? p.focus! : fallback.focus,
     dumbbells: typeof p.dumbbells === "boolean" ? p.dumbbells : fallback.dumbbells,
     trx: typeof p.trx === "boolean" ? p.trx : fallback.trx,
-    pattern: INTERVAL_PATTERNS.includes(p.pattern as IntervalPattern) ? p.pattern! : fallback.pattern,
-    minutes: (INTERVAL_MINUTES as readonly number[]).includes(p.minutes ?? 0) ? p.minutes! : fallback.minutes,
+    pattern: g.patterns.includes(p.pattern as IntervalPattern) ? p.pattern! : fallback.pattern,
+    minutes: g.minutes.includes(p.minutes ?? 0) ? p.minutes! : fallback.minutes,
     seed: p.seed && p.seed > 0 ? p.seed : fallback.seed,
   };
 }
@@ -85,6 +84,7 @@ export default function IntervalsPage() {
   const router = useRouter();
   const athlete = useAthleteProfileOrNull();
   const exercises = useExercises();
+  const timed = useTimedGuidance();
   const [plan, setPlan] = useState<IntervalPlan | null>(null);
   const [playing, setPlaying] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -98,34 +98,35 @@ export default function IntervalsPage() {
 
   // Once the profile is read: the link, else the last plan, else the level's.
   useEffect(() => {
-    if (plan || athlete === undefined) return;
+    if (plan || athlete === undefined || !timed) return;
     const fallback: IntervalPlan = {
       focus: "full",
       dumbbells: !!athlete?.equipment?.includes("dumbbell"),
       trx: !!athlete?.equipment?.includes("suspension"),
-      pattern: defaultPattern(athlete?.fitnessLevel),
-      minutes: 20,
+      pattern: defaultPattern(timed, athlete?.fitnessLevel),
+      // The length in the middle of those offered.
+      minutes: timed.minutes[Math.floor(timed.minutes.length / 2)],
       seed: newSeed(),
     };
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reads the URL and storage, only on the client
-    setPlan(sane(initialPlan(), fallback));
-  }, [athlete, plan]);
+    setPlan(sane(initialPlan(), fallback, timed));
+  }, [athlete, plan, timed]);
 
   // An injury leaves out the exercises that load the injured area most.
   const injuries = useMemo(() => athlete?.injuryAreas ?? [], [athlete]);
   const injuryRules = useInjuryRules();
   const { pool, leftOut, cautious } = useMemo(
-    () => (plan ? injuryPool(plan, injuries, injuryRules) : { pool: INTERVAL_EXERCISES, leftOut: 0, cautious: [] as string[] }),
-    [plan, injuries, injuryRules]
+    () => (plan && timed ? injuryPool(timed, plan, injuries, injuryRules) : { pool: [], leftOut: 0, cautious: [] as string[] }),
+    [plan, timed, injuries, injuryRules]
   );
-  const session = useMemo(() => (plan ? buildIntervalSession(plan, pool) : null), [plan, pool]);
+  const session = useMemo(() => (plan && timed ? buildIntervalSession(timed, plan, pool) : null), [plan, timed, pool]);
 
   // Each exercise with its demo: the video, and the cue in the app's language.
   const [demo, setDemo] = useState<{ name: string; video: string | null; cue?: string } | null>(null);
   const demoOf = useCallback(
     (e: IntervalExercise) => {
       const row = exercises.find((x) => !x.isCustom && x.name === e.name);
-      return { video: demoVideo(row?.videoUrl), cue: exerciseDescription(row ?? { name: e.name, description: e.description || undefined }, locale) };
+      return { video: demoVideo(row?.videoUrl), cue: exerciseDescription(row ?? { name: e.name }, locale) };
     },
     [exercises, locale]
   );
@@ -166,11 +167,11 @@ export default function IntervalsPage() {
     for (const index of done) {
       const step = session.steps[index];
       if (step.type !== "work") continue;
-      const { name, muscleGroup, equipment, description } = step.exercise;
+      const { name, muscleGroup, equipment } = step.exercise;
       let exerciseId = ids.get(name) ?? exercises.find((e) => !e.isCustom && e.name === name)?.id ?? exercises.find((e) => e.name === name)?.id;
       if (!exerciseId) {
-        // The library has not been updated yet (migration 038): the athlete gets their own copy.
-        exerciseId = await createCustomExercise({ name, muscleGroup, equipment, description: description || undefined });
+        // Not in the library (yet): the athlete gets their own copy.
+        exerciseId = await createCustomExercise({ name, muscleGroup, equipment });
       }
       ids.set(name, exerciseId);
       const setNumber = (numbers.get(name) ?? 0) + 1;
@@ -180,11 +181,18 @@ export default function IntervalsPage() {
     router.push(sessionHref(id));
   }
 
+  if (!timed)
+    return (
+      <>
+        <PageHeader title={t("title")} showBack />
+        <p role="status" className="p-4 text-sm text-muted-foreground">{t("notLoaded")}</p>
+      </>
+    );
   if (!plan || !session || !withDemos) return <PageHeader title={t("title")} showBack />;
 
   // The session left half-way, rebuilt from its plan: the same one only if it has as many steps.
-  const leftPlan = left ? sane(left.progress.context, plan) : null;
-  const leftSteps = leftPlan ? buildIntervalSession(leftPlan, injuryPool(leftPlan, injuries, injuryRules).pool).steps.length : 0;
+  const leftPlan = left ? sane(left.progress.context, plan, timed) : null;
+  const leftSteps = leftPlan ? buildIntervalSession(timed, leftPlan, injuryPool(timed, leftPlan, injuries, injuryRules).pool).steps.length : 0;
   const canResume = !!left && left.state === "resumable" && leftSteps === left.progress.stepCount;
   function takeUp(again: boolean) {
     if (!left || !leftPlan) return;
@@ -262,8 +270,8 @@ export default function IntervalsPage() {
           </Choice>
         </ChoiceField>
 
-        <ChoiceField label={t("pattern")} hint={t(`patternHint_${plan.pattern}`)}>
-          {INTERVAL_PATTERNS.map((pattern) => {
+        <ChoiceField label={t("pattern")} hint={t.has(`patternHint_${plan.pattern}`) ? t(`patternHint_${plan.pattern}`) : undefined}>
+          {timed.patterns.map((pattern) => {
             const s = patternSeconds(pattern);
             return (
               <Choice key={pattern} on={plan.pattern === pattern} onClick={() => change({ pattern })}>
@@ -274,7 +282,7 @@ export default function IntervalsPage() {
         </ChoiceField>
 
         <ChoiceField label={t("duration")}>
-          {INTERVAL_MINUTES.map((minutes) => (
+          {timed.minutes.map((minutes) => (
             <Choice key={minutes} on={plan.minutes === minutes} onClick={() => change({ minutes })}>
               {minutes} min
             </Choice>
@@ -349,6 +357,7 @@ export default function IntervalsPage() {
         <IntervalPlayer
           key={resume ? "resumed" : "new"}
           session={withDemos}
+          getReadySec={timed.getReadySec}
           onEnd={save}
           resume={resume}
           onProgress={(p) => saveTimedProgress({ kind: "intervals", context: plan, stepCount: session.steps.length, ...p, updatedAt: Date.now() })}

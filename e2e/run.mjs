@@ -193,6 +193,13 @@ await page.evaluate(async ({ user, libraryRows }) => {
   const check = readFileSync("supabase/migrations/063_outing_checklist.sql", "utf8");
   const checklist = check.slice(check.indexOf("["), check.lastIndexOf("]") + 1).replace(/''/g, "'");
   await page.evaluate((v) => localStorage.setItem("traintrack.guidance.outing_checklist", v), JSON.stringify(JSON.parse(checklist)));
+  // Warm-ups and timed sessions, as migration 065 seeds them.
+  const m065 = readFileSync("supabase/migrations/065_mobility_and_timed_sessions.sql", "utf8");
+  for (const key of ["mobility_moves", "timed_sessions"]) {
+    const start = m065.indexOf(`'${key}', '`) + key.length + 5;
+    const value = m065.slice(start, m065.indexOf("')\nON CONFLICT", start)).replace(/''/g, "'");
+    await page.evaluate(([k, v]) => localStorage.setItem(`traintrack.guidance.${k}`, v), [key, JSON.stringify(JSON.parse(value))]);
+  }
 }
 
 await context.setOffline(true);

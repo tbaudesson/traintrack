@@ -927,7 +927,9 @@
     "nutrition": "Nutrition",
     "injuries": "Blessures",
     "swimming": "Natation",
-    "hiking": "Randonnée"
+    "hiking": "Randonnée",
+    "mobility": "Échauffements",
+    "timed": "Séances minutées"
   },
   "profile": {
     "title": "Profil",
@@ -1379,7 +1381,8 @@
     "resumeExpired": "Interrompue il y a plus de 6 heures : elle peut être recommencée, plus reprise.",
     "resumeChanged": "La séance a changé depuis (vos blessures, par exemple) : elle peut être recommencée, plus reprise.",
     "restart": "Recommencer",
-    "abandon": "Abandonner"
+    "abandon": "Abandonner",
+    "notLoaded": "Les séances minutées n’ont pas encore été chargées : ouvrez l’app une fois avec une connexion."
   },
   "mobility": {
     "title": "Échauffement et étirements",
@@ -1410,7 +1413,8 @@
     "home": "Retour à l'accueil",
     "warmupButton": "S'échauffer",
     "stretchButton": "S'étirer",
-    "leftOut": "{count, plural, one {# mouvement écarté} other {# mouvements écartés}} à cause de votre blessure."
+    "leftOut": "{count, plural, one {# mouvement écarté} other {# mouvements écartés}} à cause de votre blessure.",
+    "notLoaded": "Les échauffements et étirements n’ont pas encore été chargés : ouvrez l’app une fois avec une connexion."
   },
   "injuries": {
     "title": "Blessures en cours",
@@ -2325,6 +2329,68 @@
     "addSection": "Ajouter une section",
     "invalid": "Liste incomplète (un titre ou un élément vide dans une langue, une section sans élément) : rien n’a été enregistré.",
     "save": "Enregistrer la liste",
+    "saved": "Enregistré : appliqué à la prochaine ouverture de l’app"
+  },
+  "mobilityAdmin": {
+    "title": "Échauffements et étirements",
+    "intro": "Ce que l’app propose avant et après une séance : les durées, le temps de chaque posture, les muscles de chaque cible et les mouvements, dans l’ordre où ils se font.",
+    "missing": "Les échauffements ne sont pas encore en base : appliquez la migration 065.",
+    "minutes": "Durées proposées (min)",
+    "hold": "Tenue (s)",
+    "sideHold": "Tenue par côté (s)",
+    "transition": "Pause entre deux (s)",
+    "targets": "Muscles de chaque cible",
+    "moves": "{count, plural, one {# mouvement} other {# mouvements}}",
+    "untitled": "Nouveau mouvement",
+    "key": "Clé (lettres, chiffres, tirets)",
+    "muscles": "Muscles",
+    "sides": "Un côté puis l’autre",
+    "name": "Nom",
+    "cue": "Consigne",
+    "video": "Vidéo de démonstration (https://…)",
+    "up": "Monter",
+    "remove": "Retirer",
+    "add": "Ajouter un mouvement",
+    "invalid": "Liste incomplète (une durée, un texte vide dans une langue, une clé en double, une vidéo sans https, aucun mouvement pour un moment) : rien n’a été enregistré.",
+    "usedByInjuries": "Un mouvement retiré ou renommé sert dans les repères blessures (mouvements doux) : rien n’a été enregistré.",
+    "save": "Enregistrer les échauffements",
+    "saved": "Enregistré : appliqué à la prochaine ouverture de l’app"
+  },
+  "timedAdmin": {
+    "title": "Séances minutées",
+    "intro": "Ce dont les séances minutées sont faites : durées, rythmes, repos, nombre d’exercices par tour, ordre des efforts et exercices. Les noms, descriptions et vidéos viennent de la bibliothèque.",
+    "missing": "Les séances minutées ne sont pas encore en base : appliquez la migration 065.",
+    "minutes": "Durées proposées (min)",
+    "patterns": "Rythmes effort-repos (ex. 30-30, 45-15)",
+    "roundRestSec": "Récupération entre tours (s)",
+    "getReadySec": "Compte à rebours de départ (s)",
+    "perRound": "Exercices par tour, selon la durée",
+    "upToMinutes": "Jusqu’à (min)",
+    "count": "Exercices",
+    "addStep": "Ajouter un palier",
+    "rhythm": "Ordre des efforts",
+    "rhythmHint": "Pour chaque zone, la suite répétée de cardio, strength (renfo) et core (gainage).",
+    "patternForLevel": "Rythme proposé selon le niveau",
+    "level_beginner": "Débutant",
+    "level_intermediate": "Intermédiaire",
+    "level_advanced": "Confirmé",
+    "exercises": "{count, plural, one {# exercice} other {# exercices}}",
+    "untitled": "Nouvel exercice",
+    "name": "Nom dans la bibliothèque (anglais)",
+    "muscleGroup": "Muscles",
+    "kind": "Effort",
+    "kind_cardio": "Cardio",
+    "kind_strength": "Renfo",
+    "kind_core": "Gainage",
+    "equipment_bodyweight": "Poids du corps",
+    "equipment_dumbbell": "Haltères",
+    "equipment_suspension": "Sangles TRX",
+    "sides": "Un côté puis l’autre",
+    "remove": "Retirer",
+    "add": "Ajouter un exercice",
+    "invalid": "Réglages incomplets (une durée sans palier, un rythme mal écrit, un niveau sans rythme proposé, une zone sans exercice au poids du corps, un nom en double…) : rien n’a été enregistré.",
+    "unknown": "Absents de la bibliothèque : {names}. Ajoutez-les d’abord, rien n’a été enregistré.",
+    "save": "Enregistrer les séances minutées",
     "saved": "Enregistré : appliqué à la prochaine ouverture de l’app"
   }
 }

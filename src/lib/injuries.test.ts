@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import { bySafety, declareInjury, injuryState, injuryWarning, isAvoided, returnAdjust, toggleInjury } from "./injuries";
 
 const g = injuryGuidanceFromMigrations();
-import { INTERVAL_EXERCISES, buildIntervalSession, injuryPool } from "./intervals";
-import { injuryGuidanceFromMigrations, injuryRulesFromMigrations } from "./injuryGuidanceFromMigrations";
+import { buildIntervalSession, injuryPool } from "./intervals";
+import { injuryGuidanceFromMigrations, injuryRulesFromMigrations, timedFromMigrations } from "./injuryGuidanceFromMigrations";
 import { libraryFromMigrations } from "./libraryFromMigrations";
+
+const TIMED = timedFromMigrations();
 
 const LIBRARY = new Map(libraryFromMigrations().map((r) => [r.name, r]));
 
@@ -82,8 +84,8 @@ it("knows only exercises of the library", () => {
 
 it("leaves the exercises to avoid out of the timed sessions", () => {
   const injuries = [{ area: "shoulder" as const }];
-  const pool = INTERVAL_EXERCISES.filter((e) => !isAvoided(INJURY_RULES, e.name, injuries));
-  const s = buildIntervalSession({ focus: "full", dumbbells: true, pattern: "45-15", minutes: 45, seed: 3 }, pool);
+  const pool = TIMED.exercises.filter((e) => !isAvoided(INJURY_RULES, e.name, injuries));
+  const s = buildIntervalSession(TIMED, { focus: "full", dumbbells: true, pattern: "45-15", minutes: 45, seed: 3 }, pool);
   expect(s.rounds.flat().some((e) => isAvoided(INJURY_RULES, e.name, injuries))).toBe(false);
 });
 
@@ -93,8 +95,8 @@ describe("timed sessions with an injury", () => {
     for (const focus of ["full", "abs", "lower"] as const)
       for (const dumbbells of [false, true]) {
         const plan = { focus, dumbbells, pattern: "45-15" as const, minutes: 45, seed: 7 };
-        const { pool, cautious } = injuryPool(plan, shoulder, INJURY_RULES);
-        const names = buildIntervalSession(plan, pool).rounds.flat().map((e) => e.name);
+        const { pool, cautious } = injuryPool(TIMED, plan, shoulder, INJURY_RULES);
+        const names = buildIntervalSession(TIMED, plan, pool).rounds.flat().map((e) => e.name);
         for (const banned of ["Push-up", "Plank", "Jumping Jack", "Burpee", "Mountain Climber", "Knee Push-up", "Bear Crawl"]) expect(names).not.toContain(banned);
         expect(cautious, `${focus} ${dumbbells}`).toEqual([]);
         // Enough left for full rounds.
@@ -105,7 +107,7 @@ describe("timed sessions with an injury", () => {
   it("keep a few cautious ones only when the focus runs short, never those to avoid", () => {
     const knees = [{ area: "knee" as const }, { area: "hip" as const }, { area: "ankle" as const }];
     const plan = { focus: "lower" as const, dumbbells: false, minutes: 45 };
-    const { pool, cautious } = injuryPool(plan, knees, INJURY_RULES);
+    const { pool, cautious } = injuryPool(TIMED, plan, knees, INJURY_RULES);
     expect(cautious.length).toBeGreaterThan(0);
     expect(pool.some((e) => isAvoided(INJURY_RULES, e.name, knees))).toBe(false);
   });

@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useRunVma } from "@/hooks/useRunVma";
+import { useTimedGuidance } from "@/hooks/useTimedGuidance";
 import { formatDistance } from "@/lib/cardio";
 import { formatPace, zonePaces } from "@/lib/runPaces";
 import { runTotals, timedBlocks, type RunBlock, type TimedRunBlock } from "@/lib/runWorkouts";
@@ -35,6 +36,8 @@ export function runSummary(main: TimedRunBlock[], name: (b: TimedRunBlock) => st
  */
 export function RunGuide({ blocks, onEnd }: { blocks: RunBlock[]; onEnd: (result: IntervalResult & { distanceM: number }) => void }) {
   const t = useTranslations("running");
+  // The countdown before the first step; without the reference yet, none.
+  const readySec = useTimedGuidance()?.getReadySec ?? 0;
   const { vma, name, pace } = useRunWords();
   const timed = timedBlocks(blocks, vma);
   const steps: PlayerStep[] = timed.map((b) => ({
@@ -48,6 +51,7 @@ export function RunGuide({ blocks, onEnd }: { blocks: RunBlock[]; onEnd: (result
   return (
     <IntervalPlayer
       session={{ steps }}
+      getReadySec={readySec}
       onEnd={(result) => onEnd({ ...result, distanceM: Math.round((total.meters * Math.min(result.elapsedSec, total.sec)) / Math.max(1, total.sec)) })}
       labels={{ work: t("effort"), rest: t("next"), counter: (n, all) => t("counter", { n, total: all }) }}
     />

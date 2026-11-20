@@ -6,14 +6,13 @@ import { Bandage, Check, Loader2, Minus, Plus } from "lucide-react";
 import { getAppSettings, setAppSetting } from "@/lib/adminService";
 import { INJURY_AREAS } from "@/lib/injuries";
 import { INJURY_GUIDANCE_KEY, parseInjuryGuidance, type InjuryGuidance } from "@/lib/injuryGuidance";
-import { MOBILITY_EXERCISES } from "@/lib/mobility";
+import { useMobilityGuidance } from "@/hooks/useMobilityGuidance";
 import { AreaRulesEditor } from "@/components/domain/AreaRulesEditor";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
-const MOVES = MOBILITY_EXERCISES.map((e) => e.key);
 
 /**
  * The injury references, as the app reads them (app settings): pain levels,
@@ -26,6 +25,9 @@ export function InjuryGuidanceTab() {
   const tpain = useTranslations("pain");
   const locale = useLocale() as "fr" | "en" | "de";
   const [g, setG] = useState<InjuryGuidance | null>(null);
+  // The moves the references may name: the warm-ups and stretches the admin keeps.
+  const moves = useMobilityGuidance()?.moves ?? [];
+  const MOVES = moves.map((e) => e.key);
   const [state, setState] = useState<"loading" | "missing" | "failed" | "ready">("loading");
   const [error, setError] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -33,7 +35,7 @@ export function InjuryGuidanceTab() {
   useEffect(() => {
     getAppSettings()
       .then((s) => {
-        const parsed = parseInjuryGuidance(s[INJURY_GUIDANCE_KEY], MOVES);
+        const parsed = parseInjuryGuidance(s[INJURY_GUIDANCE_KEY]);
         setG(parsed);
         setState(parsed ? "ready" : "missing");
       })
@@ -59,7 +61,8 @@ export function InjuryGuidanceTab() {
 
   async function save() {
     const text = JSON.stringify(g);
-    if (!parseInjuryGuidance(text, MOVES)) {
+    // The moves are checked against the warm-ups once those are loaded.
+    if (!parseInjuryGuidance(text, MOVES.length ? MOVES : undefined)) {
       setError(true);
       return;
     }
@@ -124,7 +127,7 @@ export function InjuryGuidanceTab() {
               <div key={area} className="space-y-1">
                 <p className="text-sm font-medium">{tpain(`area_${area}`)}</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {MOBILITY_EXERCISES.filter((m) => g.mobility[m.key]?.[area] !== "avoid").map((m) => {
+                  {moves.filter((m) => g.mobility[m.key]?.[area] !== "avoid").map((m) => {
                     const on = chosen.includes(m.key);
                     return (
                       <button
@@ -147,7 +150,7 @@ export function InjuryGuidanceTab() {
         <section className="space-y-2">
           <h3 className="text-sm font-semibold">{t("mobilityTitle")}</h3>
           <p className="text-xs text-muted-foreground">{t("mobilityHint")}</p>
-          {MOBILITY_EXERCISES.map((m) => (
+          {moves.map((m) => (
             <details key={m.key} className="rounded-lg border border-border p-2">
               <summary className="cursor-pointer text-sm">
                 {m.name[locale]}
