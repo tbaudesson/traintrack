@@ -46,7 +46,8 @@
     "intervals": "Callisthenics session",
     "competitions": "Competitions",
     "horses": "Horses",
-    "swimTechniques": "Swimming techniques"
+    "swimTechniques": "Swimming techniques",
+    "outingChecklist": "Pre-departure checklist"
   },
   "sync": {
     "synced": "Synced",
@@ -925,7 +926,8 @@
     "featHint_vaulting": "Competitions and horses",
     "nutrition": "Nutrition",
     "injuries": "Injuries",
-    "swimming": "Swimming"
+    "swimming": "Swimming",
+    "hiking": "Hiking"
   },
   "profile": {
     "title": "Profile",
@@ -1092,7 +1094,8 @@
     "zone4": "Hard: only a few words, sustainable for 20 to 40 min.",
     "zone5": "Very hard: no talking, a few minutes at most.",
     "sport_hike": "Hiking",
-    "climb": "Elevation gain (m)"
+    "climb": "Elevation gain (m)",
+    "checklist": "Pre-departure checklist"
   },
   "goals": {
     "titleOther": "Goals",
@@ -1458,7 +1461,9 @@
     "cat_trx": "TRX (suspension)",
     "swimTechTitle": "Swimming techniques",
     "swimTechText": "The strokes and the drills, on video",
-    "cat_hiking": "Hiking"
+    "cat_hiking": "Hiking",
+    "checklistTitle": "Pre-departure checklist",
+    "checklistText": "To tick before every outing, and on your own"
   },
   "demo": {
     "watch": "Watch the demo",
@@ -2283,6 +2288,35 @@
     "linesHint": "All three languages are required. A key a program uses must not change.",
     "invalid": "Incomplete sheets (missing or duplicate key, an empty name or point in a language, a non-https video link): nothing was saved.",
     "save": "Save the sheets",
+    "saved": "Saved: applied the next time the app opens"
+  },
+  "outingChecklist": {
+    "title": "Before you go",
+    "pageTitle": "Pre-departure checklist",
+    "intro": "To tick before every outing on foot, and more before a night out on your own. A preparation list: it replaces neither training nor local advice.",
+    "progress": "{done}/{total} ready",
+    "autonomy": "On my own, a night out",
+    "autonomyHint": "Adds the shelter, water to make safe, spare food…",
+    "ready": "All set. Enjoy your outing!",
+    "care": "If in doubt about the weather or your form, put it off.",
+    "reset": "Untick all",
+    "notLoaded": "The list has not been loaded yet: open the app once while online."
+  },
+  "outingChecklistAdmin": {
+    "title": "Pre-departure checklist",
+    "intro": "What the app offers to tick before an outing on foot; “on your own” items show only for a night out.",
+    "missing": "The list is not in the database yet: apply migration 063.",
+    "untitled": "New section",
+    "count": "{count, plural, one {# item} other {# items}}",
+    "sectionTitle": "Section title",
+    "item": "Item",
+    "autonomyOnly": "Only on your own (night out)",
+    "removeItem": "Remove",
+    "addItem": "Add an item",
+    "removeSection": "Remove the section",
+    "addSection": "Add a section",
+    "invalid": "Incomplete list (an empty title or item in a language, a section without items): nothing was saved.",
+    "save": "Save the list",
     "saved": "Saved: applied the next time the app opens"
   }
 }

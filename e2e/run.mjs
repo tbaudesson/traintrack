@@ -81,7 +81,7 @@ await page.waitForLoadState("load");
 expect(await page.evaluate(() => !!navigator.serviceWorker.controller), "the service worker never took control");
 
 // What the background warm-up does once signed in: every page and its files.
-const PAGES = ["", "/log", "/log/session", "/programs", "/progress", "/intervals", "/mobility", "/exercises", "/competitions", "/report", "/settings", "/more", "/horses", "/swim-techniques", "/onboarding", "/readiness", "/join", "/tests", "/running"];
+const PAGES = ["", "/log", "/log/session", "/programs", "/progress", "/intervals", "/mobility", "/exercises", "/competitions", "/report", "/settings", "/more", "/horses", "/swim-techniques", "/outing-checklist", "/onboarding", "/readiness", "/join", "/tests", "/running"];
 const warmed = await page.evaluate(async (pages) => {
   const files = new Set();
   for (const p of pages) {
@@ -156,6 +156,10 @@ await page.evaluate(async ({ user, exerciseRules }) => {
   const swim = readFileSync("supabase/migrations/060_swimming.sql", "utf8");
   const sheets = swim.slice(swim.indexOf("'", swim.indexOf("'swim_techniques',") + 18) + 1, swim.indexOf("')\nON CONFLICT")).replace(/''/g, "'");
   await page.evaluate((v) => localStorage.setItem("traintrack.guidance.swim_techniques", v), JSON.stringify(JSON.parse(sheets)));
+  // The pre-departure checklist, as migration 063 seeds it.
+  const check = readFileSync("supabase/migrations/063_outing_checklist.sql", "utf8");
+  const checklist = check.slice(check.indexOf("["), check.lastIndexOf("]") + 1).replace(/''/g, "'");
+  await page.evaluate((v) => localStorage.setItem("traintrack.guidance.outing_checklist", v), JSON.stringify(JSON.parse(checklist)));
 }
 
 await context.setOffline(true);
@@ -1315,6 +1319,24 @@ await test("hiking: its shelf, its place among the sports, and the metres climbe
   await page.reload();
   await climb.waitFor({ timeout: 10000 });
   expect((await climb.inputValue()) === "650", `the metres climbed were not kept: "${await climb.inputValue()}"`);
+});
+
+await test("the pre-departure checklist: ticked items are kept, a night out on one's own adds its own", async () => {
+  await page.goto(`${BASE}/fr/outing-checklist`);
+  const route = page.getByLabel("Itinéraire et heure de retour prévue laissés à un proche");
+  await route.waitFor({ timeout: 10000 });
+  const total = async () => Number((await page.getByText(/^\d+\/\d+ prêts$/).innerText()).split("/")[1].split(" ")[0]);
+  const before = await total();
+  expect(!(await page.getByText("Un abri pour la nuit", { exact: false }).count()), "the shelter is asked for a day out");
+  await route.check();
+  await page.getByLabel(/Sortie en autonomie, nuit dehors/).check();
+  await page.getByText("Un abri pour la nuit", { exact: false }).waitFor({ timeout: 5000 });
+  expect((await total()) > before, "a night out adds nothing");
+  await page.reload();
+  await route.waitFor({ timeout: 10000 });
+  expect(await route.isChecked(), "the ticked item was not kept");
+  expect(await page.getByLabel(/Sortie en autonomie, nuit dehors/).isChecked(), "the night-out choice was not kept");
+  await page.getByRole("button", { name: "Tout décocher" }).click();
 });
 
 await test("no page threw an error", async () => {

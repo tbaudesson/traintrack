@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { OutingChecklist } from "@/components/domain/OutingChecklist";
 import { SwimTechniqueChips } from "@/components/domain/SwimTechniqueSheet";
 import { useTranslations } from "next-intl";
 import { Footprints, Gauge, Info, Play, Target, Upload } from "lucide-react";
@@ -163,6 +164,19 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
                 {guessed ? tr("setPacesLink") : tr("pacesLink")}
               </Link>
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {workout.sport === "hike" && (
+        <Card>
+          <CardContent className="py-3">
+            <details>
+              <summary className="cursor-pointer text-sm font-semibold text-accent-text">{t("checklist")}</summary>
+              <div className="pt-3">
+                <OutingChecklist storageKey={workout.uuid ?? String(workout.id)} compact />
+              </div>
+            </details>
           </CardContent>
         </Card>
       )}

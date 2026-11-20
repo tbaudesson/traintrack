@@ -46,7 +46,8 @@
     "intervals": "Séance callisthenics",
     "competitions": "Compétitions",
     "horses": "Chevaux",
-    "swimTechniques": "Techniques de nage"
+    "swimTechniques": "Techniques de nage",
+    "outingChecklist": "Liste avant départ"
   },
   "sync": {
     "synced": "Synchronisé",
@@ -925,7 +926,8 @@
     "featHint_vaulting": "Compétitions et chevaux",
     "nutrition": "Nutrition",
     "injuries": "Blessures",
-    "swimming": "Natation"
+    "swimming": "Natation",
+    "hiking": "Randonnée"
   },
   "profile": {
     "title": "Profil",
@@ -1092,7 +1094,8 @@
     "zone4": "Soutenu : quelques mots seulement, l'effort est tenable 20 à 40 min.",
     "zone5": "Très dur : impossible de parler, quelques minutes au maximum.",
     "sport_hike": "Randonnée",
-    "climb": "Dénivelé positif (m)"
+    "climb": "Dénivelé positif (m)",
+    "checklist": "Liste avant départ"
   },
   "goals": {
     "titleOther": "Objectifs",
@@ -1458,7 +1461,9 @@
     "cat_trx": "TRX (sangles)",
     "swimTechTitle": "Techniques de nage",
     "swimTechText": "Les nages et les éducatifs, en vidéo",
-    "cat_hiking": "Randonnée"
+    "cat_hiking": "Randonnée",
+    "checklistTitle": "Liste avant départ",
+    "checklistText": "À cocher avant chaque sortie, et en autonomie"
   },
   "demo": {
     "watch": "Voir la démo",
@@ -2283,6 +2288,35 @@
     "linesHint": "Les trois langues sont obligatoires. Une clé utilisée par un programme ne doit pas changer.",
     "invalid": "Fiches incomplètes (clé manquante ou en double, un nom ou un point vide dans une langue, lien vidéo non https) : rien n’a été enregistré.",
     "save": "Enregistrer les fiches",
+    "saved": "Enregistré : appliqué à la prochaine ouverture de l’app"
+  },
+  "outingChecklist": {
+    "title": "Avant de partir",
+    "pageTitle": "Liste avant départ",
+    "intro": "À cocher avant chaque sortie à pied, et davantage avant une nuit dehors en autonomie. Une liste de préparation : elle ne remplace ni une formation, ni les conseils des gens du coin.",
+    "progress": "{done}/{total} prêts",
+    "autonomy": "Sortie en autonomie, nuit dehors",
+    "autonomyHint": "Ajoute l’abri, l’eau à rendre potable, la réserve de nourriture…",
+    "ready": "Tout est prêt. Bonne sortie !",
+    "care": "En cas de doute sur la météo ou la forme, on reporte.",
+    "reset": "Tout décocher",
+    "notLoaded": "La liste n’a pas encore été chargée : ouvrez l’app une fois avec une connexion."
+  },
+  "outingChecklistAdmin": {
+    "title": "Liste avant départ",
+    "intro": "Ce que l’app propose de cocher avant une sortie à pied ; les éléments « autonomie » ne s’affichent que pour une nuit dehors.",
+    "missing": "La liste n’est pas encore en base : appliquez la migration 063.",
+    "untitled": "Nouvelle section",
+    "count": "{count, plural, one {# élément} other {# éléments}}",
+    "sectionTitle": "Titre de la section",
+    "item": "Élément",
+    "autonomyOnly": "Seulement en autonomie (nuit dehors)",
+    "removeItem": "Retirer",
+    "addItem": "Ajouter un élément",
+    "removeSection": "Retirer la section",
+    "addSection": "Ajouter une section",
+    "invalid": "Liste incomplète (un titre ou un élément vide dans une langue, une section sans élément) : rien n’a été enregistré.",
+    "save": "Enregistrer la liste",
     "saved": "Enregistré : appliqué à la prochaine ouverture de l’app"
   }
 }

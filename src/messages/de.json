@@ -46,7 +46,8 @@
     "intervals": "Calisthenics-Einheit",
     "competitions": "Turniere",
     "horses": "Pferde",
-    "swimTechniques": "Schwimmtechniken"
+    "swimTechniques": "Schwimmtechniken",
+    "outingChecklist": "Checkliste"
   },
   "sync": {
     "synced": "Synchronisiert",
@@ -925,7 +926,8 @@
     "featHint_vaulting": "Wettkämpfe und Pferde",
     "nutrition": "Ernährung",
     "injuries": "Verletzungen",
-    "swimming": "Schwimmen"
+    "swimming": "Schwimmen",
+    "hiking": "Wandern"
   },
   "profile": {
     "title": "Profil",
@@ -1092,7 +1094,8 @@
     "zone4": "Hart: nur noch wenige Worte, 20 bis 40 min durchhaltbar.",
     "zone5": "Sehr hart: Sprechen unmöglich, höchstens einige Minuten.",
     "sport_hike": "Wandern",
-    "climb": "Höhenmeter bergauf (m)"
+    "climb": "Höhenmeter bergauf (m)",
+    "checklist": "Checkliste vor dem Aufbruch"
   },
   "goals": {
     "titleOther": "Ziele",
@@ -1458,7 +1461,9 @@
     "cat_trx": "TRX (Schlingentrainer)",
     "swimTechTitle": "Schwimmtechniken",
     "swimTechText": "Lagen und Technikübungen im Video",
-    "cat_hiking": "Wandern"
+    "cat_hiking": "Wandern",
+    "checklistTitle": "Checkliste vor dem Aufbruch",
+    "checklistText": "Vor jeder Tour abhaken, auch auf eigene Faust"
   },
   "demo": {
     "watch": "Demo ansehen",
@@ -2283,6 +2288,35 @@
     "linesHint": "Alle drei Sprachen sind Pflicht. Ein Schlüssel, den ein Programm nutzt, darf sich nicht ändern.",
     "invalid": "Unvollständige Karten (fehlender oder doppelter Schlüssel, leerer Name oder Punkt in einer Sprache, Videolink ohne https): nichts wurde gespeichert.",
     "save": "Karten speichern",
+    "saved": "Gespeichert: gilt beim nächsten Öffnen der App"
+  },
+  "outingChecklist": {
+    "title": "Vor dem Aufbruch",
+    "pageTitle": "Checkliste vor dem Aufbruch",
+    "intro": "Vor jeder Tour zu Fuß abzuhaken, und mehr vor einer Nacht draußen auf eigene Faust. Eine Vorbereitungsliste: sie ersetzt weder Ausbildung noch Rat von Ortskundigen.",
+    "progress": "{done}/{total} bereit",
+    "autonomy": "Auf eigene Faust, Nacht draußen",
+    "autonomyHint": "Fügt Unterschlupf, Wasseraufbereitung, Essensreserve … hinzu",
+    "ready": "Alles bereit. Gute Tour!",
+    "care": "Bei Zweifeln an Wetter oder Form: verschieben.",
+    "reset": "Alle Haken entfernen",
+    "notLoaded": "Die Liste wurde noch nicht geladen: Öffne die App einmal mit Internetverbindung."
+  },
+  "outingChecklistAdmin": {
+    "title": "Checkliste vor dem Aufbruch",
+    "intro": "Was die App vor einer Tour zu Fuß zum Abhaken anbietet; Punkte „auf eigene Faust“ erscheinen nur für eine Nacht draußen.",
+    "missing": "Die Liste ist noch nicht in der Datenbank: Migration 063 anwenden.",
+    "untitled": "Neuer Abschnitt",
+    "count": "{count, plural, one {# Punkt} other {# Punkte}}",
+    "sectionTitle": "Titel des Abschnitts",
+    "item": "Punkt",
+    "autonomyOnly": "Nur auf eigene Faust (Nacht draußen)",
+    "removeItem": "Entfernen",
+    "addItem": "Punkt hinzufügen",
+    "removeSection": "Abschnitt entfernen",
+    "addSection": "Abschnitt hinzufügen",
+    "invalid": "Unvollständige Liste (leerer Titel oder Punkt in einer Sprache, Abschnitt ohne Punkte): nichts wurde gespeichert.",
+    "save": "Liste speichern",
     "saved": "Gespeichert: gilt beim nächsten Öffnen der App"
   }
 }
