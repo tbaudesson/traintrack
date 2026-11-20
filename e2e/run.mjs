@@ -1252,13 +1252,11 @@ await test("an injured knee gets gentle moves on the home screen, and a pain com
   await setProfile({ injuryAreas: [{ area: "knee", since: "2026-11-01" }] });
   try {
     await page.goto(`${BASE}/fr`);
-    // Behind more pressing notes, it may be folded under "To look at".
-    await page.getByText("Ma semaine").first().waitFor({ timeout: 10000 });
-    const more = page.locator("details", { hasText: "À voir aussi" });
-    if ((await more.count()) && !(await more.getAttribute("open"))) await more.locator("summary").click();
+    // Always open, never folded with the other notes.
     const card = page.locator("section", { hasText: "Prendre soin d’une blessure" });
     await card.getByText("Mouvements doux · Genou").waitFor({ timeout: 10000 });
     await card.getByText("Ponts fessiers").waitFor({ timeout: 5000 });
+    expect(!(await page.locator("details", { hasText: "À voir aussi" }).locator("section", { hasText: "Prendre soin d’une blessure" }).count()), "the injury card is folded with the notes");
     // A move to avoid for a knee is never offered.
     expect(!(await card.getByText("Étirement des quadriceps debout").count()), "a move to avoid for the knee is offered");
   } finally {

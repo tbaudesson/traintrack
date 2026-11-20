@@ -431,10 +431,13 @@ export default function HomePage() {
   const progressInsight = insightOf(["records", "volumeUp", "volumeDown", "distanceUp", "distanceDown", "stagnation", "regularity"]);
   const steadyInsight = insightOf(["steady"]);
   const insightNote = (key: string, i: NonNullable<typeof painInsight>) => ({ key, node: <HomeInsight key={key} insight={i} exerciseName={exerciseName} /> });
+  // An injury in progress, or a pain coming back: health first, always open, never folded with the notes.
+  const injuryCare =
+    injuryG && (activeInjuries(profile?.injuryAreas ?? []).length > 0 || persistentPains(injuryG, pains, today).length > 0) ? (
+      <InjuryCareCard guidance={injuryG} injuries={profile?.injuryAreas ?? []} pains={pains} today={today} />
+    ) : null;
   const notes: { key: string; node: ReactNode }[] = [
     ...(load && (load.zone === "caution" || load.zone === "danger") ? [{ key: "load", node: <TrainingLoadCard key="load" load={load} /> }] : []),
-    // Only with something to say: an injury in progress, or a pain coming back.
-    ...(injuryG && (activeInjuries(profile?.injuryAreas ?? []).length > 0 || persistentPains(injuryG, pains, today).length > 0) ? [{ key: "injury", node: <InjuryCareCard key="injury" guidance={injuryG} injuries={profile?.injuryAreas ?? []} pains={pains} today={today} /> }] : []),
     ...(lowForm !== null && lowForm < LOW_READINESS ? [{ key: "form", node: <Fragment key="form"><ReadinessBanner readiness={lowForm} keptNormal={lighterToday.keptNormal} onKeep={lighterToday.setKeptNormal} /></Fragment> }] : []),
     ...(painInsight ? [insightNote("insight-pain", painInsight)] : []),
     ...(commentsNode ? [{ key: "comments", node: <Fragment key="comments">{commentsNode}</Fragment> }] : []),
@@ -843,6 +846,7 @@ export default function HomePage() {
             </div>
 
             <div className="space-y-3">
+              {injuryCare}
               {/* One thing at a time: the most pressing note, the others folded under "To look at". */}
               {notes.length > 0 && notes[0].node}
               {notes.length > 1 && (
