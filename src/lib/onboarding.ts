@@ -1,7 +1,7 @@
 import type { Equipment, FitnessLevel, TrainingGoal } from "@/db";
 import { rankTemplates, type ProgramGoal, type ProgramTemplate } from "./programTemplates";
 import { programCategory } from "./programCategories";
-import { adaptToEquipment } from "./programEquipment";
+import { adaptToEquipment, type ProgramEquipmentGuide } from "./programEquipment";
 import type { InjuryRules } from "./injuries";
 import type { PainArea } from "./pain";
 import type { FavoriteSport } from "./appTheme";
@@ -22,8 +22,6 @@ export const GOAL_OF_SPORT: Record<FavoriteSport, TrainingGoal> = {
 /** The program goal a training goal leads to. */
 export const programGoalOf = (goal: TrainingGoal): ProgramGoal => (goal === "general_fitness" ? "general" : goal);
 
-const GYM: Equipment[] = ["barbell", "machine", "cable"];
-
 /**
  * Three ready-made programs to suggest at sign-up: those of the athlete's
  * sport first, then the closest to the goal and level, and only programs for
@@ -31,10 +29,11 @@ const GYM: Equipment[] = ["barbell", "machine", "cable"];
  * the athlete has: no pull-up without a bar, no barbell without one.
  */
 export function recommendPrograms(
-  input: { goal: TrainingGoal; level: FitnessLevel; equipment: Equipment[]; sport?: FavoriteSport | null; injured?: PainArea[]; rules?: InjuryRules },
+  input: { goal: TrainingGoal; level: FitnessLevel; equipment: Equipment[]; sport?: FavoriteSport | null; injured?: PainArea[]; rules?: InjuryRules; equipmentGuide?: ProgramEquipmentGuide | null },
   catalogue: ProgramTemplate[]
 ): (ProgramTemplate & { adapted?: boolean })[] {
-  const atHome = input.equipment.length > 0 && !input.equipment.some((e) => GYM.includes(e));
+  const gym = input.equipmentGuide?.gym ?? [];
+  const atHome = gym.length > 0 && input.equipment.length > 0 && !input.equipment.some((e) => gym.includes(e));
   const ranked = rankTemplates({ goal: programGoalOf(input.goal), level: input.level }, catalogue);
   const fitting = atHome ? ranked.filter((t) => t.homeFriendly || t.goal === "endurance") : ranked;
   const pool = fitting.length >= 3 ? fitting : ranked;
@@ -52,7 +51,7 @@ export function recommendPrograms(
     if (trx) picks = input.sport ? [...picks.slice(0, 2), trx] : [trx, ...picks.slice(0, 2)];
   }
   return picks.map((t) => {
-    const { structure, swapped } = adaptToEquipment(t.structure, input.equipment, input.injured, input.rules);
+    const { structure, swapped } = adaptToEquipment(input.equipmentGuide, t.structure, input.equipment, input.injured, input.rules);
     return swapped ? { ...t, structure, adapted: true } : t;
   });
 }

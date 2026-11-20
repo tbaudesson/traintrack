@@ -929,7 +929,8 @@
     "swimming": "Swimming",
     "hiking": "Hiking",
     "mobility": "Warm-ups",
-    "timed": "Timed sessions"
+    "timed": "Timed sessions",
+    "equipment": "Equipment"
   },
   "profile": {
     "title": "Profile",
@@ -2391,6 +2392,30 @@
     "invalid": "Incomplete (a length without a step, a badly written rhythm, a level without a rhythm, a focus without a bodyweight exercise, a duplicate name…): nothing was saved.",
     "unknown": "Not in the library: {names}. Add them first; nothing was saved.",
     "save": "Save the timed sessions",
+    "saved": "Saved: applied next time the app opens"
+  },
+  "equipmentAdmin": {
+    "title": "Program equipment",
+    "intro": "What the ready-made programs need, and what stands in for an exercise when the athlete lacks the equipment (the program suggested at sign-up is adapted).",
+    "missing": "The equipment is not in the database yet: apply migration 066.",
+    "gym": "Gym equipment",
+    "gymHint": "An athlete with none of this is offered programs for home.",
+    "standIns": "Equipment that stands in for another",
+    "standInsHint": "For each piece of equipment, what does the same job (kettlebells for dumbbells, for instance).",
+    "exercises": "{count, plural, one {# exercise} other {# exercises}}",
+    "exercisesHint": "Names are the library’s (in English); stand-ins best first, separated by commas.",
+    "search": "Search an exercise",
+    "untitled": "New exercise",
+    "name": "Exercise (library name)",
+    "need": "Equipment needed",
+    "noNeed": "Nothing beyond the body",
+    "alternatives": "Stand-ins, in order",
+    "remove": "Remove",
+    "add": "Add an exercise",
+    "invalid": "Incomplete (a stand-in equal to the exercise or listed twice…): nothing was saved.",
+    "duplicate": "Exercises listed twice: {names}. Nothing was saved.",
+    "unknown": "Not in the library: {names}. Nothing was saved.",
+    "save": "Save the equipment",
     "saved": "Saved: applied next time the app opens"
   }
 }

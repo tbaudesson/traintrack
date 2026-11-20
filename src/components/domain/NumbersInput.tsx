@@ -6,18 +6,21 @@ import { Input } from "@/components/ui/input";
 /**
  * A list of values typed as "10, 15, 20": kept as typed while being edited,
  * handed back once left. Values that are not numbers are dropped, unless
- * `asText` keeps them as written ("30-30").
+ * `asText` keeps them as written ("30-30"). With `commas`, only commas
+ * separate (names with spaces: "Dumbbell Row, Push-up").
  */
 export function NumbersInput<T extends number | string>({
   value,
   onChange,
   label,
   asText,
+  commas,
 }: {
   value: T[];
   onChange: (next: T[]) => void;
   label: string;
   asText?: boolean;
+  commas?: boolean;
 }) {
   const [text, setText] = useState<string | null>(null);
   return (
@@ -28,8 +31,8 @@ export function NumbersInput<T extends number | string>({
       onChange={(e) => setText(e.target.value)}
       onBlur={() => {
         if (text === null) return;
-        const parts = text.split(/[,;\s]+/).filter(Boolean);
-        onChange((asText ? parts : parts.map(Number).filter((n) => Number.isFinite(n))) as T[]);
+        const parts = text.split(commas ? /\s*[,;]\s*/ : /[,;\s]+/).map((x) => x.trim()).filter(Boolean);
+        onChange((asText || commas ? parts : parts.map(Number).filter((n) => Number.isFinite(n))) as T[]);
         setText(null);
       }}
       className="h-9"

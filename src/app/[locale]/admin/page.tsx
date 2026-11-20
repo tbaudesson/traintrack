@@ -30,7 +30,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Apple, Bandage, Check, Mountain, PersonStanding, Timer, Waves, Trash2, Loader2, ShieldCheck, Plus, Users2, CreditCard, ClipboardList, Mail, Pencil, X, type LucideIcon } from "lucide-react";
+import { Apple, Bandage, Check, Dumbbell, Mountain, PersonStanding, Timer, Waves, Trash2, Loader2, ShieldCheck, Plus, Users2, CreditCard, ClipboardList, Mail, Pencil, X, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TemplatesTab } from "@/components/domain/TemplatesTab";
 import { NutritionGuidanceTab } from "@/components/domain/NutritionGuidanceTab";
@@ -39,14 +39,16 @@ import { SwimTechniquesTab } from "@/components/domain/SwimTechniquesTab";
 import { OutingChecklistTab } from "@/components/domain/OutingChecklistTab";
 import { MobilityMovesTab } from "@/components/domain/MobilityMovesTab";
 import { TimedSessionsTab } from "@/components/domain/TimedSessionsTab";
+import { ProgramEquipmentTab } from "@/components/domain/ProgramEquipmentTab";
 
-type Tab = "users" | "invitations" | "plans" | "templates" | "nutrition" | "injuries" | "mobility" | "timed" | "swimming" | "hiking" | "gdpr";
+type Tab = "users" | "invitations" | "plans" | "templates" | "equipment" | "nutrition" | "injuries" | "mobility" | "timed" | "swimming" | "hiking" | "gdpr";
 
 const TABS: { id: Tab; icon: LucideIcon }[] = [
   { id: "users", icon: Users2 },
   { id: "invitations", icon: Mail },
   { id: "plans", icon: CreditCard },
   { id: "templates", icon: ClipboardList },
+  { id: "equipment", icon: Dumbbell },
   { id: "nutrition", icon: Apple },
   { id: "injuries", icon: Bandage },
   { id: "mobility", icon: PersonStanding },
@@ -113,6 +115,7 @@ export default function AdminPage() {
           {tab === "invitations" && <InvitationsTab />}
           {tab === "plans" && <PlansTab />}
           {tab === "templates" && <TemplatesTab />}
+          {tab === "equipment" && <ProgramEquipmentTab />}
           {tab === "nutrition" && <NutritionGuidanceTab />}
           {tab === "injuries" && <InjuryGuidanceTab />}
           {tab === "mobility" && <MobilityMovesTab />}

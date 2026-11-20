@@ -1,15 +1,22 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import { demoVideo, isPlayable } from "./demoVideos";
-import { VAULTING_EXERCISES } from "./vaultingExercises";
 import { libraryFromMigrations } from "./libraryFromMigrations";
 import { mobilityFromMigrations, timedFromMigrations } from "./injuryGuidanceFromMigrations";
+
+/** The exercises migration 040 adds for vaulting (off the horse), from that migration. */
+const VAULTING_NAMES = (() => {
+  const sql = readFileSync("supabase/migrations/040_vaulting.sql", "utf8");
+  const block = sql.slice(sql.indexOf("INSERT INTO exercises"), sql.indexOf("INSERT INTO program_templates"));
+  return [...block.matchAll(/^  \('((?:[^']|'')+)'/gm)].map((m) => m[1].replace(/''/g, "'"));
+})();
 
 const LIBRARY = new Map(libraryFromMigrations().map((r) => [r.name, r]));
 
 describe("demo videos", () => {
   it("cover every move of the timed sessions, the vaulting and the warm-ups", () => {
     for (const e of timedFromMigrations().exercises) expect(demoVideo(LIBRARY.get(e.name)?.videoUrl), e.name).not.toBeNull();
-    for (const e of VAULTING_EXERCISES) expect(demoVideo(LIBRARY.get(e.name)?.videoUrl), e.name).not.toBeNull();
+    for (const name of VAULTING_NAMES) expect(demoVideo(LIBRARY.get(name)?.videoUrl), name).not.toBeNull();
     for (const e of mobilityFromMigrations().moves) expect(demoVideo(e.video), e.key).not.toBeNull();
   });
 

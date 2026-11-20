@@ -200,6 +200,10 @@ await page.evaluate(async ({ user, libraryRows }) => {
     const value = m065.slice(start, m065.indexOf("')\nON CONFLICT", start)).replace(/''/g, "'");
     await page.evaluate(([k, v]) => localStorage.setItem(`traintrack.guidance.${k}`, v), [key, JSON.stringify(JSON.parse(value))]);
   }
+  // What the ready-made programs need, as migration 066 seeds it.
+  const m066 = readFileSync("supabase/migrations/066_program_equipment.sql", "utf8");
+  const equipment = m066.slice(m066.indexOf("'program_equipment', '") + 22, m066.indexOf("')\nON CONFLICT")).replace(/''/g, "'");
+  await page.evaluate((v) => localStorage.setItem("traintrack.guidance.program_equipment", v), JSON.stringify(JSON.parse(equipment)));
 }
 
 await context.setOffline(true);

@@ -929,7 +929,8 @@
     "swimming": "Schwimmen",
     "hiking": "Wandern",
     "mobility": "Aufwärmen",
-    "timed": "Intervall-Einheiten"
+    "timed": "Intervall-Einheiten",
+    "equipment": "Ausrüstung"
   },
   "profile": {
     "title": "Profil",
@@ -2391,6 +2392,30 @@
     "invalid": "Unvollständig (eine Dauer ohne Stufe, ein falsch geschriebener Rhythmus, ein Niveau ohne Rhythmus, ein Bereich ohne Körpergewichtsübung, ein doppelter Name…): nichts gespeichert.",
     "unknown": "Nicht in der Bibliothek: {names}. Zuerst hinzufügen; nichts gespeichert.",
     "save": "Intervall-Einheiten speichern",
+    "saved": "Gespeichert: gilt beim nächsten Öffnen der App"
+  },
+  "equipmentAdmin": {
+    "title": "Ausrüstung der Programme",
+    "intro": "Was die fertigen Programme brauchen und was eine Übung ersetzt, wenn die Ausrüstung fehlt (das bei der Anmeldung vorgeschlagene Programm wird angepasst).",
+    "missing": "Die Ausrüstung ist noch nicht in der Datenbank: Migration 066 anwenden.",
+    "gym": "Studio-Ausrüstung",
+    "gymHint": "Wer nichts davon hat, bekommt Programme für zu Hause.",
+    "standIns": "Ausrüstung, die eine andere ersetzt",
+    "standInsHint": "Für jede Ausrüstung, was denselben Zweck erfüllt (z. B. Kettlebells statt Kurzhanteln).",
+    "exercises": "{count, plural, one {# Übung} other {# Übungen}}",
+    "exercisesHint": "Namen aus der Bibliothek (Englisch); Ersatzübungen, die beste zuerst, durch Kommas getrennt.",
+    "search": "Übung suchen",
+    "untitled": "Neue Übung",
+    "name": "Übung (Name in der Bibliothek)",
+    "need": "Benötigte Ausrüstung",
+    "noNeed": "Nur der Körper",
+    "alternatives": "Ersatzübungen, der Reihe nach",
+    "remove": "Entfernen",
+    "add": "Übung hinzufügen",
+    "invalid": "Unvollständig (eine Ersatzübung gleich der Übung oder doppelt…): nichts gespeichert.",
+    "duplicate": "Doppelte Übungen: {names}. Nichts gespeichert.",
+    "unknown": "Nicht in der Bibliothek: {names}. Nichts gespeichert.",
+    "save": "Ausrüstung speichern",
     "saved": "Gespeichert: gilt beim nächsten Öffnen der App"
   }
 }

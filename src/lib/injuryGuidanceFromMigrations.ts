@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { parseTimed, type TimedGuidance } from "./intervals";
+import { parseProgramEquipment, type ProgramEquipmentGuide } from "./programEquipment";
 import { parseInjuryGuidance, type InjuryGuidance } from "./injuryGuidance";
 import type { ExerciseRules, InjuryRules } from "./injuries";
 import { parseMobility, type MobilityGuidance } from "./mobility";
@@ -45,5 +46,14 @@ export function timedFromMigrations(): TimedGuidance {
   const start = text.indexOf("'timed_sessions', '") + 19;
   const g = parseTimed(text.slice(start, text.indexOf("')\nON CONFLICT", start)).replace(/''/g, "'"));
   if (!g) throw new Error("The timed sessions of migration 065 do not hold together");
+  return g;
+}
+
+/** For the tests only: what the ready-made programs need, as migration 066 seeds it. */
+export function programEquipmentFromMigrations(): ProgramEquipmentGuide {
+  const text = sql("066_program_equipment.sql");
+  const start = text.indexOf("'program_equipment', '") + 22;
+  const g = parseProgramEquipment(text.slice(start, text.indexOf("')\nON CONFLICT", start)).replace(/''/g, "'"));
+  if (!g) throw new Error("The equipment reference of migration 066 does not hold together");
   return g;
 }

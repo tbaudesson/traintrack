@@ -929,7 +929,8 @@
     "swimming": "Natation",
     "hiking": "Randonnée",
     "mobility": "Échauffements",
-    "timed": "Séances minutées"
+    "timed": "Séances minutées",
+    "equipment": "Matériel"
   },
   "profile": {
     "title": "Profil",
@@ -2391,6 +2392,30 @@
     "invalid": "Réglages incomplets (une durée sans palier, un rythme mal écrit, un niveau sans rythme proposé, une zone sans exercice au poids du corps, un nom en double…) : rien n’a été enregistré.",
     "unknown": "Absents de la bibliothèque : {names}. Ajoutez-les d’abord, rien n’a été enregistré.",
     "save": "Enregistrer les séances minutées",
+    "saved": "Enregistré : appliqué à la prochaine ouverture de l’app"
+  },
+  "equipmentAdmin": {
+    "title": "Matériel des programmes",
+    "intro": "Ce dont les programmes types ont besoin, et ce qui remplace un exercice quand l’athlète n’a pas le matériel (à l’inscription, le programme proposé est adapté).",
+    "missing": "Le matériel n’est pas encore en base : appliquez la migration 066.",
+    "gym": "Matériel de salle",
+    "gymHint": "Un athlète qui n’a rien de tout cela se voit proposer des programmes à la maison.",
+    "standIns": "Matériel qui en remplace un autre",
+    "standInsHint": "Pour chaque matériel, ce qui fait le même travail (les kettlebells pour les haltères, par exemple).",
+    "exercises": "{count, plural, one {# exercice} other {# exercices}}",
+    "exercisesHint": "Les noms sont ceux de la bibliothèque (en anglais) ; les remplaçants, du meilleur au moins bon, séparés par des virgules.",
+    "search": "Chercher un exercice",
+    "untitled": "Nouvel exercice",
+    "name": "Exercice (nom dans la bibliothèque)",
+    "need": "Matériel nécessaire",
+    "noNeed": "Rien de plus que le corps",
+    "alternatives": "Remplaçants, dans l’ordre",
+    "remove": "Retirer",
+    "add": "Ajouter un exercice",
+    "invalid": "Réglages incomplets (un remplaçant identique à l’exercice ou en double…) : rien n’a été enregistré.",
+    "duplicate": "Exercices en double : {names}. Rien n’a été enregistré.",
+    "unknown": "Absents de la bibliothèque : {names}. Rien n’a été enregistré.",
+    "save": "Enregistrer le matériel",
     "saved": "Enregistré : appliqué à la prochaine ouverture de l’app"
   }
 }

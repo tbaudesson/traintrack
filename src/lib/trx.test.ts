@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TRX_EXERCISES } from "./trxExercises";
+import { programEquipmentFromMigrations } from "./injuryGuidanceFromMigrations";
 import { TRX_TEMPLATES } from "./trxTemplates";
 import { buildIntervalSession } from "./intervals";
 import { timedFromMigrations } from "./injuryGuidanceFromMigrations";
@@ -12,7 +12,10 @@ import { PROGRAM_TEMPLATES } from "./programTemplates";
 import { injuryRulesFromMigrations } from "./injuryGuidanceFromMigrations";
 import { libraryFromMigrations } from "./libraryFromMigrations";
 
+const EQ = programEquipmentFromMigrations();
+
 const LIBRARY = new Map(libraryFromMigrations().map((r) => [r.name, r]));
+const TRX_EXERCISES = [...LIBRARY.values()].filter((r) => r.equipment === "suspension");
 
 
 const INJURY_RULES = injuryRulesFromMigrations();
@@ -29,7 +32,7 @@ describe("TRX", () => {
   it("offers two programs in each language, with straps only, on their own shelf", () => {
     for (const locale of ["fr", "en", "de"]) expect(TRX_TEMPLATES.filter((t) => t.locale === locale)).toHaveLength(2);
     for (const t of TRX_TEMPLATES) {
-      expect(missingEquipment(t.structure, ["suspension"]), t.id).toEqual([]);
+      expect(missingEquipment(EQ, t.structure, ["suspension"]), t.id).toEqual([]);
       expect(t.structure.flatMap((d) => d.exercises).every((e) => e.exerciseName.startsWith("TRX ")), t.id).toBe(true);
       expect(programCategory(t)).toBe("trx");
     }
@@ -49,9 +52,9 @@ describe("TRX", () => {
 
   it("is suggested at sign-up to an athlete with straps", () => {
     const fr = PROGRAM_TEMPLATES.filter((t) => t.locale === "fr");
-    const picks = recommendPrograms({ goal: "general_fitness", level: "beginner", equipment: ["bodyweight", "suspension"] }, fr);
+    const picks = recommendPrograms({ goal: "general_fitness", level: "beginner", equipment: ["bodyweight", "suspension"], equipmentGuide: EQ }, fr);
     expect(picks[0].name).toBe("TRX débutant");
-    const none = recommendPrograms({ goal: "general_fitness", level: "beginner", equipment: ["bodyweight"] }, fr);
+    const none = recommendPrograms({ goal: "general_fitness", level: "beginner", equipment: ["bodyweight"], equipmentGuide: EQ }, fr);
     expect(none.some((t) => t.name.startsWith("TRX"))).toBe(false);
   });
 });

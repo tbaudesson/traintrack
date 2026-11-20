@@ -1,10 +1,17 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import { VAULTING_TEMPLATES, vaultingPhase, vaultingTemplates } from "./vaultingTemplates";
-import { VAULTING_EXERCISES } from "./vaultingExercises";
 import { PROGRAM_TEMPLATES } from "./programTemplates";
 import { programKind } from "./programCards";
 import { injuryRulesFromMigrations } from "./injuryGuidanceFromMigrations";
 import { libraryFromMigrations } from "./libraryFromMigrations";
+
+/** The exercises migration 040 adds for vaulting (off the horse), from that migration. */
+const VAULTING_NAMES = (() => {
+  const sql = readFileSync("supabase/migrations/040_vaulting.sql", "utf8");
+  const block = sql.slice(sql.indexOf("INSERT INTO exercises"), sql.indexOf("INSERT INTO program_templates"));
+  return [...block.matchAll(/^  \('((?:[^']|'')+)'/gm)].map((m) => m[1].replace(/''/g, "'"));
+})();
 
 const LIBRARY = new Map(libraryFromMigrations().map((r) => [r.name, r]));
 
@@ -47,9 +54,10 @@ describe("vaulting plans", () => {
   it("use only exercises the library knows, translated and with injury rules", () => {
     const used = new Set(VAULTING_TEMPLATES.flatMap((t) => t.structure.flatMap((d) => d.exercises.map((e) => e.exerciseName))));
     for (const name of used) expect(LIBRARY.get(name)?.nameFr, name).toBeTruthy();
-    for (const e of VAULTING_EXERCISES) {
-      expect(LIBRARY.get(e.name)?.descriptionFr, e.name).toBeTruthy();
-      expect(INJURY_RULES[e.name], e.name).toBeDefined();
+    expect(VAULTING_NAMES).toHaveLength(8);
+    for (const name of VAULTING_NAMES) {
+      expect(LIBRARY.get(name)?.descriptionFr, name).toBeTruthy();
+      expect(INJURY_RULES[name], name).toBeDefined();
     }
   });
 
