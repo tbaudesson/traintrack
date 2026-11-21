@@ -47,7 +47,8 @@
     "competitions": "Turniere",
     "horses": "Pferde",
     "swimTechniques": "Schwimmtechniken",
-    "outingChecklist": "Checkliste"
+    "outingChecklist": "Checkliste",
+    "assistant": "Assistent"
   },
   "sync": {
     "synced": "Synchronisiert",
@@ -425,7 +426,9 @@
     "detailsHint": "Die Diagramme, bei Bedarf zu öffnen.",
     "loadChart": "Trainingsbelastung",
     "sectionMine": "Meine Zahlen",
-    "loadHistory": "Belastung nach Disziplin"
+    "loadHistory": "Belastung nach Disziplin",
+    "assistantLink": "Assistent: Was in meinen Programmen ändern?",
+    "assistantHint": "Erklärte Vorschläge, nur übernommen, wenn du willst"
   },
   "exercises": {
     "translations": "Übersetzungen",
@@ -2636,5 +2639,34 @@
     "zone_7": "neuromuskulär",
     "needFtp": "Gib deine FTP an, um Leistungszone und Belastung der Fahrt zu sehen.",
     "tssHint": "Aus der Durchschnittsleistung geschätzt (der genaue TSS nutzt die normalisierte Leistung, höher bei unregelmäßiger Fahrt). Ein Richtwert, getrennt von der Belastung Minuten × Anstrengung."
+  },
+  "assistant": {
+    "title": "Assistent",
+    "intro": "Was deine Einheiten sagen und was sich in deinen Programmen zu ändern lohnt. Jeder Vorschlag zeigt, was ihn ausgelöst hat, und die genaue Änderung: Nichts ändert sich ohne dein Okay.",
+    "programsTitle": "In deinen Programmen anzupassen",
+    "nothing": "Im Moment nichts anzupassen. Der Assistent schaut auf die letzten 3 Einheiten jedes Programmtags und deine verpassten Tage über 4 Wochen.",
+    "kind_skipped": "Eine oft ausgelassene Übung",
+    "kind_progress": "Eine Übung, die leicht wird",
+    "kind_shortened": "Eine oft verkürzte Einheit",
+    "kind_missedDay": "Ein oft verpasster Tag",
+    "why": "Beobachtung:",
+    "why_skipped": "in {count} der letzten {of} Einheiten dieses Tages nicht gemacht.",
+    "why_progress": "alle {sets} Sätze am oberen Ende ({reps} Wiederholungen oder mehr) in den letzten {count} Einheiten.",
+    "why_shortened": "im Schnitt {percent} % der geplanten Sätze in den letzten {count} Einheiten.",
+    "why_missedDay": "die Einheit am {weekday} {count}-mal in 4 Wochen verpasst.",
+    "proposal": "Vorschlag:",
+    "change_replace": "{from} durch {to} ersetzen (gleiche Muskeln, mit deiner Ausrüstung, passend zu deinen Verletzungen).",
+    "change_remove": "{exercise} aus dieser Einheit entfernen (kein passender Ersatz gefunden).",
+    "change_addSet": "ein Satz mehr bei {exercise}.",
+    "change_trimDay": "ein Satz weniger bei jeder Übung dieser Einheit (nie unter 2).",
+    "change_moveWeekday": "die Einheit vom {from} auf {to} verlegen.",
+    "apply": "Übernehmen",
+    "ignore": "Ignorieren",
+    "applied": "Übernommen. Die vorherige Version bleibt im Verlauf des Programms.",
+    "seeProgram": "Programm ansehen",
+    "control": "Du behältst die Kontrolle: Ein ignorierter Vorschlag kommt nur wieder, wenn neue Einheiten ihn bestätigen, und eine Änderung lässt sich im Verlauf des Programms rückgängig machen.",
+    "readingTitle": "Was deine letzten 4 Wochen sagen",
+    "noReading": "Noch nicht genug Einheiten für Schlüsse.",
+    "how": "Diese Vorschläge stammen aus einfachen, nachprüfbaren Regeln, angewendet auf deine Einheiten (keine Daten werden weitergegeben). Es sind Trainingshinweise, keine medizinischen Ratschläge."
   }
 }

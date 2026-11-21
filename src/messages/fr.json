@@ -47,7 +47,8 @@
     "competitions": "Compétitions",
     "horses": "Chevaux",
     "swimTechniques": "Techniques de nage",
-    "outingChecklist": "Liste avant départ"
+    "outingChecklist": "Liste avant départ",
+    "assistant": "Assistant"
   },
   "sync": {
     "synced": "Synchronisé",
@@ -425,7 +426,9 @@
     "detailsHint": "Les graphiques, à ouvrir au besoin.",
     "loadChart": "Charge d'entraînement",
     "sectionMine": "Mes chiffres",
-    "loadHistory": "Charge par discipline"
+    "loadHistory": "Charge par discipline",
+    "assistantLink": "Assistant : que changer dans mes programmes ?",
+    "assistantHint": "Des propositions expliquées, appliquées seulement si vous le voulez"
   },
   "exercises": {
     "translations": "Traductions",
@@ -2636,5 +2639,34 @@
     "zone_7": "neuromusculaire",
     "needFtp": "Indiquez votre FTP pour voir la zone de puissance et la charge de la sortie.",
     "tssHint": "Estimé à partir de la puissance moyenne (le TSS exact utilise la puissance normalisée, plus haute sur un parcours irrégulier). Indicatif, séparé de la charge minutes × effort."
+  },
+  "assistant": {
+    "title": "Assistant",
+    "intro": "Ce que disent vos séances, et ce qu’il serait utile de changer dans vos programmes. Chaque proposition montre ce qui l’a déclenchée et le changement exact : rien ne change sans votre accord.",
+    "programsTitle": "À ajuster dans vos programmes",
+    "nothing": "Rien à ajuster pour l’instant. L’assistant regarde les 3 dernières séances de chaque jour de vos programmes et vos jours manqués sur 4 semaines.",
+    "kind_skipped": "Un exercice souvent laissé de côté",
+    "kind_progress": "Un exercice qui devient facile",
+    "kind_shortened": "Une séance souvent écourtée",
+    "kind_missedDay": "Un jour souvent manqué",
+    "why": "Constat :",
+    "why_skipped": "pas fait lors de {count} des {of} dernières séances de ce jour.",
+    "why_progress": "les {sets} séries faites en haut de la fourchette ({reps} répétitions ou plus) lors des {count} dernières séances.",
+    "why_shortened": "en moyenne {percent} % des séries prévues faites lors des {count} dernières séances.",
+    "why_missedDay": "la séance du {weekday} manquée {count} fois en 4 semaines.",
+    "proposal": "Proposition :",
+    "change_replace": "remplacer {from} par {to} (mêmes muscles, avec votre matériel, compatible avec vos blessures).",
+    "change_remove": "retirer {exercise} de cette séance (aucun remplaçant adapté trouvé).",
+    "change_addSet": "passer {exercise} à une série de plus.",
+    "change_trimDay": "une série de moins sur chaque exercice de cette séance (jamais moins de 2).",
+    "change_moveWeekday": "déplacer la séance du {from} au {to}.",
+    "apply": "Appliquer",
+    "ignore": "Ignorer",
+    "applied": "Appliqué. La version d’avant reste dans l’historique du programme.",
+    "seeProgram": "Voir le programme",
+    "control": "Vous gardez la main : une proposition ignorée revient seulement si de nouvelles séances la confirment, et un changement appliqué se défait depuis l’historique du programme.",
+    "readingTitle": "Ce que disent vos 4 dernières semaines",
+    "noReading": "Pas encore assez de séances pour tirer des conclusions.",
+    "how": "Ces propositions viennent de règles simples et vérifiables appliquées à vos séances (aucune donnée n’est envoyée ailleurs). Ce sont des repères d’entraînement, pas un avis médical."
   }
 }

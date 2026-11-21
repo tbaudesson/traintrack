@@ -1708,6 +1708,49 @@ await test("a watch file (TCX) fills a ride with its power, placed in the FTP's 
   await page.getByText(/60 longueurs · SWOLF 43/).waitFor({ timeout: 5000 });
 });
 
+await test("the assistant explains a proposal from the sessions done, and applies it only when asked", async () => {
+  // A program whose push-ups were left out in 2 of its last 3 sessions.
+  const programId = await page.evaluate(async (user) => {
+    const db = await new Promise((res, rej) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+    const all = (store) => new Promise((res) => { const r = db.transaction(store).objectStore(store).getAll(); r.onsuccess = () => res(r.result); });
+    const add = (store, row) => new Promise((res, rej) => { const tx = db.transaction(store, "readwrite"); const r = tx.objectStore(store).add(row); tx.oncomplete = () => res(r.result); tx.onerror = () => rej(tx.error); });
+    const lib = await all("exercises");
+    const id = (name) => lib.find((e) => e.name === name && !e.isCustom).id;
+    const now = new Date().toISOString();
+    const day = { key: "e2e-a", name: "Jour A", exercises: [
+      { exerciseName: "Back Squat", targetSets: 3, targetReps: "8-10", restSec: 120 },
+      { exerciseName: "Push-up", targetSets: 3, targetReps: "10-15", restSec: 60 },
+    ] };
+    const pid = await add("programs", { userId: user, ownerUserId: user, uuid: `e2e-coach-${Date.now()}`, name: "Programme assistant", structure: [day], _dirty: 0, createdAt: now, updatedAt: now });
+    const dates = [12, 8, 4].map((n) => { const d = new Date(Date.now() - n * 86400000); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; });
+    for (const [i, date] of dates.entries()) {
+      const wid = await add("workouts", { userId: user, uuid: `e2e-coach-w${i}-${Date.now()}`, date, title: "Programme assistant — Jour A", kind: "strength", programId: pid, programDayIndex: 0, plannedDay: day, _dirty: 0, createdAt: now, updatedAt: now });
+      const done = [["Back Squat", [8, 8, 8]], ...(i === 0 ? [["Push-up", [12, 12, 12]]] : [])];
+      for (const [name, reps] of done) for (const [n, r] of reps.entries()) await add("workoutSets", { userId: user, uuid: `e2e-coach-s${i}-${name}-${n}-${Date.now()}`, workoutId: wid, exerciseId: id(name), setNumber: n + 1, reps: r, weightKg: name === "Back Squat" ? 60 : undefined, completed: true, _dirty: 0, createdAt: now, updatedAt: now });
+    }
+    db.close();
+    return pid;
+  }, USER);
+  await page.goto(`${BASE}/fr/assistant`);
+  const card = page.getByRole("article", { name: "Un exercice souvent laissé de côté" });
+  await card.waitFor({ timeout: 10000 });
+  await card.getByText(/pas fait lors de 2 des 3 dernières séances/).waitFor({ timeout: 5000 });
+  await card.getByText(/Proposition :/).waitFor({ timeout: 5000 });
+  // Nothing changed before "Apply".
+  const pushUps = () => page.evaluate(async (id) => {
+    const db = await new Promise((res) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); });
+    const p = await new Promise((res) => { const r = db.transaction("programs").objectStore("programs").get(id); r.onsuccess = () => res(r.result); });
+    db.close();
+    return p.structure[0].exercises.some((e) => e.exerciseName === "Push-up");
+  }, programId);
+  expect(await pushUps(), "the program changed before Apply");
+  await card.getByRole("button", { name: "Appliquer" }).click();
+  await page.getByText(/Appliqué\. La version d’avant reste/).waitFor({ timeout: 5000 });
+  expect(!(await pushUps()), "the push-ups are still in the program");
+  await page.getByRole("link", { name: "Voir le programme" }).click();
+  await page.getByText(/Historique des modifications \(1\)/).waitFor({ timeout: 10000 });
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });

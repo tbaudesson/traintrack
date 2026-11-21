@@ -33,10 +33,10 @@ export const NAVIGATION_CATALOG: readonly NavigationSectionDef[] = [
   {
     id: "performance", href: "/progress", icon: "TrendingUp", key: "sectionPerformance", children: [
       { id: "progress", href: "/progress", icon: "TrendingUp", key: "progress" },
+      { id: "assistant", href: "/assistant", icon: "Sparkles", key: "assistant" },
       { id: "readiness", href: "/readiness", icon: "HeartPulse", key: "fitness", feature: "readiness" },
       { id: "health", href: "/health", icon: "Activity", key: "health" },
       { id: "nutrition", href: "/nutrition", icon: "Apple", key: "nutrition", feature: "nutrition" },
-      { id: "goals", href: "/progress", icon: "Target", key: "goals" },
       { id: "challenges", href: "/challenges", icon: "Flag", key: "challenges", feature: "challenges" },
     ],
   },

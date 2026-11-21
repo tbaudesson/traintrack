@@ -47,7 +47,8 @@
     "competitions": "Competitions",
     "horses": "Horses",
     "swimTechniques": "Swimming techniques",
-    "outingChecklist": "Pre-departure checklist"
+    "outingChecklist": "Pre-departure checklist",
+    "assistant": "Assistant"
   },
   "sync": {
     "synced": "Synced",
@@ -425,7 +426,9 @@
     "detailsHint": "The charts, to open when needed.",
     "loadChart": "Training load",
     "sectionMine": "My figures",
-    "loadHistory": "Load by discipline"
+    "loadHistory": "Load by discipline",
+    "assistantLink": "Assistant: what to change in my programs?",
+    "assistantHint": "Explained proposals, applied only if you want"
   },
   "exercises": {
     "translations": "Translations",
@@ -2636,5 +2639,34 @@
     "zone_7": "neuromuscular",
     "needFtp": "Give your FTP to see the power zone and the ride load.",
     "tssHint": "Estimated from the average power (the exact TSS uses normalised power, higher on an uneven ride). A guide, kept apart from the minutes × effort load."
+  },
+  "assistant": {
+    "title": "Assistant",
+    "intro": "What your sessions say, and what would be worth changing in your programs. Each proposal shows what triggered it and the exact change: nothing changes without your say.",
+    "programsTitle": "To adjust in your programs",
+    "nothing": "Nothing to adjust for now. The assistant looks at the last 3 sessions of each day of your programs and your missed days over 4 weeks.",
+    "kind_skipped": "An exercise often left out",
+    "kind_progress": "An exercise getting easy",
+    "kind_shortened": "A session often cut short",
+    "kind_missedDay": "A day often missed",
+    "why": "Seen:",
+    "why_skipped": "not done in {count} of the last {of} sessions of this day.",
+    "why_progress": "all {sets} sets done at the top of the range ({reps} reps or more) in the last {count} sessions.",
+    "why_shortened": "on average {percent}% of the planned sets done in the last {count} sessions.",
+    "why_missedDay": "the {weekday} session missed {count} times in 4 weeks.",
+    "proposal": "Proposal:",
+    "change_replace": "replace {from} with {to} (same muscles, with your equipment, fine with your injuries).",
+    "change_remove": "remove {exercise} from this session (no suitable stand-in found).",
+    "change_addSet": "one more set of {exercise}.",
+    "change_trimDay": "one set fewer on each exercise of this session (never under 2).",
+    "change_moveWeekday": "move the {from} session to {to}.",
+    "apply": "Apply",
+    "ignore": "Ignore",
+    "applied": "Applied. The version before stays in the program’s history.",
+    "seeProgram": "See the program",
+    "control": "You stay in charge: an ignored proposal comes back only if new sessions confirm it, and an applied change is undone from the program’s history.",
+    "readingTitle": "What your last 4 weeks say",
+    "noReading": "Not enough sessions yet to draw conclusions.",
+    "how": "These proposals come from simple, checkable rules applied to your sessions (no data is sent anywhere). They are training guides, not medical advice."
   }
 }

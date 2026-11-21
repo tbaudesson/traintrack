@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Dumbbell, Trophy, TrendingUp, ChevronRight, FileText } from "lucide-react";
+import { Dumbbell, Trophy, TrendingUp, ChevronRight, FileText, Sparkles } from "lucide-react";
 import { DetailRow } from "@/components/ui/detail-row";
 import { Link } from "@/i18n/navigation";
 import { useCompetitions } from "@/hooks/useCompetitions";
@@ -275,6 +275,8 @@ export default function ProgressPage() {
           )}
           <div className="space-y-4">
             <MoreInsights items={reading.insights.slice(1)} exerciseName={exerciseName} />
+            {/* What to change in one's programs because of all this. */}
+            <DetailRow href="/assistant" icon={Sparkles} title={t("assistantLink")} subtitle={t("assistantHint")} />
             {/* All of today's advice; the home screen shows the first one only. */}
             <Recommendations limit={99} />
           </div>
