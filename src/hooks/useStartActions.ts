@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { sessionHref } from "@/lib/routes";
 import { lastRepeatable, repeatWorkout, startWorkoutFromDay, type StartOptions } from "@/lib/startWorkout";
+import { sameWeekday } from "@/lib/suggest";
 import { createWorkout } from "@/hooks/useWorkouts";
 import type { AthleteProfile, Exercise, Program, ProgramDay, Sport, Workout, WorkoutSet } from "@/db";
 
@@ -38,6 +39,8 @@ export function useStartActions({
   const tc = useTranslations("cardio");
   const [starting, setStarting] = useState(false);
   const repeatable = lastRepeatable(workouts, sets, today);
+  // The session of this weekday lately, when it is not the last one already offered.
+  const likeLastWeek = sameWeekday(workouts, sets, today, repeatable);
 
   async function open(create: () => Promise<string>) {
     onStart?.();
@@ -64,8 +67,10 @@ export function useStartActions({
   const repeatLast = () =>
     repeatable ? open(async () => sessionHref(await repeatWorkout(repeatable, today, lighter))) : Promise.resolve();
 
+  const repeat = (source: Workout) => open(async () => sessionHref(await repeatWorkout(source, today, lighter)));
+
   const startCardio = (sport: Sport) =>
     open(async () => sessionHref(await createWorkout({ date: today, title: tc(`sport_${sport}`), kind: "cardio", sport })));
 
-  return { starting, repeatable, startDay, startFree, repeatLast, startCardio };
+  return { starting, repeatable, likeLastWeek, startDay, startFree, repeatLast, repeat, startCardio };
 }

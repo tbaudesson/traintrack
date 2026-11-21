@@ -2449,7 +2449,9 @@
     "more": "Voir plus ({count})",
     "sport": "Sport",
     "level": "Niveau",
-    "allLevels": "Tous niveaux"
+    "allLevels": "Tous niveaux",
+    "together": "Souvent avec ces exercices",
+    "likeLastWeek": "Comme {day} dernier"
   },
   "reuse": {
     "title": "Réutiliser cette séance",
@@ -2469,5 +2471,16 @@
     "kind_day": "Mes programmes",
     "exercises": "{count, plural, one {# exercice} other {# exercices}}",
     "noSessions": "Pas encore de séance à reprendre."
+  },
+  "history": {
+    "view": "Affichage",
+    "list": "Liste",
+    "calendar": "Calendrier",
+    "search": "Chercher une séance (nom, sport, date)",
+    "count": "{count, plural, one {# séance} other {# séances}}",
+    "olderMonths": "Voir les mois précédents",
+    "previousMonth": "Mois précédent",
+    "nextMonth": "Mois suivant",
+    "monthCount": "{count, plural, =0 {Aucune séance ce mois-ci} one {# séance ce mois-ci} other {# séances ce mois-ci}} · touchez un jour marqué pour la voir"
   }
 }

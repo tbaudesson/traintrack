@@ -361,6 +361,22 @@ await test("a program kept as a favourite, then archived out of the way", async 
   await page.getByRole("button", { name: "Archiver" }).waitFor({ timeout: 5000 });
 });
 
+await test("the history shows as a calendar of the month, a day opening its sessions", async () => {
+  await page.goto(`${BASE}/fr/log`);
+  const history = page.locator("section", { has: page.locator("#history-title") });
+  await history.getByRole("button", { name: "Calendrier" }).click();
+  const grid = history.getByRole("grid");
+  await grid.waitFor({ timeout: 5000 });
+  const marked = grid.getByRole("button", { name: /séance/ });
+  expect((await marked.count()) > 0, "no day marked in the calendar");
+  await marked.first().click();
+  expect((await history.locator("a, button").filter({ hasText: /\d/ }).count()) > (await grid.getByRole("button").count()), "the day's sessions are not shown");
+  // The view is remembered, then put back for the other tests.
+  await page.reload();
+  await history.getByRole("grid").waitFor({ timeout: 5000 });
+  await history.getByRole("button", { name: "Liste" }).click();
+});
+
 await test("the session picker narrows the ready-made programs by sport, a few at a time", async () => {
   await page.goto(`${BASE}/fr`);
   await page.getByText("Changer de séance ou de programme").click();

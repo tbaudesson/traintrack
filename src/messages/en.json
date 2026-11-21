@@ -2449,7 +2449,9 @@
     "more": "Show more ({count})",
     "sport": "Sport",
     "level": "Level",
-    "allLevels": "All levels"
+    "allLevels": "All levels",
+    "together": "Often done with these",
+    "likeLastWeek": "Like last {day}"
   },
   "reuse": {
     "title": "Reuse this session",
@@ -2469,5 +2471,16 @@
     "kind_day": "My programs",
     "exercises": "{count, plural, one {# exercise} other {# exercises}}",
     "noSessions": "No session to reuse yet."
+  },
+  "history": {
+    "view": "View",
+    "list": "List",
+    "calendar": "Calendar",
+    "search": "Search a session (name, sport, date)",
+    "count": "{count, plural, one {# session} other {# sessions}}",
+    "olderMonths": "Show earlier months",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "monthCount": "{count, plural, =0 {No session this month} one {# session this month} other {# sessions this month}} · tap a marked day to see it"
   }
 }

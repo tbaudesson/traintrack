@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Dumbbell, History } from "lucide-react";
+import { Dumbbell, History, Sparkles } from "lucide-react";
 import type { Equipment, Exercise, MuscleGroup } from "@/db";
 import { useExercises } from "@/hooks/useExercises";
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
@@ -10,6 +10,7 @@ import { useWorkouts } from "@/hooks/useWorkouts";
 import { useAthleteProfileOrNull } from "@/hooks/useAthleteProfile";
 import { useExerciseLabel } from "@/lib/exerciseNames";
 import { recentExerciseIds, search } from "@/lib/search";
+import { companions } from "@/lib/suggest";
 import type { Injury } from "@/lib/injuries";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -86,6 +87,8 @@ function PickerBody({ onPick, injuries, exclude }: { onPick: (exercise: Exercise
     const ids = recentExerciseIds(sets, workouts);
     return ids.map((id) => usable.find((e) => e.id === id)).filter((e): e is Exercise => !!e);
   }, [sets, workouts, usable]);
+  // What the athlete usually does with the exercises already there.
+  const together = useMemo(() => companions(exclude, sets).map((id) => usable.find((e) => e.id === id)).filter((e): e is Exercise => !!e), [exclude, sets, usable]);
   const filtering = !!query.trim() || !!muscle || ownGear;
   const reset = () => {
     setQuery("");
@@ -138,12 +141,20 @@ function PickerBody({ onPick, injuries, exclude }: { onPick: (exercise: Exercise
       </div>
 
       <div className="-mx-1 min-h-0 flex-1 overflow-y-auto px-1" aria-live="polite">
-        {!filtering && recent.length > 0 && (
+        {!filtering && together.length > 0 && (
+          <section className="mb-3">
+            <h3 className="mb-1 flex items-center gap-1.5 text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> {t("together")}
+            </h3>
+            {together.map(row)}
+          </section>
+        )}
+        {!filtering && recent.filter((e) => !together.includes(e)).length > 0 && (
           <section className="mb-3">
             <h3 className="mb-1 flex items-center gap-1.5 text-xs font-semibold tracking-widest text-muted-foreground uppercase">
               <History className="h-3.5 w-3.5" aria-hidden="true" /> {t("recent")}
             </h3>
-            {recent.map(row)}
+            {recent.filter((e) => !together.includes(e)).map(row)}
           </section>
         )}
         {filtering && <p className="mb-1 text-xs text-muted-foreground">{t("count", { count: results.length })}</p>}

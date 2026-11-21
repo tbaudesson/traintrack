@@ -18,14 +18,14 @@ import { useStartActions } from "@/hooks/useStartActions";
 import { useSessionOfTheDay } from "@/hooks/useSessionOfTheDay";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
-import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
+import { SectionHeading } from "@/components/ui/page-parts";
 import { DetailRow } from "@/components/ui/detail-row";
 import { MyPrograms } from "@/components/domain/MyPrograms";
 import { SportPicker } from "@/components/domain/SportPicker";
 import { GpxImport } from "@/components/domain/GpxImport";
+import { HistoryView } from "@/components/domain/HistoryView";
 import { SessionPickerDialog, useDayDetail } from "@/components/domain/SessionPickerDialog";
 import { daysToOffer, findWorkoutProgramDay, nextDayIndex } from "@/lib/startWorkout";
-import { formatDistance, isCardio } from "@/lib/cardio";
 import { kindOf } from "@/lib/activityProfile";
 import { useProgramTemplates } from "@/lib/templateService";
 import { PROGRAM_TEMPLATES } from "@/lib/programTemplates";
@@ -232,30 +232,8 @@ export default function TrainPage() {
           </details>
         )}
 
-        {/* History */}
-        <section className="space-y-2">
-          <SectionHeading>{t("history")}</SectionHeading>
-          {workouts.length === 0 ? (
-            <EmptyState icon={Calendar} title={t("noWorkouts")} />
-          ) : (
-            workouts.map((w) => (
-              <DetailRow
-                key={w.id}
-                onClick={() => router.push(sessionHref(w.id))}
-                icon={Calendar}
-                tone="neutral"
-                title={w.title || t("title")}
-                subtitle={
-                  isCardio(w) && w.distanceM
-                    ? `${day(w.date)} · ${formatDistance(w.distanceM, w.sport)}`
-                    : w.kind === "interval" && w.durationMin
-                      ? `${day(w.date)} · ${w.durationMin} min`
-                      : day(w.date)
-                }
-              />
-            ))
-          )}
-        </section>
+        {/* History: by month or as a calendar, searchable. */}
+        <HistoryView workouts={workouts} today={today} />
       </div>
 
       <SportPicker open={sportOpen} onOpenChange={setSportOpen} onPick={startCardio} />

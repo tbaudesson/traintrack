@@ -8,8 +8,8 @@
 
 import type { ComponentType, ReactNode } from "react";
 
-export function SectionHeading({ children }: { children: ReactNode }) {
-  return <h2 className="t-section-heading text-foreground">{children}</h2>;
+export function SectionHeading({ children, id }: { children: ReactNode; id?: string }) {
+  return <h2 id={id} className="t-section-heading text-foreground">{children}</h2>;
 }
 
 export function EmptyState({

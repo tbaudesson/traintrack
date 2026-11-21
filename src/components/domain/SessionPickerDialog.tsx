@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Activity, ClipboardList, Dumbbell, Footprints, PersonStanding, Plus, RotateCcw, Timer, Upload } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { sessionHref } from "@/lib/routes";
@@ -15,6 +15,7 @@ import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useAthleteProfileOrNull } from "@/hooks/useAthleteProfile";
 import { search } from "@/lib/search";
 import { byUse, lastUsed } from "@/lib/reuse";
+import { practisedShelves } from "@/lib/suggest";
 import { CATEGORY_ORDER, planWeeks, programCategory, type ProgramCategory } from "@/lib/programCategories";
 import { Button } from "@/components/ui/button";
 import { Chip, ChipRow, SearchField } from "@/components/ui/find";
@@ -88,7 +89,9 @@ export function SessionPickerDialog({
   const tt = useTranslations("templates");
   const tf = useTranslations("picker");
   const pickerTop = useRef<HTMLDivElement>(null);
-  const { starting, repeatable, startDay, startFree, repeatLast } = actions;
+  const locale = useLocale();
+  const weekdayName = (date: string) => new Intl.DateTimeFormat(locale, { weekday: "long" }).format(new Date(`${date}T12:00:00`));
+  const { starting, repeatable, likeLastWeek, startDay, startFree, repeatLast, repeat } = actions;
   const level = useAthleteProfileOrNull()?.fitnessLevel;
   const [query, setQuery] = useState("");
   // The favourite sport's shelf when it has ready-made programs, else all of them.
@@ -113,6 +116,12 @@ export function SessionPickerDialog({
   const withShelf = useMemo(() => templates.map((tpl) => ({ tpl, shelf: programCategory(tpl) })), [templates]);
   const sports = CATEGORY_ORDER.filter((c) => withShelf.some((x) => x.shelf === c));
   const ownSport = sports.find((c) => c === favorite) ?? null;
+  // One's sport first, then those one trains on most, then the others.
+  const practised = practisedShelves(workouts, (id) => {
+    const p = programs.find((x) => x.id === id);
+    return p ? programCategory(p) : null;
+  });
+  const rank = (c: ProgramCategory) => (c === ownSport ? -2 : practised.includes(c) ? practised.indexOf(c) - practised.length - 2 : CATEGORY_ORDER.indexOf(c));
   const shelf = sport ?? ownSport ?? "all";
   const q = query.trim();
   const ofShelf = withShelf.filter((x) => q || shelf === "all" || x.shelf === shelf);
@@ -137,7 +146,8 @@ export function SessionPickerDialog({
   const foundDays = search(days, q, ({ p, d }) => ({ names: [d.name, p.name], others: [dayDetail(d)] }));
   const foundFree = search(freeRows, q, (r) => ({ names: [r.text[0]], others: [r.text[1]] }));
   const showRepeat = !!repeatable && (!q || search([repeatable], q, (w) => ({ names: [t("repeatLast"), w.title] })).length > 0);
-  const nothing = q && !foundDays.length && !foundFree.length && !found.length && !showRepeat;
+  const showLike = !!likeLastWeek && (!q || search([likeLastWeek], q, (w) => ({ names: [tf("likeLastWeek", { day: weekdayName(w.date) }), w.title] })).length > 0);
+  const nothing = q && !foundDays.length && !foundFree.length && !found.length && !showRepeat && !showLike;
   const describe = (tpl: ProgramTemplate, shelfOf: ProgramCategory | null) => {
     const weeks = planWeeks(tpl.structure);
     const length = weeks ? t("readyMadeWeeks", { count: weeks }) : t("readyMadeDays", { count: tpl.structure.length });
@@ -198,9 +208,19 @@ export function SessionPickerDialog({
             </section>
           )}
 
-          {(showRepeat || foundFree.length > 0 || !q) && (
+          {(showRepeat || showLike || foundFree.length > 0 || !q) && (
             <section className="space-y-2">
               <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("noProgram")}</h3>
+              {showLike && likeLastWeek && (
+                <DetailRow
+                  onClick={() => repeat(likeLastWeek)}
+                  disabled={starting}
+                  icon={RotateCcw}
+                  tone="neutral"
+                  title={tf("likeLastWeek", { day: weekdayName(likeLastWeek.date) })}
+                  subtitle={`${likeLastWeek.title || t("freeSession")} · ${day(likeLastWeek.date)}`}
+                />
+              )}
               {showRepeat && repeatable && (
                 <DetailRow
                   onClick={repeatLast}
@@ -242,7 +262,7 @@ export function SessionPickerDialog({
                 <>
                   <ChipRow label={tf("sport")}>
                     <Chip on={shelf === "all"} onClick={() => pick("all")}>{tf("all")}</Chip>
-                    {[...sports].sort((a, b) => Number(b === ownSport) - Number(a === ownSport)).map((c) => (
+                    {[...sports].sort((a, b) => rank(a) - rank(b)).map((c) => (
                       <Chip key={c} on={shelf === c} onClick={() => pick(c)}>{tcat(`cat_${c}`)}</Chip>
                     ))}
                   </ChipRow>
