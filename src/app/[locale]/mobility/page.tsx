@@ -98,15 +98,14 @@ export default function MobilityPage() {
     const list = mobility?.minutes[m] ?? [];
     return (m === "warmup" ? list[0] : list[Math.floor(list.length / 2)]) ?? 5;
   };
-  // Once the reference is read: the first length of the mode the page opened on.
-  const [lengthSet, setLengthSet] = useState(false);
+  // A length the reference does not offer for this mode (none read yet, or an
+  // older copy kept on the device): the mode's usual one, once it is known.
   useEffect(() => {
-    if (lengthSet || !mobility || !link) return;
-    const list = mobility.minutes[link.mode] ?? [];
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- waits for the reference, read on the client
-    setMinutes((link.mode === "warmup" ? list[0] : list[Math.floor(list.length / 2)]) ?? 5);
-    setLengthSet(true);
-  }, [mobility, link, lengthSet]);
+    const list = mobility?.minutes[mode] ?? [];
+    if (!list.length || list.includes(minutes)) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- follows the reference, read on the client
+    setMinutes((mode === "warmup" ? list[0] : list[Math.floor(list.length / 2)]) ?? list[0]);
+  }, [mobility, mode, minutes]);
   const muscles = useMemo(
     () => (target === "session" ? (fromSession.length ? fromSession : (mobility?.targets.full ?? [])) : (mobility?.targets[target] ?? [])),
     [target, fromSession, mobility]
