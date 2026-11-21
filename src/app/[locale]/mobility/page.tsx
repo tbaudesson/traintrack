@@ -19,6 +19,7 @@ import { useInjuries } from "@/hooks/useAthleteProfile";
 import {
   buildMobilitySession,
   mobilityWarning,
+  modesOf,
   sessionMuscles,
   type MobilityMode,
   type MobilityTarget,
@@ -38,7 +39,8 @@ function fromLink(): { mode: MobilityMode; workoutId?: number } {
   try {
     const params = new URLSearchParams(window.location.search);
     const id = Number(params.get("workout"));
-    return { mode: params.get("mode") === "stretch" ? "stretch" : "warmup", workoutId: id > 0 ? id : undefined };
+    const asked = params.get("mode");
+    return { mode: asked === "stretch" || asked === "yoga" ? asked : "warmup", workoutId: id > 0 ? id : undefined };
   } catch {
     return { mode: "warmup" };
   }
@@ -73,7 +75,6 @@ export default function MobilityPage() {
     /* eslint-disable react-hooks/set-state-in-effect -- the link is read on the client only */
     setLink(read);
     setMode(read.mode);
-    setMinutes(read.mode === "stretch" ? 10 : 5);
     if (read.workoutId) setTarget("session");
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
@@ -92,6 +93,20 @@ export default function MobilityPage() {
   }, [workout, sets, exercises]);
 
   const mobility = useMobilityGuidance();
+  /** The length offered first: the shortest for a warm-up (a session follows), the middle one otherwise. */
+  const defaultMinutes = (m: MobilityMode) => {
+    const list = mobility?.minutes[m] ?? [];
+    return (m === "warmup" ? list[0] : list[Math.floor(list.length / 2)]) ?? 5;
+  };
+  // Once the reference is read: the first length of the mode the page opened on.
+  const [lengthSet, setLengthSet] = useState(false);
+  useEffect(() => {
+    if (lengthSet || !mobility || !link) return;
+    const list = mobility.minutes[link.mode] ?? [];
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- waits for the reference, read on the client
+    setMinutes((link.mode === "warmup" ? list[0] : list[Math.floor(list.length / 2)]) ?? 5);
+    setLengthSet(true);
+  }, [mobility, link, lengthSet]);
   const muscles = useMemo(
     () => (target === "session" ? (fromSession.length ? fromSession : (mobility?.targets.full ?? [])) : (mobility?.targets[target] ?? [])),
     [target, fromSession, mobility]
@@ -111,10 +126,10 @@ export default function MobilityPage() {
   if (finished) {
     return (
       <>
-        <PageHeader title={t(mode === "warmup" ? "warmupTitle" : "stretchTitle")} showBack />
+        <PageHeader title={t(`${mode}Title`)} showBack />
         <div className="flex flex-col items-center gap-4 p-8 text-center">
           <CheckCircle2 className="h-12 w-12 text-success-text" aria-hidden="true" />
-          <p className="text-xl font-bold">{t(mode === "warmup" ? "warmupDone" : "stretchDone")}</p>
+          <p className="text-xl font-bold">{t(`${mode}Done`)}</p>
           {saved && savedWorkout?.mobility && (
             <div className="w-full max-w-sm text-left">
               <MobilityRating workoutId={saved} log={savedWorkout.mobility} />
@@ -130,16 +145,16 @@ export default function MobilityPage() {
 
   return (
     <>
-      <PageHeader title={t(mode === "warmup" ? "warmupTitle" : "stretchTitle")} showBack />
+      <PageHeader title={t(`${mode}Title`)} showBack />
       <div className="space-y-6 p-4 pb-28">
         <ChoiceField label={t("mode")}>
-          {(["warmup", "stretch"] as const).map((m) => (
+          {(mobility ? modesOf(mobility) : (["warmup", "stretch"] as const)).map((m) => (
             <Choice
               key={m}
               on={mode === m}
               onClick={() => {
                 setMode(m);
-                setMinutes(m === "stretch" ? 10 : 5);
+                setMinutes(defaultMinutes(m));
               }}
             >
               {t(`mode_${m}`)}
@@ -219,14 +234,14 @@ export default function MobilityPage() {
         <IntervalPlayer
           session={session}
           getReadySec={readySec}
-          labels={{ work: t(mode === "warmup" ? "work_warmup" : "work_stretch"), rest: t("transition") }}
+          labels={{ work: t(`work_${mode}`), rest: t("transition") }}
           onEnd={async ({ done, elapsedSec }) => {
             setPlaying(false);
             if (done.length === 0) return;
             const moves = [...new Set(done.map((i) => session.steps[i]).flatMap((step) => (step?.type === "work" ? [step.exercise.key] : [])))];
             const id = await createWorkout({
               date: localDate(),
-              title: t(mode === "warmup" ? "warmupTitle" : "stretchTitle"),
+              title: t(`${mode}Title`),
               kind: "mobility",
               durationSec: Math.max(1, Math.round(elapsedSec)),
               mobility: { mode, minutes, target, moves },

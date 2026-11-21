@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildMobilitySession,
+  modesOf,
   parseMobility,
   mobilityWarning,
   pickMobility,
@@ -96,5 +97,33 @@ describe("parseMobility", () => {
     expect(broken((g) => (g.moves[0].video = "http://example.com"))).toBeNull();
     expect(broken((g) => (g.moves = g.moves.filter((m) => m.mode !== "warmup")))).toBeNull();
     expect(broken((g) => (g.targets.full = ["toes" as never]))).toBeNull();
+  });
+});
+
+describe("yoga", () => {
+  it("is a third mode once migration 072 brings it, with its lengths and postures", () => {
+    expect(modesOf(G)).toEqual(["warmup", "stretch", "yoga"]);
+    expect(G.moves.filter((m) => m.mode === "yoga").length).toBeGreaterThanOrEqual(15);
+    // Without it, the reference still holds: warm-up and stretch only.
+    const before = { ...G, minutes: { warmup: G.minutes.warmup, stretch: G.minutes.stretch }, timing: { warmup: G.timing.warmup, stretch: G.timing.stretch }, moves: G.moves.filter((m) => m.mode !== "yoga") };
+    const parsed = parseMobility(JSON.stringify(before));
+    expect(parsed && modesOf(parsed)).toEqual(["warmup", "stretch"]);
+  });
+
+  it("opens with the breathing and closes with the final relaxation, whatever the length", () => {
+    for (const minutes of G.minutes.yoga) {
+      const picked = pickMobility(G, "yoga", minutes, G.targets.full);
+      expect(picked[0].key, `${minutes}`).toBe("yoga-breath");
+      expect(picked[picked.length - 1].key, `${minutes}`).toBe("yoga-savasana");
+      const { totalSec } = buildMobilitySession(G, "yoga", minutes, G.targets.full, "fr");
+      expect(totalSec, `${minutes}`).toBeLessThanOrEqual(minutes * 60);
+      expect(totalSec, `${minutes}`).toBeGreaterThan(minutes * 60 * 0.6);
+    }
+  });
+
+  it("leaves out a posture to avoid for an injury, and every posture has its rules where they matter", () => {
+    expect(MOBILITY_INJURY_RULES["yoga-down-dog"]).toMatchObject({ shoulder: "caution", wrist: "caution" });
+    const knee = pickMobility(G, "yoga", 25, G.targets.full, [{ area: "knee" }], { ...MOBILITY_INJURY_RULES, "yoga-chair": { knee: "avoid" } }).map((e) => e.key);
+    expect(knee).not.toContain("yoga-chair");
   });
 });

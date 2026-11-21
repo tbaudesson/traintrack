@@ -8,10 +8,11 @@ import { Play, Shuffle, Timer } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { useAthleteProfileOrNull } from "@/hooks/useAthleteProfile";
 import { useExercises, createCustomExercise } from "@/hooks/useExercises";
-import { createWorkout } from "@/hooks/useWorkouts";
+import { createWorkout, updateWorkout } from "@/hooks/useWorkouts";
 import { addWorkoutSet } from "@/hooks/useWorkoutSets";
 import {
   injuryPool,
+  roundsDone,
   INTERVAL_FOCUSES,
   buildIntervalSession,
   defaultPattern,
@@ -23,6 +24,8 @@ import {
   type TimedGuidance,
 } from "@/lib/intervals";
 import { useTimedGuidance } from "@/hooks/useTimedGuidance";
+import { useHeartRateMonitor } from "@/hooks/useHeartRateMonitor";
+import { HeartRateCard } from "@/components/domain/HeartRateCard";
 import { localDate } from "@/lib/dates";
 import { unlockAudio } from "@/lib/beep";
 import { exerciseDescription, useExerciseLabel } from "@/lib/exerciseNames";
@@ -85,6 +88,7 @@ export default function IntervalsPage() {
   const athlete = useAthleteProfileOrNull();
   const exercises = useExercises();
   const timed = useTimedGuidance();
+  const hr = useHeartRateMonitor();
   const [plan, setPlan] = useState<IntervalPlan | null>(null);
   const [playing, setPlaying] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -148,6 +152,8 @@ export default function IntervalsPage() {
 
   async function save({ done, elapsedSec }: IntervalResult) {
     setPlaying(false);
+    // The belt stops with the session; its average and maximum go with it.
+    const heart = await hr.finish();
     // Over, saved or not: nothing left to take up.
     clearTimedProgress("intervals");
     setResume(undefined);
@@ -162,6 +168,7 @@ export default function IntervalsPage() {
       durationSec: elapsedSec,
       durationMin: Math.max(1, Math.round(elapsedSec / 60)),
     });
+    await updateWorkout(id, { roundsDone: roundsDone(session.steps, done), ...(heart ?? {}) });
     const ids = new Map<string, number>();
     const numbers = new Map<string, number>();
     for (const index of done) {
@@ -333,6 +340,8 @@ export default function IntervalsPage() {
           ))}
         </section>
 
+        {/* A heart-rate belt, connected before the start: its beats show while playing. */}
+        <HeartRateCard hr={hr} />
         <Button
           size="lg"
           className="h-14 w-full rounded-full text-base"
@@ -358,6 +367,7 @@ export default function IntervalsPage() {
           key={resume ? "resumed" : "new"}
           session={withDemos}
           getReadySec={timed.getReadySec}
+          bpm={hr.bpm}
           onEnd={save}
           resume={resume}
           onProgress={(p) => saveTimedProgress({ kind: "intervals", context: plan, stepCount: session.steps.length, ...p, updatedAt: Date.now() })}

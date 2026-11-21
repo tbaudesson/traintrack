@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Check, Loader2, PersonStanding, Plus, Trash2 } from "lucide-react";
 import type { MuscleGroup } from "@/db";
 import { getAppSettings, setAppSetting } from "@/lib/adminService";
-import { MOBILITY_KEY, MOBILITY_MODES, MOBILITY_TARGETS, parseMobility, type MobilityExercise, type MobilityGuidance } from "@/lib/mobility";
+import { MOBILITY_KEY, MOBILITY_TARGETS, modesOf, parseMobility, type MobilityExercise, type MobilityGuidance } from "@/lib/mobility";
 import { INJURY_GUIDANCE_KEY, parseInjuryGuidance } from "@/lib/injuryGuidance";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -91,9 +91,9 @@ export function MobilityMovesTab() {
           <p className="mt-1 text-xs text-muted-foreground">{t("intro")}</p>
         </div>
 
-        {MOBILITY_MODES.map((mode) => (
+        {modesOf(g).map((mode) => (
           <div key={mode} className="space-y-2 rounded-xl border border-border p-3">
-            <p className="text-sm font-medium">{tm(mode === "warmup" ? "warmupTitle" : "stretchTitle")}</p>
+            <p className="text-sm font-medium">{tm(`${mode}Title`)}</p>
             <NumbersInput label={t("minutes")} value={g.minutes[mode]} onChange={(v) => put({ ...g, minutes: { ...g.minutes, [mode]: v } })} />
             <div className="grid grid-cols-3 gap-2">
               {(["hold", "sideHold", "transition"] as const).map((k) => (
@@ -125,7 +125,7 @@ export function MobilityMovesTab() {
                 <label className="space-y-1 text-xs text-muted-foreground">
                   <span>{tm("mode")}</span>
                   <select className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm text-foreground" value={m.mode} onChange={(e) => setMove(i, { ...m, mode: e.target.value as MobilityExercise["mode"] })}>
-                    {MOBILITY_MODES.map((x) => (
+                    {modesOf(g).map((x) => (
                       <option key={x} value={x}>{tm(`mode_${x}`)}</option>
                     ))}
                   </select>

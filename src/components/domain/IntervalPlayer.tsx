@@ -50,7 +50,10 @@ export function IntervalPlayer({
   resume,
   onProgress,
   getReadySec,
+  bpm,
 }: {
+  /** The heart rate live, when a belt is connected. */
+  bpm?: number | null;
   session: { steps: PlayerStep[] };
   /** The countdown before the first step (the timed-session reference). */
   getReadySec: number;
@@ -227,7 +230,10 @@ export function IntervalPlayer({
       )}
     >
       <div className="flex items-center justify-between px-5 pt-5 text-sm font-medium text-muted-foreground tabular-nums">
-        <span>{labels?.counter ? labels.counter(Math.max(1, workNumber), works) : t("intervalOf", { n: Math.max(1, workNumber), total: works })}</span>
+        <span>
+          {labels?.counter ? labels.counter(Math.max(1, workNumber), works) : t("intervalOf", { n: Math.max(1, workNumber), total: works })}
+          {bpm ? <span className="ml-2 tabular-nums" aria-label={`${bpm} bpm`}>♥ {bpm}</span> : null}
+        </span>
         <span className="flex items-center gap-1">
           {t("remaining", { time: clock(remaining) })}
           {canSpeak && (

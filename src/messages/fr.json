@@ -43,7 +43,7 @@
     "searchNavigation": "Rechercher dans la navigation",
     "toggleList": "Basculer entre la roue et la liste",
     "running": "Course à pied",
-    "intervals": "Séance callisthenics",
+    "intervals": "HIIT · séance minutée",
     "competitions": "Compétitions",
     "horses": "Chevaux",
     "swimTechniques": "Techniques de nage",
@@ -940,7 +940,7 @@
     "swimming": "Natation",
     "hiking": "Randonnée",
     "mobility": "Échauffements",
-    "timed": "Séances minutées",
+    "timed": "HIIT · séances minutées",
     "equipment": "Matériel"
   },
   "profile": {
@@ -1332,7 +1332,7 @@
     "noGuidance": "Les repères de nutrition n’ont pas encore été chargés : ouvrez l’app une fois avec une connexion."
   },
   "intervals": {
-    "title": "Séance callisthenics",
+    "title": "HIIT · séance minutée",
     "hint": "Minutée, au poids du corps, aux haltères ou au TRX, de 10 à 45 min",
     "intro": "Des exercices enchaînés au chrono : un temps d'effort, un temps de repos, et une minute de récupération entre les tours.",
     "focus": "Zone travaillée",
@@ -1358,7 +1358,7 @@
     "circuitB": "Circuit B (tours pairs)",
     "start": "Démarrer",
     "soundHint": "Montez le son : un bip annonce chaque changement.",
-    "workoutTitle": "Callisthenics · {focus} · {minutes} min",
+    "workoutTitle": "HIIT · {focus} · {minutes} min",
     "intervalOf": "Exercice {n} / {total}",
     "remaining": "Reste {time}",
     "getReady": "Préparez-vous",
@@ -1396,11 +1396,13 @@
     "resumeChanged": "La séance a changé depuis (vos blessures, par exemple) : elle peut être recommencée, plus reprise.",
     "restart": "Recommencer",
     "abandon": "Abandonner",
-    "notLoaded": "Les séances minutées n’ont pas encore été chargées : ouvrez l’app une fois avec une connexion."
+    "notLoaded": "Les séances minutées n’ont pas encore été chargées : ouvrez l’app une fois avec une connexion.",
+    "factRounds": "Tours complets",
+    "factHeart": "FC moy. · max"
   },
   "mobility": {
-    "title": "Échauffement et étirements",
-    "hint": "Avant ou après la séance, de 5 à 15 min",
+    "title": "Échauffement, étirements et yoga",
+    "hint": "Avant ou après la séance, ou une séance de yoga",
     "warmupTitle": "Échauffement",
     "stretchTitle": "Étirements",
     "mode": "Moment",
@@ -1428,7 +1430,12 @@
     "warmupButton": "S'échauffer",
     "stretchButton": "S'étirer",
     "leftOut": "{count, plural, one {# mouvement écarté} other {# mouvements écartés}} à cause de votre blessure.",
-    "notLoaded": "Les échauffements et étirements n’ont pas encore été chargés : ouvrez l’app une fois avec une connexion."
+    "notLoaded": "Les échauffements et étirements n’ont pas encore été chargés : ouvrez l’app une fois avec une connexion.",
+    "yogaTitle": "Yoga",
+    "yogaDone": "Séance de yoga terminée, prenez le temps de revenir doucement.",
+    "work_yoga": "Posture",
+    "mode_yoga": "Yoga : une séance à part",
+    "modeHint_yoga": "Des postures tenues au rythme du souffle, de la respiration du début à la relaxation finale. Sans forcer."
   },
   "injuries": {
     "title": "Blessures en cours",
@@ -1463,10 +1470,10 @@
     "cat_cycling": "Vélo",
     "cat_vaulting": "Voltige",
     "cat_timed": "Callisthenics",
-    "cat_mobility": "Échauffement et étirements",
+    "cat_mobility": "Échauffement, étirements et yoga",
     "count": "{count, plural, one {# programme} other {# programmes}}",
     "timedHint": "Séances minutées",
-    "mobilityHint": "Avant ou après la séance",
+    "mobilityHint": "Avant, après la séance, ou du yoga",
     "allLevels": "Tous niveaux",
     "perWeek": "{count} séances / sem.",
     "weeks": "{count, plural, one {# semaine} other {# semaines}}",
@@ -2569,7 +2576,7 @@
     "how": "Toutes les disciplines dans la même unité : minutes × effort ressenti (RPE). Les kilos et les kilomètres ne sont jamais additionnés.",
     "estimated": "{count, plural, one {# séance sans effort noté est estimée} other {# séances sans effort noté sont estimées}} avec un effort habituel : notez « Comment c’était ? » en fin de séance pour une charge plus juste.",
     "d_strength": "Musculation",
-    "d_timed": "Séances minutées",
+    "d_timed": "HIIT (séances minutées)",
     "d_run": "Course",
     "d_swim": "Natation",
     "d_bike": "Vélo",

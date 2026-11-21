@@ -43,7 +43,7 @@
     "searchNavigation": "Search navigation",
     "toggleList": "Switch between wheel and list",
     "running": "Running",
-    "intervals": "Callisthenics session",
+    "intervals": "HIIT · timed session",
     "competitions": "Competitions",
     "horses": "Horses",
     "swimTechniques": "Swimming techniques",
@@ -940,7 +940,7 @@
     "swimming": "Swimming",
     "hiking": "Hiking",
     "mobility": "Warm-ups",
-    "timed": "Timed sessions",
+    "timed": "HIIT · timed sessions",
     "equipment": "Equipment"
   },
   "profile": {
@@ -1332,7 +1332,7 @@
     "noGuidance": "The nutrition references have not been loaded yet: open the app once while online."
   },
   "intervals": {
-    "title": "Callisthenics session",
+    "title": "HIIT · timed session",
     "hint": "Timed, bodyweight, dumbbells or TRX, 10 to 45 min",
     "intro": "Exercises back to back on the clock: a work time, a rest time, and a minute of recovery between rounds.",
     "focus": "Area",
@@ -1358,7 +1358,7 @@
     "circuitB": "Circuit B (even rounds)",
     "start": "Start",
     "soundHint": "Turn the sound up: a beep marks each change.",
-    "workoutTitle": "Callisthenics · {focus} · {minutes} min",
+    "workoutTitle": "HIIT · {focus} · {minutes} min",
     "intervalOf": "Exercise {n} / {total}",
     "remaining": "{time} left",
     "getReady": "Get ready",
@@ -1396,11 +1396,13 @@
     "resumeChanged": "The session has changed since (your injuries, say): it can be started over, no longer taken up.",
     "restart": "Start over",
     "abandon": "Give up",
-    "notLoaded": "Timed sessions have not been loaded yet: open the app once with a connection."
+    "notLoaded": "Timed sessions have not been loaded yet: open the app once with a connection.",
+    "factRounds": "Full rounds",
+    "factHeart": "HR avg · max"
   },
   "mobility": {
-    "title": "Warm-up and stretching",
-    "hint": "Before or after the session, 5 to 15 min",
+    "title": "Warm-up, stretching and yoga",
+    "hint": "Before or after the session, or a yoga session",
     "warmupTitle": "Warm-up",
     "stretchTitle": "Stretching",
     "mode": "When",
@@ -1428,7 +1430,12 @@
     "warmupButton": "Warm up",
     "stretchButton": "Stretch",
     "leftOut": "{count, plural, one {# move left out} other {# moves left out}} because of your injury.",
-    "notLoaded": "The warm-ups and stretches have not been loaded yet: open the app once while online."
+    "notLoaded": "The warm-ups and stretches have not been loaded yet: open the app once while online.",
+    "yogaTitle": "Yoga",
+    "yogaDone": "Yoga session done; take your time coming back.",
+    "work_yoga": "Pose",
+    "mode_yoga": "Yoga: a session of its own",
+    "modeHint_yoga": "Poses held with the breath, from the opening breathing to the final relaxation. Never force."
   },
   "injuries": {
     "title": "Injuries",
@@ -1463,10 +1470,10 @@
     "cat_cycling": "Cycling",
     "cat_vaulting": "Vaulting",
     "cat_timed": "Callisthenics",
-    "cat_mobility": "Warm-up and stretching",
+    "cat_mobility": "Warm-up, stretching and yoga",
     "count": "{count, plural, one {# program} other {# programs}}",
     "timedHint": "Timed sessions",
-    "mobilityHint": "Before or after the session",
+    "mobilityHint": "Before, after the session, or yoga",
     "allLevels": "All levels",
     "perWeek": "{count} sessions / wk",
     "weeks": "{count, plural, one {# week} other {# weeks}}",
@@ -2569,7 +2576,7 @@
     "how": "Every discipline in the same unit: minutes × effort felt (RPE). Kilos and kilometres are never added together.",
     "estimated": "{count, plural, one {# session without an effort given is estimated} other {# sessions without an effort given are estimated}} at a usual effort: answer “How was it?” at the end of a session for a truer load.",
     "d_strength": "Strength",
-    "d_timed": "Timed sessions",
+    "d_timed": "HIIT (timed sessions)",
     "d_run": "Running",
     "d_swim": "Swimming",
     "d_bike": "Cycling",

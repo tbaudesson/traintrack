@@ -260,3 +260,16 @@ export function intervalCounts(steps: IntervalStep[], doneCount: number): { exer
   }
   return [...counts.values()];
 }
+
+/** The rounds carried out to the end: each of its efforts done. */
+export function roundsDone(steps: IntervalStep[], done: number[]): number {
+  const byRound = new Map<number, { total: number; done: number }>();
+  steps.forEach((s, i) => {
+    if (s.type !== "work") return;
+    const r = byRound.get(s.round) ?? { total: 0, done: 0 };
+    r.total++;
+    if (done.includes(i)) r.done++;
+    byRound.set(s.round, r);
+  });
+  return [...byRound.values()].filter((r) => r.total > 0 && r.done === r.total).length;
+}

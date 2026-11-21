@@ -215,7 +215,7 @@ export interface ProgramDay {
 
 /** A warm-up or stretching session, as kept with its workout. */
 export interface MobilityLog {
-  mode: "warmup" | "stretch";
+  mode: "warmup" | "stretch" | "yoga";
   /** The length chosen, in minutes. */
   minutes: number;
   target: "session" | "full" | "upper" | "lower";
@@ -273,6 +273,8 @@ export interface Workout extends SyncFields {
   cancelledAt?: string | null;
   /** A warm-up or a stretch: what was done and how supple one felt (migration 070). */
   mobility?: MobilityLog | null;
+  /** A timed (HIIT) session: the rounds carried out to the end (migration 072). */
+  roundsDone?: number | null;
   /** Absent on older workouts, which are all strength sessions. A warm-up or a stretch is "mobility". */
   kind?: "strength" | "cardio" | "interval" | "mobility";
   sport?: Sport | null;

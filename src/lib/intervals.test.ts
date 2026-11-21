@@ -5,6 +5,7 @@ import {
   defaultPattern,
   exercisesPerRound,
   intervalCounts,
+  roundsDone,
   parseTimed,
   patternSeconds,
   type IntervalPlan,
@@ -127,5 +128,16 @@ describe("the timed-session reference", () => {
     expect(broken((g) => (g.exercises[1].name = g.exercises[0].name))).toBeNull();
     expect(broken((g) => (g.exercises[0].equipment = "kettlebell" as never))).toBeNull();
     expect(broken((g) => (g.exercises = g.exercises.filter((e) => !e.focus.includes("abs") || e.equipment !== "bodyweight")))).toBeNull();
+  });
+});
+
+describe("roundsDone", () => {
+  it("counts the rounds whose every effort was done", () => {
+    const s = buildIntervalSession(G, plan({ minutes: 15 }));
+    const works = s.steps.map((x, i) => (x.type === "work" ? i : -1)).filter((i) => i >= 0);
+    expect(roundsDone(s.steps, works)).toBe(s.rounds.length);
+    expect(roundsDone(s.steps, works.slice(0, s.rounds[0].length))).toBe(1);
+    expect(roundsDone(s.steps, works.slice(1))).toBe(s.rounds.length - 1);
+    expect(roundsDone(s.steps, [])).toBe(0);
   });
 });

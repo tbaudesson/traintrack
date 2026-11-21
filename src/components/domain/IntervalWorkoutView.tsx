@@ -53,6 +53,12 @@ export function IntervalWorkoutView({ workout, sets, exercises }: { workout: Wor
             <Fact value={`${Math.round(effort / 60)} min`} label={t("factEffort")} />
             <Fact value={String(sets.filter((s) => s.completed).length)} label={t("factIntervals")} />
           </div>
+          {(workout.roundsDone || workout.avgHr) && (
+            <div className="mt-2 grid grid-cols-2 gap-2 text-center">
+              {workout.roundsDone ? <Fact value={String(workout.roundsDone)} label={t("factRounds")} /> : null}
+              {workout.avgHr ? <Fact value={`${workout.avgHr} · ${workout.maxHr ?? "—"}`} label={t("factHeart")} /> : null}
+            </div>
+          )}
           {plan && rhythm && (
             <p className="mt-3 text-sm text-muted-foreground">
               {t(`focus_${plan.focus}`)} · {plan.dumbbells ? t("dumbbells") : t("bodyweight")} · {t("patternLabel", rhythm)}

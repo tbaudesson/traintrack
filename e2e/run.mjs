@@ -193,13 +193,25 @@ await page.evaluate(async ({ user, libraryRows }) => {
   const check = readFileSync("supabase/migrations/063_outing_checklist.sql", "utf8");
   const checklist = check.slice(check.indexOf("["), check.lastIndexOf("]") + 1).replace(/''/g, "'");
   await page.evaluate((v) => localStorage.setItem("traintrack.guidance.outing_checklist", v), JSON.stringify(JSON.parse(checklist)));
-  // Warm-ups and timed sessions, as migration 065 seeds them.
+  // Warm-ups and timed sessions, as migration 065 seeds them, yoga added by 072 (its postures, and their injury rules).
   const m065 = readFileSync("supabase/migrations/065_mobility_and_timed_sessions.sql", "utf8");
+  const m072 = readFileSync("supabase/migrations/072_hiit_rounds_and_yoga.sql", "utf8");
+  const [yoga, yogaRules] = [...m072.matchAll(/FROM \(SELECT '\n([\s\S]*?)\n'::jsonb AS data\)/g)].map((m) => JSON.parse(m[1].replace(/''/g, "'")));
   for (const key of ["mobility_moves", "timed_sessions"]) {
     const start = m065.indexOf(`'${key}', '`) + key.length + 5;
-    const value = m065.slice(start, m065.indexOf("')\nON CONFLICT", start)).replace(/''/g, "'");
-    await page.evaluate(([k, v]) => localStorage.setItem(`traintrack.guidance.${k}`, v), [key, JSON.stringify(JSON.parse(value))]);
+    const value = JSON.parse(m065.slice(start, m065.indexOf("')\nON CONFLICT", start)).replace(/''/g, "'"));
+    if (key === "mobility_moves") {
+      value.minutes.yoga = yoga.minutes;
+      value.timing.yoga = yoga.timing;
+      value.moves.push(...yoga.moves);
+    }
+    await page.evaluate(([k, v]) => localStorage.setItem(`traintrack.guidance.${k}`, v), [key, JSON.stringify(value)]);
   }
+  await page.evaluate((rules) => {
+    const g = JSON.parse(localStorage.getItem("traintrack.guidance.injury_guidance"));
+    g.mobility = { ...rules, ...g.mobility };
+    localStorage.setItem("traintrack.guidance.injury_guidance", JSON.stringify(g));
+  }, yogaRules);
   // What the ready-made programs need, as migration 066 seeds it.
   const m066 = readFileSync("supabase/migrations/066_program_equipment.sql", "utf8");
   const equipment = m066.slice(m066.indexOf("'program_equipment', '") + 22, m066.indexOf("')\nON CONFLICT")).replace(/''/g, "'");
@@ -533,6 +545,19 @@ await test("a stretch done is kept with the suppleness felt, and followed on the
   }
 });
 
+await test("yoga: a session of its own, from the breathing to the final relaxation", async () => {
+  await page.goto(`${BASE}/fr/mobility?mode=yoga`);
+  await page.getByRole("button", { name: "Yoga : une séance à part", pressed: true }).waitFor({ timeout: 10000 });
+  const moves = page.locator("ol").first().locator("li");
+  await moves.first().waitFor({ timeout: 5000 });
+  expect((await moves.first().innerText()).includes("Respiration assise"), "yoga does not open with the breathing");
+  expect((await moves.last().innerText()).includes("Relaxation finale"), "yoga does not close with the final relaxation");
+  // The longest length takes more postures than the shortest.
+  const count = await moves.count();
+  await page.getByRole("button", { name: "25 min", exact: true }).click();
+  expect((await moves.count()) > count, "a longer yoga session holds no more postures");
+});
+
 await test("the style chosen in Settings restyles the whole app", async () => {
   await page.goto(`${BASE}/fr/settings`);
   await page.getByRole("button", { name: /Dynamique/ }).click();
@@ -855,7 +880,7 @@ await test("the training hub puts three ways to train first, and keeps every oth
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow <= 0, `the page is ${overflow}px wider than the screen`);
   // The rest, one tap away; the programs in progress, and the history.
-  for (const name of ["Programmes", "Exercices", "Séance callisthenics"]) {
+  for (const name of ["Programmes", "Exercices", "HIIT · séance minutée"]) {
     await page.getByRole("link", { name: new RegExp(name) }).first().waitFor({ timeout: 5000 });
   }
   await page.getByText("Historique", { exact: true }).waitFor({ timeout: 5000 });

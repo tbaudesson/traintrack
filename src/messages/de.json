@@ -43,7 +43,7 @@
     "searchNavigation": "Navigation durchsuchen",
     "toggleList": "Zwischen Rad und Liste wechseln",
     "running": "Laufen",
-    "intervals": "Calisthenics-Einheit",
+    "intervals": "HIIT · Intervall-Einheit",
     "competitions": "Turniere",
     "horses": "Pferde",
     "swimTechniques": "Schwimmtechniken",
@@ -940,7 +940,7 @@
     "swimming": "Schwimmen",
     "hiking": "Wandern",
     "mobility": "Aufwärmen",
-    "timed": "Intervall-Einheiten",
+    "timed": "HIIT · Intervall-Einheiten",
     "equipment": "Ausrüstung"
   },
   "profile": {
@@ -1332,7 +1332,7 @@
     "noGuidance": "Die Ernährungsrichtwerte wurden noch nicht geladen: Öffne die App einmal mit Internetverbindung."
   },
   "intervals": {
-    "title": "Calisthenics-Einheit",
+    "title": "HIIT · Intervall-Einheit",
     "hint": "Auf Zeit, mit Körpergewicht, Kurzhanteln oder TRX, 10 bis 45 Min.",
     "intro": "Übungen am Stück nach der Uhr: eine Belastungszeit, eine Pause und eine Minute Erholung zwischen den Runden.",
     "focus": "Bereich",
@@ -1358,7 +1358,7 @@
     "circuitB": "Zirkel B (gerade Runden)",
     "start": "Starten",
     "soundHint": "Ton lauter stellen: Ein Piepton kündigt jeden Wechsel an.",
-    "workoutTitle": "Calisthenics · {focus} · {minutes} Min.",
+    "workoutTitle": "HIIT · {focus} · {minutes} Min.",
     "intervalOf": "Übung {n} / {total}",
     "remaining": "Noch {time}",
     "getReady": "Bereit machen",
@@ -1396,11 +1396,13 @@
     "resumeChanged": "Die Einheit hat sich seitdem geändert (z. B. deine Verletzungen): Du kannst sie neu beginnen, nicht mehr fortsetzen.",
     "restart": "Neu beginnen",
     "abandon": "Abbrechen",
-    "notLoaded": "Die Intervall-Einheiten wurden noch nicht geladen: Öffne die App einmal mit Verbindung."
+    "notLoaded": "Die Intervall-Einheiten wurden noch nicht geladen: Öffne die App einmal mit Verbindung.",
+    "factRounds": "Volle Runden",
+    "factHeart": "HF Ø · max"
   },
   "mobility": {
-    "title": "Aufwärmen und Dehnen",
-    "hint": "Vor oder nach dem Training, 5 bis 15 Min.",
+    "title": "Aufwärmen, Dehnen und Yoga",
+    "hint": "Vor oder nach dem Training, oder eine Yoga-Einheit",
     "warmupTitle": "Aufwärmen",
     "stretchTitle": "Dehnen",
     "mode": "Wann",
@@ -1428,7 +1430,12 @@
     "warmupButton": "Aufwärmen",
     "stretchButton": "Dehnen",
     "leftOut": "{count, plural, one {# Übung} other {# Übungen}} wegen deiner Verletzung weggelassen.",
-    "notLoaded": "Aufwärmen und Dehnen wurden noch nicht geladen: Öffne die App einmal mit Internetverbindung."
+    "notLoaded": "Aufwärmen und Dehnen wurden noch nicht geladen: Öffne die App einmal mit Internetverbindung.",
+    "yogaTitle": "Yoga",
+    "yogaDone": "Yoga-Einheit beendet, komm in Ruhe zurück.",
+    "work_yoga": "Haltung",
+    "mode_yoga": "Yoga: eine eigene Einheit",
+    "modeHint_yoga": "Haltungen im Atemrhythmus, von der Atmung am Anfang bis zur Endentspannung. Nie erzwingen."
   },
   "injuries": {
     "title": "Aktuelle Verletzungen",
@@ -1463,10 +1470,10 @@
     "cat_cycling": "Radfahren",
     "cat_vaulting": "Voltigieren",
     "cat_timed": "Calisthenics",
-    "cat_mobility": "Aufwärmen und Dehnen",
+    "cat_mobility": "Aufwärmen, Dehnen und Yoga",
     "count": "{count, plural, one {# Programm} other {# Programme}}",
     "timedHint": "Einheiten auf Zeit",
-    "mobilityHint": "Vor oder nach dem Training",
+    "mobilityHint": "Vor, nach dem Training oder Yoga",
     "allLevels": "Alle Niveaus",
     "perWeek": "{count} Einheiten / Woche",
     "weeks": "{count, plural, one {# Woche} other {# Wochen}}",
@@ -2569,7 +2576,7 @@
     "how": "Alle Disziplinen in derselben Einheit: Minuten × gefühlte Anstrengung (RPE). Kilo und Kilometer werden nie zusammengezählt.",
     "estimated": "{count, plural, one {# Einheit ohne angegebene Anstrengung wird} other {# Einheiten ohne angegebene Anstrengung werden}} mit einer üblichen Anstrengung geschätzt: Beantworte „Wie war es?“ am Ende einer Einheit für eine genauere Belastung.",
     "d_strength": "Kraft",
-    "d_timed": "Intervall-Einheiten",
+    "d_timed": "HIIT (Intervall-Einheiten)",
     "d_run": "Laufen",
     "d_swim": "Schwimmen",
     "d_bike": "Radfahren",

@@ -2,9 +2,19 @@ import type { MuscleGroup } from "@/db";
 import type { PainArea } from "./pain";
 import type { InjuryLevel, InjuryRules } from "./injuries";
 
-/** Before a session (moving, to warm up) or after (holding, to stretch). */
-export type MobilityMode = "warmup" | "stretch";
-export const MOBILITY_MODES: MobilityMode[] = ["warmup", "stretch"];
+/**
+ * Before a session (moving, to warm up), after (holding, to stretch), or a
+ * session of its own: yoga, postures held with the breath, opening with its
+ * first posture and closing with its last (the final relaxation).
+ */
+export type MobilityMode = "warmup" | "stretch" | "yoga";
+export const MOBILITY_MODES: MobilityMode[] = ["warmup", "stretch", "yoga"];
+/** The modes every reference has; yoga comes with migration 072. */
+const REQUIRED_MODES: MobilityMode[] = ["warmup", "stretch"];
+
+/** The modes a reference holds, in their order: yoga only once it has its postures. */
+export const modesOf = (g: Pick<MobilityGuidance, "minutes" | "moves">): MobilityMode[] =>
+  MOBILITY_MODES.filter((m) => REQUIRED_MODES.includes(m) || (!!g.minutes[m]?.length && g.moves.some((x) => x.mode === m)));
 
 /** The muscles a mobility session aims at when there is no session to read. */
 export type MobilityTarget = "full" | "upper" | "lower";
@@ -53,7 +63,9 @@ export function parseMobility(raw: string | null | undefined): MobilityGuidance 
     return null;
   }
   if (!g?.minutes || !g.timing || !g.targets || !Array.isArray(g.moves)) return null;
-  for (const mode of MOBILITY_MODES) {
+  // Warm-up and stretch always; yoga too once any part of it is there.
+  const present = MOBILITY_MODES.filter((m) => REQUIRED_MODES.includes(m) || g.minutes[m] !== undefined || g.timing[m] !== undefined || g.moves.some((x) => x?.mode === m));
+  for (const mode of present) {
     const t = g.timing[mode];
     if (!Array.isArray(g.minutes[mode]) || !g.minutes[mode].length || !g.minutes[mode].every((m) => num(m, 1, 60))) return null;
     if (!t || !num(t.hold, 5, 300) || !num(t.sideHold, 5, 300) || !num(t.transition, 0, 60)) return null;
@@ -132,9 +144,13 @@ export function pickMobility(
   const ranked = [...all].sort((a, b) => relevance(b, muscles) - relevance(a, muscles));
   const chosen = new Set<MobilityExercise>();
   let total = 0;
-  if (mode === "warmup") {
-    chosen.add(all[0]);
-    total += cost(g, all[0]);
+  // A warm-up starts with its first move; a yoga session opens with its first
+  // posture and closes with its last.
+  const fixed = mode === "warmup" ? [all[0]] : mode === "yoga" ? [all[0], all[all.length - 1]] : [];
+  for (const e of fixed) {
+    if (!e || chosen.has(e)) continue;
+    chosen.add(e);
+    total += cost(g, e);
   }
   for (const e of ranked) {
     if (chosen.has(e) || total + cost(g, e) > budget) continue;
