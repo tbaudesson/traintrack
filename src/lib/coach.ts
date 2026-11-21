@@ -10,8 +10,9 @@ import { weekdayOf, type ScheduledSession } from "./schedule";
  * own. Applied, it goes through the program's history (it can be undone).
  *
  *  - skipped: an exercise left out in at least 2 of the day's last 3
- *    sessions: replaced by one of the same muscles (owned equipment first,
- *    nothing to avoid for an injury), or removed when there is none;
+ *    sessions: replaced by one of the same muscles the athlete can do (their
+ *    equipment or the body alone, nothing to avoid for an injury), or
+ *    removed when there is none;
  *  - progress: every planned set done at the top of the rep range in the
  *    day's last 3 sessions: one set more (up to 5);
  *  - shortened: fewer than 70 % of the day's sets done in each of its last 3
@@ -94,8 +95,11 @@ export function coachProposals(input: {
         const skipped = per.filter((done) => done.length === 0).length;
         if (skipped >= 2) {
           skippedHere = true;
+          // A stand-in the athlete can do: their own equipment or the body alone (any, when the equipment is not known).
+          const owned = input.owned ?? [];
+          const doable = (e: E) => !owned.length || !e.equipment || e.equipment === "bodyweight" || owned.includes(e.equipment);
           const candidate = ex
-            ? substitutes(ex, input.exercises.filter((e) => !dayNames.includes(e.name)), input.owned ?? []).find((e) => !input.avoid?.(e.name))
+            ? substitutes(ex, input.exercises.filter((e) => !dayNames.includes(e.name) && doable(e)), owned).find((e) => !input.avoid?.(e.name))
             : undefined;
           out.push({
             id: `skipped:${program.id}:${index}:${pe.exerciseName}:${signature}`,

@@ -82,5 +82,5 @@ export function useCoach() {
     return program.id;
   }
 
-  return { proposals, ignore, apply };
+  return { proposals, ignore, apply, planned, workouts, profile, today };
 }

@@ -84,6 +84,8 @@ export interface AthleteProfile extends SyncFields {
   runPaces?: RunPaces | null;
   /** Functional threshold power, in watts: the power zones and the ride load come from it (migration 071). */
   ftpW?: number | null;
+  /** The days and minutes one can train this week (its Monday): the assistant fits the week to it (migration 073). */
+  weekAvailability?: { monday: string; days: { weekday: number; minutes: number }[] } | null;
   /** Diet, foods left out and meals a day, for the meal ideas, see lib/mealCatalog. */
   mealPrefs?: MealPrefs | null;
   /** Optional daily macro targets */

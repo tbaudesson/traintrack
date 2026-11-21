@@ -2668,5 +2668,20 @@
     "readingTitle": "What your last 4 weeks say",
     "noReading": "Not enough sessions yet to draw conclusions.",
     "how": "These proposals come from simple, checkable rules applied to your sessions (no data is sent anywhere). They are training guides, not medical advice."
+  },
+  "weekFit": {
+    "title": "This week I can train…",
+    "intro": "{count, plural, =0 {No session planned until Sunday.} one {# session planned until Sunday.} other {# sessions planned until Sunday.}} Tap the days you have time, then how long: the assistant fits the week.",
+    "days": "Days available",
+    "minutesFor": "Time available on {day}",
+    "minutes": "{m} min",
+    "fits": "Your sessions of the week fit in that time.",
+    "applied": "Done: your sessions are on the days you have time.",
+    "move": "{label} on {from} → moved to {to}.",
+    "skip": "{label} on {from} → skipped this week (no other free day).",
+    "shorten": "{label} on {date}: about {planned} min planned for {minutes} min available → on the day, choose the short version on the home screen.",
+    "dropped": "{count, plural, one {# exercise would be left out} other {# exercises would be left out}} in the short version.",
+    "applyAll": "{count, plural, one {Apply the change} other {Apply the # changes}}",
+    "control": "Nothing moves until you apply; each session goes back to its day from the week on the home screen."
   }
 }

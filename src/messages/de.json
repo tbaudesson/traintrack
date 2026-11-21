@@ -2668,5 +2668,20 @@
     "readingTitle": "Was deine letzten 4 Wochen sagen",
     "noReading": "Noch nicht genug Einheiten für Schlüsse.",
     "how": "Diese Vorschläge stammen aus einfachen, nachprüfbaren Regeln, angewendet auf deine Einheiten (keine Daten werden weitergegeben). Es sind Trainingshinweise, keine medizinischen Ratschläge."
+  },
+  "weekFit": {
+    "title": "Diese Woche kann ich trainieren…",
+    "intro": "{count, plural, =0 {Bis Sonntag keine Einheit geplant.} one {# Einheit bis Sonntag geplant.} other {# Einheiten bis Sonntag geplant.}} Tippe die Tage mit Zeit an, dann die Dauer: Der Assistent passt die Woche an.",
+    "days": "Verfügbare Tage",
+    "minutesFor": "Verfügbare Zeit am {day}",
+    "minutes": "{m} Min.",
+    "fits": "Deine Einheiten der Woche passen in diese Zeit.",
+    "applied": "Erledigt: Deine Einheiten liegen an den Tagen mit Zeit.",
+    "move": "{label} am {from} → auf {to} verlegt.",
+    "skip": "{label} am {from} → diese Woche ausgelassen (kein anderer freier Tag).",
+    "shorten": "{label} am {date}: etwa {planned} Min. geplant für {minutes} Min. verfügbar → am Tag selbst die Kurzversion auf dem Startbildschirm wählen.",
+    "dropped": "{count, plural, one {# Übung würde weggelassen} other {# Übungen würden weggelassen}} in der Kurzversion.",
+    "applyAll": "{count, plural, one {Änderung übernehmen} other {# Änderungen übernehmen}}",
+    "control": "Nichts bewegt sich, bevor du übernimmst; jede Einheit lässt sich in der Woche auf dem Startbildschirm zurücklegen."
   }
 }

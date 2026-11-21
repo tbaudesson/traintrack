@@ -640,6 +640,31 @@ await test("the calendar shows the planning ahead: the sessions to come, each na
   }
 });
 
+await test("this week's time: the assistant fits the planned sessions to it, applied only when asked", async () => {
+  await page.goto(`${BASE}/fr/assistant`);
+  const card = page.locator("section", { has: page.locator("#week-fit") });
+  await card.waitFor({ timeout: 10000 });
+  // Only today, 30 minutes: the other sessions of the week have to move or wait.
+  const days = card.getByRole("group", { name: "Jours disponibles" }).getByRole("button");
+  await days.first().click();
+  await card.getByRole("button", { name: "30 min", exact: true }).click();
+  await card.getByRole("button", { name: "30 min", pressed: true }).waitFor({ timeout: 5000 });
+  const verdict = card.getByText(/tiennent dans ce temps|→/).first();
+  await verdict.waitFor({ timeout: 5000 });
+  const apply = card.getByRole("button", { name: /^Appliquer/ });
+  if (await apply.count()) {
+    await apply.click();
+    await card.getByText(/C’est fait|tiennent dans ce temps|version courte/).first().waitFor({ timeout: 5000 });
+  }
+  // Put the week back as it was for the other tests.
+  await page.evaluate(async () => {
+    const db = await new Promise((res) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); });
+    const store = db.transaction("athleteProfiles", "readwrite").objectStore("athleteProfiles");
+    await new Promise((res) => { const r = store.getAll(); r.onsuccess = () => { for (const p of r.result) store.put({ ...p, weekAvailability: null, scheduleMoves: [] }); res(); }; });
+    db.close();
+  });
+});
+
 await test("a session of the week moves to another day, and back", async () => {
   await page.goto(`${BASE}/fr`);
   const week = page.locator("section", { hasText: "prochaines semaines à mon agenda" });
@@ -1732,7 +1757,7 @@ await test("the assistant explains a proposal from the sessions done, and applie
     return pid;
   }, USER);
   await page.goto(`${BASE}/fr/assistant`);
-  const card = page.getByRole("article", { name: "Un exercice souvent laissé de côté" });
+  const card = page.getByRole("article", { name: "Un exercice souvent laissé de côté" }).filter({ hasText: "Programme assistant" });
   await card.waitFor({ timeout: 10000 });
   await card.getByText(/pas fait lors de 2 des 3 dernières séances/).waitFor({ timeout: 5000 });
   await card.getByText(/Proposition :/).waitFor({ timeout: 5000 });

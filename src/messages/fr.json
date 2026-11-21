@@ -2668,5 +2668,20 @@
     "readingTitle": "Ce que disent vos 4 dernières semaines",
     "noReading": "Pas encore assez de séances pour tirer des conclusions.",
     "how": "Ces propositions viennent de règles simples et vérifiables appliquées à vos séances (aucune donnée n’est envoyée ailleurs). Ce sont des repères d’entraînement, pas un avis médical."
+  },
+  "weekFit": {
+    "title": "Cette semaine, je peux m’entraîner…",
+    "intro": "{count, plural, =0 {Aucune séance prévue d’ici dimanche.} one {# séance prévue d’ici dimanche.} other {# séances prévues d’ici dimanche.}} Touchez les jours où vous avez du temps, puis la durée : l’assistant ajuste la semaine.",
+    "days": "Jours disponibles",
+    "minutesFor": "Temps disponible le {day}",
+    "minutes": "{m} min",
+    "fits": "Vos séances de la semaine tiennent dans ce temps.",
+    "applied": "C’est fait : vos séances sont placées sur les jours où vous avez du temps.",
+    "move": "{label} du {from} → déplacée au {to}.",
+    "skip": "{label} du {from} → passée cette semaine (aucun autre jour libre).",
+    "shorten": "{label} le {date} : environ {planned} min prévues pour {minutes} min disponibles → le jour venu, choisissez la version courte sur l’accueil.",
+    "dropped": "{count, plural, one {# exercice serait laissé de côté} other {# exercices seraient laissés de côté}} dans la version courte.",
+    "applyAll": "{count, plural, one {Appliquer le changement} other {Appliquer les # changements}}",
+    "control": "Rien ne bouge tant que vous n’appliquez pas ; chaque séance se remet à son jour depuis la semaine sur l’accueil."
   }
 }

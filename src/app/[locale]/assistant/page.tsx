@@ -16,6 +16,7 @@ import { useExerciseLabel } from "@/lib/exerciseNames";
 import { localDate } from "@/lib/dates";
 import type { CoachProposal } from "@/lib/coach";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { WeekFitCard } from "@/components/domain/WeekFitCard";
 import { SectionHeading } from "@/components/ui/page-parts";
 import { Button } from "@/components/ui/button";
 import { InsightAction, InsightCard, MoreInsights } from "@/components/domain/InsightCard";
@@ -34,7 +35,7 @@ export default function AssistantPage() {
   const router = useRouter();
   const xl = useExerciseLabel();
   const today = localDate();
-  const { proposals, ignore, apply } = useCoach();
+  const { proposals, ignore, apply, planned, workouts: allWorkouts, profile: me } = useCoach();
   const workouts = useWorkouts();
   const sets = useAllWorkoutSets();
   const pains = usePainReports();
@@ -70,6 +71,9 @@ export default function AssistantPage() {
       <PageHeader title={t("title")} showBack />
       <div className="mx-auto max-w-2xl space-y-6 p-4 pb-28">
         <p className="text-sm text-muted-foreground">{t("intro")}</p>
+
+        {/* This week's time, and the planning fitted to it. */}
+        <WeekFitCard planned={planned} workouts={allWorkouts} profile={me} today={today} />
 
         <section className="space-y-3" aria-labelledby="assistant-programs">
           <SectionHeading id="assistant-programs">{t("programsTitle")}</SectionHeading>
