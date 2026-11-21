@@ -4,6 +4,7 @@
 // leaves it, the pages come from the service worker, and nothing reaches the
 // server — so no test account is needed and no real data is touched. Started
 // by scripts/e2e.sh, which builds and serves the app.
+import { Encoder, Profile } from "@garmin/fitsdk";
 import { chromium } from "playwright-core";
 import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -1688,6 +1689,23 @@ await test("a watch file (TCX) fills a ride with its power, placed in the FTP's 
   await page.getByLabel("Mouvements de bras").fill("16");
   await page.getByLabel("Mouvements de bras").blur();
   await page.getByText(/40 longueurs · SWOLF 46/).waitFor({ timeout: 5000 });
+
+  // A FIT file of a pool swim (as a Garmin writes it): pool, stroke and strokes come with it.
+  const enc = new Encoder();
+  const at = new Date("2026-11-20T07:00:00Z");
+  enc.onMesg(Profile.MesgNum.FILE_ID, { type: "activity", manufacturer: "garmin", product: 0, timeCreated: at, serialNumber: 1 });
+  enc.onMesg(Profile.MesgNum.SESSION, { startTime: at, timestamp: at, sport: "swimming", subSport: "lapSwimming", totalTimerTime: 1500, totalDistance: 1500, poolLength: 25, avgStrokeCount: 18, swimStroke: "breaststroke" });
+  const fit = enc.close();
+  const pool = await add("swim", "Natation FIT");
+  await page.goto(`${BASE}/fr/log/session?id=${pool}`);
+  await page.locator('input[type="file"][accept*=".fit"]').first().setInputFiles({ name: "swim.fit", mimeType: "application/octet-stream", buffer: Buffer.from(fit) });
+  const fitDialog = page.getByRole("dialog");
+  await fitDialog.getByRole("button", { name: "Remplir la séance" }).click();
+  await fitDialog.waitFor({ state: "detached", timeout: 10000 });
+  await page.getByRole("button", { name: "Brasse", pressed: true }).waitFor({ timeout: 5000 });
+  await page.getByRole("button", { name: "25 m", pressed: true }).waitFor({ timeout: 5000 });
+  // 60 lengths in 25 min: 25 s a length + 18 strokes.
+  await page.getByText(/60 longueurs · SWOLF 43/).waitFor({ timeout: 5000 });
 });
 
 await test("no page threw an error", async () => {

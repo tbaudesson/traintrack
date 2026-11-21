@@ -51,7 +51,10 @@ export function GpxImport({
       setError(t("gpxTooBig"));
       return;
     }
-    const parsed = parseActivityFile(await file.text());
+    // A FIT file is binary, read with Garmin's SDK, loaded only when one comes.
+    const parsed = /\.fit$/i.test(file.name)
+      ? (await import("@/lib/fit")).parseFit(new Uint8Array(await file.arrayBuffer()))
+      : parseActivityFile(await file.text());
     if (!parsed) {
       setError(t("gpxError"));
       return;
@@ -80,6 +83,9 @@ export function GpxImport({
         avgCadence: activity.avgCadence ?? null,
         avgPowerW: activity.avgPowerW ?? null,
         maxPowerW: activity.maxPowerW ?? null,
+        ...(activity.poolLengthM !== undefined ? { poolLengthM: activity.poolLengthM } : {}),
+        ...(activity.swimStroke ? { swimStroke: activity.swimStroke } : {}),
+        ...(activity.strokesPerLength ? { strokesPerLength: activity.strokesPerLength } : {}),
         elevationGainM: activity.elevationGainM > 0 ? activity.elevationGainM : null,
       };
       const climb = activity.elevationGainM > 0 ? t("gpxElevation", { m: activity.elevationGainM }) : undefined;
@@ -103,7 +109,7 @@ export function GpxImport({
       <input
         id={inputId}
         type="file"
-        accept=".gpx,.tcx,application/gpx+xml,application/vnd.garmin.tcx+xml,application/xml,text/xml"
+        accept=".gpx,.tcx,.fit,application/gpx+xml,application/vnd.garmin.tcx+xml,application/vnd.ant.fit,application/xml,text/xml,application/octet-stream"
         className="hidden"
         onChange={(e) => {
           read(e.target.files?.[0]);

@@ -1052,9 +1052,9 @@
     "loadError": "Impossible de charger les programmes types. La migration 023 est-elle appliquée ?"
   },
   "cardio": {
-    "importGpx": "Importer un fichier de montre (GPX, TCX)",
+    "importGpx": "Importer un fichier de montre (GPX, TCX, FIT)",
     "importGpxHint": "Strava, Garmin, montre…",
-    "importGpxFill": "Remplir depuis un fichier de montre (GPX, TCX)",
+    "importGpxFill": "Remplir depuis un fichier de montre (GPX, TCX, FIT)",
     "gpxTitle": "Sortie importée",
     "gpxDate": "Date",
     "gpxMoving": "Temps en mouvement",
@@ -1063,7 +1063,7 @@
     "gpxElevation": "Dénivelé +{m} m",
     "gpxSave": "Enregistrer la sortie",
     "gpxFill": "Remplir la séance",
-    "gpxError": "Ce fichier ne contient pas de trace GPS lisible.",
+    "gpxError": "Ce fichier ne contient pas de sortie lisible (GPX, TCX ou FIT).",
     "gpxTooBig": "Ce fichier est trop volumineux (20 Mo au maximum).",
     "gpxDuplicate": "Une sortie semblable est déjà enregistrée ce jour-là.",
     "sport": "Sport",

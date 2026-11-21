@@ -1052,9 +1052,9 @@
     "loadError": "Could not load templates. Has migration 023 been applied?"
   },
   "cardio": {
-    "importGpx": "Import a watch file (GPX, TCX)",
+    "importGpx": "Import a watch file (GPX, TCX, FIT)",
     "importGpxHint": "Strava, Garmin, a watch…",
-    "importGpxFill": "Fill from a watch file (GPX, TCX)",
+    "importGpxFill": "Fill from a watch file (GPX, TCX, FIT)",
     "gpxTitle": "Imported outing",
     "gpxDate": "Date",
     "gpxMoving": "Moving time",
@@ -1063,7 +1063,7 @@
     "gpxElevation": "Elevation +{m} m",
     "gpxSave": "Save the outing",
     "gpxFill": "Fill the session",
-    "gpxError": "This file holds no readable GPS track.",
+    "gpxError": "This file holds no readable outing (GPX, TCX or FIT).",
     "gpxTooBig": "This file is too large (20 MB at most).",
     "gpxDuplicate": "A similar outing is already logged that day.",
     "sport": "Sport",

@@ -14,6 +14,10 @@ export interface GpxActivity {
   avgCadence?: number;
   avgPowerW?: number;
   maxPowerW?: number;
+  /** A swim, when the file knows it (FIT): the pool (0 in open water), the main stroke, the strokes per length. */
+  poolLengthM?: number;
+  swimStroke?: "free" | "breast" | "back" | "fly" | "mixed";
+  strokesPerLength?: number;
 }
 
 interface Point {

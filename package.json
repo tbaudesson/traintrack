@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
+    "@garmin/fitsdk": "21.221.0",
     "@supabase/supabase-js": "^2.106.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
