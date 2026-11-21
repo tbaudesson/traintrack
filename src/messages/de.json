@@ -228,7 +228,8 @@
     "otherActivities": "{count, plural, one {+ # weitere Aktivität diese Woche} other {+ # weitere Aktivitäten diese Woche}}",
     "weekActivities": "{count, plural, =0 {Keine Aktivität diese Woche} one {# Aktivität diese Woche} other {# Aktivitäten diese Woche}}",
     "weekVolume": "Volumen {kg} kg diese Woche",
-    "seeAnalysis": "Analyse in Performance ansehen"
+    "seeAnalysis": "Analyse in Performance ansehen",
+    "readyMade": "Fertige Programme"
   },
   "onboarding": {
     "title": "Dein Athletenprofil",
@@ -2417,5 +2418,23 @@
     "unknown": "Nicht in der Bibliothek: {names}. Nichts gespeichert.",
     "save": "Ausrüstung speichern",
     "saved": "Gespeichert: gilt beim nächsten Öffnen der App"
+  },
+  "picker": {
+    "searchExercise": "Übung suchen (Name, Muskel…)",
+    "searchProgram": "Programm oder Einheit suchen",
+    "clear": "Löschen",
+    "muscle": "Muskelgruppe",
+    "equipment": "Ausrüstung",
+    "myEquipment": "Mit meiner Ausrüstung",
+    "all": "Alle",
+    "recent": "Zuletzt verwendet",
+    "allExercises": "Alle Übungen",
+    "count": "{count, plural, =0 {Kein Ergebnis} one {# Ergebnis} other {# Ergebnisse}}",
+    "none": "Nichts gefunden.",
+    "reset": "Suche und Filter löschen",
+    "more": "Mehr anzeigen ({count})",
+    "sport": "Sport",
+    "level": "Niveau",
+    "allLevels": "Alle Niveaus"
   }
 }

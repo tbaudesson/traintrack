@@ -20,6 +20,7 @@ import { demoVideo } from "@/lib/demoVideos";
 import { cn } from "@/lib/utils";
 import { SectionHeading } from "@/components/ui/page-parts";
 import { useExerciseLabel, exerciseDescription } from "@/lib/exerciseNames";
+import { search as searchItems } from "@/lib/search";
 
 const MUSCLE_GROUPS: MuscleGroup[] = ["chest", "back", "legs", "shoulders", "arms", "core", "full_body", "other"];
 const EQUIPMENT: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "bodyweight", "kettlebell", "bands", "other"];
@@ -30,10 +31,11 @@ export default function ExercisesPage() {
   const [search, setSearch] = useState("");
   const [adding, setAdding] = useState(false);
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return exercises.filter((e) => !q || e.name.toLowerCase().includes(q));
-  }, [exercises, search]);
+  // Names in every language and descriptions, accents ignored: "pompes" finds "Push-up".
+  const filtered = useMemo(
+    () => searchItems(exercises, search, (e) => ({ names: [e.name, e.nameFr, e.nameDe], others: [e.description, e.descriptionFr, e.descriptionDe] })),
+    [exercises, search]
+  );
 
   const grouped = useMemo(() => {
     const map = new Map<string, typeof filtered>();

@@ -20,6 +20,7 @@ import { lighter } from "@/lib/startWorkout";
 import { usePainReports } from "@/hooks/usePain";
 import { recentPainOn } from "@/lib/pain";
 import { useInjuryGuidance } from "@/hooks/useInjuryGuidance";
+import { ExercisePicker } from "@/components/domain/ExercisePicker";
 import { PainDialog } from "@/components/domain/PainDialog";
 import { InjuryBadge } from "@/components/domain/InjuryBadge";
 import { bySafety, declareInjury, injuryWarning, returnAdjust } from "@/lib/injuries";
@@ -1511,28 +1512,14 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
       </Dialog>
 
       {/* Exercise picker */}
-      <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
-        <DialogContent className="max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{t("selectExercise")}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-1">
-            {exercises.map((e) => (
-              <button
-                key={e.id}
-                onClick={() => e.id && addExercise(e.id)}
-                className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent"
-              >
-                <Dumbbell className="h-4 w-4 text-accent-500" />
-                <span className="flex min-w-0 flex-1 flex-col items-start gap-0.5">
-                  {xl(e.name)}
-                  <InjuryBadge exerciseName={e.name} injuries={injuries} />
-                </span>
-              </button>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ExercisePicker
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        title={t("selectExercise")}
+        injuries={injuries}
+        exclude={groups.map(([id]) => id)}
+        onPick={(e) => e.id && addExercise(e.id)}
+      />
     </>
   );
 }

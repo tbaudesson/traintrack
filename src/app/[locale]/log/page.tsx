@@ -271,6 +271,7 @@ export default function TrainPage() {
         allSports={prefs.allSports}
         runner={runner}
         onEndurance={() => setSportOpen(true)}
+        favorite={prefs.sport}
       />
     </>
   );

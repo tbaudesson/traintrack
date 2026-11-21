@@ -1,17 +1,23 @@
 "use client";
 
-import { useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Activity, ClipboardList, Dumbbell, Footprints, PersonStanding, Plus, RotateCcw, Sparkles, Timer, Upload } from "lucide-react";
+import { Activity, ClipboardList, Dumbbell, Footprints, PersonStanding, Plus, RotateCcw, Timer, Upload } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { sessionHref } from "@/lib/routes";
 import { daysToOffer } from "@/lib/startWorkout";
 import { describeTarget } from "@/lib/cardio";
 import { createProgram } from "@/hooks/usePrograms";
-import type { ProgramTemplate } from "@/lib/programTemplates";
+import type { ProgramLevel, ProgramTemplate } from "@/lib/programTemplates";
 import type { ActivityKind } from "@/lib/activityProfile";
 import { useFormat } from "@/lib/format";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
+import { useAthleteProfileOrNull } from "@/hooks/useAthleteProfile";
+import { search } from "@/lib/search";
+import { CATEGORY_ORDER, planWeeks, programCategory, type ProgramCategory } from "@/lib/programCategories";
+import { Button } from "@/components/ui/button";
+import { Chip, ChipRow, SearchField } from "@/components/ui/find";
+import { CategoryIcon } from "@/components/domain/ProgramCatalog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DetailRow } from "@/components/ui/detail-row";
 import { GpxImport } from "@/components/domain/GpxImport";
@@ -24,10 +30,16 @@ export function useDayDetail() {
   return (day: ProgramDay) => (day.cardio ? describeTarget(day.cardio) : t("exerciseCount", { count: day.exercises.length }));
 }
 
+/** Ready-made programs shown at once; more on demand. */
+const PAGE = 6;
+const LEVELS: ProgramLevel[] = ["beginner", "intermediate", "advanced"];
+
 /**
  * "Choose a session": a day of one's programs, the last session again, a
  * session without a program (those of one's sports first), a GPX file, a new
- * program, a ready-made one.
+ * program, a ready-made one. One search reaches all of it; the ready-made
+ * programs are narrowed by sport and level (one's own sport first) and shown
+ * a few at a time rather than as one long list.
  */
 export function SessionPickerDialog({
   open,
@@ -41,6 +53,7 @@ export function SessionPickerDialog({
   allSports,
   runner,
   onEndurance,
+  favorite,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -58,6 +71,8 @@ export function SessionPickerDialog({
   runner: boolean;
   /** An endurance outing: the sport is picked elsewhere. */
   onEndurance: () => void;
+  /** The favourite sport: its ready-made programs are shown first. */
+  favorite?: string | null;
 }) {
   const t = useTranslations("home");
   const tc = useTranslations("cardio");
@@ -68,27 +83,63 @@ export function SessionPickerDialog({
   const { day } = useFormat();
   const { hasFeature } = useFeatureAccess();
   const dayDetail = useDayDetail();
+  const tcat = useTranslations("catalog");
+  const tt = useTranslations("templates");
+  const tf = useTranslations("picker");
   const pickerTop = useRef<HTMLDivElement>(null);
   const { starting, repeatable, startDay, startFree, repeatLast } = actions;
+  const level = useAthleteProfileOrNull()?.fitnessLevel;
+  const [query, setQuery] = useState("");
+  // The favourite sport's shelf when it has ready-made programs, else all of them.
+  const [sport, setSport] = useState<ProgramCategory | "all" | null>(null);
+  const [onlyLevel, setOnlyLevel] = useState<ProgramLevel | null>(null);
+  const [shown, setShown] = useState(PAGE);
 
   const freeRows = [
-    { key: "free", rank: allSports ? 0 : activity === "strength" ? 0 : 3, node: <DetailRow key="free" onClick={startFree} disabled={starting} icon={Plus} tone="neutral" title={t("freeSession")} subtitle={t("freeSessionHint")} /> },
-    { key: "intervals", rank: allSports ? 1 : activity === "bodyweight" ? 0 : 4, node: <DetailRow key="intervals" href="/intervals" icon={Timer} tone="neutral" title={ti("title")} subtitle={ti("hint")} /> },
-    ...(runner && hasFeature("running") ? [{ key: "running", rank: 1, node: <DetailRow key="running" href="/running" icon={Footprints} tone="neutral" title={t("runIntervals")} subtitle={t("runIntervalsHint")} /> }] : []),
-    { key: "mobility", rank: allSports ? 2 : 5, node: <DetailRow key="mobility" href="/mobility" icon={PersonStanding} tone="neutral" title={tmo("title")} subtitle={tmo("hint")} /> },
+    { key: "free", rank: allSports ? 0 : activity === "strength" ? 0 : 3, text: [t("freeSession"), t("freeSessionHint")], node: <DetailRow key="free" onClick={startFree} disabled={starting} icon={Plus} tone="neutral" title={t("freeSession")} subtitle={t("freeSessionHint")} /> },
+    { key: "intervals", rank: allSports ? 1 : activity === "bodyweight" ? 0 : 4, text: [ti("title"), ti("hint")], node: <DetailRow key="intervals" href="/intervals" icon={Timer} tone="neutral" title={ti("title")} subtitle={ti("hint")} /> },
+    ...(runner && hasFeature("running") ? [{ key: "running", rank: 1, text: [t("runIntervals"), t("runIntervalsHint")], node: <DetailRow key="running" href="/running" icon={Footprints} tone="neutral" title={t("runIntervals")} subtitle={t("runIntervalsHint")} /> }] : []),
+    { key: "mobility", rank: allSports ? 2 : 5, text: [tmo("title"), tmo("hint")], node: <DetailRow key="mobility" href="/mobility" icon={PersonStanding} tone="neutral" title={tmo("title")} subtitle={tmo("hint")} /> },
     {
       key: "endurance",
       rank: allSports ? 3 : activity === "endurance" || activity === "vaulting" ? 0 : 2,
+      text: [tc("newSession"), tc("newSessionHint")],
       node: <DetailRow key="endurance" onClick={() => { onOpenChange(false); onEndurance(); }} disabled={starting} icon={Activity} tone="neutral" title={tc("newSession")} subtitle={tc("newSessionHint")} />,
     },
   ].sort((a, b) => a.rank - b.rank);
 
-  const templateGroups = (
-    [
-      { key: "readyMadeStrength", items: templates.filter((x) => x.goal !== "endurance") },
-      { key: "readyMadeEndurance", items: templates.filter((x) => x.goal === "endurance") },
-    ] as const
-  ).filter((group) => group.items.length > 0);
+  // Every ready-made program with its shelf, then narrowed by the search, the sport and the level.
+  const withShelf = useMemo(() => templates.map((tpl) => ({ tpl, shelf: programCategory(tpl) })), [templates]);
+  const sports = CATEGORY_ORDER.filter((c) => withShelf.some((x) => x.shelf === c));
+  const ownSport = sports.find((c) => c === favorite) ?? null;
+  const shelf = sport ?? ownSport ?? "all";
+  const q = query.trim();
+  const ofShelf = withShelf.filter((x) => q || shelf === "all" || x.shelf === shelf);
+  const ofLevel = ofShelf.filter((x) => !onlyLevel || x.tpl.level === onlyLevel);
+  const found = search(
+    // The athlete's level first, the order of the catalogue kept otherwise.
+    [...ofLevel].sort((a, b) => Number(b.tpl.level === level) - Number(a.tpl.level === level)),
+    q,
+    (x) => ({ names: [x.tpl.name], others: [x.tpl.description, x.shelf ? tcat(`cat_${x.shelf}`) : null, tt(`level_${x.tpl.level}`)] })
+  );
+  const levels = LEVELS.filter((l) => ofShelf.some((x) => x.tpl.level === l));
+  const pick = (next: ProgramCategory | "all") => {
+    setSport(next);
+    setOnlyLevel(null);
+    setShown(PAGE);
+  };
+
+  // The days of one's programs and the sessions without a program, narrowed by the same search.
+  const days = programs.flatMap((p) => daysToOffer(p, workouts, today).map(({ day: d, index }) => ({ p, d, index })));
+  const foundDays = search(days, q, ({ p, d }) => ({ names: [d.name, p.name], others: [dayDetail(d)] }));
+  const foundFree = search(freeRows, q, (r) => ({ names: [r.text[0]], others: [r.text[1]] }));
+  const showRepeat = !!repeatable && (!q || search([repeatable], q, (w) => ({ names: [t("repeatLast"), w.title] })).length > 0);
+  const nothing = q && !foundDays.length && !foundFree.length && !found.length && !showRepeat;
+  const describe = (tpl: ProgramTemplate, shelfOf: ProgramCategory | null) => {
+    const weeks = planWeeks(tpl.structure);
+    const length = weeks ? t("readyMadeWeeks", { count: weeks }) : t("readyMadeDays", { count: tpl.structure.length });
+    return [shelfOf ? tcat(`cat_${shelfOf}`) : null, tt(`level_${tpl.level}`), length].filter(Boolean).join(" · ");
+  };
 
   async function buildProgram() {
     onOpenChange(false);
@@ -109,76 +160,123 @@ export function SessionPickerDialog({
           <DialogTitle>{t("chooseSession")}</DialogTitle>
         </DialogHeader>
         <div ref={pickerTop} className="space-y-4">
-          {programs.length > 0 && (
+          <SearchField
+            value={query}
+            onChange={(v) => {
+              setQuery(v);
+              setShown(PAGE);
+            }}
+            placeholder={tf("searchProgram")}
+            clearLabel={tf("clear")}
+          />
+
+          {foundDays.length > 0 && (
             <section className="space-y-3">
               <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("myPrograms")}</h3>
-              {programs.map((p) => (
-                <div key={p.id} className="space-y-2">
-                  <h4 className="text-sm font-semibold">{p.name}</h4>
-                  {daysToOffer(p, workouts, today).map(({ day: d, index }) => (
-                    <DetailRow
-                      key={`${p.id}-${index}`}
-                      onClick={() => startDay(p, index)}
-                      disabled={starting}
-                      icon={d.cardio ? Activity : Dumbbell}
-                      title={d.name}
-                      subtitle={dayDetail(d)}
-                    />
-                  ))}
-                </div>
-              ))}
+              {programs
+                .filter((p) => foundDays.some((x) => x.p === p))
+                .map((p) => (
+                  <div key={p.id} className="space-y-2">
+                    <h4 className="text-sm font-semibold">{p.name}</h4>
+                    {foundDays
+                      .filter((x) => x.p === p)
+                      .map(({ d, index }) => (
+                        <DetailRow
+                          key={`${p.id}-${index}`}
+                          onClick={() => startDay(p, index)}
+                          disabled={starting}
+                          icon={d.cardio ? Activity : Dumbbell}
+                          title={d.name}
+                          subtitle={dayDetail(d)}
+                        />
+                      ))}
+                  </div>
+                ))}
             </section>
           )}
 
-          <section className="space-y-2">
-            <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("noProgram")}</h3>
-            {repeatable && (
-              <DetailRow
-                onClick={repeatLast}
-                disabled={starting}
-                icon={RotateCcw}
-                tone="neutral"
-                title={t("repeatLast")}
-                subtitle={`${repeatable.title || t("freeSession")} · ${day(repeatable.date)}`}
-              />
-            )}
-            {freeRows.map((row) => row.node)}
-            <GpxImport
-              existing={workouts}
-              onImported={({ workoutId }) => {
-                onOpenChange(false);
-                router.push(sessionHref(workoutId));
-              }}
-              trigger={(openImport) => (
-                <DetailRow onClick={openImport} icon={Upload} tone="neutral" title={tc("importGpx")} subtitle={tc("importGpxHint")} />
-              )}
-            />
-          </section>
-
-          <section className="space-y-2">
-            <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("addProgram")}</h3>
-            <DetailRow onClick={buildProgram} icon={Plus} title={t("buildProgram")} subtitle={t("buildProgramHint")} />
-            <DetailRow href="/programs" icon={ClipboardList} tone="neutral" title={t("managePrograms")} subtitle={t("manageProgramsHint")} />
-          </section>
-
-          {templateGroups.map(({ key, items }) => (
-            <section key={key} className="space-y-2">
-              <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t(key)}</h3>
-              {items.map((template) => (
+          {(showRepeat || foundFree.length > 0 || !q) && (
+            <section className="space-y-2">
+              <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("noProgram")}</h3>
+              {showRepeat && repeatable && (
                 <DetailRow
-                  key={template.id}
-                  onClick={() => addTemplate(template)}
-                  icon={key === "readyMadeEndurance" ? Activity : Sparkles}
-                  title={template.name}
-                  subtitle={
-                    template.structure.some((d) => d.week !== undefined)
-                      ? t("readyMadeWeeks", { count: new Set(template.structure.map((d) => d.week)).size })
-                      : t("readyMadeDays", { count: template.structure.length })
-                  }
+                  onClick={repeatLast}
+                  disabled={starting}
+                  icon={RotateCcw}
+                  tone="neutral"
+                  title={t("repeatLast")}
+                  subtitle={`${repeatable.title || t("freeSession")} · ${day(repeatable.date)}`}
+                />
+              )}
+              {[...foundFree].sort((a, b) => (q ? 0 : a.rank - b.rank)).map((row) => row.node)}
+              {!q && (
+                <GpxImport
+                  existing={workouts}
+                  onImported={({ workoutId }) => {
+                    onOpenChange(false);
+                    router.push(sessionHref(workoutId));
+                  }}
+                  trigger={(openImport) => (
+                    <DetailRow onClick={openImport} icon={Upload} tone="neutral" title={tc("importGpx")} subtitle={tc("importGpxHint")} />
+                  )}
+                />
+              )}
+            </section>
+          )}
+
+          {!q && (
+            <section className="space-y-2">
+              <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("addProgram")}</h3>
+              <DetailRow onClick={buildProgram} icon={Plus} title={t("buildProgram")} subtitle={t("buildProgramHint")} />
+              <DetailRow href="/programs" icon={ClipboardList} tone="neutral" title={t("managePrograms")} subtitle={t("manageProgramsHint")} />
+            </section>
+          )}
+
+          {templates.length > 0 && (found.length > 0 || !q) && (
+            <section className="space-y-2" aria-labelledby="picker-ready-made">
+              <h3 id="picker-ready-made" className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("readyMade")}</h3>
+              {!q && (
+                <>
+                  <ChipRow label={tf("sport")}>
+                    <Chip on={shelf === "all"} onClick={() => pick("all")}>{tf("all")}</Chip>
+                    {[...sports].sort((a, b) => Number(b === ownSport) - Number(a === ownSport)).map((c) => (
+                      <Chip key={c} on={shelf === c} onClick={() => pick(c)}>{tcat(`cat_${c}`)}</Chip>
+                    ))}
+                  </ChipRow>
+                  {levels.length > 1 && (
+                    <ChipRow label={tf("level")}>
+                      <Chip on={!onlyLevel} onClick={() => { setOnlyLevel(null); setShown(PAGE); }}>{tf("allLevels")}</Chip>
+                      {levels.map((l) => (
+                        <Chip key={l} on={onlyLevel === l} onClick={() => { setOnlyLevel(onlyLevel === l ? null : l); setShown(PAGE); }}>{tt(`level_${l}`)}</Chip>
+                      ))}
+                    </ChipRow>
+                  )}
+                </>
+              )}
+              {found.slice(0, shown).map(({ tpl, shelf: c }) => (
+                <DetailRow
+                  key={tpl.id}
+                  onClick={() => addTemplate(tpl)}
+                  leading={<CategoryIcon category={c ?? "custom"} />}
+                  title={tpl.name}
+                  subtitle={describe(tpl, c)}
                 />
               ))}
+              {found.length === 0 && <p className="py-2 text-center text-sm text-muted-foreground">{tf("none")}</p>}
+              {found.length > shown && (
+                <Button variant="ghost" className="w-full text-accent-text" onClick={() => setShown(shown + PAGE * 2)}>
+                  {tf("more", { count: found.length - shown })}
+                </Button>
+              )}
             </section>
-          ))}
+          )}
+
+          {nothing && (
+            <div className="space-y-2 py-6 text-center text-sm text-muted-foreground">
+              <p>{tf("none")}</p>
+              <Button variant="outline" size="sm" onClick={() => setQuery("")}>{tf("reset")}</Button>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

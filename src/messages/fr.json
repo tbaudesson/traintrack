@@ -228,7 +228,8 @@
     "otherActivities": "{count, plural, one {+ # autre activité cette semaine} other {+ # autres activités cette semaine}}",
     "weekActivities": "{count, plural, =0 {Aucune activité cette semaine} one {# activité cette semaine} other {# activités cette semaine}}",
     "weekVolume": "Volume {kg} kg cette semaine",
-    "seeAnalysis": "Voir l’analyse dans Performance"
+    "seeAnalysis": "Voir l’analyse dans Performance",
+    "readyMade": "Programmes types"
   },
   "onboarding": {
     "title": "Votre profil athlète",
@@ -2417,5 +2418,23 @@
     "unknown": "Absents de la bibliothèque : {names}. Rien n’a été enregistré.",
     "save": "Enregistrer le matériel",
     "saved": "Enregistré : appliqué à la prochaine ouverture de l’app"
+  },
+  "picker": {
+    "searchExercise": "Chercher un exercice (nom, muscle…)",
+    "searchProgram": "Chercher un programme ou une séance",
+    "clear": "Effacer",
+    "muscle": "Groupe musculaire",
+    "equipment": "Matériel",
+    "myEquipment": "Avec mon matériel",
+    "all": "Tous",
+    "recent": "Utilisés récemment",
+    "allExercises": "Tous les exercices",
+    "count": "{count, plural, =0 {Aucun résultat} one {# résultat} other {# résultats}}",
+    "none": "Rien ne correspond.",
+    "reset": "Effacer la recherche et les filtres",
+    "more": "Voir plus ({count})",
+    "sport": "Sport",
+    "level": "Niveau",
+    "allLevels": "Tous niveaux"
   }
 }

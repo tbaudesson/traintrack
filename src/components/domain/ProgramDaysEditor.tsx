@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ExercisePicker } from "@/components/domain/ExercisePicker";
 import { Plus, Trash2, Dumbbell, X } from "lucide-react";
 import { useExerciseLabel } from "@/lib/exerciseNames";
 import type { Injury } from "@/lib/injuries";
@@ -186,28 +186,14 @@ export function ProgramDaysEditor({
         </Button>
 
       {/* Exercise picker */}
-      <Dialog open={pickerDay !== null} onOpenChange={(o) => !o && setPickerDay(null)}>
-        <DialogContent className="max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{t("addExercise")}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-1">
-            {exercises.map((e) => (
-              <button
-                key={e.id}
-                onClick={() => pickerDay !== null && addExerciseToDay(pickerDay, e.name, e.uuid)}
-                className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent"
-              >
-                <Dumbbell className="h-4 w-4 text-accent-500" />
-                <span className="flex min-w-0 flex-1 flex-col items-start gap-0.5">
-                  {xl(e.name)}
-                  <InjuryBadge exerciseName={e.name} injuries={injuries} />
-                </span>
-              </button>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ExercisePicker
+        open={pickerDay !== null}
+        onOpenChange={(o) => !o && setPickerDay(null)}
+        title={t("addExercise")}
+        injuries={injuries}
+        exclude={pickerDay === null ? [] : exercises.filter((e) => e.id !== undefined && days[pickerDay]?.exercises.some((x) => x.exerciseName === e.name)).map((e) => e.id!)}
+        onPick={(e) => pickerDay !== null && addExerciseToDay(pickerDay, e.name, e.uuid)}
+      />
     </>
   );
 }

@@ -220,6 +220,8 @@ await test("the home screen opens offline, with the offline banner", async () =>
 
 await test("a ready-made program is added from the home screen", async () => {
   await page.getByText("Changer de séance ou de programme").click();
+  // Found by typing a few letters, accents left out, rather than scrolling a long list.
+  await page.getByRole("dialog").getByPlaceholder("Chercher un programme ou une séance").fill("full body deb");
   await page.getByRole("dialog").getByText("Full Body — Débutant").first().click();
   // Saved: it joins the programs to start, at the top of the picker.
   await page.getByRole("dialog").locator("section", { hasText: "Mes programmes" }).getByText("Full Body — Débutant").first().waitFor({ timeout: 10000 });
@@ -297,8 +299,37 @@ await test("an empty session takes an exercise from the library", async () => {
   await page.getByRole("button", { name: /Nouvelle séance/ }).first().click();
   await page.waitForURL(/\/fr\/log\/session\?id=\d+/, { timeout: 15000 });
   await page.getByRole("button", { name: /Ajouter un exercice/ }).click();
+  // The search reads the names in every language: "push" finds "Pompes".
+  await page.getByRole("dialog").getByPlaceholder(/Chercher un exercice/).fill("push");
   await page.getByRole("dialog").getByText("Pompes", { exact: true }).click();
   await page.getByText("Pompes").first().waitFor({ timeout: 5000 });
+});
+
+await test("the session picker narrows the ready-made programs by sport, a few at a time", async () => {
+  await page.goto(`${BASE}/fr`);
+  await page.getByText("Changer de séance ou de programme").click();
+  const dialog = page.getByRole("dialog");
+  const readyMade = dialog.locator("section", { has: page.locator("#picker-ready-made") });
+  await readyMade.getByRole("button", { name: "Tous", exact: true }).click();
+  const all = await readyMade.locator("a, button").filter({ hasText: " · " }).count();
+  expect(all <= 6, `${all} ready-made programs shown at once`);
+  expect(await readyMade.getByRole("button", { name: /Voir plus/ }).count(), "no way to see more");
+  await readyMade.getByRole("button", { name: "Natation", exact: true }).click();
+  const rows = readyMade.locator("a, button").filter({ hasText: " · " });
+  const n = await rows.count();
+  expect(n > 0, "no swimming program");
+  for (let i = 0; i < n; i++) expect((await rows.nth(i).innerText()).includes("Natation"), "another sport under swimming");
+  // A search that finds nothing says so and offers to clear it.
+  await dialog.getByPlaceholder("Chercher un programme ou une séance").fill("zzzz");
+  await dialog.getByText("Rien ne correspond.").first().waitFor({ timeout: 5000 });
+  await page.keyboard.press("Escape");
+});
+
+await test("the library finds an exercise by its French name", async () => {
+  await page.goto(`${BASE}/fr/exercises`);
+  await page.getByPlaceholder(/Rechercher|Chercher/).first().fill("developpe couche halt");
+  await page.getByText("Développé couché aux haltères").first().waitFor({ timeout: 5000 });
+  expect(!(await page.getByText("Squat arrière", { exact: true }).count()), "the search keeps unrelated exercises");
 });
 
 await test("the changes wait on the device, counted in the banner", async () => {
