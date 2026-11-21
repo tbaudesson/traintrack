@@ -37,13 +37,13 @@ import { detectSport, kindOf } from "@/lib/activityProfile";
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell,
 } from "recharts";
+import { estimateOneRepMax } from "@/lib/performance";
 import { localDate, localDateIn } from "@/lib/dates";
 import { useExerciseLabel } from "@/lib/exerciseNames";
 import { useFormat } from "@/lib/format";
 
-function epley1rm(weight: number, reps: number): number {
-  return Math.round(weight * (1 + reps / 30));
-}
+/** The estimated 1RM, the same everywhere in the app (performance.ts: Epley, the load itself at one rep), to 0.1 kg. */
+const oneRepMax = (weight: number, reps: number) => Math.round(estimateOneRepMax(weight, reps) * 10) / 10;
 
 type ExMetric = "e1rm" | "top" | "reps" | "vol";
 
@@ -68,8 +68,9 @@ export default function ProgressPage() {
   const [bw, setBw] = useState("");
   const [now] = useState(() => Date.now());
   const workoutDate = useMemo(() => new Map(workouts.map((w) => [w.id, w.date])), [workouts]);
-  // A set counts toward analytics once it has both weight and reps.
-  const scored = useMemo(() => sets.filter((s) => s.weightKg && s.reps), [sets]);
+  // A set counts toward analytics once ticked done with both weight and reps
+  // (warm-ups are already left out): one planned but not done is not lifted.
+  const scored = useMemo(() => sets.filter((s) => s.completed && s.weightKg && s.reps), [sets]);
 
   // The sport practised decides what comes first.
   const today = localDate();
@@ -144,7 +145,7 @@ export default function ProgressPage() {
       const d = workoutDate.get(s.workoutId);
       if (!d) continue;
       const cur = byDate.get(d) ?? { e1rm: 0, top: 0, reps: 0, vol: 0 };
-      cur.e1rm = Math.max(cur.e1rm, epley1rm(s.weightKg!, s.reps!));
+      cur.e1rm = Math.max(cur.e1rm, oneRepMax(s.weightKg!, s.reps!));
       cur.top = Math.max(cur.top, s.weightKg!);
       cur.reps += s.reps!;
       cur.vol += s.weightKg! * s.reps!;
@@ -178,7 +179,7 @@ export default function ProgressPage() {
   const prs = useMemo(() => {
     const best = new Map<number, number>();
     for (const s of scored) {
-      const e = epley1rm(s.weightKg!, s.reps!);
+      const e = oneRepMax(s.weightKg!, s.reps!);
       best.set(s.exerciseId, Math.max(best.get(s.exerciseId) ?? 0, e));
     }
     const exName = new Map(exercises.map((e) => [e.id, xl(e.name)]));

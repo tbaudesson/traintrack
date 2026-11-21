@@ -1718,15 +1718,15 @@
     "advice_low": "This week weighs much less than usual. Fine after a rest or a deload week; otherwise, build back up gradually.",
     "advice_optimal": "This week is close to what your body is used to. Keep it up.",
     "advice_caution": "You are doing clearly more than usual. Keep the next days lighter and look after your sleep.",
-    "advice_danger": "Far more than usual in one week: that is when injuries happen most. Ease off for a few days.",
+    "advice_danger": "Far more than usual in one week: the body needs time to adapt. Ease off for a few days and listen to how you feel.",
     "coach_low": "This athlete is training much less than usual this week.",
     "coach_optimal": "Their load stays close to what they are used to.",
     "coach_caution": "This athlete is doing clearly more than usual: plan lighter days.",
-    "coach_danger": "Their load jumped this week: higher injury risk, ease it off.",
+    "coach_danger": "Their load jumped well above usual this week: ease it off and check how they feel.",
     "thisWeek": "This wk",
     "weeksAgo": "-{count} wk",
     "weeksLabel": "Load of the last four weeks: {weeks}",
-    "how": "Each session counts its minutes times how hard it felt (RPE). The last 7 days are compared with the average of the last 4 weeks; between 0.8 and 1.3, all is well."
+    "how": "Each session counts its minutes times how hard it felt (RPE; without an RPE, an average effort for the kind of session). The last 7 days are compared with the average of the last 4 weeks; between 0.8 and 1.3 the load stays close to usual. A guide to dose your training, to read with how you feel, not a prediction of injury."
   },
   "programImport": {
     "title": "Import a program from Excel",
@@ -2137,7 +2137,7 @@
     "more": "{count, plural, one {Another reading (#)} other {Other readings (#)}}",
     "seeChart": "See the chart",
     "title_load": "Load rising too fast",
-    "text_load": "These 7 days weigh {ratio} times your average: that is when injuries happen.",
+    "text_load": "These 7 days weigh {ratio} times your average: a sharp rise, worth easing off.",
     "title_pain": "Pain reported {count} times",
     "text_pain": "The same area ({area}) keeps coming back in your reports of the last 4 weeks.",
     "title_records": "{count, plural, one {# record beaten} other {# records beaten}}",

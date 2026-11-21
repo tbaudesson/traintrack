@@ -1718,15 +1718,15 @@
     "advice_low": "Cette semaine pèse bien moins que d’habitude. Normal après un repos ou une semaine allégée ; sinon, reprenez progressivement.",
     "advice_optimal": "Cette semaine est proche de ce que votre corps a l’habitude d’encaisser. Continuez ainsi.",
     "advice_caution": "Vous en faites nettement plus que d’habitude. Gardez les prochains jours plus légers et soignez le sommeil.",
-    "advice_danger": "Bien plus que d’habitude en une semaine : c’est le moment où les blessures arrivent le plus. Levez le pied quelques jours.",
+    "advice_danger": "Bien plus que d’habitude en une semaine : le corps a besoin de temps pour s’adapter. Levez le pied quelques jours et écoutez vos sensations.",
     "coach_low": "Cet athlète s’entraîne bien moins que d’habitude cette semaine.",
     "coach_optimal": "Sa charge reste proche de ce qu’il ou elle a l’habitude d’encaisser.",
     "coach_caution": "Cet athlète en fait nettement plus que d’habitude : prévoir des jours plus légers.",
-    "coach_danger": "Sa charge a bondi cette semaine : risque de blessure accru, à alléger.",
+    "coach_danger": "Sa charge a fortement augmenté cette semaine par rapport à d’habitude : à alléger, et à surveiller avec ses sensations.",
     "thisWeek": "Cette sem.",
     "weeksAgo": "-{count} sem.",
     "weeksLabel": "Charge des quatre dernières semaines : {weeks}",
-    "how": "Chaque séance compte ses minutes multipliées par l’effort ressenti (RPE). Les 7 derniers jours sont comparés à la moyenne des 4 dernières semaines ; entre 0,8 et 1,3, tout va bien."
+    "how": "Chaque séance compte ses minutes multipliées par l’effort ressenti (RPE ; sans RPE noté, un effort moyen par type de séance). Les 7 derniers jours sont comparés à la moyenne des 4 dernières semaines ; entre 0,8 et 1,3, la charge reste proche de l’habitude. C’est un repère pour doser, à lire avec vos sensations, pas une prédiction de blessure."
   },
   "programImport": {
     "title": "Importer un programme depuis Excel",
@@ -2137,7 +2137,7 @@
     "more": "{count, plural, one {Autre lecture (#)} other {Autres lectures (#)}}",
     "seeChart": "Voir le graphique",
     "title_load": "Charge en hausse trop rapide",
-    "text_load": "Ces 7 jours pèsent {ratio} fois votre moyenne : c'est là que les blessures arrivent.",
+    "text_load": "Ces 7 jours pèsent {ratio} fois votre moyenne : une hausse brutale, à alléger.",
     "title_pain": "Douleur signalée {count} fois",
     "text_pain": "La même zone ({area}) revient dans vos signalements des 4 dernières semaines.",
     "title_records": "{count, plural, one {# record battu} other {# records battus}}",

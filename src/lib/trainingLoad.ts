@@ -3,7 +3,10 @@
  * minutes times how hard it felt (session RPE, Foster), and the last seven
  * days are compared with the weekly average of the last four weeks (the
  * acute:chronic workload ratio). A sharp rise over what the body is used to
- * comes before many injuries; a long drop loses fitness. Pure.
+ * is worth easing off; a long drop loses fitness. A marker to read alongside
+ * how one feels, not a prediction of injury: the ratio's link to injury is
+ * debated in the research, and sessions without RPE count at a default
+ * effort. Pure.
  */
 
 type W = { id?: number; date: string; kind?: string; durationMin?: number; durationSec?: number | null };

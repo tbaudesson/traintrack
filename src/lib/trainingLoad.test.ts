@@ -54,6 +54,6 @@ describe("trainingLoad", () => {
   });
 });
 
-it("draws the zones where the studies do", () => {
+it("draws the zones at the usual thresholds (0.8, 1.3, 1.5)", () => {
   expect([0.5, 0.8, 1.3, 1.31, 1.5, 1.6].map(loadZone)).toEqual(["low", "optimal", "optimal", "caution", "caution", "danger"]);
 });

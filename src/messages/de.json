@@ -1718,15 +1718,15 @@
     "advice_low": "Diese Woche wiegt viel weniger als sonst. Normal nach einer Pause oder Entlastungswoche; sonst steigere dich schrittweise wieder.",
     "advice_optimal": "Diese Woche liegt nahe an dem, was dein Körper gewohnt ist. Weiter so.",
     "advice_caution": "Du machst deutlich mehr als sonst. Halte die nächsten Tage leichter und achte auf deinen Schlaf.",
-    "advice_danger": "Viel mehr als sonst in einer Woche: Genau dann passieren die meisten Verletzungen. Tritt ein paar Tage kürzer.",
+    "advice_danger": "Viel mehr als sonst in einer Woche: Der Körper braucht Zeit, sich anzupassen. Tritt ein paar Tage kürzer und hör auf dein Gefühl.",
     "coach_low": "Diese Person trainiert diese Woche viel weniger als sonst.",
     "coach_optimal": "Die Belastung bleibt nahe am Gewohnten.",
     "coach_caution": "Diese Person macht deutlich mehr als sonst: leichtere Tage einplanen.",
-    "coach_danger": "Die Belastung ist diese Woche stark gestiegen: höheres Verletzungsrisiko, reduzieren.",
+    "coach_danger": "Die Belastung ist diese Woche deutlich über das Übliche gestiegen: reduzieren und auf das Befinden achten.",
     "thisWeek": "Diese Wo.",
     "weeksAgo": "-{count} Wo.",
     "weeksLabel": "Belastung der letzten vier Wochen: {weeks}",
-    "how": "Jede Einheit zählt ihre Minuten mal die empfundene Anstrengung (RPE). Die letzten 7 Tage werden mit dem Schnitt der letzten 4 Wochen verglichen; zwischen 0,8 und 1,3 ist alles gut."
+    "how": "Jede Einheit zählt ihre Minuten mal die gefühlte Anstrengung (RPE; ohne RPE eine mittlere Anstrengung je nach Art der Einheit). Die letzten 7 Tage werden mit dem Schnitt der letzten 4 Wochen verglichen; zwischen 0,8 und 1,3 bleibt die Belastung im Üblichen. Ein Richtwert zum Dosieren, zusammen mit deinem Befinden zu lesen, keine Vorhersage von Verletzungen."
   },
   "programImport": {
     "title": "Programm aus Excel importieren",
@@ -2137,7 +2137,7 @@
     "more": "{count, plural, one {Weitere Auswertung (#)} other {Weitere Auswertungen (#)}}",
     "seeChart": "Diagramm ansehen",
     "title_load": "Belastung steigt zu schnell",
-    "text_load": "Diese 7 Tage wiegen {ratio}-mal deinen Durchschnitt: Genau dann passieren Verletzungen.",
+    "text_load": "Diese 7 Tage wiegen {ratio}-mal deinen Durchschnitt: ein abrupter Anstieg, lieber reduzieren.",
     "title_pain": "Schmerz {count}-mal gemeldet",
     "text_pain": "Derselbe Bereich ({area}) taucht in deinen Meldungen der letzten 4 Wochen immer wieder auf.",
     "title_records": "{count, plural, one {# Rekord gebrochen} other {# Rekorde gebrochen}}",
