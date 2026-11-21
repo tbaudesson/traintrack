@@ -211,6 +211,18 @@ export interface ProgramDay {
   cardio?: CardioTarget;
 }
 
+/** A warm-up or stretching session, as kept with its workout. */
+export interface MobilityLog {
+  mode: "warmup" | "stretch";
+  /** The length chosen, in minutes. */
+  minutes: number;
+  target: "session" | "full" | "upper" | "lower";
+  /** The keys of the moves done (app_settings.mobility_moves). */
+  moves: string[];
+  /** How supple one felt after it, 1 (stiff) to 5 (very supple). */
+  rating?: number | null;
+}
+
 /** A program as it was before a change. */
 export interface ProgramRevision {
   at: string;
@@ -257,8 +269,10 @@ export interface Workout extends SyncFields {
   feeling?: number | null;
   /** Called off before anything was done: kept in the history, counted nowhere, its day still to do (migration 069). */
   cancelledAt?: string | null;
-  /** Absent on older workouts, which are all strength sessions. */
-  kind?: "strength" | "cardio" | "interval";
+  /** A warm-up or a stretch: what was done and how supple one felt (migration 070). */
+  mobility?: MobilityLog | null;
+  /** Absent on older workouts, which are all strength sessions. A warm-up or a stretch is "mobility". */
+  kind?: "strength" | "cardio" | "interval" | "mobility";
   sport?: Sport | null;
   /** A timed session: what it was built from (focus, dumbbells, rhythm, minutes). */
   intervalPlan?: IntervalPlan | null;

@@ -38,7 +38,7 @@ export function deloadAdvice(input: {
 }): DeloadAdvice | null {
   const monday = mondayOfDate(input.today);
   if (input.deloadWeek === monday) return null;
-  const strength = input.workouts.filter((w) => w.kind !== "cardio" && w.date < monday);
+  const strength = input.workouts.filter((w) => w.kind !== "cardio" && w.kind !== "mobility" && w.date < monday);
   const weekOf = new Map(strength.map((w) => [w.id, mondayOfDate(w.date)]));
   const volume = new Map<string, number>();
   for (const s of input.sets) {

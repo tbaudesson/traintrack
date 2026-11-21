@@ -43,7 +43,8 @@ export function weeklyReport(input: {
 }): WeeklyReport {
   const sunday = addDays(input.monday, 6);
   const inWeek = (date: string, from = input.monday, to = sunday) => date >= from && date <= to;
-  const week = input.workouts.filter((w) => inWeek(w.date));
+  // Warm-ups and stretches are followed apart: counted below, not as training sessions.
+  const week = input.workouts.filter((w) => inWeek(w.date) && w.kind !== "mobility");
   const ids = new Set(week.map((w) => w.id));
   const work = (s: S) => s.completed && !s.isWarmup;
   const volumeOf = (workoutIds: Set<number | undefined>) =>

@@ -490,6 +490,41 @@ await test("a stretching session names the side", async () => {
   await dialog.getByRole("button", { name: /Terminer la séance/ }).click();
 });
 
+await test("a stretch done is kept with the suppleness felt, and followed on the mobility page", async () => {
+  // Short holds and no countdown for the test, the references put back after.
+  const kept = await page.evaluate(() => {
+    const m = localStorage.getItem("traintrack.guidance.mobility_moves");
+    const t = localStorage.getItem("traintrack.guidance.timed_sessions");
+    const mm = JSON.parse(m);
+    for (const mode of ["warmup", "stretch"]) mm.timing[mode] = { hold: 5, sideHold: 5, transition: 0 };
+    const tt = JSON.parse(t);
+    tt.getReadySec = 0;
+    localStorage.setItem("traintrack.guidance.mobility_moves", JSON.stringify(mm));
+    localStorage.setItem("traintrack.guidance.timed_sessions", JSON.stringify(tt));
+    return { m, t };
+  });
+  try {
+    await page.goto(`${BASE}/fr/mobility?mode=stretch`);
+    await page.getByRole("button", { name: /Démarrer/ }).click();
+    const dialog = page.getByRole("dialog");
+    await page.waitForTimeout(12000);
+    await dialog.getByRole("button", { name: /Terminer la séance/ }).click();
+    await page.getByText("Souplesse ressentie après la séance").waitFor({ timeout: 10000 });
+    await page.getByRole("button", { name: /^4 sur 5/ }).click();
+    await page.getByRole("button", { name: /^4 sur 5/, pressed: true }).waitFor({ timeout: 5000 });
+    await page.goto(`${BASE}/fr/log`);
+    await page.getByText(/souplesse 4\/5/).first().waitFor({ timeout: 10000 });
+    await page.goto(`${BASE}/fr/mobility?mode=stretch`);
+    await page.getByRole("heading", { name: "Votre suivi" }).waitFor({ timeout: 10000 });
+    expect((await page.getByText(/1 séance/).count()) > 0, "the follow-up does not count the stretch");
+  } finally {
+    await page.evaluate(({ m, t }) => {
+      localStorage.setItem("traintrack.guidance.mobility_moves", m);
+      localStorage.setItem("traintrack.guidance.timed_sessions", t);
+    }, kept);
+  }
+});
+
 await test("the style chosen in Settings restyles the whole app", async () => {
   await page.goto(`${BASE}/fr/settings`);
   await page.getByRole("button", { name: /Dynamique/ }).click();

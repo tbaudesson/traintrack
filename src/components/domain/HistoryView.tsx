@@ -60,7 +60,8 @@ export function HistoryView({ workouts, today }: { workouts: Workout[]; today: s
   const subtitle = (w: Workout) =>
     [
       day(w.date),
-      isCardio(w) && w.distanceM ? formatDistance(w.distanceM, w.sport) : w.kind === "interval" && w.durationMin ? `${w.durationMin} min` : null,
+      isCardio(w) && w.distanceM ? formatDistance(w.distanceM, w.sport) : w.kind === "interval" && w.durationMin ? `${w.durationMin} min` : w.kind === "mobility" && w.durationSec ? `${Math.max(1, Math.round(w.durationSec / 60))} min` : null,
+      w.kind === "mobility" && w.mobility?.rating ? t("suppleness", { rating: w.mobility.rating }) : null,
       w.cancelledAt ? t("cancelled") : null,
       !w.cancelledAt && w.sessionRpe ? t("effort", { rpe: w.sessionRpe }) : null,
     ]

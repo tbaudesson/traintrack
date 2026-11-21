@@ -15,7 +15,7 @@ export type Discipline = "strength" | "timed" | "run" | "swim" | "bike" | "hike"
 /** Their fixed order: the colours follow the discipline, never its rank. */
 export const DISCIPLINES: Discipline[] = ["strength", "timed", "run", "swim", "bike", "hike", "vaulting", "other"];
 
-type W = { id?: number; date: string; kind?: "strength" | "cardio" | "interval"; sport?: Sport | null; durationMin?: number; durationSec?: number | null; distanceM?: number | null; sessionRpe?: number | null; cancelledAt?: string | null };
+type W = { id?: number; date: string; kind?: "strength" | "cardio" | "interval" | "mobility"; sport?: Sport | null; durationMin?: number; durationSec?: number | null; distanceM?: number | null; sessionRpe?: number | null; cancelledAt?: string | null };
 type S = { workoutId: number; completed: boolean; isWarmup?: boolean; rpe?: number };
 
 export function disciplineOf(w: Pick<W, "kind" | "sport">): Discipline {

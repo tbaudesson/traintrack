@@ -2489,7 +2489,8 @@
     "nextMonth": "Next month",
     "monthCount": "{count, plural, =0 {No session this month} one {# session this month} other {# sessions this month}} · tap a marked day to see it",
     "cancelled": "called off",
-    "effort": "effort {rpe}/10"
+    "effort": "effort {rpe}/10",
+    "suppleness": "suppleness {rating}/5"
   },
   "planVsDone": {
     "title": "Planned / done",
@@ -2560,5 +2561,26 @@
     "d_hike": "Hiking",
     "d_vaulting": "Vaulting",
     "d_other": "Other"
+  },
+  "mobilityLog": {
+    "ratingTitle": "Suppleness felt after the session",
+    "ratingHint": "1 = stiff · 5 = very supple. A feeling, followed over time.",
+    "ratingValue": "{n} out of 5: {label}",
+    "rating_1": "Stiff",
+    "rating_2": "Rather stiff",
+    "rating_3": "Normal",
+    "rating_4": "Supple",
+    "rating_5": "Very supple",
+    "progressTitle": "Your follow-up",
+    "recent": "Last 4 weeks: {sessions, plural, =0 {no session} one {# session} other {# sessions}}, {minutes} min ({stretches} stretches, {warmups} warm-ups).",
+    "ratingsTitle": "Suppleness felt, session after session",
+    "ratingsLabel": "Suppleness felt in the last sessions, 1 to 5",
+    "trend": "On average {now}/5 these 4 weeks, against {before}/5 the 4 before.",
+    "topMoves": "Done most: {list}",
+    "note": "A feeling, not a measure: it varies with fatigue, time of day and warm-up. Warm-ups and stretches do not count as training sessions.",
+    "movesDone": "{count, plural, one {# move done} other {# moves done}}",
+    "again": "Do another session",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this mobility session?"
   }
 }

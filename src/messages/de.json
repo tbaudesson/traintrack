@@ -2489,7 +2489,8 @@
     "nextMonth": "Nächster Monat",
     "monthCount": "{count, plural, =0 {Keine Einheit in diesem Monat} one {# Einheit in diesem Monat} other {# Einheiten in diesem Monat}} · markierten Tag antippen",
     "cancelled": "abgesagt",
-    "effort": "Anstrengung {rpe}/10"
+    "effort": "Anstrengung {rpe}/10",
+    "suppleness": "Beweglichkeit {rating}/5"
   },
   "planVsDone": {
     "title": "Geplant / gemacht",
@@ -2560,5 +2561,26 @@
     "d_hike": "Wandern",
     "d_vaulting": "Voltigieren",
     "d_other": "Andere"
+  },
+  "mobilityLog": {
+    "ratingTitle": "Gefühlte Beweglichkeit nach der Einheit",
+    "ratingHint": "1 = steif · 5 = sehr beweglich. Ein Gefühl, über die Zeit verfolgt.",
+    "ratingValue": "{n} von 5: {label}",
+    "rating_1": "Steif",
+    "rating_2": "Eher steif",
+    "rating_3": "Normal",
+    "rating_4": "Beweglich",
+    "rating_5": "Sehr beweglich",
+    "progressTitle": "Dein Verlauf",
+    "recent": "Letzte 4 Wochen: {sessions, plural, =0 {keine Einheit} one {# Einheit} other {# Einheiten}}, {minutes} Min. ({stretches} Dehnen, {warmups} Aufwärmen).",
+    "ratingsTitle": "Gefühlte Beweglichkeit, Einheit für Einheit",
+    "ratingsLabel": "Gefühlte Beweglichkeit der letzten Einheiten, 1 bis 5",
+    "trend": "Im Schnitt {now}/5 in diesen 4 Wochen, gegenüber {before}/5 in den 4 davor.",
+    "topMoves": "Am häufigsten: {list}",
+    "note": "Ein Gefühl, keine Messung: Es schwankt mit Müdigkeit, Tageszeit und Aufwärmen. Aufwärmen und Dehnen zählen nicht als Trainingseinheiten.",
+    "movesDone": "{count, plural, one {# Übung gemacht} other {# Übungen gemacht}}",
+    "again": "Noch eine Einheit",
+    "delete": "Löschen",
+    "deleteConfirm": "Diese Mobility-Einheit löschen?"
   }
 }

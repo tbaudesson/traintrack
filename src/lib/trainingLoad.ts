@@ -49,7 +49,8 @@ export function sessionEffort(w: Pick<W, "kind" | "sessionRpe">, work: Pick<S, "
 
 /** One session's load: minutes × session RPE; nothing for a session called off. */
 export function sessionLoad(w: W, sets: S[]): number {
-  if (w.cancelledAt) return 0;
+  // Called off, or a warm-up or stretch (followed on its own, not training load).
+  if (w.cancelledAt || w.kind === "mobility") return 0;
   const work = sets.filter((s) => s.completed && !s.isWarmup);
   const minutes = w.durationMin ?? (w.durationSec ? w.durationSec / 60 : work.length * MINUTES_PER_SET);
   const { rpe } = sessionEffort(w, work);

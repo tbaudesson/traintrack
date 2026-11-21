@@ -78,7 +78,8 @@ export function monthlyReport(input: {
   const { from, to } = monthBounds(input.month);
   const prev = monthBounds(shiftMonth(input.month, -1));
   const inMonth = (date: string) => date >= from && date <= to;
-  const month = input.workouts.filter((w) => inMonth(w.date));
+  // Warm-ups and stretches are followed apart: counted below, not as training sessions.
+  const month = input.workouts.filter((w) => inMonth(w.date) && w.kind !== "mobility");
   const ids = new Set(month.map((w) => w.id));
   const work = (s: S) => s.completed && !s.isWarmup;
   const volumeOf = (workoutIds: Set<number | undefined>) =>

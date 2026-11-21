@@ -9,7 +9,10 @@ import { useLocale, useTranslations } from "next-intl";
 import { CheckCircle2, Play } from "lucide-react";
 import type { MuscleGroup } from "@/db";
 import { Link } from "@/i18n/navigation";
-import { useWorkout } from "@/hooks/useWorkouts";
+import { createWorkout, useWorkout } from "@/hooks/useWorkouts";
+import { localDate } from "@/lib/dates";
+import { MobilityRating } from "@/components/domain/MobilityRating";
+import { MobilityProgress } from "@/components/domain/MobilityProgress";
 import { useWorkoutSets } from "@/hooks/useWorkoutSets";
 import { useExercises } from "@/hooks/useExercises";
 import { useInjuries } from "@/hooks/useAthleteProfile";
@@ -44,7 +47,8 @@ function fromLink(): { mode: MobilityMode; workoutId?: number } {
 /**
  * Warm-up before a session, stretches after: moves for the muscles the
  * session works (read from it when it is given), played by the timer with a
- * cue for each. Nothing is saved: it is the start or the end of a session.
+ * cue for each. Once done it is kept (a workout of kind "mobility") with how
+ * supple one felt, followed over time; it does not count as a training session.
  */
 export default function MobilityPage() {
   const t = useTranslations("mobility");
@@ -59,6 +63,9 @@ export default function MobilityPage() {
   const [minutes, setMinutes] = useState(5);
   const [playing, setPlaying] = useState(false);
   const [finished, setFinished] = useState(false);
+  // The session kept once done: its id, to say how supple one feels.
+  const [saved, setSaved] = useState<number | null>(null);
+  const savedWorkout = useWorkout(saved ?? undefined);
   const [demo, setDemo] = useState<{ name: string; video: string | null; cue?: string } | null>(null);
 
   useEffect(() => {
@@ -108,6 +115,11 @@ export default function MobilityPage() {
         <div className="flex flex-col items-center gap-4 p-8 text-center">
           <CheckCircle2 className="h-12 w-12 text-success-text" aria-hidden="true" />
           <p className="text-xl font-bold">{t(mode === "warmup" ? "warmupDone" : "stretchDone")}</p>
+          {saved && savedWorkout?.mobility && (
+            <div className="w-full max-w-sm text-left">
+              <MobilityRating workoutId={saved} log={savedWorkout.mobility} />
+            </div>
+          )}
           <Link href={back}>
             <Button size="lg" className="rounded-full">{t(link.workoutId ? (mode === "warmup" ? "toSession" : "backToSession") : "home")}</Button>
           </Link>
@@ -197,6 +209,8 @@ export default function MobilityPage() {
           <Play className="mr-2 h-5 w-5" aria-hidden="true" />
           {t("start")}
         </Button>
+        {/* One's follow-up, under the session to start. */}
+        <MobilityProgress />
       </div>
 
       <DemoDialog demo={demo} onClose={() => setDemo(null)} />
@@ -206,9 +220,19 @@ export default function MobilityPage() {
           session={session}
           getReadySec={readySec}
           labels={{ work: t(mode === "warmup" ? "work_warmup" : "work_stretch"), rest: t("transition") }}
-          onEnd={({ done }) => {
+          onEnd={async ({ done, elapsedSec }) => {
             setPlaying(false);
-            if (done.length > 0) setFinished(true);
+            if (done.length === 0) return;
+            const moves = [...new Set(done.map((i) => session.steps[i]).flatMap((step) => (step?.type === "work" ? [step.exercise.key] : [])))];
+            const id = await createWorkout({
+              date: localDate(),
+              title: t(mode === "warmup" ? "warmupTitle" : "stretchTitle"),
+              kind: "mobility",
+              durationSec: Math.max(1, Math.round(elapsedSec)),
+              mobility: { mode, minutes, target, moves },
+            });
+            setSaved(id);
+            setFinished(true);
           }}
         />
       )}

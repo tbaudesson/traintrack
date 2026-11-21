@@ -66,6 +66,7 @@ import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, MoreHorizontal,
 import { cn } from "@/lib/utils";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { IntervalWorkoutView } from "@/components/domain/IntervalWorkoutView";
+import { MobilityWorkoutView } from "@/components/domain/MobilityWorkoutView";
 import { connectHeartRate, isBluetoothSupported, type HeartRateMonitor } from "@/lib/bleHeartRate";
 import { EmptyState } from "@/components/ui/page-parts";
 import { useExerciseLabel, exerciseDescription } from "@/lib/exerciseNames";
@@ -725,6 +726,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
   });
 
   if (workout?.kind === "interval") return <IntervalWorkoutView workout={workout} sets={sets ?? []} exercises={exercises} />;
+  if (workout?.kind === "mobility") return <MobilityWorkoutView workout={workout} />;
 
   const heartRateCard =
     isBluetoothSupported() ? (

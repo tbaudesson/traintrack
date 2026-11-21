@@ -2489,7 +2489,8 @@
     "nextMonth": "Mois suivant",
     "monthCount": "{count, plural, =0 {Aucune séance ce mois-ci} one {# séance ce mois-ci} other {# séances ce mois-ci}} · touchez un jour marqué pour la voir",
     "cancelled": "annulée",
-    "effort": "effort {rpe}/10"
+    "effort": "effort {rpe}/10",
+    "suppleness": "souplesse {rating}/5"
   },
   "planVsDone": {
     "title": "Prévu / fait",
@@ -2560,5 +2561,26 @@
     "d_hike": "Randonnée",
     "d_vaulting": "Voltige",
     "d_other": "Autres"
+  },
+  "mobilityLog": {
+    "ratingTitle": "Souplesse ressentie après la séance",
+    "ratingHint": "1 = raide · 5 = très souple. Un ressenti, suivi dans le temps.",
+    "ratingValue": "{n} sur 5 : {label}",
+    "rating_1": "Raide",
+    "rating_2": "Plutôt raide",
+    "rating_3": "Normal",
+    "rating_4": "Souple",
+    "rating_5": "Très souple",
+    "progressTitle": "Votre suivi",
+    "recent": "4 dernières semaines : {sessions, plural, =0 {aucune séance} one {# séance} other {# séances}}, {minutes} min ({stretches} étirements, {warmups} échauffements).",
+    "ratingsTitle": "Souplesse ressentie, séance après séance",
+    "ratingsLabel": "Souplesse ressentie lors des dernières séances, de 1 à 5",
+    "trend": "En moyenne {now}/5 ces 4 semaines, contre {before}/5 les 4 précédentes.",
+    "topMoves": "Les plus faits : {list}",
+    "note": "Un ressenti, pas une mesure : il varie avec la fatigue, l’heure et l’échauffement. Les échauffements et étirements ne comptent pas comme séances d’entraînement.",
+    "movesDone": "{count, plural, one {# mouvement fait} other {# mouvements faits}}",
+    "again": "Refaire une séance",
+    "delete": "Supprimer",
+    "deleteConfirm": "Supprimer cette séance de mobilité ?"
   }
 }
