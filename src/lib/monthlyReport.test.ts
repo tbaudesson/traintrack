@@ -35,7 +35,7 @@ describe("monthlyReport", () => {
 
   it("measures attendance against the plan", () => {
     expect(r).toMatchObject({ sessions: 3, daysTrained: 3, planned: 4, adherence: 75, strengthSessions: 2, minutes: 145 });
-    expect(r.cardio).toEqual({ sessions: 1, distanceM: 8000, durationSec: 2400 });
+    expect(r.cardio).toEqual({ sessions: 1, durationSec: 2400, bySport: [{ sport: "other", sessions: 1, distanceM: 8000, durationSec: 2400 }] });
   });
 
   it("sums the volume and compares it with the month before", () => {

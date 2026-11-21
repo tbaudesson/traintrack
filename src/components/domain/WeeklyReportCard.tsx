@@ -42,6 +42,7 @@ export function WeeklyReportCard({
   onDismiss?: () => void;
 }) {
   const t = useTranslations("report");
+  const tc = useTranslations("cardio");
   const tpain = useTranslations("pain");
   const { num, short } = useFormat();
   const xl = useExerciseLabel();
@@ -103,9 +104,9 @@ export function WeeklyReportCard({
         <>
           <dl className="grid grid-cols-2 gap-2 text-sm">
             <Tile label={t("days")} value={report.planned !== null ? `${report.daysTrained}/${report.planned}` : String(report.daysTrained)} />
-            {report.volume === 0 && report.cardio.distanceM > 0 ? (
-              // Nothing lifted: the distance covered says more than "0 kg".
-              <Tile label={t("distance")} value={`${num(Math.round(report.cardio.distanceM / 100) / 10)} km`} />
+            {report.volume === 0 && (report.cardio.bySport[0]?.distanceM ?? 0) > 0 ? (
+              // Nothing lifted: the distance of the main sport says more than "0 kg" (never a sum of sports).
+              <Tile label={`${t("distance")} · ${tc(`sport_${report.cardio.bySport[0].sport}`)}`} value={formatDistance(report.cardio.bySport[0].distanceM, report.cardio.bySport[0].sport)} />
             ) : report.volume === 0 ? null : (
               <Tile
                 label={t("volume")}
@@ -143,7 +144,7 @@ export function WeeklyReportCard({
           {report.cardio.sessions > 0 && (
             <p className="text-sm">
               {t("cardio", { count: report.cardio.sessions })}
-              {report.cardio.distanceM > 0 && ` · ${formatDistance(report.cardio.distanceM)}`}
+              {report.cardio.bySport.filter((x) => x.distanceM > 0).map((x) => ` · ${tc(`sport_${x.sport}`)} ${formatDistance(x.distanceM, x.sport)}`).join("")}
               {report.cardio.durationSec > 0 && ` · ${formatDuration(report.cardio.durationSec)}`}
             </p>
           )}

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { Workout } from "@/db";
-import { cardioBests, describeTarget, formatDistance, formatDuration, formatPace, isCardioDone, newCardioRecords } from "./cardio";
+import { bySport, cardioBests, describeTarget, formatDistance, formatDuration, formatPace, isCardioDone, newCardioRecords } from "./cardio";
 import { ENDURANCE_TEMPLATES } from "./enduranceTemplates";
 import { speaks } from "./templateService";
 
@@ -138,5 +138,20 @@ describe("progress of the new sports", () => {
     ];
     expect(speedTrend(swims, "swim", "2026-11-20")).toBeCloseTo(0.2, 5);
     expect(speedTrend(swims.slice(1), "swim", "2026-11-20")).toBeNull();
+  });
+});
+
+describe("bySport", () => {
+  it("keeps each sport's distance apart, the most practised first", () => {
+    const list = bySport([
+      { kind: "cardio", sport: "swim", distanceM: 1500, durationSec: 1800 },
+      { kind: "cardio", sport: "run", distanceM: 10000, durationSec: 3000 },
+      { kind: "cardio", sport: "run", distanceM: 5000, durationSec: 1500 },
+      { kind: "strength", distanceM: 0 },
+    ]);
+    expect(list).toEqual([
+      { sport: "run", sessions: 2, distanceM: 15000, durationSec: 4500 },
+      { sport: "swim", sessions: 1, distanceM: 1500, durationSec: 1800 },
+    ]);
   });
 });

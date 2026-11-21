@@ -424,7 +424,8 @@
     "sectionDetails": "Details",
     "detailsHint": "The charts, to open when needed.",
     "loadChart": "Training load",
-    "sectionMine": "My figures"
+    "sectionMine": "My figures",
+    "loadHistory": "Load by discipline"
   },
   "exercises": {
     "translations": "Translations",
@@ -1670,7 +1671,8 @@
     "textProgress": "Gains: {list}",
     "textCardio": "Endurance: {count} outings, {distance}",
     "textCompetitions": "Competitions: {list}",
-    "textPains": "{count, plural, one {# pain reported} other {# pains reported}}: to keep an eye on"
+    "textPains": "{count, plural, one {# pain reported} other {# pains reported}}: to keep an eye on",
+    "outings": "{count, plural, one {# outing} other {# outings}}"
   },
   "horses": {
     "title": "Horses",
@@ -2150,10 +2152,10 @@
     "text_volumeUp": "You lift more than in the 4 weeks before.",
     "title_volumeDown": "Volume down {change}%",
     "text_volumeDown": "You lift less than in the 4 weeks before.",
-    "title_distanceUp": "Distance up {change}%",
-    "text_distanceUp": "{km} km in 4 weeks, more than in the 4 before.",
-    "title_distanceDown": "Distance down {change}%",
-    "text_distanceDown": "{km} km in 4 weeks, less than in the 4 before.",
+    "title_distanceUp": "{sport}: distance up {change}%",
+    "text_distanceUp": "{km} km of {sport} in 4 weeks, more than the 4 before (other sports are not mixed in).",
+    "title_distanceDown": "{sport}: distance down {change}%",
+    "text_distanceDown": "{km} km of {sport} in 4 weeks, less than the 4 before (other sports are not mixed in).",
     "title_stagnation": "An exercise has stalled for {weeks} weeks",
     "text_stagnation": "Despite regular efforts, the estimated 1RM no longer goes past its best.",
     "title_regularity": "{count, plural, one {# session} other {# sessions}} a week for {target} planned",
@@ -2540,5 +2542,23 @@
     "feeling_3": "OK",
     "feeling_4": "Good",
     "feeling_5": "Great"
+  },
+  "loadHistory": {
+    "span": "Period",
+    "weeks": "{count} weeks",
+    "chartLabel": "Training load per week over {weeks} weeks, split by discipline",
+    "weekOf": "Week of {date}",
+    "split": "Share of each discipline, last 4 weeks",
+    "empty": "No session yet to work out a load.",
+    "how": "Every discipline in the same unit: minutes × effort felt (RPE). Kilos and kilometres are never added together.",
+    "estimated": "{count, plural, one {# session without an effort given is estimated} other {# sessions without an effort given are estimated}} at a usual effort: answer “How was it?” at the end of a session for a truer load.",
+    "d_strength": "Strength",
+    "d_timed": "Timed sessions",
+    "d_run": "Running",
+    "d_swim": "Swimming",
+    "d_bike": "Cycling",
+    "d_hike": "Hiking",
+    "d_vaulting": "Vaulting",
+    "d_other": "Other"
   }
 }

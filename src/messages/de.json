@@ -424,7 +424,8 @@
     "sectionDetails": "Details",
     "detailsHint": "Die Diagramme, bei Bedarf zu öffnen.",
     "loadChart": "Trainingsbelastung",
-    "sectionMine": "Meine Zahlen"
+    "sectionMine": "Meine Zahlen",
+    "loadHistory": "Belastung nach Disziplin"
   },
   "exercises": {
     "translations": "Übersetzungen",
@@ -1670,7 +1671,8 @@
     "textProgress": "Fortschritte: {list}",
     "textCardio": "Ausdauer: {count} Einheiten, {distance}",
     "textCompetitions": "Turniere: {list}",
-    "textPains": "{count, plural, one {# Schmerz gemeldet} other {# Schmerzen gemeldet}}: im Auge behalten"
+    "textPains": "{count, plural, one {# Schmerz gemeldet} other {# Schmerzen gemeldet}}: im Auge behalten",
+    "outings": "{count, plural, one {# Einheit} other {# Einheiten}}"
   },
   "horses": {
     "title": "Pferde",
@@ -2150,10 +2152,10 @@
     "text_volumeUp": "Du hebst mehr als in den 4 Wochen davor.",
     "title_volumeDown": "Volumen um {change} % gesunken",
     "text_volumeDown": "Du hebst weniger als in den 4 Wochen davor.",
-    "title_distanceUp": "Distanz um {change} % gestiegen",
-    "text_distanceUp": "{km} km in 4 Wochen, mehr als in den 4 davor.",
-    "title_distanceDown": "Distanz um {change} % gesunken",
-    "text_distanceDown": "{km} km in 4 Wochen, weniger als in den 4 davor.",
+    "title_distanceUp": "{sport}: Distanz um {change} % gestiegen",
+    "text_distanceUp": "{km} km {sport} in 4 Wochen, mehr als in den 4 davor (andere Sportarten nicht mitgerechnet).",
+    "title_distanceDown": "{sport}: Distanz um {change} % gesunken",
+    "text_distanceDown": "{km} km {sport} in 4 Wochen, weniger als in den 4 davor (andere Sportarten nicht mitgerechnet).",
     "title_stagnation": "Eine Übung stagniert seit {weeks} Wochen",
     "text_stagnation": "Trotz regelmäßiger Einheiten kommt das geschätzte 1RM nicht über seinen Bestwert hinaus.",
     "title_regularity": "{count, plural, one {# Einheit} other {# Einheiten}} pro Woche bei {target} geplanten",
@@ -2540,5 +2542,23 @@
     "feeling_3": "Okay",
     "feeling_4": "Gut",
     "feeling_5": "Super"
+  },
+  "loadHistory": {
+    "span": "Zeitraum",
+    "weeks": "{count} Wochen",
+    "chartLabel": "Trainingsbelastung pro Woche über {weeks} Wochen, nach Disziplin",
+    "weekOf": "Woche ab {date}",
+    "split": "Anteil jeder Disziplin, letzte 4 Wochen",
+    "empty": "Noch keine Einheit, um eine Belastung zu berechnen.",
+    "how": "Alle Disziplinen in derselben Einheit: Minuten × gefühlte Anstrengung (RPE). Kilo und Kilometer werden nie zusammengezählt.",
+    "estimated": "{count, plural, one {# Einheit ohne angegebene Anstrengung wird} other {# Einheiten ohne angegebene Anstrengung werden}} mit einer üblichen Anstrengung geschätzt: Beantworte „Wie war es?“ am Ende einer Einheit für eine genauere Belastung.",
+    "d_strength": "Kraft",
+    "d_timed": "Intervall-Einheiten",
+    "d_run": "Laufen",
+    "d_swim": "Schwimmen",
+    "d_bike": "Radfahren",
+    "d_hike": "Wandern",
+    "d_vaulting": "Voltigieren",
+    "d_other": "Andere"
   }
 }

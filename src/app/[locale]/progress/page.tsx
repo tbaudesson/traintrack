@@ -15,6 +15,7 @@ import { useReadiness } from "@/hooks/useReadiness";
 import { useInsights } from "@/hooks/useInsights";
 import { trainingLoad } from "@/lib/trainingLoad";
 import { TrainingLoadCard } from "@/components/domain/TrainingLoadCard";
+import { LoadHistoryCard } from "@/components/domain/LoadHistoryCard";
 import { InsightAction, InsightCard, MoreInsights } from "@/components/domain/InsightCard";
 import type { InsightChart } from "@/lib/insights";
 import { mondayOfDate } from "@/lib/weekPlan";
@@ -280,7 +281,7 @@ export default function ProgressPage() {
         </div>
 
         {/* Load and regularity: the training load (folded) and last week's report. */}
-        {(load || hasFeature("reports")) && (
+        {(load || hasFeature("reports") || workouts.length > 0) && (
           <section className="space-y-2">
             <h2 className="t-section-heading">{t("sectionLoad")}</h2>
             {load && (
@@ -288,6 +289,10 @@ export default function ProgressPage() {
                 <TrainingLoadCard load={load} />
               </Fold>
             )}
+            {/* The load over months, discipline by discipline, in one unit. */}
+            <Fold id="chart-load-history" title={t("loadHistory")}>
+              <LoadHistoryCard workouts={workouts} sets={sets} today={today} />
+            </Fold>
             {hasFeature("reports") && (
               <WeeklyReportCard
                 workouts={workouts}

@@ -1,4 +1,6 @@
+import type { Sport } from "@/db";
 import { recordHistory } from "./performance";
+import { bySport, type SportTotals } from "./cardio";
 import type { PainReport } from "./pain";
 
 const addDays = (date: string, days: number) => {
@@ -19,12 +21,12 @@ export interface WeeklyReport {
   /** The best record of each exercise beaten this week. */
   records: { exerciseId: number; weightKg: number; reps: number }[];
   avgRpe: number | null;
-  cardio: { sessions: number; distanceM: number; durationSec: number };
+  cardio: { sessions: number; durationSec: number; bySport: SportTotals[] };
   minutes: number;
   pains: PainReport[];
 }
 
-type W = { id?: number; date: string; kind?: string; distanceM?: number | null; durationSec?: number | null; durationMin?: number };
+type W = { id?: number; date: string; kind?: string; sport?: Sport | null; distanceM?: number | null; durationSec?: number | null; durationMin?: number };
 type S = { workoutId: number; exerciseId: number; setNumber: number; completed: boolean; isWarmup?: boolean; weightKg?: number; reps?: number; rpe?: number };
 
 /**
@@ -75,8 +77,9 @@ export function weeklyReport(input: {
     avgRpe: rpes.length ? Math.round((rpes.reduce((a, b) => a + b, 0) / rpes.length) * 10) / 10 : null,
     cardio: {
       sessions: cardio.length,
-      distanceM: cardio.reduce((sum, w) => sum + (w.distanceM ?? 0), 0),
       durationSec: cardio.reduce((sum, w) => sum + (w.durationSec ?? 0), 0),
+      // Each sport its own distance: never one figure for swim, bike and run together.
+      bySport: bySport(cardio),
     },
     minutes: week.reduce((sum, w) => sum + (w.durationMin ?? (w.durationSec ? Math.round(w.durationSec / 60) : 0)), 0),
     pains: (input.pains ?? []).filter((p) => inWeek(p.date)),

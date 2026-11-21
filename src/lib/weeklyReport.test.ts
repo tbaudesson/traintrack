@@ -31,7 +31,7 @@ describe("weekly report", () => {
 
   it("count the days against the plan, and the endurance apart", () => {
     expect(report).toMatchObject({ monday: "2026-11-02", sunday: "2026-11-08", daysTrained: 3, planned: 3, strengthSessions: 2 });
-    expect(report.cardio).toEqual({ sessions: 1, distanceM: 8000, durationSec: 2400 });
+    expect(report.cardio).toEqual({ sessions: 1, durationSec: 2400, bySport: [{ sport: "other", sessions: 1, distanceM: 8000, durationSec: 2400 }] });
     expect(report.minutes).toBe(160);
   });
 

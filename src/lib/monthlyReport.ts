@@ -1,8 +1,10 @@
+import type { Sport } from "@/db";
 import { estimateOneRepMax, recordHistory } from "./performance";
+import { bySport, type SportTotals } from "./cardio";
 import { finalScore } from "./competitions";
 import type { PainReport } from "./pain";
 
-type W = { id?: number; date: string; kind?: string; distanceM?: number | null; durationSec?: number | null; durationMin?: number };
+type W = { id?: number; date: string; kind?: string; sport?: Sport | null; distanceM?: number | null; durationSec?: number | null; durationMin?: number };
 type S = { workoutId: number; exerciseId: number; setNumber: number; completed: boolean; isWarmup?: boolean; weightKg?: number; reps?: number; rpe?: number };
 type C = { date: string; event: string; compulsory?: number | null; technical?: number | null; freestyle?: number | null; rank?: number | null; participants?: number | null };
 
@@ -16,7 +18,7 @@ export interface MonthlyReport {
   planned: number | null;
   adherence: number | null;
   strengthSessions: number;
-  cardio: { sessions: number; distanceM: number; durationSec: number };
+  cardio: { sessions: number; durationSec: number; bySport: SportTotals[] };
   minutes: number;
   volume: number;
   volumeChange: number | null;
@@ -128,8 +130,9 @@ export function monthlyReport(input: {
     strengthSessions: month.filter((w) => w.kind !== "cardio").length,
     cardio: {
       sessions: cardio.length,
-      distanceM: cardio.reduce((sum, w) => sum + (w.distanceM ?? 0), 0),
       durationSec: cardio.reduce((sum, w) => sum + (w.durationSec ?? 0), 0),
+      // Each sport its own distance: never one figure for swim, bike and run together.
+      bySport: bySport(cardio),
     },
     minutes: month.reduce((sum, w) => sum + (w.durationMin ?? (w.durationSec ? Math.round(w.durationSec / 60) : 0)), 0),
     volume,

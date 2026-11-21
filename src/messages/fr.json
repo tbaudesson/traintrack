@@ -424,7 +424,8 @@
     "sectionDetails": "Détails",
     "detailsHint": "Les graphiques, à ouvrir au besoin.",
     "loadChart": "Charge d'entraînement",
-    "sectionMine": "Mes chiffres"
+    "sectionMine": "Mes chiffres",
+    "loadHistory": "Charge par discipline"
   },
   "exercises": {
     "translations": "Traductions",
@@ -1670,7 +1671,8 @@
     "textProgress": "Progrès : {list}",
     "textCardio": "Endurance : {count} sorties, {distance}",
     "textCompetitions": "Compétitions : {list}",
-    "textPains": "{count, plural, one {# douleur signalée} other {# douleurs signalées}} : à surveiller"
+    "textPains": "{count, plural, one {# douleur signalée} other {# douleurs signalées}} : à surveiller",
+    "outings": "{count, plural, one {# sortie} other {# sorties}}"
   },
   "horses": {
     "title": "Chevaux",
@@ -2150,10 +2152,10 @@
     "text_volumeUp": "Vous soulevez plus que sur les 4 semaines précédentes.",
     "title_volumeDown": "Volume en baisse de {change} %",
     "text_volumeDown": "Vous soulevez moins que sur les 4 semaines précédentes.",
-    "title_distanceUp": "Distance en hausse de {change} %",
-    "text_distanceUp": "{km} km en 4 semaines, plus que sur les 4 précédentes.",
-    "title_distanceDown": "Distance en baisse de {change} %",
-    "text_distanceDown": "{km} km en 4 semaines, moins que sur les 4 précédentes.",
+    "title_distanceUp": "{sport} : distance en hausse de {change} %",
+    "text_distanceUp": "{km} km en 4 semaines en {sport}, plus que sur les 4 précédentes (les autres sports ne sont pas mélangés).",
+    "title_distanceDown": "{sport} : distance en baisse de {change} %",
+    "text_distanceDown": "{km} km en 4 semaines en {sport}, moins que sur les 4 précédentes (les autres sports ne sont pas mélangés).",
     "title_stagnation": "Un exercice stagne depuis {weeks} semaines",
     "text_stagnation": "Malgré des efforts réguliers, le 1RM estimé ne dépasse plus son meilleur niveau.",
     "title_regularity": "{count, plural, one {# séance} other {# séances}} par semaine pour {target} prévues",
@@ -2540,5 +2542,23 @@
     "feeling_3": "Correct",
     "feeling_4": "Bien",
     "feeling_5": "Super"
+  },
+  "loadHistory": {
+    "span": "Période",
+    "weeks": "{count} semaines",
+    "chartLabel": "Charge d’entraînement par semaine sur {weeks} semaines, répartie par discipline",
+    "weekOf": "Semaine du {date}",
+    "split": "Part de chaque discipline, 4 dernières semaines",
+    "empty": "Pas encore de séance pour calculer une charge.",
+    "how": "Toutes les disciplines dans la même unité : minutes × effort ressenti (RPE). Les kilos et les kilomètres ne sont jamais additionnés.",
+    "estimated": "{count, plural, one {# séance sans effort noté est estimée} other {# séances sans effort noté sont estimées}} avec un effort habituel : notez « Comment c’était ? » en fin de séance pour une charge plus juste.",
+    "d_strength": "Musculation",
+    "d_timed": "Séances minutées",
+    "d_run": "Course",
+    "d_swim": "Natation",
+    "d_bike": "Vélo",
+    "d_hike": "Randonnée",
+    "d_vaulting": "Voltige",
+    "d_other": "Autres"
   }
 }

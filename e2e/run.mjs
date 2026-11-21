@@ -1550,6 +1550,19 @@ await test("progress shows a hike's metres climbed and its longest outing", asyn
   void card;
 });
 
+await test("the load over months, by discipline, in one unit", async () => {
+  await page.goto(`${BASE}/fr/progress`);
+  await page.getByText("Charge par discipline").first().click();
+  const card = page.getByText("Part de chaque discipline, 4 dernières semaines").locator("..").locator("..");
+  await card.waitFor({ timeout: 10000 });
+  expect((await card.locator("li").count()) > 0, "no discipline listed");
+  await page.getByRole("img", { name: /Charge d’entraînement par semaine sur 12 semaines/ }).waitFor({ timeout: 5000 });
+  await card.locator("..").getByRole("button", { name: "26 semaines" }).click();
+  await page.getByRole("img", { name: /sur 26 semaines/ }).waitFor({ timeout: 5000 });
+  await page.getByRole("img", { name: /sur 26 semaines/ }).screenshot({ path: join(ARTIFACTS, "load-history.png") });
+  await card.locator("..").screenshot({ path: join(ARTIFACTS, "load-history-card.png") });
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });

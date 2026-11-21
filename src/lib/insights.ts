@@ -15,7 +15,7 @@ import type { DeloadAdvice } from "@/lib/deload";
 import type { PainReport } from "@/lib/pain";
 import type { Workout, WorkoutSet } from "@/db";
 
-type W = Pick<Workout, "id" | "date" | "title" | "programId" | "programDayIndex" | "kind" | "distanceM" | "durationSec" | "durationMin">;
+type W = Pick<Workout, "id" | "date" | "title" | "programId" | "programDayIndex" | "kind" | "sport" | "distanceM" | "durationSec" | "durationMin">;
 type S = Pick<WorkoutSet, "workoutId" | "exerciseId" | "setNumber" | "completed" | "isWarmup" | "weightKg" | "reps">;
 
 export type InsightKind = "load" | "pain" | "records" | "volumeUp" | "volumeDown" | "distanceUp" | "distanceDown" | "stagnation" | "regularity" | "steady" | "insufficient";
@@ -178,8 +178,13 @@ export function insights(input: {
     }
   }
 
-  // 3. Progress: the distance of the outings, never mixed with kilos.
-  const outings = (list: W[]) => list.filter((w) => w.kind === "cardio" && (w.distanceM ?? 0) > 0);
+  // 3. Progress: the distance of the outings of the main sport, never mixed
+  // with kilos nor with the kilometres of another sport.
+  const withDistance = (list: W[]) => list.filter((w) => w.kind === "cardio" && (w.distanceM ?? 0) > 0);
+  const counts = new Map<string, number>();
+  for (const w of withDistance(done)) counts.set(w.sport ?? "other", (counts.get(w.sport ?? "other") ?? 0) + 1);
+  const mainSport = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "other";
+  const outings = (list: W[]) => withDistance(list).filter((w) => (w.sport ?? "other") === mainSport);
   const kmNow = outings(done).reduce((sum, w) => sum + (w.distanceM ?? 0), 0) / 1000;
   const kmBefore = outings(before).reduce((sum, w) => sum + (w.distanceM ?? 0), 0) / 1000;
   if (outings(done).length >= MIN_COMPARABLE && outings(before).length >= MIN_COMPARABLE && kmBefore > 0) {
@@ -189,7 +194,7 @@ export function insights(input: {
         rank: diff >= 10 ? 32 : 41,
         kind: diff >= 10 ? "distanceUp" : "distanceDown",
         tone: diff >= 10 ? "good" : "info",
-        values: { change: diff, km: round1(kmNow) },
+        values: { change: diff, km: round1(kmNow), sport: mainSport },
         evidence: [
           { key: "distance", values: { now: round1(kmNow), before: round1(kmBefore) }, chart: "distance" },
           { key: "outings", values: { now: outings(done).length, before: outings(before).length }, chart: "distance" },

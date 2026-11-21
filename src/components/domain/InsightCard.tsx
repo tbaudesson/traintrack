@@ -14,6 +14,7 @@ const ICON = { warn: AlertTriangle, good: TrendingUp, info: Sparkles } as const;
 export function useInsightWords(exerciseName: (id: number) => string | undefined) {
   const t = useTranslations("insights");
   const tpain = useTranslations("pain");
+  const tc = useTranslations("cardio");
   const { num, day } = useFormat();
   const xl = useExerciseLabel();
   const shown = (values: Record<string, string | number>, exerciseId?: number) => {
@@ -21,6 +22,7 @@ export function useInsightWords(exerciseName: (id: number) => string | undefined
     for (const [k, v] of Object.entries(values)) {
       if (k === "date") out[k] = day(String(v));
       else if (k === "area") out[k] = tpain(`area_${v}`);
+      else if (k === "sport") out[k] = tc(`sport_${v}`);
       else if (k === "ratio") out[k] = num(Number(v), 2);
       else if (typeof v === "number" && k !== "count" && k !== "needed" && k !== "done") out[k] = num(v, Number.isInteger(v) ? 0 : 1);
       else out[k] = v;

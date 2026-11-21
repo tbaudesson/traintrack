@@ -14,7 +14,7 @@ import { useCompetitions } from "@/hooks/useCompetitions";
 import { sendMessage } from "@/hooks/useMessages";
 import { monthlyReport, shiftMonth, type MonthlyReport } from "@/lib/monthlyReport";
 import { useExerciseLabel } from "@/lib/exerciseNames";
-import { formatDistance, formatDuration } from "@/lib/cardio";
+import { formatDistance, formatDuration, type SportTotals } from "@/lib/cardio";
 import { localDate } from "@/lib/dates";
 import { useFormat } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,10 @@ import { Button } from "@/components/ui/button";
  */
 export function MonthlyReportView({ userId, name }: { userId?: string; name?: string }) {
   const t = useTranslations("monthly");
+  const tc = useTranslations("cardio");
+  /** "running 24 km, swimming 3 000 m": each sport its own distance. */
+  const perSport = (list: SportTotals[]) =>
+    list.map((x) => `${tc(`sport_${x.sport}`)} ${x.distanceM > 0 ? formatDistance(x.distanceM, x.sport) : formatDuration(x.durationSec)}`).join(", ");
   const tpain = useTranslations("pain");
   const locale = useLocale();
   const xl = useExerciseLabel();
@@ -75,7 +79,7 @@ export function MonthlyReportView({ userId, name }: { userId?: string; name?: st
     if (r.volume) lines.push(t("textVolume", { kg: num(r.volume, 0), change: r.volumeChange === null ? "" : ` (${r.volumeChange >= 0 ? "+" : ""}${r.volumeChange} %)` }));
     if (r.records.length) lines.push(t("textRecords", { list: r.records.map((x) => `${names.get(x.exerciseId) ?? "?"} ${num(x.weightKg)} kg × ${x.reps}`).join(", ") }));
     if (r.progress.length) lines.push(t("textProgress", { list: r.progress.map((p) => `${names.get(p.exerciseId) ?? "?"} +${num(p.percent)} %`).join(", ") }));
-    if (r.cardio.sessions) lines.push(t("textCardio", { count: r.cardio.sessions, distance: formatDistance(r.cardio.distanceM) }));
+    if (r.cardio.sessions) lines.push(t("textCardio", { count: r.cardio.sessions, distance: perSport(r.cardio.bySport) }));
     if (r.competitions.length) lines.push(t("textCompetitions", { list: r.competitions.map((c) => `${c.event} ${num(c.final ?? 0, 3)}`).join(", ") }));
     if (r.pains.length) lines.push(t("textPains", { count: r.pains.length }));
     return lines.join("\n");
@@ -131,7 +135,9 @@ export function MonthlyReportView({ userId, name }: { userId?: string; name?: st
             <Tile value={r.minutes ? formatDuration(r.minutes * 60) : "—"} label={t("time")} />
             {r.avgRpe !== null && <Tile value={num(r.avgRpe)} label={t("rpe")} />}
             {r.readiness !== null && <Tile value={`${r.readiness}/100`} label={t("readiness")} />}
-            {r.cardio.sessions > 0 && <Tile value={formatDistance(r.cardio.distanceM)} label={t("cardio", { count: r.cardio.sessions })} />}
+            {r.cardio.bySport.map((x) => (
+              <Tile key={x.sport} value={x.distanceM > 0 ? formatDistance(x.distanceM, x.sport) : formatDuration(x.durationSec)} label={`${tc(`sport_${x.sport}`)} · ${t("outings", { count: x.sessions })}`} />
+            ))}
           </div>
 
           {r.progress.length > 0 && (

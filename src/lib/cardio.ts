@@ -122,3 +122,24 @@ export function weeklyGoal(program: Program, day: ProgramDay | undefined): numbe
   if (day?.week === undefined) return program.structure.length;
   return program.structure.filter((d) => d.week === day.week).length;
 }
+
+export type SportTotals = { sport: Sport; sessions: number; distanceM: number; durationSec: number };
+
+/**
+ * The outings, sport by sport: distances of different sports are never added
+ * together (a kilometre swum is not a kilometre run). The sport done most
+ * often first.
+ */
+export function bySport(workouts: { kind?: string; sport?: Sport | null; distanceM?: number | null; durationSec?: number | null }[]): SportTotals[] {
+  const out = new Map<Sport, SportTotals>();
+  for (const w of workouts) {
+    if (w.kind !== "cardio") continue;
+    const sport = w.sport ?? "other";
+    const t = out.get(sport) ?? { sport, sessions: 0, distanceM: 0, durationSec: 0 };
+    t.sessions++;
+    t.distanceM += w.distanceM ?? 0;
+    t.durationSec += w.durationSec ?? 0;
+    out.set(sport, t);
+  }
+  return [...out.values()].sort((a, b) => b.sessions - a.sessions || b.durationSec - a.durationSec);
+}
