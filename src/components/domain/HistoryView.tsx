@@ -2,15 +2,17 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Calendar, ChevronLeft, ChevronRight, List } from "lucide-react";
-import type { Workout } from "@/db";
+import { Calendar, CalendarRange, List } from "lucide-react";
+import type { Workout, WorkoutSet } from "@/db";
+import type { PlannedProgram } from "@/lib/schedule";
+import { doneSessions } from "@/lib/doneSessions";
+import { PlanCalendar, YearView } from "@/components/domain/PlanCalendar";
 import { useRouter } from "@/i18n/navigation";
 import { sessionHref } from "@/lib/routes";
 import { isCardio, formatDistance } from "@/lib/cardio";
 import { useFormat } from "@/lib/format";
 import { search } from "@/lib/search";
-import { byMonth, monthGrid, shiftMonth } from "@/lib/suggest";
-import { cn } from "@/lib/utils";
+import { byMonth } from "@/lib/suggest";
 import { Button } from "@/components/ui/button";
 import { DetailRow } from "@/components/ui/detail-row";
 import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
@@ -22,11 +24,11 @@ const MONTHS = 2;
 
 /**
  * The sessions done, as a list by month (two months at a time, then more on
- * demand) or as a calendar of the month, a dot on each day trained; a search
- * by name, sport or date reaches all of them. The view chosen is remembered
- * on the device.
+ * demand), as a calendar of the month (done, planned to come, missed) or as
+ * the year month by month; a search by name, sport or date reaches all of
+ * them. The view chosen is remembered on the device.
  */
-export function HistoryView({ workouts, today }: { workouts: Workout[]; today: string }) {
+export function HistoryView({ workouts, sets, planned, today }: { workouts: Workout[]; sets: WorkoutSet[]; planned: PlannedProgram[]; today: string }) {
   const t = useTranslations("history");
   const tl = useTranslations("log");
   const tc = useTranslations("cardio");
@@ -34,21 +36,24 @@ export function HistoryView({ workouts, today }: { workouts: Workout[]; today: s
   const locale = useLocale();
   const router = useRouter();
   const { day } = useFormat();
-  const [view, setView] = useState<"list" | "calendar">("list");
+  const [view, setView] = useState<"list" | "calendar" | "year">("list");
+  const [year, setYear] = useState(Number(today.slice(0, 4)));
+  // On the calendar and the year: the sessions done (one opened then left is not), warm-ups and stretches included.
+  const doneList = useMemo(() => [...doneSessions(workouts, sets), ...workouts.filter((w) => w.kind === "mobility" && !w.cancelledAt)], [workouts, sets]);
   const [query, setQuery] = useState("");
   const [months, setMonths] = useState(MONTHS);
   const [month, setMonth] = useState(today.slice(0, 7));
-  const [picked, setPicked] = useState<string | null>(null);
 
   useEffect(() => {
     try {
+      const kept = localStorage.getItem(VIEW_KEY);
       // eslint-disable-next-line react-hooks/set-state-in-effect -- reads the device's storage, only on the client
-      if (localStorage.getItem(VIEW_KEY) === "calendar") setView("calendar");
+      if (kept === "calendar" || kept === "year") setView(kept);
     } catch {
       // No storage: the list.
     }
   }, []);
-  const choose = (v: "list" | "calendar") => {
+  const choose = (v: "list" | "calendar" | "year") => {
     setView(v);
     try {
       localStorage.setItem(VIEW_KEY, v);
@@ -77,16 +82,6 @@ export function HistoryView({ workouts, today }: { workouts: Workout[]; today: s
   );
   const groups = useMemo(() => byMonth(found), [found]);
   const monthName = (m: string) => new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" }).format(new Date(`${m}-15T12:00:00`));
-  const byDate = useMemo(() => {
-    const map = new Map<string, Workout[]>();
-    for (const w of workouts) (map.get(w.date) ?? map.set(w.date, []).get(w.date)!).push(w);
-    return map;
-  }, [workouts]);
-  const weekdays = useMemo(() => {
-    const f = new Intl.DateTimeFormat(locale, { weekday: "narrow" });
-    // 2026-11-16 is a Monday.
-    return Array.from({ length: 7 }, (_, i) => f.format(new Date(Date.UTC(2026, 10, 16 + i, 12))));
-  }, [locale]);
 
   return (
     <section className="space-y-3" aria-labelledby="history-title">
@@ -101,6 +96,10 @@ export function HistoryView({ workouts, today }: { workouts: Workout[]; today: s
             <Chip on={view === "calendar"} onClick={() => choose("calendar")}>
               <Calendar className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />
               {t("calendar")}
+            </Chip>
+            <Chip on={view === "year"} onClick={() => choose("year")}>
+              <CalendarRange className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />
+              {t("year")}
             </Chip>
           </ChipRow>
         )}
@@ -131,48 +130,20 @@ export function HistoryView({ workouts, today }: { workouts: Workout[]; today: s
             </Button>
           )}
         </>
+      ) : view === "calendar" ? (
+        <PlanCalendar workouts={doneList} planned={planned} today={today} month={month} onMonth={setMonth} row={row} />
       ) : (
-        <div className="t-panel space-y-3 rounded-2xl p-3">
-          <div className="flex items-center justify-between">
-            <Button size="icon-sm" variant="ghost" aria-label={t("previousMonth")} onClick={() => { setMonth(shiftMonth(month, -1)); setPicked(null); }}>
-              <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-            </Button>
-            <p className="text-sm font-semibold capitalize" aria-live="polite">{monthName(month)}</p>
-            <Button size="icon-sm" variant="ghost" aria-label={t("nextMonth")} disabled={month >= today.slice(0, 7)} onClick={() => { setMonth(shiftMonth(month, 1)); setPicked(null); }}>
-              <ChevronRight className="h-4 w-4" aria-hidden="true" />
-            </Button>
-          </div>
-          <div role="grid" aria-label={monthName(month)} className="grid grid-cols-7 gap-1 text-center">
-            {weekdays.map((d, i) => (
-              <span key={i} className="text-[0.7rem] font-semibold text-muted-foreground" aria-hidden="true">{d}</span>
-            ))}
-            {monthGrid(month).flat().map((date, i) => {
-              if (!date) return <span key={i} />;
-              const done = byDate.get(date)?.length ?? 0;
-              return (
-                <button
-                  key={date}
-                  type="button"
-                  disabled={!done}
-                  aria-pressed={picked === date}
-                  aria-label={done ? `${day(date)} · ${t("count", { count: done })}` : day(date)}
-                  onClick={() => setPicked(picked === date ? null : date)}
-                  className={cn(
-                    "relative grid aspect-square min-h-9 place-items-center rounded-lg text-sm",
-                    done ? "font-semibold hover:bg-muted" : "text-muted-foreground/60",
-                    date === today && "ring-1 ring-accent-500",
-                    picked === date && "bg-accent-600 text-white hover:bg-accent-600"
-                  )}
-                >
-                  {Number(date.slice(8))}
-                  {done > 0 && <span className={cn("absolute bottom-1 size-1.5 rounded-full", picked === date ? "bg-white" : "bg-accent-500")} aria-hidden="true" />}
-                </button>
-              );
-            })}
-          </div>
-          <p className="text-xs text-muted-foreground">{t("monthCount", { count: workouts.filter((w) => w.date.startsWith(month)).length })}</p>
-          {picked && <div className="space-y-2">{(byDate.get(picked) ?? []).map(row)}</div>}
-        </div>
+        <YearView
+          workouts={doneList}
+          planned={planned}
+          today={today}
+          year={year}
+          onYear={setYear}
+          onMonth={(m) => {
+            setMonth(m);
+            choose("calendar");
+          }}
+        />
       )}
     </section>
   );

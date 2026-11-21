@@ -408,20 +408,28 @@ await test("a program kept as a favourite, then archived out of the way", async 
   await page.getByRole("button", { name: "Archiver" }).waitFor({ timeout: 5000 });
 });
 
-await test("the history shows as a calendar of the month, a day opening its sessions", async () => {
+await test("the history shows as a calendar of the month, a day opening its sessions, and the year", async () => {
   await page.goto(`${BASE}/fr/log`);
   const history = page.locator("section", { has: page.locator("#history-title") });
-  await history.getByRole("button", { name: "Calendrier" }).click();
-  const grid = history.getByRole("grid");
-  await grid.waitFor({ timeout: 5000 });
-  const marked = grid.getByRole("button", { name: /séance/ });
-  expect((await marked.count()) > 0, "no day marked in the calendar");
-  await marked.first().click();
-  expect((await history.locator("a, button").filter({ hasText: /\d/ }).count()) > (await grid.getByRole("button").count()), "the day's sessions are not shown");
-  // The view is remembered, then put back for the other tests.
-  await page.reload();
-  await history.getByRole("grid").waitFor({ timeout: 5000 });
-  await history.getByRole("button", { name: "Liste" }).click();
+  try {
+    await history.getByRole("button", { name: "Calendrier" }).click();
+    const grid = history.getByRole("grid");
+    await grid.waitFor({ timeout: 5000 });
+    const trained = grid.getByRole("button", { name: /\d+ séances?/ });
+    expect((await trained.count()) > 0, "no day marked done");
+    await trained.first().click();
+    expect((await history.locator("button, a").filter({ hasText: /\d{2}\/\d{2}\/\d{4}/ }).count()) > 0, "the day's sessions are not shown");
+    await history.getByText(/^Faites \(\d+\)/).waitFor({ timeout: 5000 });
+    // The year, month by month; a month opens its calendar.
+    await history.getByRole("button", { name: "Année", exact: true }).click();
+    await history.getByText(/^\d+ séances? · /).waitFor({ timeout: 5000 });
+    expect((await history.locator("ol li").count()) === 12, "the year has not twelve months");
+    await history.locator("ol li button").nth(new Date().getMonth()).click();
+    await history.getByRole("grid").waitFor({ timeout: 5000 });
+  } finally {
+    // Put back for the other tests.
+    await history.getByRole("button", { name: "Liste" }).click().catch(() => {});
+  }
 });
 
 await test("the session picker narrows the ready-made programs by sport, a few at a time", async () => {
@@ -587,6 +595,23 @@ await test("two programs planned on their own days show together in the week and
   const [download] = await Promise.all([page.waitForEvent("download"), exportButton.click({ timeout: 10000 })]);
   const ics = readFileSync(await download.path(), "utf8");
   expect(ics.includes("DESCRIPTION:program fr") && ics.includes("DESCRIPTION:Full Body — Débutant"), "the calendar misses a program");
+});
+
+await test("the calendar shows the planning ahead: the sessions to come, each named", async () => {
+  await page.goto(`${BASE}/fr/log`);
+  const history = page.locator("section", { has: page.locator("#history-title") });
+  try {
+    await history.getByRole("button", { name: "Calendrier" }).click();
+    const grid = history.getByRole("grid");
+    await grid.waitFor({ timeout: 5000 });
+    // This month or the next holds planned sessions, two programs being planned.
+    if (!(await grid.getByRole("button", { name: /prévue/ }).count())) await history.getByRole("button", { name: "Mois suivant" }).click();
+    await history.getByText(/^Prévues \((?!0\))\d+\)/).waitFor({ timeout: 5000 });
+    await grid.getByRole("button", { name: /prévue/ }).first().click();
+    await history.getByText(/^Prévu : /).first().waitFor({ timeout: 5000 });
+  } finally {
+    await history.getByRole("button", { name: "Liste" }).click().catch(() => {});
+  }
 });
 
 await test("a session of the week moves to another day, and back", async () => {

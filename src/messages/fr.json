@@ -2492,7 +2492,20 @@
     "monthCount": "{count, plural, =0 {Aucune séance ce mois-ci} one {# séance ce mois-ci} other {# séances ce mois-ci}} · touchez un jour marqué pour la voir",
     "cancelled": "annulée",
     "effort": "effort {rpe}/10",
-    "suppleness": "souplesse {rating}/5"
+    "suppleness": "souplesse {rating}/5",
+    "plannedCount": "{count, plural, one {# prévue} other {# prévues}}",
+    "missedCount": "{count, plural, one {# manquée} other {# manquées}}",
+    "legendDone": "Faites ({count})",
+    "legendPlanned": "Prévues ({count})",
+    "legendMissed": "Manquées ({count})",
+    "plannedItem": "Prévu : {name}",
+    "missedItem": "Manqué : {name}",
+    "year": "Année",
+    "previousYear": "Année précédente",
+    "nextYear": "Année suivante",
+    "yearTotal": "{count, plural, =0 {Aucune séance} one {# séance} other {# séances}} · {time} · {missed, plural, =0 {aucune manquée} one {# manquée} other {# manquées}}",
+    "missedShort": "{count} manq.",
+    "plannedShort": "{count} prév."
   },
   "planVsDone": {
     "title": "Prévu / fait",

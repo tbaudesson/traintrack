@@ -77,7 +77,7 @@ export default function TrainPage() {
     },
   });
   const { starting, repeatable, startDay, startFree, repeatLast, startCardio } = actions;
-  const { session } = useSessionOfTheDay({ programs, workouts, today, profile, userId: user?.id, sport: prefs.sport, catalogue });
+  const { session, planned } = useSessionOfTheDay({ programs, workouts, today, profile, userId: user?.id, sport: prefs.sport, catalogue });
   const trainable = programs.filter((p) => (p.structure ?? []).length > 0);
   const templates = catalogue.filter((tpl) => !programs.some((p) => p.name === tpl.name));
   const runner = prefs.sport === "running" || prefs.sport2 === "running";
@@ -233,7 +233,7 @@ export default function TrainPage() {
         )}
 
         {/* History: by month or as a calendar, searchable. */}
-        <HistoryView workouts={workouts} today={today} />
+        <HistoryView workouts={workouts} sets={sets} planned={planned} today={today} />
       </div>
 
       <SportPicker open={sportOpen} onOpenChange={setSportOpen} onPick={startCardio} />

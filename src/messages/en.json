@@ -2492,7 +2492,20 @@
     "monthCount": "{count, plural, =0 {No session this month} one {# session this month} other {# sessions this month}} · tap a marked day to see it",
     "cancelled": "called off",
     "effort": "effort {rpe}/10",
-    "suppleness": "suppleness {rating}/5"
+    "suppleness": "suppleness {rating}/5",
+    "plannedCount": "{count} planned",
+    "missedCount": "{count} missed",
+    "legendDone": "Done ({count})",
+    "legendPlanned": "Planned ({count})",
+    "legendMissed": "Missed ({count})",
+    "plannedItem": "Planned: {name}",
+    "missedItem": "Missed: {name}",
+    "year": "Year",
+    "previousYear": "Previous year",
+    "nextYear": "Next year",
+    "yearTotal": "{count, plural, =0 {No session} one {# session} other {# sessions}} · {time} · {missed} missed",
+    "missedShort": "{count} missed",
+    "plannedShort": "{count} planned"
   },
   "planVsDone": {
     "title": "Planned / done",
