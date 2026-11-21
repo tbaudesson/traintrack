@@ -33,7 +33,10 @@ export function SessionSummary({
   data,
   onClose,
   onStretch,
+  children,
 }: {
+  /** Shown first: how the session felt, asked while it is fresh. */
+  children?: React.ReactNode;
   data: SessionSummaryData | null;
   onClose: () => void;
   /** Offered at the end: a few minutes of stretching for the muscles just worked. */
@@ -49,6 +52,7 @@ export function SessionSummary({
         <DialogHeader>
           <DialogTitle>{t("summaryTitle")}</DialogTitle>
         </DialogHeader>
+        {children}
         {data.cardio ? (
           <>
             <div className="grid grid-cols-2 gap-2">

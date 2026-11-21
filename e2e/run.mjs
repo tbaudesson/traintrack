@@ -316,6 +316,31 @@ await test("the session keeps its plan: the program changed afterwards, planned 
   await page.getByText(/prévu 3 × /).first().waitFor({ timeout: 5000 });
 });
 
+await test("a session done says how hard it felt, counted in the history", async () => {
+  // Still on the Full Body session, a set done.
+  const card = page.locator("section", { has: page.getByRole("heading", { name: "Comment c’était ?" }) }).first();
+  await card.getByRole("button", { name: /^8 sur 10/ }).click();
+  await card.getByRole("button", { name: /^8 sur 10/, pressed: true }).waitFor({ timeout: 5000 });
+  await card.getByRole("button", { name: "Bien" }).click();
+  await page.goto(`${BASE}/fr/log`);
+  await page.getByText(/effort 8\/10/).first().waitFor({ timeout: 10000 });
+});
+
+await test("a session opened for nothing is called off, kept in the history, and brought back", async () => {
+  await page.goto(`${BASE}/fr/log`);
+  await page.getByRole("button", { name: /Nouvelle séance/ }).first().click();
+  await page.waitForURL(/\/fr\/log\/session\?id=\d+/, { timeout: 15000 });
+  const url = page.url();
+  await page.getByRole("button", { name: "Modifier la séance" }).click();
+  await page.getByRole("button", { name: "Annuler la séance" }).click();
+  await page.getByText(/Séance annulée/).waitFor({ timeout: 5000 });
+  await page.goto(`${BASE}/fr/log`);
+  await page.getByText(/· annulée/).first().waitFor({ timeout: 10000 });
+  await page.goto(url);
+  await page.getByRole("button", { name: "Rétablir" }).click();
+  await page.getByText(/Séance annulée/).waitFor({ state: "detached", timeout: 5000 });
+});
+
 await test("an empty session takes an exercise from the library", async () => {
   await page.goto(`${BASE}/fr/log`);
   await page.getByRole("button", { name: /Nouvelle séance/ }).first().click();

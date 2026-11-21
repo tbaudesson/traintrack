@@ -1,5 +1,6 @@
 "use client";
 
+import { SessionFeedback } from "@/components/domain/SessionFeedback";
 import { useTranslations } from "next-intl";
 import { RotateCcw, Timer, Trash2 } from "lucide-react";
 import type { Exercise, Workout, WorkoutSet } from "@/db";
@@ -58,6 +59,8 @@ export function IntervalWorkoutView({ workout, sets, exercises }: { workout: Wor
             </p>
           )}
         </div>
+
+        <SessionFeedback workout={workout} />
 
         <ul className="space-y-1.5">
           {[...byExercise.entries()].map(([exerciseId, c]) => (

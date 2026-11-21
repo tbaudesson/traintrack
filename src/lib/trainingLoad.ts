@@ -9,7 +9,7 @@
  * effort. Pure.
  */
 
-type W = { id?: number; date: string; kind?: string; durationMin?: number; durationSec?: number | null };
+type W = { id?: number; date: string; kind?: string; durationMin?: number; durationSec?: number | null; sessionRpe?: number | null; cancelledAt?: string | null };
 type S = { workoutId: number; completed: boolean; isWarmup?: boolean; rpe?: number };
 
 export type LoadZone = "low" | "optimal" | "caution" | "danger";
@@ -36,12 +36,23 @@ const addDays = (date: string, days: number) => {
   return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
 };
 
-/** One session's load: minutes × session RPE. */
+/**
+ * How hard a session was: the session RPE given at its end (Foster's own
+ * measure); else the average RPE of its sets; else a usual value by kind.
+ */
+export function sessionEffort(w: Pick<W, "kind" | "sessionRpe">, work: Pick<S, "rpe">[]): { rpe: number; source: "session" | "sets" | "default" } {
+  if (w.sessionRpe && w.sessionRpe >= 1 && w.sessionRpe <= 10) return { rpe: w.sessionRpe, source: "session" };
+  const rpes = work.map((s) => s.rpe).filter((r): r is number => !!r && r >= 1 && r <= 10);
+  if (rpes.length) return { rpe: rpes.reduce((a, b) => a + b, 0) / rpes.length, source: "sets" };
+  return { rpe: DEFAULT_RPE[w.kind ?? "strength"] ?? 6, source: "default" };
+}
+
+/** One session's load: minutes × session RPE; nothing for a session called off. */
 export function sessionLoad(w: W, sets: S[]): number {
+  if (w.cancelledAt) return 0;
   const work = sets.filter((s) => s.completed && !s.isWarmup);
   const minutes = w.durationMin ?? (w.durationSec ? w.durationSec / 60 : work.length * MINUTES_PER_SET);
-  const rpes = work.map((s) => s.rpe).filter((r): r is number => !!r && r >= 1 && r <= 10);
-  const rpe = rpes.length ? rpes.reduce((a, b) => a + b, 0) / rpes.length : (DEFAULT_RPE[w.kind ?? "strength"] ?? 6);
+  const { rpe } = sessionEffort(w, work);
   return Math.round(Math.min(Math.max(minutes, 0), 300) * rpe);
 }
 

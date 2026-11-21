@@ -45,9 +45,10 @@ export function programDayTitle(programName: string, dayName: string): string {
  */
 export function findWorkoutProgramDay(
   programs: Program[],
-  workout: (Pick<Workout, "title" | "programId" | "programDayIndex"> & { plannedDay?: ProgramDay | null }) | undefined
+  workout: (Pick<Workout, "title" | "programId" | "programDayIndex"> & { plannedDay?: ProgramDay | null; cancelledAt?: string | null }) | undefined
 ): { program: Program; index: number } | null {
-  if (!workout) return null;
+  // A session called off did not do its day: the day is still to do.
+  if (!workout || workout.cancelledAt) return null;
   if (workout.programId != null && workout.programDayIndex != null) {
     const program = programs.find((p) => p.id === workout.programId);
     if (program) {

@@ -390,7 +390,10 @@
     "reuse": "Réutiliser cette séance",
     "reuseLabel": "Reprendre {value} pour la série {n}",
     "nextUp": "Ensuite : {exercise} · série {n}",
-    "doneSummaryTimed": "{sets, plural, one {# série} other {# séries}} · {reps} s"
+    "doneSummaryTimed": "{sets, plural, one {# série} other {# séries}} · {reps} s",
+    "cancelledNote": "Séance annulée : gardée dans l’historique, elle ne compte nulle part et son jour reste à faire.",
+    "restore": "Rétablir",
+    "cancelSession": "Annuler la séance"
   },
   "progress": {
     "title": "Progrès",
@@ -2482,7 +2485,9 @@
     "olderMonths": "Voir les mois précédents",
     "previousMonth": "Mois précédent",
     "nextMonth": "Mois suivant",
-    "monthCount": "{count, plural, =0 {Aucune séance ce mois-ci} one {# séance ce mois-ci} other {# séances ce mois-ci}} · touchez un jour marqué pour la voir"
+    "monthCount": "{count, plural, =0 {Aucune séance ce mois-ci} one {# séance ce mois-ci} other {# séances ce mois-ci}} · touchez un jour marqué pour la voir",
+    "cancelled": "annulée",
+    "effort": "effort {rpe}/10"
   },
   "planVsDone": {
     "title": "Prévu / fait",
@@ -2513,5 +2518,27 @@
     "reordered": "ordre ou détails changés",
     "restore": "Revenir avant",
     "confirmRestore": "Confirmer le retour"
+  },
+  "feedback": {
+    "title": "Comment c’était ?",
+    "rpe": "Effort ressenti sur toute la séance",
+    "rpeHint": "1 = très facile · 10 = maximal. Il pèse la séance dans votre charge d’entraînement.",
+    "rpeValue": "{n} sur 10 : {label}",
+    "rpe_1": "Très, très facile",
+    "rpe_2": "Facile",
+    "rpe_3": "Modéré",
+    "rpe_4": "Un peu dur",
+    "rpe_5": "Dur",
+    "rpe_6": "Dur +",
+    "rpe_7": "Très dur",
+    "rpe_8": "Très dur +",
+    "rpe_9": "Presque maximal",
+    "rpe_10": "Maximal",
+    "feeling": "Comment ça s’est passé",
+    "feeling_1": "Mal",
+    "feeling_2": "Bof",
+    "feeling_3": "Correct",
+    "feeling_4": "Bien",
+    "feeling_5": "Super"
   }
 }

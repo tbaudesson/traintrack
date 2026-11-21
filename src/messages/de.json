@@ -390,7 +390,10 @@
     "reuse": "Diese Einheit wiederverwenden",
     "reuseLabel": "{value} für Satz {n} übernehmen",
     "nextUp": "Danach: {exercise} · Satz {n}",
-    "doneSummaryTimed": "{sets, plural, one {# Satz} other {# Sätze}} · {reps} s"
+    "doneSummaryTimed": "{sets, plural, one {# Satz} other {# Sätze}} · {reps} s",
+    "cancelledNote": "Einheit abgesagt: bleibt im Verlauf, zählt nirgends, ihr Tag ist noch zu machen.",
+    "restore": "Wiederherstellen",
+    "cancelSession": "Einheit absagen"
   },
   "progress": {
     "title": "Fortschritt",
@@ -2482,7 +2485,9 @@
     "olderMonths": "Frühere Monate anzeigen",
     "previousMonth": "Vorheriger Monat",
     "nextMonth": "Nächster Monat",
-    "monthCount": "{count, plural, =0 {Keine Einheit in diesem Monat} one {# Einheit in diesem Monat} other {# Einheiten in diesem Monat}} · markierten Tag antippen"
+    "monthCount": "{count, plural, =0 {Keine Einheit in diesem Monat} one {# Einheit in diesem Monat} other {# Einheiten in diesem Monat}} · markierten Tag antippen",
+    "cancelled": "abgesagt",
+    "effort": "Anstrengung {rpe}/10"
   },
   "planVsDone": {
     "title": "Geplant / gemacht",
@@ -2513,5 +2518,27 @@
     "reordered": "Reihenfolge oder Details geändert",
     "restore": "Davor zurück",
     "confirmRestore": "Zurückgehen bestätigen"
+  },
+  "feedback": {
+    "title": "Wie war es?",
+    "rpe": "Gefühlte Anstrengung der ganzen Einheit",
+    "rpeHint": "1 = sehr leicht · 10 = maximal. Sie gewichtet die Einheit in deiner Trainingsbelastung.",
+    "rpeValue": "{n} von 10: {label}",
+    "rpe_1": "Sehr, sehr leicht",
+    "rpe_2": "Leicht",
+    "rpe_3": "Moderat",
+    "rpe_4": "Etwas schwer",
+    "rpe_5": "Schwer",
+    "rpe_6": "Schwer +",
+    "rpe_7": "Sehr schwer",
+    "rpe_8": "Sehr schwer +",
+    "rpe_9": "Fast maximal",
+    "rpe_10": "Maximal",
+    "feeling": "Wie es lief",
+    "feeling_1": "Schlecht",
+    "feeling_2": "Mäßig",
+    "feeling_3": "Okay",
+    "feeling_4": "Gut",
+    "feeling_5": "Super"
   }
 }

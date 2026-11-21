@@ -251,6 +251,12 @@ export interface Workout extends SyncFields {
   programDayIndex?: number | null;
   /** That day as the program had it when the session started: the plan, kept whatever the program becomes (migration 068). */
   plannedDay?: ProgramDay | null;
+  /** How hard the whole session felt, 1-10 (session RPE, Foster's CR-10), given at the end (migration 069). */
+  sessionRpe?: number | null;
+  /** How it went, 1 (badly) to 5 (great) (migration 069). */
+  feeling?: number | null;
+  /** Called off before anything was done: kept in the history, counted nowhere, its day still to do (migration 069). */
+  cancelledAt?: string | null;
   /** Absent on older workouts, which are all strength sessions. */
   kind?: "strength" | "cardio" | "interval";
   sport?: Sport | null;

@@ -390,7 +390,10 @@
     "reuse": "Reuse this session",
     "reuseLabel": "Reuse {value} for set {n}",
     "nextUp": "Next: {exercise} · set {n}",
-    "doneSummaryTimed": "{sets, plural, one {# set} other {# sets}} · {reps} s"
+    "doneSummaryTimed": "{sets, plural, one {# set} other {# sets}} · {reps} s",
+    "cancelledNote": "Session called off: kept in the history, counted nowhere, its day still to do.",
+    "restore": "Bring back",
+    "cancelSession": "Call off the session"
   },
   "progress": {
     "title": "Progress",
@@ -2482,7 +2485,9 @@
     "olderMonths": "Show earlier months",
     "previousMonth": "Previous month",
     "nextMonth": "Next month",
-    "monthCount": "{count, plural, =0 {No session this month} one {# session this month} other {# sessions this month}} · tap a marked day to see it"
+    "monthCount": "{count, plural, =0 {No session this month} one {# session this month} other {# sessions this month}} · tap a marked day to see it",
+    "cancelled": "called off",
+    "effort": "effort {rpe}/10"
   },
   "planVsDone": {
     "title": "Planned / done",
@@ -2513,5 +2518,27 @@
     "reordered": "order or details changed",
     "restore": "Go back before",
     "confirmRestore": "Confirm going back"
+  },
+  "feedback": {
+    "title": "How was it?",
+    "rpe": "Effort felt over the whole session",
+    "rpeHint": "1 = very easy · 10 = maximal. It weighs the session in your training load.",
+    "rpeValue": "{n} out of 10: {label}",
+    "rpe_1": "Very, very easy",
+    "rpe_2": "Easy",
+    "rpe_3": "Moderate",
+    "rpe_4": "Somewhat hard",
+    "rpe_5": "Hard",
+    "rpe_6": "Hard +",
+    "rpe_7": "Very hard",
+    "rpe_8": "Very hard +",
+    "rpe_9": "Almost maximal",
+    "rpe_10": "Maximal",
+    "feeling": "How it went",
+    "feeling_1": "Badly",
+    "feeling_2": "Meh",
+    "feeling_3": "OK",
+    "feeling_4": "Good",
+    "feeling_5": "Great"
   }
 }

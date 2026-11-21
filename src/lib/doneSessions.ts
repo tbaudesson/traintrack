@@ -1,7 +1,7 @@
 import { isCardioDone } from "@/lib/cardio";
 import type { Workout, WorkoutSet } from "@/db";
 
-type W = Pick<Workout, "id" | "kind" | "distanceM" | "durationSec" | "durationMin">;
+type W = Pick<Workout, "id" | "kind" | "distanceM" | "durationSec" | "durationMin"> & { cancelledAt?: string | null };
 type S = Pick<WorkoutSet, "workoutId" | "completed" | "isWarmup">;
 
 /**
@@ -13,5 +13,5 @@ type S = Pick<WorkoutSet, "workoutId" | "completed" | "isWarmup">;
  */
 export function doneSessions<T extends W>(workouts: T[], sets: S[]): T[] {
   const withSets = new Set(sets.filter((s) => s.completed && !s.isWarmup).map((s) => s.workoutId));
-  return workouts.filter((w) => withSets.has(w.id!) || isCardioDone(w) || (w.durationMin ?? 0) > 0 || (w.durationSec ?? 0) > 0);
+  return workouts.filter((w) => !w.cancelledAt && (withSets.has(w.id!) || isCardioDone(w) || (w.durationMin ?? 0) > 0 || (w.durationSec ?? 0) > 0));
 }

@@ -57,3 +57,14 @@ describe("trainingLoad", () => {
 it("draws the zones at the usual thresholds (0.8, 1.3, 1.5)", () => {
   expect([0.5, 0.8, 1.3, 1.31, 1.5, 1.6].map(loadZone)).toEqual(["low", "optimal", "optimal", "caution", "caution", "danger"]);
 });
+
+describe("the effort of a session", () => {
+  it("takes the session RPE first, then the sets', then a usual value; nothing once called off", () => {
+    const w = { id: 1, date: "2026-11-20", kind: "cardio", durationMin: 60 };
+    expect(sessionLoad({ ...w, sessionRpe: 8 }, [])).toBe(480);
+    expect(sessionLoad(w, [])).toBe(360);
+    expect(sessionLoad({ ...w, kind: "strength" }, [{ workoutId: 1, completed: true, rpe: 9 }])).toBe(540);
+    expect(sessionLoad({ ...w, sessionRpe: 4, kind: "strength" }, [{ workoutId: 1, completed: true, rpe: 9 }])).toBe(240);
+    expect(sessionLoad({ ...w, cancelledAt: "2026-11-20" }, [])).toBe(0);
+  });
+});

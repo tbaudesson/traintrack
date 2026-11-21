@@ -21,6 +21,7 @@ import { usePainReports } from "@/hooks/usePain";
 import { recentPainOn } from "@/lib/pain";
 import { useInjuryGuidance } from "@/hooks/useInjuryGuidance";
 import { ExercisePicker } from "@/components/domain/ExercisePicker";
+import { SessionFeedback } from "@/components/domain/SessionFeedback";
 import { PlanVsDone } from "@/components/domain/PlanVsDone";
 import { ReuseSessionDialog } from "@/components/domain/ReuseSessionDialog";
 import { PainDialog } from "@/components/domain/PainDialog";
@@ -61,7 +62,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, MoreHorizontal, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight, TrendingDown, Equal, Gauge, BatteryLow, Bandage, PersonStanding, CopyPlus } from "lucide-react";
+import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, MoreHorizontal, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight, TrendingDown, Equal, Gauge, BatteryLow, Bandage, PersonStanding, CopyPlus, Ban } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { IntervalWorkoutView } from "@/components/domain/IntervalWorkoutView";
@@ -812,6 +813,20 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                   <Check className="mr-1 h-4 w-4" />
                   {t("save")}
                 </Button>
+                {/* Nothing done yet: it can be called off rather than deleted, and stays in the history. */}
+                {!workout?.cancelledAt && !sets.some((s) => s.completed && !s.isWarmup) && !(workout && isCardioDone(workout)) && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={async () => {
+                      await updateWorkout(workoutId, { cancelledAt: new Date().toISOString() });
+                      setEditMeta(false);
+                    }}
+                  >
+                    <Ban className="mr-1 h-4 w-4" aria-hidden="true" />
+                    {t("cancelSession")}
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   variant="ghost"
@@ -860,6 +875,17 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
             {tg("start")}
           </Button>
         )}
+
+        {/* Called off: kept in the history, its day still to do. */}
+        {workout?.cancelledAt && (
+          <div className="flex items-center justify-between gap-2 rounded-xl bg-muted p-3 text-sm" role="status">
+            <span>{t("cancelledNote")}</span>
+            <Button size="sm" variant="outline" onClick={() => updateWorkout(workoutId, { cancelledAt: null })}>{t("restore")}</Button>
+          </div>
+        )}
+
+        {/* How it felt, once something is done, whatever the sport. */}
+        {workout && !workout.cancelledAt && (sets.some((s) => s.completed && !s.isWarmup) || isCardioDone(workout)) && <SessionFeedback workout={workout} />}
 
         {/* What was planned beside what is done, once something is done. */}
         {workout?.plannedDay && !isCardio(workout) && sets.some((s) => s.completed && !s.isWarmup) && (
@@ -1411,7 +1437,9 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
         data={summary}
         onClose={() => router.push("/log")}
         onStretch={() => router.push(`/mobility?mode=stretch&workout=${workoutId}`)}
-      />
+      >
+        {workout && <SessionFeedback workout={workout} />}
+      </SessionSummary>
 
       {effort && (
         <div role="timer" aria-label={t("effortLabel")} className={cn("t-effort-timer fixed left-1/2 z-[55] flex -translate-x-1/2 items-center gap-2 rounded-full bg-success-text py-1 pr-1 pl-4 whitespace-nowrap text-background shadow-lg", barOffset)}>

@@ -58,11 +58,14 @@ export function HistoryView({ workouts, today }: { workouts: Workout[]; today: s
   };
 
   const subtitle = (w: Workout) =>
-    isCardio(w) && w.distanceM
-      ? `${day(w.date)} · ${formatDistance(w.distanceM, w.sport)}`
-      : w.kind === "interval" && w.durationMin
-        ? `${day(w.date)} · ${w.durationMin} min`
-        : day(w.date);
+    [
+      day(w.date),
+      isCardio(w) && w.distanceM ? formatDistance(w.distanceM, w.sport) : w.kind === "interval" && w.durationMin ? `${w.durationMin} min` : null,
+      w.cancelledAt ? t("cancelled") : null,
+      !w.cancelledAt && w.sessionRpe ? t("effort", { rpe: w.sessionRpe }) : null,
+    ]
+      .filter(Boolean)
+      .join(" · ");
   const row = (w: Workout) => (
     <DetailRow key={w.id} onClick={() => router.push(sessionHref(w.id))} icon={Calendar} tone="neutral" title={w.title || tl("title")} subtitle={subtitle(w)} />
   );
