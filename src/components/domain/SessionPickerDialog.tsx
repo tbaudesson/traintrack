@@ -14,6 +14,7 @@ import { useFormat } from "@/lib/format";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useAthleteProfileOrNull } from "@/hooks/useAthleteProfile";
 import { search } from "@/lib/search";
+import { byUse, lastUsed } from "@/lib/reuse";
 import { CATEGORY_ORDER, planWeeks, programCategory, type ProgramCategory } from "@/lib/programCategories";
 import { Button } from "@/components/ui/button";
 import { Chip, ChipRow, SearchField } from "@/components/ui/find";
@@ -130,7 +131,9 @@ export function SessionPickerDialog({
   };
 
   // The days of one's programs and the sessions without a program, narrowed by the same search.
-  const days = programs.flatMap((p) => daysToOffer(p, workouts, today).map(({ day: d, index }) => ({ p, d, index })));
+  // Favourites first, then the last used.
+  const ordered = byUse(programs, lastUsed(workouts));
+  const days = ordered.flatMap((p) => daysToOffer(p, workouts, today).map(({ day: d, index }) => ({ p, d, index })));
   const foundDays = search(days, q, ({ p, d }) => ({ names: [d.name, p.name], others: [dayDetail(d)] }));
   const foundFree = search(freeRows, q, (r) => ({ names: [r.text[0]], others: [r.text[1]] }));
   const showRepeat = !!repeatable && (!q || search([repeatable], q, (w) => ({ names: [t("repeatLast"), w.title] })).length > 0);
@@ -173,7 +176,7 @@ export function SessionPickerDialog({
           {foundDays.length > 0 && (
             <section className="space-y-3">
               <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("myPrograms")}</h3>
-              {programs
+              {ordered
                 .filter((p) => foundDays.some((x) => x.p === p))
                 .map((p) => (
                   <div key={p.id} className="space-y-2">

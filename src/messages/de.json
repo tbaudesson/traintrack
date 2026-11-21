@@ -387,7 +387,7 @@
     "deleteWorkoutText": "Die Einheit und alle ihre Sätze werden gelöscht.",
     "exerciseShort": "Übung",
     "lastTimeSet": "Letztes Mal: {value}",
-    "reuse": "Übernehmen",
+    "reuse": "Diese Einheit wiederverwenden",
     "reuseLabel": "{value} für Satz {n} übernehmen",
     "nextUp": "Danach: {exercise} · Satz {n}",
     "doneSummaryTimed": "{sets, plural, one {# Satz} other {# Sätze}} · {reps} s"
@@ -606,7 +606,12 @@
     "noCreations": "Erstelle dein eigenes Programm mit „Neues Programm“.",
     "byCoach": "von deinem Coach",
     "readyMade": "fertig",
-    "importExcel": "Importieren"
+    "importExcel": "Importieren",
+    "searchMine": "In meinen Programmen suchen",
+    "favoriteMark": "Favorit",
+    "lastSession": "letzte Einheit {date}",
+    "archived": "Archiviert ({count})",
+    "addExisting": "Vorhandene Einheit übernehmen"
   },
   "readiness": {
     "title": "Tagesform",
@@ -1509,7 +1514,16 @@
     "linkCopied": "Link kopiert: in eine Nachricht einfügen.",
     "shareFailed": "Teilen hat nicht geklappt, bitte erneut versuchen.",
     "tooManyShares": "Du hast bereits 100 Programme geteilt: Das ist das Maximum.",
-    "shareOffline": "Zum Teilen ist eine Verbindung nötig."
+    "shareOffline": "Zum Teilen ist eine Verbindung nötig.",
+    "favorite": "Zu Favoriten",
+    "unfavorite": "Aus Favoriten entfernen",
+    "duplicate": "Duplizieren",
+    "duplicateHint": "Die Kopie öffnet sich im Editor; dieses Programm und sein Verlauf bleiben unverändert.",
+    "copyWord": "Kopie",
+    "archive": "Archivieren",
+    "unarchive": "Zurückholen",
+    "unarchiveHint": "Zurückgeholt erscheint es wieder in der Planung und der Einheitenauswahl.",
+    "archivedNote": "Archiviert: nicht mehr in der Planung oder der Einheitenauswahl. Der Verlauf bleibt erhalten."
   },
   "exerciseHistory": {
     "empty": "Noch keine Einheit mit dieser Übung.",
@@ -2436,5 +2450,24 @@
     "sport": "Sport",
     "level": "Niveau",
     "allLevels": "Alle Niveaus"
+  },
+  "reuse": {
+    "title": "Diese Einheit wiederverwenden",
+    "intro": "{count, plural, one {# Übung übernommen} other {# Übungen übernommen}} mit den gemachten Sätzen, Wiederholungen und Pausen.",
+    "empty": "Nichts zu übernehmen: keine Übung in dieser Einheit.",
+    "name": "Name der Einheit",
+    "asProgram": "Ein neues Programm daraus machen",
+    "asProgramHint": "Eine eigene Vorlage zum Wiederholen oder Ausbauen",
+    "intoProgram": "Oder zu einem Programm hinzufügen",
+    "searchProgram": "Programm suchen",
+    "days": "{count, plural, one {# Einheit} other {# Einheiten}}",
+    "existingTitle": "Vorhandene Einheit übernehmen",
+    "searchSession": "Nach Name, Datum oder Programm suchen",
+    "kind": "Art",
+    "kind_all": "Alle",
+    "kind_done": "Gemachte Einheiten",
+    "kind_day": "Meine Programme",
+    "exercises": "{count, plural, one {# Übung} other {# Übungen}}",
+    "noSessions": "Noch keine Einheit zum Übernehmen."
   }
 }

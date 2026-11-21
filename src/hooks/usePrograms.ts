@@ -49,11 +49,11 @@ export async function createProgram(data: {
   return id;
 }
 
-/** The programs this user trains on: not the copies they assigned to clients. */
+/** The programs this user trains on: not the copies they assigned to clients, nor those archived. */
 export function useTrainablePrograms() {
   const programs = usePrograms();
   const uid = getCurrentUserIdSync();
-  return programs.filter((p) => !p.assignedToUserId || p.assignedToUserId === uid);
+  return programs.filter((p) => (!p.assignedToUserId || p.assignedToUserId === uid) && !p.archivedAt);
 }
 
 /**
@@ -92,3 +92,16 @@ export async function deleteProgram(id: number): Promise<void> {
   await db.programs.update(id, { deletedAt: new Date().toISOString(), _dirty: 1 });
   schedulePush();
 }
+
+/**
+ * A copy of a program to change freely: the original, its sessions and its
+ * history stay as they are. Not planned, not a favourite: a fresh start.
+ */
+export async function duplicateProgram(program: Program, name: string): Promise<number> {
+  return createProgram({ name, description: program.description, structure: structuredClone(program.structure ?? []) });
+}
+
+export const setProgramFavorite = (id: number, favorite: boolean) => updateProgram(id, { favorite });
+
+/** Archived, a program leaves the planning and the picker; brought back, it returns as it was. */
+export const setProgramArchived = (id: number, archived: boolean) => updateProgram(id, { archivedAt: archived ? new Date().toISOString() : null });

@@ -4,12 +4,13 @@ import { sessionHref } from "@/lib/routes";
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { ArrowRight, Check, LogOut, Loader2, Pencil, Share2, UserCheck, Wand2 } from "lucide-react";
+import { Archive, ArchiveRestore, ArrowRight, Check, Copy, LogOut, Loader2, Pencil, Share2, Star, UserCheck, Wand2 } from "lucide-react";
 import { shareLink, shareProgram } from "@/lib/shareService";
 import { getCurrentUserIdSync, type ProgramDay } from "@/db";
 import { useRouter } from "@/i18n/navigation";
 import { useLighterToday } from "@/hooks/useLighterToday";
-import { deleteProgram, updateProgram, useProgram } from "@/hooks/usePrograms";
+import { deleteProgram, duplicateProgram, setProgramArchived, setProgramFavorite, updateProgram, usePrograms, useProgram } from "@/hooks/usePrograms";
+import { copyName } from "@/lib/reuse";
 import { useWorkouts } from "@/hooks/useWorkouts";
 import { useExercises } from "@/hooks/useExercises";
 import { describeTarget } from "@/lib/cardio";
@@ -45,6 +46,7 @@ export default function ProgramPage() {
   const router = useRouter();
   const programId = Number(useParams().id);
   const program = useProgram(programId);
+  const allPrograms = usePrograms();
   const workouts = useWorkouts();
   const exercises = useExercises();
   const sets = useAllWorkoutSets();
@@ -123,6 +125,15 @@ export default function ProgramPage() {
     }
   }
 
+  /** A copy to change freely, opened in the editor; this one stays as it is. */
+  async function duplicate() {
+    if (!program) return;
+    setBusy(true);
+    const id = await duplicateProgram(program, copyName(program.name, allPrograms.map((p) => p.name), t("copyWord")));
+    setBusy(false);
+    router.push(`/programs/${id}/edit`);
+  }
+
   async function leave() {
     await deleteProgram(programId);
     router.push("/programs");
@@ -143,12 +154,25 @@ export default function ProgramPage() {
         title={program.name}
         showBack
         actions={
-          origin === "mine" ? (
-            <Button size="sm" variant="outline" onClick={() => router.push(`/programs/${programId}/edit`)}>
-              <Pencil className="mr-1 h-4 w-4" aria-hidden="true" />
-              {t("edit")}
-            </Button>
-          ) : undefined
+          <div className="flex items-center gap-1">
+            {!forSomeoneElse && (
+              <Button
+                size="icon-sm"
+                variant="ghost"
+                aria-pressed={!!program.favorite}
+                aria-label={t(program.favorite ? "unfavorite" : "favorite")}
+                onClick={() => setProgramFavorite(programId, !program.favorite)}
+              >
+                <Star className={program.favorite ? "h-4 w-4 fill-amber-400 text-amber-500" : "h-4 w-4"} aria-hidden="true" />
+              </Button>
+            )}
+            {origin === "mine" && (
+              <Button size="sm" variant="outline" onClick={() => router.push(`/programs/${programId}/edit`)}>
+                <Pencil className="mr-1 h-4 w-4" aria-hidden="true" />
+                {t("edit")}
+              </Button>
+            )}
+          </div>
         }
       />
       <div className="space-y-5 p-4 pb-28">
@@ -252,6 +276,27 @@ export default function ProgramPage() {
             </Button>
             {shareMessage && <p className="text-center text-xs text-muted-foreground" role="status">{shareMessage}</p>}
           </div>
+        )}
+
+        {program.archivedAt && (
+          <p className="flex items-center gap-2 rounded-xl bg-muted p-3 text-sm text-muted-foreground" role="status">
+            <Archive className="h-4 w-4 shrink-0" aria-hidden="true" />
+            {t("archivedNote")}
+          </p>
+        )}
+
+        {!forSomeoneElse && (
+          <section className="grid grid-cols-2 gap-2">
+            <Button variant="outline" className="w-full" onClick={duplicate} disabled={busy}>
+              <Copy className="mr-1 h-4 w-4" aria-hidden="true" />
+              {t("duplicate")}
+            </Button>
+            <Button variant="outline" className="w-full" onClick={() => setProgramArchived(programId, !program.archivedAt)}>
+              {program.archivedAt ? <ArchiveRestore className="mr-1 h-4 w-4" aria-hidden="true" /> : <Archive className="mr-1 h-4 w-4" aria-hidden="true" />}
+              {t(program.archivedAt ? "unarchive" : "archive")}
+            </Button>
+            <p className="col-span-2 text-xs text-muted-foreground">{t(program.archivedAt ? "unarchiveHint" : "duplicateHint")}</p>
+          </section>
         )}
 
         {origin === "followed" && (

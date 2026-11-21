@@ -224,6 +224,10 @@ export interface Program extends SyncFields {
   /** Days of the week it is trained on (1 = Monday … 7 = Sunday): it is then in the planning. */
   weekdays?: number[] | null;
   structure: ProgramDay[];
+  /** Kept at the top of one's programs (migration 067). */
+  favorite?: boolean | null;
+  /** Put away: out of the planning and the session picker, kept with its history (migration 067). */
+  archivedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { usePrograms, createProgram } from "@/hooks/usePrograms";
@@ -21,7 +21,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, ClipboardList, Loader2, UserCheck, Sparkles, FileSpreadsheet } from "lucide-react";
+import { Plus, ClipboardList, Loader2, UserCheck, Sparkles, FileSpreadsheet, Archive, Star } from "lucide-react";
+import { useWorkouts } from "@/hooks/useWorkouts";
+import { useFormat } from "@/lib/format";
+import { byUse, lastUsed } from "@/lib/reuse";
+import { search } from "@/lib/search";
+import { SearchField } from "@/components/ui/find";
 import { ProgramImportDialog } from "@/components/domain/ProgramImportDialog";
 import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
 import { DetailRow } from "@/components/ui/detail-row";
@@ -33,6 +38,11 @@ import { useAppPrefs } from "@/hooks/useAppPrefs";
 export default function ProgramsPage() {
   const { clients } = useClients();
   const t = useTranslations("programs");
+  const tf = useTranslations("picker");
+  const { day: dayLabel } = useFormat();
+  const workouts = useWorkouts();
+  const used = useMemo(() => lastUsed(workouts), [workouts]);
+  const [query, setQuery] = useState("");
   const tai = useTranslations("ai");
   const router = useRouter();
   const programs = usePrograms();
@@ -131,8 +141,31 @@ export default function ProgramsPage() {
   const toClients = programs.filter((p) => p.assignedToUserId && p.assignedToUserId !== user?.id);
   const clientName = (id?: string | null) => clients.find((c) => c.userId === id)?.displayName ?? "—";
   const readyMade = useReadyMadeNames();
-  const followed = mine.filter((p) => programOrigin(p, user?.id, readyMade) !== "mine");
-  const created = mine.filter((p) => programOrigin(p, user?.id, readyMade) === "mine");
+  // Favourites, then the last used, narrowed by the search; the archived apart.
+  const matching = search(byUse(mine, used), query, (p) => ({ names: [p.name], others: [p.description, describe(p).subtitle] }));
+  const active = matching.filter((p) => !p.archivedAt);
+  const archived = matching.filter((p) => p.archivedAt);
+  const followed = active.filter((p) => programOrigin(p, user?.id, readyMade) !== "mine");
+  const created = active.filter((p) => programOrigin(p, user?.id, readyMade) === "mine");
+  /** "Running · 8 weeks · last session 12 Nov", a star for a favourite. */
+  const rowOf = (p: (typeof mine)[number], extra?: string) => {
+    const { category, subtitle } = describe(p);
+    const last = p.id ? used.get(p.id) : undefined;
+    return (
+      <DetailRow
+        key={p.id}
+        onClick={() => router.push(`/programs/${p.id}`)}
+        leading={<CategoryIcon category={category ?? "custom"} />}
+        title={p.name}
+        subtitle={
+          <>
+            {p.favorite && <Star className="mr-1 inline h-3.5 w-3.5 -translate-y-px fill-amber-400 text-amber-500" role="img" aria-label={t("favoriteMark")} />}
+            {[subtitle, extra, last ? t("lastSession", { date: dayLabel(last) }) : null].filter(Boolean).join(" · ")}
+          </>
+        }
+      />
+    );
+  };
 
   return (
     <>
@@ -162,44 +195,35 @@ export default function ProgramsPage() {
       <div className="mx-auto max-w-5xl space-y-6 p-4 pb-24 md:p-6">
         {/* One's own programs first: those followed, then those built. */}
         {/* Programs followed as they are: ready-made ones and a coach's. */}
+        {mine.length > 3 && <SearchField value={query} onChange={setQuery} placeholder={t("searchMine")} clearLabel={tf("clear")} />}
+        {query && !matching.length && (
+          <div className="space-y-2 py-4 text-center text-sm text-muted-foreground">
+            <p>{tf("none")}</p>
+            <Button variant="outline" size="sm" onClick={() => setQuery("")}>{tf("reset")}</Button>
+          </div>
+        )}
         {followed.length > 0 && (
           <section className="space-y-2">
             <SectionHeading>{t("followed")}</SectionHeading>
-            {followed.map((p) => {
-              const { category, subtitle } = describe(p);
-              const origin = programOrigin(p, user?.id, readyMade);
-              return (
-                <DetailRow
-                  key={p.id}
-                  onClick={() => router.push(`/programs/${p.id}`)}
-                  leading={<CategoryIcon category={category ?? "custom"} />}
-                  title={p.name}
-                  subtitle={`${subtitle} · ${t(origin === "coach" ? "byCoach" : "readyMade")}`}
-                />
-              );
-            })}
+            {followed.map((p) => rowOf(p, t(programOrigin(p, user?.id, readyMade) === "coach" ? "byCoach" : "readyMade")))}
           </section>
         )}
-
         {/* Programs one built: edited freely. */}
         {created.length > 0 && (
           <section className="space-y-2">
             <SectionHeading>{t("myCreations")}</SectionHeading>
-            {created.map((p) => {
-              const { category, subtitle } = describe(p);
-              return (
-                <DetailRow
-                  key={p.id}
-                  onClick={() => router.push(`/programs/${p.id}`)}
-                  leading={<CategoryIcon category={category ?? "custom"} />}
-                  title={p.name}
-                  subtitle={subtitle}
-                />
-              );
-            })}
+            {created.map((p) => rowOf(p))}
           </section>
         )}
-
+        {archived.length > 0 && (
+          <details className="t-panel rounded-xl px-4 py-1" open={!!query}>
+            <summary className="flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold">
+              <Archive className="size-4 text-muted-foreground" aria-hidden="true" />
+              {t("archived", { count: archived.length })}
+            </summary>
+            <div className="space-y-2 pt-1 pb-3">{archived.map((p) => rowOf(p))}</div>
+          </details>
+        )}
         <ProgramCatalog
           templates={catalogue}
           level={profile?.fitnessLevel}
@@ -209,7 +233,7 @@ export default function ProgramsPage() {
           added={(tpl) => (mine.find((p) => p.name === tpl.name) ?? mine.find((p) => programFingerprint(p.structure) === programFingerprint(tpl.structure)))?.id}
         />
 
-        {created.length === 0 && (
+        {created.length === 0 && !query && (
           <section className="space-y-2">
             <SectionHeading>{t("myCreations")}</SectionHeading>
             <EmptyState icon={ClipboardList} title={t("noCreations")} />

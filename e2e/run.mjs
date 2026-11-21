@@ -305,6 +305,62 @@ await test("an empty session takes an exercise from the library", async () => {
   await page.getByText("Pompes").first().waitFor({ timeout: 5000 });
 });
 
+let reusedProgramUrl = "";
+await test("a session done becomes a program of its own", async () => {
+  // Still on the session that took "Pompes".
+  await page.getByRole("button", { name: "Réutiliser cette séance" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByText(/1 exercice repris/).waitFor({ timeout: 5000 });
+  await dialog.getByLabel("Nom de la séance").fill("Séance pompes e2e");
+  await dialog.getByText("En faire un nouveau programme").click();
+  await page.waitForURL(/\/fr\/programs\/\d+$/, { timeout: 10000 });
+  await page.getByText("Séance pompes e2e").first().waitFor({ timeout: 5000 });
+  reusedProgramUrl = page.url();
+});
+
+await test("a program is duplicated and the copy takes an existing session", async () => {
+  await page.getByRole("button", { name: "Dupliquer" }).click();
+  await page.waitForURL(/\/fr\/programs\/\d+\/edit$/, { timeout: 10000 });
+  await page.waitForTimeout(500);
+  const values = () => page.locator("input").evaluateAll((els) => els.map((e) => e.value));
+  expect((await values()).includes("Séance pompes e2e (copie)"), "the copy is not named as one");
+  const before = (await values()).length;
+  await page.getByRole("button", { name: "Reprendre une séance existante" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("button", { name: "Séances faites", exact: true }).click();
+  await dialog.locator("button").filter({ hasText: "1 exercice" }).first().click();
+  await dialog.waitFor({ state: "detached", timeout: 5000 });
+  expect((await values()).length > before, "no day added from the session");
+  // The original is untouched.
+  await page.goto(reusedProgramUrl);
+  await page.getByText("Séance pompes e2e").first().waitFor({ timeout: 5000 });
+  expect(!(await page.getByText("(copie)").count()), "the original changed");
+});
+
+await test("a program kept as a favourite, then archived out of the way", async () => {
+  await page.goto(reusedProgramUrl);
+  const star = page.getByRole("button", { name: "Mettre en favori" });
+  await star.click();
+  await page.getByRole("button", { name: "Retirer des favoris" }).waitFor({ timeout: 5000 });
+  await page.getByRole("button", { name: "Archiver" }).click();
+  await page.getByText(/Programme archivé/).waitFor({ timeout: 5000 });
+  await page.goto(`${BASE}/fr/programs`);
+  await page.getByText(/Archivés \(1\)/).waitFor({ timeout: 10000 });
+  // Out of the session picker too.
+  await page.goto(`${BASE}/fr`);
+  await page.getByText("Changer de séance ou de programme").click();
+  const picker = page.getByRole("dialog");
+  await picker.getByPlaceholder("Chercher un programme ou une séance").fill("pompes e2e");
+  // The copy, not archived, is there; the archived original is not.
+  await picker.getByRole("heading", { name: "Séance pompes e2e (copie)", exact: true }).waitFor({ timeout: 5000 });
+  expect(!(await picker.getByRole("heading", { name: "Séance pompes e2e", exact: true }).count()), "an archived program in the picker");
+  await page.keyboard.press("Escape");
+  // Brought back.
+  await page.goto(reusedProgramUrl);
+  await page.getByRole("button", { name: "Ressortir" }).click();
+  await page.getByRole("button", { name: "Archiver" }).waitFor({ timeout: 5000 });
+});
+
 await test("the session picker narrows the ready-made programs by sport, a few at a time", async () => {
   await page.goto(`${BASE}/fr`);
   await page.getByText("Changer de séance ou de programme").click();

@@ -21,6 +21,7 @@ import { usePainReports } from "@/hooks/usePain";
 import { recentPainOn } from "@/lib/pain";
 import { useInjuryGuidance } from "@/hooks/useInjuryGuidance";
 import { ExercisePicker } from "@/components/domain/ExercisePicker";
+import { ReuseSessionDialog } from "@/components/domain/ReuseSessionDialog";
 import { PainDialog } from "@/components/domain/PainDialog";
 import { InjuryBadge } from "@/components/domain/InjuryBadge";
 import { bySafety, declareInjury, injuryWarning, returnAdjust } from "@/lib/injuries";
@@ -59,7 +60,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, MoreHorizontal, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight, TrendingDown, Equal, Gauge, BatteryLow, Bandage, PersonStanding } from "lucide-react";
+import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, MoreHorizontal, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight, TrendingDown, Equal, Gauge, BatteryLow, Bandage, PersonStanding, CopyPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { IntervalWorkoutView } from "@/components/domain/IntervalWorkoutView";
@@ -86,6 +87,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
   const profile = useAthleteProfile();
 
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [reusing, setReusing] = useState(false);
   const [swapFor, setSwapFor] = useState<number | null>(null);
   const [painFor, setPainFor] = useState<number | null>(null);
   const [guided, setGuided] = useState(startGuided);
@@ -762,6 +764,11 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
         showBack
         actions={
           <div className="flex items-center gap-1">
+            {workout && !isCardio(workout) && groups.length > 0 && (
+              <Button size="icon-sm" variant="ghost" aria-label={t("reuse")} onClick={() => setReusing(true)}>
+                <CopyPlus className="h-4 w-4" aria-hidden="true" />
+              </Button>
+            )}
             <Button
               size="icon-sm"
               variant="ghost"
@@ -1510,6 +1517,8 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
           )}
         </DialogContent>
       </Dialog>
+
+      <ReuseSessionDialog open={reusing} onOpenChange={setReusing} workoutId={workoutId} title={workout?.title || t("title")} sets={sets} exercises={exercises} />
 
       {/* Exercise picker */}
       <ExercisePicker

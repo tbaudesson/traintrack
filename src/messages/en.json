@@ -387,7 +387,7 @@
     "deleteWorkoutText": "The session and all its sets will be deleted.",
     "exerciseShort": "Exercise",
     "lastTimeSet": "Last time: {value}",
-    "reuse": "Reuse",
+    "reuse": "Reuse this session",
     "reuseLabel": "Reuse {value} for set {n}",
     "nextUp": "Next: {exercise} · set {n}",
     "doneSummaryTimed": "{sets, plural, one {# set} other {# sets}} · {reps} s"
@@ -606,7 +606,12 @@
     "noCreations": "Build your own program with “New program”.",
     "byCoach": "by your coach",
     "readyMade": "ready-made",
-    "importExcel": "Import"
+    "importExcel": "Import",
+    "searchMine": "Search my programs",
+    "favoriteMark": "Favourite",
+    "lastSession": "last session {date}",
+    "archived": "Archived ({count})",
+    "addExisting": "Add an existing session"
   },
   "readiness": {
     "title": "Daily readiness",
@@ -1509,7 +1514,16 @@
     "linkCopied": "Link copied: paste it in a message.",
     "shareFailed": "Sharing didn't work, try again.",
     "tooManyShares": "You have already shared 100 programs: that is the limit.",
-    "shareOffline": "Sharing needs a connection."
+    "shareOffline": "Sharing needs a connection.",
+    "favorite": "Add to favourites",
+    "unfavorite": "Remove from favourites",
+    "duplicate": "Duplicate",
+    "duplicateHint": "The copy opens in the editor; this program and its history stay as they are.",
+    "copyWord": "copy",
+    "archive": "Archive",
+    "unarchive": "Bring back",
+    "unarchiveHint": "Brought back, it returns to the planning and the session picker as it was.",
+    "archivedNote": "Archived: no longer in the planning or the session picker. Its history is kept."
   },
   "exerciseHistory": {
     "empty": "No session with this exercise yet.",
@@ -2436,5 +2450,24 @@
     "sport": "Sport",
     "level": "Level",
     "allLevels": "All levels"
+  },
+  "reuse": {
+    "title": "Reuse this session",
+    "intro": "{count, plural, one {# exercise kept} other {# exercises kept}} with the sets, reps and rest done.",
+    "empty": "Nothing to keep: no exercise in this session.",
+    "name": "Session name",
+    "asProgram": "Make it a new program",
+    "asProgramHint": "A session template of your own, to repeat or build on",
+    "intoProgram": "Or add it to a program",
+    "searchProgram": "Search a program",
+    "days": "{count, plural, one {# session} other {# sessions}}",
+    "existingTitle": "Add an existing session",
+    "searchSession": "Search by name, date or program",
+    "kind": "Kind",
+    "kind_all": "All",
+    "kind_done": "Sessions done",
+    "kind_day": "My programs",
+    "exercises": "{count, plural, one {# exercise} other {# exercises}}",
+    "noSessions": "No session to reuse yet."
   }
 }

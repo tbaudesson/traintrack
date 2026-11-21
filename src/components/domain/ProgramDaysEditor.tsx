@@ -13,7 +13,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ExercisePicker } from "@/components/domain/ExercisePicker";
-import { Plus, Trash2, Dumbbell, X } from "lucide-react";
+import { ExistingSessionPicker } from "@/components/domain/ExistingSessionPicker";
+import { appendDay } from "@/lib/reuse";
+import { Plus, Trash2, Dumbbell, X, CopyPlus } from "lucide-react";
 import { useExerciseLabel } from "@/lib/exerciseNames";
 import type { Injury } from "@/lib/injuries";
 import { InjuryBadge } from "@/components/domain/InjuryBadge";
@@ -23,17 +25,21 @@ export function ProgramDaysEditor({
   days,
   setDays,
   injuries = [],
+  programId,
 }: {
   days: ProgramDay[];
   setDays: Dispatch<SetStateAction<ProgramDay[]>>;
   /** The injuries of the athlete the program is for: risky exercises are flagged. */
   injuries?: Injury[];
+  /** The program edited, left out of "add an existing session". */
+  programId?: number;
 }) {
   const t = useTranslations("programs");
   const tc = useTranslations("cardio");
   const xl = useExerciseLabel();
   const exercises = useExercises();
   const [pickerDay, setPickerDay] = useState<number | null>(null);
+  const [takingExisting, setTakingExisting] = useState(false);
 
   function updateDay(i: number, day: ProgramDay) {
     setDays((d) => d.map((x, idx) => (idx === i ? day : x)));
@@ -180,10 +186,25 @@ export function ProgramDaysEditor({
           </Card>
         ))}
 
-        <Button variant="outline" className="w-full" onClick={addDay}>
-          <Plus className="mr-1 h-4 w-4" />
-          {t("addDay")}
-        </Button>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <Button variant="outline" className="w-full" onClick={addDay}>
+            <Plus className="mr-1 h-4 w-4" />
+            {t("addDay")}
+          </Button>
+          <Button variant="outline" className="w-full" onClick={() => setTakingExisting(true)}>
+            <CopyPlus className="mr-1 h-4 w-4" aria-hidden="true" />
+            {t("addExisting")}
+          </Button>
+        </div>
+        <ExistingSessionPicker
+          open={takingExisting}
+          onOpenChange={setTakingExisting}
+          exceptProgramId={programId}
+          onPick={(day) => {
+            setDays((d) => appendDay(d, day));
+            setTakingExisting(false);
+          }}
+        />
 
       {/* Exercise picker */}
       <ExercisePicker

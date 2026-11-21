@@ -215,7 +215,7 @@ export default function ProgramEditorPage() {
           </CardContent>
         </Card>
 
-        <ProgramDaysEditor days={days} setDays={setDays} injuries={injuries} />
+        <ProgramDaysEditor days={days} setDays={setDays} injuries={injuries} programId={programId} />
 
         <Button variant="ghost" className="w-full text-destructive" onClick={handleDelete}>
           <Trash2 className="mr-1 h-4 w-4" />

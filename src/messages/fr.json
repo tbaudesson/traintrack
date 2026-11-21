@@ -387,7 +387,7 @@
     "deleteWorkoutText": "La séance et toutes ses séries seront supprimées.",
     "exerciseShort": "Exercice",
     "lastTimeSet": "Dernière fois : {value}",
-    "reuse": "Reprendre",
+    "reuse": "Réutiliser cette séance",
     "reuseLabel": "Reprendre {value} pour la série {n}",
     "nextUp": "Ensuite : {exercise} · série {n}",
     "doneSummaryTimed": "{sets, plural, one {# série} other {# séries}} · {reps} s"
@@ -606,7 +606,12 @@
     "noCreations": "Créez votre propre programme avec « Nouveau programme ».",
     "byCoach": "par votre coach",
     "readyMade": "tout fait",
-    "importExcel": "Importer"
+    "importExcel": "Importer",
+    "searchMine": "Chercher dans mes programmes",
+    "favoriteMark": "Favori",
+    "lastSession": "dernière séance {date}",
+    "archived": "Archivés ({count})",
+    "addExisting": "Reprendre une séance existante"
   },
   "readiness": {
     "title": "Forme du jour",
@@ -1509,7 +1514,16 @@
     "linkCopied": "Lien copié : collez-le dans un message.",
     "shareFailed": "Le partage n'a pas abouti, réessayez.",
     "tooManyShares": "Vous avez déjà partagé 100 programmes : c’est le maximum.",
-    "shareOffline": "Le partage demande une connexion."
+    "shareOffline": "Le partage demande une connexion.",
+    "favorite": "Mettre en favori",
+    "unfavorite": "Retirer des favoris",
+    "duplicate": "Dupliquer",
+    "duplicateHint": "La copie s’ouvre dans l’éditeur ; ce programme et son historique ne changent pas.",
+    "copyWord": "copie",
+    "archive": "Archiver",
+    "unarchive": "Ressortir",
+    "unarchiveHint": "Ressorti, il revient dans le planning et le choix des séances tel qu’il était.",
+    "archivedNote": "Programme archivé : il n’apparaît plus dans le planning ni dans le choix des séances. Son historique est conservé."
   },
   "exerciseHistory": {
     "empty": "Pas encore de séance avec cet exercice.",
@@ -2436,5 +2450,24 @@
     "sport": "Sport",
     "level": "Niveau",
     "allLevels": "Tous niveaux"
+  },
+  "reuse": {
+    "title": "Réutiliser cette séance",
+    "intro": "{count, plural, one {# exercice repris} other {# exercices repris}} avec les séries, répétitions et repos faits.",
+    "empty": "Rien à reprendre : aucun exercice dans cette séance.",
+    "name": "Nom de la séance",
+    "asProgram": "En faire un nouveau programme",
+    "asProgramHint": "Une séance type à toi, à refaire ou compléter",
+    "intoProgram": "Ou l’ajouter à un programme",
+    "searchProgram": "Chercher un programme",
+    "days": "{count, plural, one {# séance} other {# séances}}",
+    "existingTitle": "Reprendre une séance existante",
+    "searchSession": "Chercher par nom, date ou programme",
+    "kind": "Type",
+    "kind_all": "Tout",
+    "kind_done": "Séances faites",
+    "kind_day": "Mes programmes",
+    "exercises": "{count, plural, one {# exercice} other {# exercices}}",
+    "noSessions": "Pas encore de séance à reprendre."
   }
 }
