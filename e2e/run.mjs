@@ -294,6 +294,28 @@ await test("in guided mode, a set is done and the rest starts", async () => {
   await dialog.getByRole("button", { name: /Quitter le mode guidé/ }).click();
 });
 
+await test("the session keeps its plan: the program changed afterwards, planned vs done stays, the change is in its history", async () => {
+  // Still on the Full Body session, a squat set done in guided mode.
+  const sessionUrl = page.url();
+  await page.getByText("Prévu / fait").first().click();
+  await page.getByText(/Squat arrière · modifié/).first().waitFor({ timeout: 5000 });
+  // The program is made one's own, and its squat removed.
+  await page.goto(`${BASE}/fr/programs`);
+  await page.getByText("Full Body — Débutant", { exact: true }).first().click();
+  await page.getByRole("button", { name: "Personnaliser ce programme" }).click();
+  await page.waitForURL(/\/fr\/programs\/\d+\/edit$/, { timeout: 10000 });
+  await page.getByRole("button", { name: "Retirer Squat arrière" }).first().click();
+  await page.getByRole("button", { name: "Enregistrer" }).first().click();
+  await page.waitForURL(/\/fr\/programs\/\d+$/, { timeout: 10000 });
+  await page.getByText(/Historique des modifications \(2\)/).click();
+  await page.getByText(/1 exercice retiré/).first().waitFor({ timeout: 5000 });
+  // The session still shows the squat it was planned with.
+  await page.goto(sessionUrl);
+  await page.getByText("Prévu / fait").first().click();
+  await page.getByText(/Squat arrière · modifié/).first().waitFor({ timeout: 5000 });
+  await page.getByText(/prévu 3 × /).first().waitFor({ timeout: 5000 });
+});
+
 await test("an empty session takes an exercise from the library", async () => {
   await page.goto(`${BASE}/fr/log`);
   await page.getByRole("button", { name: /Nouvelle séance/ }).first().click();

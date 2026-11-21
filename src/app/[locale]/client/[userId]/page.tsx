@@ -22,9 +22,10 @@ import { HorseLoadSummary } from "@/components/domain/HorseLoadSummary";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
+import { PlanVsDone } from "@/components/domain/PlanVsDone";
 import { SessionDetail } from "@/components/domain/SessionDetail";
 import { useExercises } from "@/hooks/useExercises";
-import type { Exercise, WorkoutSet } from "@/db";
+import type { Exercise, ProgramDay, WorkoutSet } from "@/db";
 import { SectionHeading } from "@/components/ui/page-parts";
 import { formatDistance, formatDuration, isCardio } from "@/lib/cardio";
 import { localDate, localDateIn } from "@/lib/dates";
@@ -360,6 +361,7 @@ export default function ClientDetailPage() {
                 setCount={sets.filter((s) => s.workoutId === w.id).length}
                 sets={sets.filter((s) => s.workoutId === w.id)}
                 exercises={exMap}
+                planned={w.plannedDay ?? null}
                 volume={Math.round(
                   sets
                     .filter((s) => s.workoutId === w.id)
@@ -383,7 +385,9 @@ function ClientWorkoutCard({
   cardio,
   sets,
   exercises,
+  planned,
 }: {
+  planned: ProgramDay | null;
   sets: WorkoutSet[];
   exercises: Map<number | undefined, Exercise>;
   workoutId: number;
@@ -419,6 +423,7 @@ function ClientWorkoutCard({
         {open && (
           <div className="space-y-3 border-t border-border py-3">
             {!cardio && <SessionDetail sets={sets} exercises={exercises} />}
+            {!cardio && planned && <PlanVsDone planned={planned} sets={sets} exercises={[...exercises.values()]} />}
             <WorkoutNotes workoutId={workoutId} />
           </div>
         )}

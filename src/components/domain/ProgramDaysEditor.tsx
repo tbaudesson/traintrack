@@ -118,7 +118,7 @@ export function ProgramDaysEditor({
                     )}
                     <span className="flex-1 text-sm font-medium">{xl(ex.exerciseName)}</span>
                     <InjuryBadge exerciseName={ex.exerciseName} injuries={injuries} />
-                    <button onClick={() => removeExercise(di, ei)} className="text-muted-foreground hover:text-destructive">
+                    <button type="button" onClick={() => removeExercise(di, ei)} aria-label={t("removeExercise", { name: xl(ex.exerciseName) })} className="grid size-9 place-items-center text-muted-foreground hover:text-destructive">
                       <X className="h-4 w-4" />
                     </button>
                   </div>

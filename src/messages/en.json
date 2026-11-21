@@ -611,7 +611,8 @@
     "favoriteMark": "Favourite",
     "lastSession": "last session {date}",
     "archived": "Archived ({count})",
-    "addExisting": "Add an existing session"
+    "addExisting": "Add an existing session",
+    "removeExercise": "Remove {name}"
   },
   "readiness": {
     "title": "Daily readiness",
@@ -2482,5 +2483,35 @@
     "previousMonth": "Previous month",
     "nextMonth": "Next month",
     "monthCount": "{count, plural, =0 {No session this month} one {# session this month} other {# sessions this month}} · tap a marked day to see it"
+  },
+  "planVsDone": {
+    "title": "Planned / done",
+    "hint": "The plan as it was when the session started: changing the program afterwards does not change it.",
+    "count_asPlanned": "{count} as planned",
+    "count_changed": "{count} changed",
+    "count_skipped": "{count} not done",
+    "count_added": "{count} added",
+    "status_asPlanned": "as planned",
+    "status_changed": "changed",
+    "status_skipped": "not done",
+    "status_added": "added",
+    "planned": "planned {sets} × {reps}",
+    "notPlanned": "not planned",
+    "done": "done {sets} × {reps}",
+    "notDone": "not done"
+  },
+  "programHistory": {
+    "title": "Change history ({count})",
+    "hint": "Each change keeps the version before it. Sessions already done keep their own plan whatever happens here.",
+    "changedOn": "Changed on {date}",
+    "renamed": "renamed (was: {from})",
+    "daysAdded": "{count, plural, one {# session added} other {# sessions added}}",
+    "daysRemoved": "{count, plural, one {# session removed} other {# sessions removed}}",
+    "exercisesAdded": "{count, plural, one {# exercise added} other {# exercises added}}",
+    "exercisesRemoved": "{count, plural, one {# exercise removed} other {# exercises removed}}",
+    "targetsChanged": "{count, plural, one {# target changed} other {# targets changed}}",
+    "reordered": "order or details changed",
+    "restore": "Go back before",
+    "confirmRestore": "Confirm going back"
   }
 }

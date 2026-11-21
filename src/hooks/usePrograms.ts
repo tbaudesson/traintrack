@@ -2,6 +2,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import db, { type Program, type ProgramDay } from "@/db";
 import { getCurrentUserIdSync } from "@/db";
 import { schedulePush } from "@/lib/syncEngine";
+import { reviseProgram, withDayKeys } from "@/lib/planSnapshot";
 
 /** Programs owned by, or assigned to, the current user. */
 export function usePrograms() {
@@ -33,7 +34,7 @@ export async function createProgram(data: {
   const id = (await db.programs.add({
     name: data.name,
     description: data.description,
-    structure: data.structure ?? [],
+    structure: withDayKeys(data.structure ?? []),
     ownerUserId: uid,
     assignedToUserId: data.assignedToUserId ?? null,
     groupId: data.groupId ?? null,
@@ -73,7 +74,9 @@ export async function assignProgramToClients(
       .filter((p) => !p.deletedAt && p.ownerUserId === uid && p.assignedToUserId === member.userId && p.name === model.name)
       .first();
     if (existing?.id) {
-      await updateProgram(existing.id, { description: model.description, structure: model.structure, startDate: startDate ?? existing.startDate ?? null });
+      // The client's days keep their own keys, so their past sessions stay tied to them.
+      const structure = model.structure.map((d, i) => ({ ...d, key: existing.structure?.[i]?.key }));
+      await updateProgram(existing.id, { description: model.description, structure, startDate: startDate ?? existing.startDate ?? null });
       updated++;
     } else {
       await createProgram({ ...model, assignedToUserId: member.userId, groupId: member.groupId, startDate: startDate ?? null });
@@ -83,8 +86,20 @@ export async function assignProgramToClients(
   return { created, updated };
 }
 
+/**
+ * Save changes to a program. A new name or new days keep the version before
+ * them (at most a few), and every day gets its key.
+ */
 export async function updateProgram(id: number, data: Partial<Program>): Promise<void> {
-  await db.programs.update(id, { ...data, updatedAt: new Date().toISOString(), _dirty: 1 });
+  const now = new Date().toISOString();
+  const patch: Partial<Program> = { ...data };
+  if (data.structure !== undefined || data.name !== undefined) {
+    const before = await db.programs.get(id);
+    if (data.structure) patch.structure = withDayKeys(data.structure);
+    const revisions = before ? reviseProgram(before, patch, now) : undefined;
+    if (revisions) patch.revisions = revisions;
+  }
+  await db.programs.update(id, { ...patch, updatedAt: now, _dirty: 1 });
   schedulePush();
 }
 

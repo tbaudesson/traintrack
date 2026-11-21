@@ -611,7 +611,8 @@
     "favoriteMark": "Favori",
     "lastSession": "dernière séance {date}",
     "archived": "Archivés ({count})",
-    "addExisting": "Reprendre une séance existante"
+    "addExisting": "Reprendre une séance existante",
+    "removeExercise": "Retirer {name}"
   },
   "readiness": {
     "title": "Forme du jour",
@@ -2482,5 +2483,35 @@
     "previousMonth": "Mois précédent",
     "nextMonth": "Mois suivant",
     "monthCount": "{count, plural, =0 {Aucune séance ce mois-ci} one {# séance ce mois-ci} other {# séances ce mois-ci}} · touchez un jour marqué pour la voir"
+  },
+  "planVsDone": {
+    "title": "Prévu / fait",
+    "hint": "Le plan tel qu’il était au début de la séance : modifier le programme ensuite ne le change pas.",
+    "count_asPlanned": "{count} comme prévu",
+    "count_changed": "{count} modifié(s)",
+    "count_skipped": "{count} pas fait(s)",
+    "count_added": "{count} ajouté(s)",
+    "status_asPlanned": "comme prévu",
+    "status_changed": "modifié",
+    "status_skipped": "pas fait",
+    "status_added": "ajouté",
+    "planned": "prévu {sets} × {reps}",
+    "notPlanned": "pas prévu",
+    "done": "fait {sets} × {reps}",
+    "notDone": "pas fait"
+  },
+  "programHistory": {
+    "title": "Historique des modifications ({count})",
+    "hint": "Chaque changement garde la version d’avant. Les séances déjà faites gardent leur propre plan quoi qu’il arrive ici.",
+    "changedOn": "Modifié le {date}",
+    "renamed": "renommé (avant : {from})",
+    "daysAdded": "{count, plural, one {# séance ajoutée} other {# séances ajoutées}}",
+    "daysRemoved": "{count, plural, one {# séance retirée} other {# séances retirées}}",
+    "exercisesAdded": "{count, plural, one {# exercice ajouté} other {# exercices ajoutés}}",
+    "exercisesRemoved": "{count, plural, one {# exercice retiré} other {# exercices retirés}}",
+    "targetsChanged": "{count, plural, one {# objectif changé} other {# objectifs changés}}",
+    "reordered": "ordre ou détails changés",
+    "restore": "Revenir avant",
+    "confirmRestore": "Confirmer le retour"
   }
 }

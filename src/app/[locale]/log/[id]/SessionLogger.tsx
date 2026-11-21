@@ -21,6 +21,7 @@ import { usePainReports } from "@/hooks/usePain";
 import { recentPainOn } from "@/lib/pain";
 import { useInjuryGuidance } from "@/hooks/useInjuryGuidance";
 import { ExercisePicker } from "@/components/domain/ExercisePicker";
+import { PlanVsDone } from "@/components/domain/PlanVsDone";
 import { ReuseSessionDialog } from "@/components/domain/ReuseSessionDialog";
 import { PainDialog } from "@/components/domain/PainDialog";
 import { InjuryBadge } from "@/components/domain/InjuryBadge";
@@ -263,7 +264,9 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
   }
 
   // What the program asks for, when this session was started from one.
+  // The plan kept with the session when it started; the program as it is now for older sessions.
   const programDay = useMemo(() => {
+    if (workout?.plannedDay) return workout.plannedDay;
     const found = findWorkoutProgramDay(programs, workout);
     return found ? found.program.structure[found.index] : null;
   }, [programs, workout]);
@@ -856,6 +859,11 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
             <Play className="mr-1 h-5 w-5" aria-hidden="true" />
             {tg("start")}
           </Button>
+        )}
+
+        {/* What was planned beside what is done, once something is done. */}
+        {workout?.plannedDay && !isCardio(workout) && sets.some((s) => s.completed && !s.isWarmup) && (
+          <PlanVsDone planned={workout.plannedDay} sets={sets} exercises={exercises} />
         )}
 
         {prefillAll.length > 0 && groups.length > 1 && (

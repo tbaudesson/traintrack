@@ -611,7 +611,8 @@
     "favoriteMark": "Favorit",
     "lastSession": "letzte Einheit {date}",
     "archived": "Archiviert ({count})",
-    "addExisting": "Vorhandene Einheit übernehmen"
+    "addExisting": "Vorhandene Einheit übernehmen",
+    "removeExercise": "{name} entfernen"
   },
   "readiness": {
     "title": "Tagesform",
@@ -2482,5 +2483,35 @@
     "previousMonth": "Vorheriger Monat",
     "nextMonth": "Nächster Monat",
     "monthCount": "{count, plural, =0 {Keine Einheit in diesem Monat} one {# Einheit in diesem Monat} other {# Einheiten in diesem Monat}} · markierten Tag antippen"
+  },
+  "planVsDone": {
+    "title": "Geplant / gemacht",
+    "hint": "Der Plan, wie er zu Beginn der Einheit war: Spätere Programmänderungen ändern ihn nicht.",
+    "count_asPlanned": "{count} wie geplant",
+    "count_changed": "{count} geändert",
+    "count_skipped": "{count} nicht gemacht",
+    "count_added": "{count} hinzugefügt",
+    "status_asPlanned": "wie geplant",
+    "status_changed": "geändert",
+    "status_skipped": "nicht gemacht",
+    "status_added": "hinzugefügt",
+    "planned": "geplant {sets} × {reps}",
+    "notPlanned": "nicht geplant",
+    "done": "gemacht {sets} × {reps}",
+    "notDone": "nicht gemacht"
+  },
+  "programHistory": {
+    "title": "Änderungsverlauf ({count})",
+    "hint": "Jede Änderung behält die vorherige Version. Bereits gemachte Einheiten behalten ihren eigenen Plan, egal was hier passiert.",
+    "changedOn": "Geändert am {date}",
+    "renamed": "umbenannt (vorher: {from})",
+    "daysAdded": "{count, plural, one {# Einheit hinzugefügt} other {# Einheiten hinzugefügt}}",
+    "daysRemoved": "{count, plural, one {# Einheit entfernt} other {# Einheiten entfernt}}",
+    "exercisesAdded": "{count, plural, one {# Übung hinzugefügt} other {# Übungen hinzugefügt}}",
+    "exercisesRemoved": "{count, plural, one {# Übung entfernt} other {# Übungen entfernt}}",
+    "targetsChanged": "{count, plural, one {# Ziel geändert} other {# Ziele geändert}}",
+    "reordered": "Reihenfolge oder Details geändert",
+    "restore": "Davor zurück",
+    "confirmRestore": "Zurückgehen bestätigen"
   }
 }

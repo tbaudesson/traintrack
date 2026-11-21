@@ -30,6 +30,7 @@ import { CategoryIcon } from "@/components/domain/ProgramCatalog";
 import { SeasonTarget } from "@/components/domain/SeasonTarget";
 import { ProgramPlanning } from "@/components/domain/ProgramPlanning";
 import { ProgramReviewCard } from "@/components/domain/ProgramReviewCard";
+import { ProgramHistory } from "@/components/domain/ProgramHistory";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
 
@@ -298,6 +299,8 @@ export default function ProgramPage() {
             <p className="col-span-2 text-xs text-muted-foreground">{t(program.archivedAt ? "unarchiveHint" : "duplicateHint")}</p>
           </section>
         )}
+
+        {!forSomeoneElse && <ProgramHistory program={program} />}
 
         {origin === "followed" && (
           <section className="space-y-2">

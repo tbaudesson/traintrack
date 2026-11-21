@@ -65,14 +65,14 @@ const TABLE_CONFIGS: TableSyncConfig[] = [
     // (groups are managed via RPCs, not Dexie-synced), so no fkMappings.
     dexieTable: "programs",
     supabaseTable: "programs",
-    jsonFields: ["structure"],
+    jsonFields: ["structure", "revisions"],
     hasUpdatedAt: true,
     trainerVisible: true,
   },
   {
     dexieTable: "workouts",
     supabaseTable: "workouts",
-    jsonFields: ["intervalPlan"],
+    jsonFields: ["intervalPlan", "plannedDay"],
     fkMappings: {
       programId: { parentDexieTable: "programs", supabaseColumn: "program_id" },
     },

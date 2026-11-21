@@ -202,11 +202,20 @@ export interface SpinBlock {
 export type SpinKind = "warmup" | "seated" | "fast" | "climb" | "standing" | "sprint" | "recovery" | "cooldown";
 
 export interface ProgramDay {
+  /** Stays with the day through renames and moves: what a session started from it points to. */
+  key?: string;
   name: string; // e.g. "Push", "Pull", "Legs"
   exercises: ProgramExercise[];
   /** Set on plans whose days follow each other week after week. */
   week?: number;
   cardio?: CardioTarget;
+}
+
+/** A program as it was before a change. */
+export interface ProgramRevision {
+  at: string;
+  name: string;
+  structure: ProgramDay[];
 }
 
 export interface Program extends SyncFields {
@@ -228,6 +237,8 @@ export interface Program extends SyncFields {
   favorite?: boolean | null;
   /** Put away: out of the planning and the session picker, kept with its history (migration 067). */
   archivedAt?: string | null;
+  /** The versions it had before its last changes, newest last (migration 068). */
+  revisions?: ProgramRevision[] | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -238,6 +249,8 @@ export interface Workout extends SyncFields {
   programId?: number | null;
   /** Which day of the program this workout was started from. */
   programDayIndex?: number | null;
+  /** That day as the program had it when the session started: the plan, kept whatever the program becomes (migration 068). */
+  plannedDay?: ProgramDay | null;
   /** Absent on older workouts, which are all strength sessions. */
   kind?: "strength" | "cardio" | "interval";
   sport?: Sport | null;

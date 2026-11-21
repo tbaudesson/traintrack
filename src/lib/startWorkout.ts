@@ -1,8 +1,10 @@
 import type { Exercise, Program, ProgramDay, Workout } from "@/db";
+import { needsKeys, plannedIndex, withDayKeys } from "./planSnapshot";
 import db, { getCurrentUserIdSync } from "@/db";
 import { lastPerformance, recentPerformances, topWeight } from "@/lib/performance";
 import { nextLoad } from "@/lib/progression";
 import { createWorkout } from "@/hooks/useWorkouts";
+import { updateProgram } from "@/hooks/usePrograms";
 import { addWorkoutSet } from "@/hooks/useWorkoutSets";
 import { programGroups } from "./supersets";
 import { oneRepMaxHistory } from "./goals";
@@ -43,11 +45,16 @@ export function programDayTitle(programName: string, dayName: string): string {
  */
 export function findWorkoutProgramDay(
   programs: Program[],
-  workout: Pick<Workout, "title" | "programId" | "programDayIndex"> | undefined
+  workout: (Pick<Workout, "title" | "programId" | "programDayIndex"> & { plannedDay?: ProgramDay | null }) | undefined
 ): { program: Program; index: number } | null {
   if (!workout) return null;
   if (workout.programId != null && workout.programDayIndex != null) {
     const program = programs.find((p) => p.id === workout.programId);
+    if (program) {
+      // Its kept day's key follows the day through moves; a deleted day ties it to none.
+      const byKey = plannedIndex(program, workout);
+      if (byKey !== undefined) return byKey === null ? null : { program, index: byKey };
+    }
     if (program?.structure?.[workout.programDayIndex]) return { program, index: workout.programDayIndex };
   }
   for (const program of programs) {
@@ -91,11 +98,21 @@ export async function startWorkoutFromDay(
   const pastWorkouts = await db.workouts.filter((w) => !w.deletedAt && (!uid || w.userId === uid)).toArray();
   const pastSets = await db.workoutSets.filter((s) => !s.deletedAt && !s.isWarmup && (!uid || s.userId === uid)).toArray();
   const day = program.structure[dayIndex];
+  // The day's key, given now to a program from before keys (as stored, not the version passed, which may be shortened).
+  let key = day.key;
+  const stored = program.id ? await db.programs.get(program.id) : undefined;
+  if (stored?.id && needsKeys(stored.structure)) {
+    const keyed = withDayKeys(stored.structure);
+    await updateProgram(stored.id, { structure: keyed });
+    key = keyed[dayIndex]?.key;
+  } else key ??= stored?.structure?.[dayIndex]?.key;
   const id = await createWorkout({
     date,
     title: programDayTitle(program.name, day.name),
     programId: program.id,
     programDayIndex: dayIndex,
+    // The plan as it is today, kept with the session whatever the program becomes.
+    plannedDay: structuredClone({ ...day, ...(key ? { key } : {}) }),
     kind: day.cardio ? "cardio" : "strength",
     sport: day.cardio?.sport ?? null,
   });
