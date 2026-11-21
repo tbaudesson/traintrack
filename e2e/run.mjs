@@ -1598,6 +1598,48 @@ await test("the load over months, by discipline, in one unit", async () => {
   await card.locator("..").screenshot({ path: join(ARTIFACTS, "load-history-card.png") });
 });
 
+await test("a watch file (TCX) fills a ride with its power, placed in the FTP's zones; a pool swim gets its SWOLF", async () => {
+  const add = (sport, title) =>
+    page.evaluate(async ({ user, sport, title }) => {
+      const db = await new Promise((res, rej) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+      const now = new Date().toISOString();
+      const d = new Date();
+      const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      const out = await new Promise((res, rej) => { const tx = db.transaction("workouts", "readwrite"); const r = tx.objectStore("workouts").add({ userId: user, uuid: `e2e-${sport}-${Date.now()}`, date, title, kind: "cardio", sport, _dirty: 0, createdAt: now, updatedAt: now }); tx.oncomplete = () => res(r.result); tx.onerror = () => rej(tx.error); });
+      db.close();
+      return out;
+    }, { user: USER, sport, title });
+  const tp = (alt, w, cad) => `<Trackpoint><AltitudeMeters>${alt}</AltitudeMeters><Cadence>${cad}</Cadence><Extensions><ns3:TPX><ns3:Watts>${w}</ns3:Watts></ns3:TPX></Extensions></Trackpoint>`;
+  const tcx = `<?xml version="1.0"?><TrainingCenterDatabase><Activities><Activity Sport="Biking"><Id>2026-11-20T08:00:00Z</Id><Lap StartTime="x"><TotalTimeSeconds>3600</TotalTimeSeconds><DistanceMeters>30000</DistanceMeters><AverageHeartRateBpm><Value>140</Value></AverageHeartRateBpm><MaximumHeartRateBpm><Value>165</Value></MaximumHeartRateBpm><Track>${tp(100, 180, 88)}${tp(140, 220, 92)}</Track></Lap></Activity></Activities></TrainingCenterDatabase>`;
+  const ride = await add("bike", "Vélo");
+  await page.goto(`${BASE}/fr/log/session?id=${ride}`);
+  await page.getByRole("button", { name: /Remplir depuis un fichier de montre/ }).waitFor({ timeout: 10000 });
+  await page.locator('input[type="file"][accept*=".tcx"]').first().setInputFiles({ name: "ride.tcx", mimeType: "application/xml", buffer: Buffer.from(tcx) });
+  const dialog = page.getByRole("dialog");
+  await dialog.getByText("Puissance moy. · max").waitFor({ timeout: 5000 });
+  await dialog.getByRole("button", { name: "Remplir la séance" }).click();
+  await dialog.waitFor({ state: "detached", timeout: 10000 });
+  // The fields take the file's figures once the session is saved.
+  const valueOf = (label) => page.getByLabel(label).inputValue();
+  for (let i = 0; i < 50 && (await valueOf("Puissance moyenne")) !== "200"; i++) await page.waitForTimeout(100);
+  expect((await valueOf("Puissance moyenne")) === "200", `power not filled: ${await valueOf("Puissance moyenne")}`);
+  expect((await valueOf("Cadence moyenne")) === "90", "cadence not filled");
+  await page.getByLabel("Ma FTP").fill("250");
+  await page.getByLabel("Ma FTP").blur();
+  await page.getByText(/Zone 3 \(tempo\) · IF 0,80? · TSS estimé 64/).waitFor({ timeout: 5000 });
+
+  const swim = await add("swim", "Natation");
+  await page.goto(`${BASE}/fr/log/session?id=${swim}`);
+  await page.getByLabel("Distance (m)").fill("1000");
+  await page.getByLabel("Minutes").fill("20");
+  await page.getByLabel("Minutes").blur();
+  await page.getByRole("button", { name: "Crawl", exact: true }).click();
+  await page.getByRole("button", { name: "25 m", exact: true }).click();
+  await page.getByLabel("Mouvements de bras").fill("16");
+  await page.getByLabel("Mouvements de bras").blur();
+  await page.getByText(/40 longueurs · SWOLF 46/).waitFor({ timeout: 5000 });
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });

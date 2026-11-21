@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { createWorkout, updateWorkout } from "@/hooks/useWorkouts";
 import { DISTANCE_SPORTS, formatDistance, formatDuration, formatPace } from "@/lib/cardio";
 import { localDate } from "@/lib/dates";
-import { parseGpx, type GpxActivity } from "@/lib/gpx";
+import { parseActivityFile, type GpxActivity } from "@/lib/gpx";
 
 const MAX_BYTES = 20 * 1024 * 1024;
 
@@ -51,7 +51,7 @@ export function GpxImport({
       setError(t("gpxTooBig"));
       return;
     }
-    const parsed = parseGpx(await file.text());
+    const parsed = parseActivityFile(await file.text());
     if (!parsed) {
       setError(t("gpxError"));
       return;
@@ -77,6 +77,9 @@ export function GpxImport({
         durationSec: activity.durationSec || null,
         avgHr: activity.avgHr,
         maxHr: activity.maxHr,
+        avgCadence: activity.avgCadence ?? null,
+        avgPowerW: activity.avgPowerW ?? null,
+        maxPowerW: activity.maxPowerW ?? null,
         elevationGainM: activity.elevationGainM > 0 ? activity.elevationGainM : null,
       };
       const climb = activity.elevationGainM > 0 ? t("gpxElevation", { m: activity.elevationGainM }) : undefined;
@@ -100,7 +103,7 @@ export function GpxImport({
       <input
         id={inputId}
         type="file"
-        accept=".gpx,application/gpx+xml,application/xml,text/xml"
+        accept=".gpx,.tcx,application/gpx+xml,application/vnd.garmin.tcx+xml,application/xml,text/xml"
         className="hidden"
         onChange={(e) => {
           read(e.target.files?.[0]);
@@ -125,6 +128,8 @@ export function GpxImport({
                 )}
                 {activity.elevationGainM > 0 && <Fact label={t("gpxClimb")} value={`+${activity.elevationGainM} m`} />}
                 {activity.avgHr && <Fact label={t("gpxHr")} value={`${activity.avgHr} · ${activity.maxHr}`} />}
+                {activity.avgCadence && <Fact label={t("gpxCadence")} value={String(activity.avgCadence)} />}
+                {activity.avgPowerW && <Fact label={t("gpxPower")} value={`${activity.avgPowerW} · ${activity.maxPowerW ?? "—"} W`} />}
               </dl>
 
               {!workout && (

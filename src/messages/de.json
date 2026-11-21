@@ -1052,9 +1052,9 @@
     "loadError": "Vorlagen konnten nicht geladen werden. Wurde Migration 023 angewendet?"
   },
   "cardio": {
-    "importGpx": "GPX-Datei importieren",
+    "importGpx": "Uhrendatei (GPX, TCX) importieren",
     "importGpxHint": "Strava, Garmin, Uhr…",
-    "importGpxFill": "Aus GPX-Datei ausfüllen",
+    "importGpxFill": "Aus Uhrendatei (GPX, TCX) ausfüllen",
     "gpxTitle": "Importierte Einheit",
     "gpxDate": "Datum",
     "gpxMoving": "Bewegungszeit",
@@ -1117,7 +1117,9 @@
     "highestClimb": "Meiste Höhenmeter",
     "trend": "Tempo über 4 Wochen",
     "faster": "+{percent} % schneller",
-    "slower": "−{percent} %"
+    "slower": "−{percent} %",
+    "gpxCadence": "Durchschnittliche Kadenz",
+    "gpxPower": "Leistung Ø · max"
   },
   "goals": {
     "titleOther": "Ziele",
@@ -2582,5 +2584,37 @@
     "again": "Noch eine Einheit",
     "delete": "Löschen",
     "deleteConfirm": "Diese Mobility-Einheit löschen?"
+  },
+  "sportDetails": {
+    "stroke": "Schwimmart",
+    "stroke_free": "Kraul",
+    "stroke_breast": "Brust",
+    "stroke_back": "Rücken",
+    "stroke_fly": "Schmetterling",
+    "stroke_mixed": "Gemischt",
+    "pool": "Becken",
+    "poolM": "{m} m",
+    "openWater": "Freiwasser",
+    "strokes": "Armzüge",
+    "perLength": "/ Bahn",
+    "lengths": "{count, plural, one {# Bahn} other {# Bahnen}}",
+    "swolf": "SWOLF {value}",
+    "swolfHint": "SWOLF = Sekunden + Züge pro Bahn: niedriger ist effizienter. Nur im selben Becken und derselben Schwimmart vergleichen.",
+    "cadence": "Durchschnittliche Kadenz",
+    "unit_spm": "Schritte/Min.",
+    "unit_rpm": "U/Min.",
+    "avgPower": "Durchschnittsleistung",
+    "maxPower": "Maximalleistung",
+    "ftp": "Meine FTP",
+    "powerLine": "Zone {zone} ({name}) · IF {intensity} · geschätzter TSS {tss}",
+    "zone_1": "Regeneration",
+    "zone_2": "Grundlage",
+    "zone_3": "Tempo",
+    "zone_4": "Schwelle",
+    "zone_5": "VO2max",
+    "zone_6": "anaerob",
+    "zone_7": "neuromuskulär",
+    "needFtp": "Gib deine FTP an, um Leistungszone und Belastung der Fahrt zu sehen.",
+    "tssHint": "Aus der Durchschnittsleistung geschätzt (der genaue TSS nutzt die normalisierte Leistung, höher bei unregelmäßiger Fahrt). Ein Richtwert, getrennt von der Belastung Minuten × Anstrengung."
   }
 }

@@ -1052,9 +1052,9 @@
     "loadError": "Could not load templates. Has migration 023 been applied?"
   },
   "cardio": {
-    "importGpx": "Import a GPX file",
+    "importGpx": "Import a watch file (GPX, TCX)",
     "importGpxHint": "Strava, Garmin, a watch…",
-    "importGpxFill": "Fill from a GPX file",
+    "importGpxFill": "Fill from a watch file (GPX, TCX)",
     "gpxTitle": "Imported outing",
     "gpxDate": "Date",
     "gpxMoving": "Moving time",
@@ -1117,7 +1117,9 @@
     "highestClimb": "Biggest climb",
     "trend": "Speed over 4 weeks",
     "faster": "+{percent} % faster",
-    "slower": "−{percent} %"
+    "slower": "−{percent} %",
+    "gpxCadence": "Average cadence",
+    "gpxPower": "Power avg · max"
   },
   "goals": {
     "titleOther": "Goals",
@@ -2582,5 +2584,37 @@
     "again": "Do another session",
     "delete": "Delete",
     "deleteConfirm": "Delete this mobility session?"
+  },
+  "sportDetails": {
+    "stroke": "Stroke",
+    "stroke_free": "Freestyle",
+    "stroke_breast": "Breaststroke",
+    "stroke_back": "Backstroke",
+    "stroke_fly": "Butterfly",
+    "stroke_mixed": "Mixed",
+    "pool": "Pool",
+    "poolM": "{m} m",
+    "openWater": "Open water",
+    "strokes": "Arm strokes",
+    "perLength": "/ length",
+    "lengths": "{count, plural, one {# length} other {# lengths}}",
+    "swolf": "SWOLF {value}",
+    "swolfHint": "SWOLF = seconds + strokes per length: lower is more efficient. Compare only in the same pool and stroke.",
+    "cadence": "Average cadence",
+    "unit_spm": "steps/min",
+    "unit_rpm": "rpm",
+    "avgPower": "Average power",
+    "maxPower": "Max power",
+    "ftp": "My FTP",
+    "powerLine": "Zone {zone} ({name}) · IF {intensity} · estimated TSS {tss}",
+    "zone_1": "recovery",
+    "zone_2": "endurance",
+    "zone_3": "tempo",
+    "zone_4": "threshold",
+    "zone_5": "VO2max",
+    "zone_6": "anaerobic",
+    "zone_7": "neuromuscular",
+    "needFtp": "Give your FTP to see the power zone and the ride load.",
+    "tssHint": "Estimated from the average power (the exact TSS uses normalised power, higher on an uneven ride). A guide, kept apart from the minutes × effort load."
   }
 }

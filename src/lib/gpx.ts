@@ -10,6 +10,10 @@ export interface GpxActivity {
   elevationGainM: number;
   avgHr?: number;
   maxHr?: number;
+  /** Steps a minute on foot, turns a minute on a bike. */
+  avgCadence?: number;
+  avgPowerW?: number;
+  maxPowerW?: number;
 }
 
 interface Point {
@@ -18,6 +22,27 @@ interface Point {
   ele?: number;
   time?: number;
   hr?: number;
+  cad?: number;
+  power?: number;
+}
+
+const mean = (xs: number[]) => (xs.length ? Math.round(xs.reduce((a, b) => a + b, 0) / xs.length) : undefined);
+
+/**
+ * Cadence and power from the points: zeros (stopped, coasting) left out of
+ * the average cadence, kept in the average power as a power meter does.
+ * Watches write the running cadence for one foot: doubled into steps.
+ */
+function cadenceAndPower(points: Pick<Point, "cad" | "power">[], sport: string | undefined) {
+  const cads = points.map((p) => p.cad).filter((c): c is number => c !== undefined && c > 0 && c < 260);
+  const powers = points.map((p) => p.power).filter((w): w is number => w !== undefined && w >= 0 && w < 2500);
+  const cadence = mean(cads);
+  const onFoot = sport === "run" || sport === "hike";
+  return {
+    avgCadence: cadence !== undefined ? (onFoot && cadence < 120 ? cadence * 2 : cadence) : undefined,
+    avgPowerW: powers.some((w) => w > 0) ? mean(powers) : undefined,
+    maxPowerW: powers.some((w) => w > 0) ? Math.max(...powers) : undefined,
+  };
 }
 
 const EARTH_M = 6371000;
@@ -43,7 +68,7 @@ function sportOf(type: string | undefined): Sport | undefined {
   if (/hik|walk|trek|^11$/.test(t)) return "hike";
   if (/run|trail|^9$/.test(t)) return "run";
   if (/cycl|bik|ride|^1$/.test(t)) return "bike";
-  if (/swim/.test(t)) return "swim";
+  if (/swim|pool/.test(t)) return "swim";
   if (/row/.test(t)) return "row";
   return "other";
 }
@@ -78,12 +103,16 @@ export function parseGpx(xml: string): GpxActivity | null {
     const ele = tag(body, "ele");
     const time = tag(body, "time");
     const hr = tag(body, "hr") ?? tag(body, "heartrate");
+    const cad = tag(body, "cad") ?? tag(body, "cadence");
+    const power = tag(body, "power") ?? tag(body, "PowerInWatts");
     points.push({
       lat,
       lon,
       ele: ele !== undefined ? Number(ele) : undefined,
       time: time ? Date.parse(time) : undefined,
       hr: hr !== undefined ? Number(hr) : undefined,
+      cad: cad !== undefined ? Number(cad) : undefined,
+      power: power !== undefined ? Number(power) : undefined,
     });
   }
   if (points.length < 2) return null;
@@ -107,9 +136,11 @@ export function parseGpx(xml: string): GpxActivity | null {
   const trk = xml.match(/<trk\b[^>]*>([\s\S]*?)<trkseg/)?.[1] ?? "";
   const name = tag(trk, "name") ?? tag(xml.match(/<metadata>([\s\S]*?)<\/metadata>/)?.[1] ?? "", "name");
 
+  const sport = sportOf(tag(trk, "type"));
   return {
+    ...cadenceAndPower(points, sport),
     name: name ? decode(name) : undefined,
-    sport: sportOf(tag(trk, "type")),
+    sport,
     start: times.length ? new Date(Math.min(...times)) : undefined,
     distanceM: Math.round(distanceM),
     durationSec: Math.round(moving || (times.length > 1 ? (Math.max(...times) - Math.min(...times)) / 1000 : 0)),
@@ -117,4 +148,64 @@ export function parseGpx(xml: string): GpxActivity | null {
     avgHr: rates.length ? Math.round(rates.reduce((a, b) => a + b, 0) / rates.length) : undefined,
     maxHr: rates.length ? Math.max(...rates) : undefined,
   };
+}
+
+/**
+ * Read a TCX file (Garmin, Polar, Suunto, Wahoo, Zwift exports): its laps give
+ * the distance, time and heart rate, a pool swim included (no GPS track);
+ * its points give the climb, cadence and power. Null when nothing is measured.
+ */
+export function parseTcx(xml: string): GpxActivity | null {
+  const activity = xml.match(/<Activity\b([^>]*)>([\s\S]*?)<\/Activity>/);
+  if (!activity) return null;
+  const body = activity[2];
+  const laps = [...body.matchAll(/<Lap\b([^>]*)>([\s\S]*?)<\/Lap>/g)];
+  if (!laps.length) return null;
+  let durationSec = 0;
+  let distanceM = 0;
+  let hrWeighted = 0;
+  let hrTime = 0;
+  let maxHr: number | undefined;
+  for (const [, , lap] of laps) {
+    const head = lap.split(/<Track\b/)[0];
+    const sec = Number(tag(head, "TotalTimeSeconds")) || 0;
+    durationSec += sec;
+    distanceM += Number(tag(head, "DistanceMeters")) || 0;
+    const avg = Number(head.match(/<AverageHeartRateBpm>[\s\S]*?<Value>([^<]+)<\/Value>/)?.[1]);
+    if (avg > 30 && sec > 0) {
+      hrWeighted += avg * sec;
+      hrTime += sec;
+    }
+    const max = Number(head.match(/<MaximumHeartRateBpm>[\s\S]*?<Value>([^<]+)<\/Value>/)?.[1]);
+    if (max > 30) maxHr = Math.max(maxHr ?? 0, max);
+  }
+  if (distanceM < 10 && durationSec < 60) return null;
+  const points: Point[] = [];
+  for (const [, tp] of body.matchAll(/<Trackpoint>([\s\S]*?)<\/Trackpoint>/g)) {
+    const ele = tag(tp, "AltitudeMeters");
+    const cad = tag(tp, "Cadence") ?? tag(tp, "RunCadence");
+    const watts = tag(tp, "Watts");
+    const hr = tp.match(/<HeartRateBpm>[\s\S]*?<Value>([^<]+)<\/Value>/)?.[1];
+    points.push({ lat: 0, lon: 0, ele: ele !== undefined ? Number(ele) : undefined, hr: hr ? Number(hr) : undefined, cad: cad !== undefined ? Number(cad) : undefined, power: watts !== undefined ? Number(watts) : undefined });
+  }
+  const sport = sportOf(attr(activity[1], "Sport"));
+  const rates = points.map((p) => p.hr).filter((h): h is number => h !== undefined && h > 30 && h < 250);
+  const start = tag(body, "Id");
+  return {
+    ...cadenceAndPower(points, sport),
+    name: tag(body, "Notes") ? decode(tag(body, "Notes")!) : undefined,
+    sport,
+    start: start && !Number.isNaN(Date.parse(start)) ? new Date(start) : undefined,
+    distanceM: Math.round(distanceM),
+    durationSec: Math.round(durationSec),
+    elevationGainM: elevationGain(points),
+    avgHr: hrTime ? Math.round(hrWeighted / hrTime) : mean(rates),
+    maxHr: maxHr ?? (rates.length ? Math.max(...rates) : undefined),
+  };
+}
+
+/** A watch file, GPX or TCX, told apart by its content. */
+export function parseActivityFile(text: string): GpxActivity | null {
+  if (/<TrainingCenterDatabase\b/.test(text)) return parseTcx(text);
+  return parseGpx(text);
 }

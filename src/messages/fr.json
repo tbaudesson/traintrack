@@ -1052,9 +1052,9 @@
     "loadError": "Impossible de charger les programmes types. La migration 023 est-elle appliquée ?"
   },
   "cardio": {
-    "importGpx": "Importer un fichier GPX",
+    "importGpx": "Importer un fichier de montre (GPX, TCX)",
     "importGpxHint": "Strava, Garmin, montre…",
-    "importGpxFill": "Remplir depuis un fichier GPX",
+    "importGpxFill": "Remplir depuis un fichier de montre (GPX, TCX)",
     "gpxTitle": "Sortie importée",
     "gpxDate": "Date",
     "gpxMoving": "Temps en mouvement",
@@ -1117,7 +1117,9 @@
     "highestClimb": "Plus gros dénivelé",
     "trend": "Vitesse sur 4 semaines",
     "faster": "+{percent} % plus rapide",
-    "slower": "−{percent} %"
+    "slower": "−{percent} %",
+    "gpxCadence": "Cadence moyenne",
+    "gpxPower": "Puissance moy. · max"
   },
   "goals": {
     "titleOther": "Objectifs",
@@ -2582,5 +2584,37 @@
     "again": "Refaire une séance",
     "delete": "Supprimer",
     "deleteConfirm": "Supprimer cette séance de mobilité ?"
+  },
+  "sportDetails": {
+    "stroke": "Nage",
+    "stroke_free": "Crawl",
+    "stroke_breast": "Brasse",
+    "stroke_back": "Dos",
+    "stroke_fly": "Papillon",
+    "stroke_mixed": "Mélangé",
+    "pool": "Bassin",
+    "poolM": "{m} m",
+    "openWater": "Eau libre",
+    "strokes": "Mouvements de bras",
+    "perLength": "/ longueur",
+    "lengths": "{count, plural, one {# longueur} other {# longueurs}}",
+    "swolf": "SWOLF {value}",
+    "swolfHint": "SWOLF = secondes + mouvements par longueur : plus bas, plus efficace. À comparer seulement dans le même bassin et la même nage.",
+    "cadence": "Cadence moyenne",
+    "unit_spm": "pas/min",
+    "unit_rpm": "tr/min",
+    "avgPower": "Puissance moyenne",
+    "maxPower": "Puissance max",
+    "ftp": "Ma FTP",
+    "powerLine": "Zone {zone} ({name}) · IF {intensity} · TSS estimé {tss}",
+    "zone_1": "récupération",
+    "zone_2": "endurance",
+    "zone_3": "tempo",
+    "zone_4": "seuil",
+    "zone_5": "VO2max",
+    "zone_6": "anaérobie",
+    "zone_7": "neuromusculaire",
+    "needFtp": "Indiquez votre FTP pour voir la zone de puissance et la charge de la sortie.",
+    "tssHint": "Estimé à partir de la puissance moyenne (le TSS exact utilise la puissance normalisée, plus haute sur un parcours irrégulier). Indicatif, séparé de la charge minutes × effort."
   }
 }

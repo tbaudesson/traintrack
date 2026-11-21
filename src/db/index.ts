@@ -82,6 +82,8 @@ export interface AthleteProfile extends SyncFields {
   scheduleMoves?: ScheduleMove[] | null;
   /** Running paces: the VMA and where it came from, see lib/runPaces. */
   runPaces?: RunPaces | null;
+  /** Functional threshold power, in watts: the power zones and the ride load come from it (migration 071). */
+  ftpW?: number | null;
   /** Diet, foods left out and meals a day, for the meal ideas, see lib/mealCatalog. */
   mealPrefs?: MealPrefs | null;
   /** Optional daily macro targets */
@@ -286,6 +288,15 @@ export interface Workout extends SyncFields {
   /** Average / peak heart rate captured via Web Bluetooth during the session. */
   avgHr?: number;
   maxHr?: number;
+  /** Steps a minute on foot, turns a minute on a bike (migration 071). */
+  avgCadence?: number | null;
+  /** Watts, from a power meter (migration 071). */
+  avgPowerW?: number | null;
+  maxPowerW?: number | null;
+  /** A swim: the stroke, the pool length (0 in open water) and the strokes per length (migration 071). */
+  swimStroke?: "free" | "breast" | "back" | "fly" | "mixed" | null;
+  poolLengthM?: number | null;
+  strokesPerLength?: number | null;
   createdAt: string;
   updatedAt: string;
 }

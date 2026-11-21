@@ -13,6 +13,7 @@ import { formatPace as formatKmPace, HR_ZONE_SHARE, hrZoneOf, paceAt } from "@/l
 import { planRunBlocks } from "@/lib/runWorkouts";
 import { RunGuide } from "@/components/domain/RunGuide";
 import { GpxImport } from "@/components/domain/GpxImport";
+import { SportDetails } from "@/components/domain/SportDetails";
 import type { CardioTarget, Workout } from "@/db";
 import { updateWorkout } from "@/hooks/useWorkouts";
 import { useDebouncedSave } from "@/hooks/useDebouncedSave";
@@ -37,8 +38,8 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
   const [minutes, setMinutes] = useState(workout.durationSec ? String(Math.floor(workout.durationSec / 60)) : "");
   const [seconds, setSeconds] = useState(workout.durationSec ? String(workout.durationSec % 60) : "");
   const [climb, setClimb] = useState(workout.elevationGainM ? String(workout.elevationGainM) : "");
-  // The metres climbed: for a hike above all, kept for any outing that has them.
-  const showClimb = workout.sport === "hike" || !!workout.elevationGainM;
+  // The metres climbed: on foot and on a bike, and for any outing that has them.
+  const showClimb = workout.sport === "hike" || workout.sport === "run" || workout.sport === "bike" || !!workout.elevationGainM;
 
   const distanceM = (Number(distance.replace(",", ".")) || 0) * (swim ? 1 : 1000);
   const durationSec = (Number(minutes) || 0) * 60 + (Number(seconds) || 0);
@@ -234,6 +235,7 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
               {t("pace", { pace })}
             </p>
           )}
+          <SportDetails workout={workout} distanceM={distanceM} durationSec={durationSec} />
         </CardContent>
       </Card>
       {running && runBlocks && (
