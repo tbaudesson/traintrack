@@ -127,8 +127,8 @@ export default function AssistantPage() {
           <p className="text-xs text-muted-foreground">{t("control")}</p>
         </section>
 
-        <section className="space-y-3" aria-labelledby="assistant-reading">
-          <SectionHeading id="assistant-reading">{t("readingTitle")}</SectionHeading>
+        {/* The insight card carries its own heading ("What your last 4 weeks say"). */}
+        <section className="space-y-3" aria-label={t("readingTitle")}>
           {reading.insights[0] ? (
             <>
               <InsightCard insight={reading.insights[0]} period={reading.period} exerciseName={exerciseName} canShow={() => true} onShowChart={() => router.push("/progress")}>
