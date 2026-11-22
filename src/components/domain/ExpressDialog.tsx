@@ -22,11 +22,14 @@ export function ExpressDialog({
   open,
   onOpenChange,
   onStart,
+  onMove,
 }: {
   day: ProgramDay;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onStart: (day: ProgramDay) => void;
+  /** No time at all today: the session moved to another day instead. */
+  onMove?: () => void;
 }) {
   const t = useTranslations("express");
   const xl = useExerciseLabel();
@@ -81,6 +84,11 @@ export function ExpressDialog({
         <Button size="lg" className="w-full rounded-full" onClick={() => onStart(plan.day)}>
           {t("start")}
         </Button>
+        {onMove && (
+          <Button variant="ghost" className="w-full" onClick={onMove}>
+            {t("notToday")}
+          </Button>
+        )}
       </DialogContent>
     </Dialog>
   );

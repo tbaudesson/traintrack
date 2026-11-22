@@ -242,7 +242,8 @@
     "fullPlanning": "Full planning",
     "weekPlanChoose": "Choose my training days",
     "weekCount": "{done} sessions done of {target}",
-    "detailsShort": "Details"
+    "detailsShort": "Details",
+    "noTimeToday": "No time today?"
   },
   "onboarding": {
     "title": "Your athlete profile",
@@ -1950,7 +1951,8 @@
     "superset": "superset",
     "dropped": "Left out: {names}",
     "about": "About {minutes} min, warm-up included. It counts as the planned session.",
-    "start": "Start the short version"
+    "start": "Start the short version",
+    "notToday": "Not today: move the session"
   },
   "review": {
     "title": "Program review",

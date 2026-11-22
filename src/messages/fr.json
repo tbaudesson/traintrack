@@ -242,7 +242,8 @@
     "fullPlanning": "Planning complet",
     "weekPlanChoose": "Choisir mes jours d'entraînement",
     "weekCount": "{done} séances faites sur {target}",
-    "detailsShort": "Détails"
+    "detailsShort": "Détails",
+    "noTimeToday": "Pas le temps aujourd'hui ?"
   },
   "onboarding": {
     "title": "Votre profil athlète",
@@ -1950,7 +1951,8 @@
     "superset": "superset",
     "dropped": "Laissés de côté : {names}",
     "about": "Environ {minutes} min, échauffement compris. Elle compte comme la séance prévue.",
-    "start": "Commencer la version courte"
+    "start": "Commencer la version courte",
+    "notToday": "Pas aujourd'hui : déplacer la séance"
   },
   "review": {
     "title": "Bilan du programme",

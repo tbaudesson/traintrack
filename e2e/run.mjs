@@ -308,7 +308,7 @@ await test("a sharp rise of the training load is flagged on the home screen", as
 
 await test("pressed for time, the session of the day has a short version", async () => {
   await page.goto(`${BASE}/fr`);
-  await sessionOption(/Pas le temps \? Version courte/);
+  await heroCard().getByRole("button", { name: "Pas le temps aujourd'hui ?" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByRole("heading", { name: "Séance express" }).waitFor({ timeout: 5000 });
   const times = dialog.getByRole("group", { name: "Temps disponible" }).getByRole("button");

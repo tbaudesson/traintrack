@@ -242,7 +242,8 @@
     "fullPlanning": "Ganze Planung",
     "weekPlanChoose": "Meine Trainingstage wählen",
     "weekCount": "{done} von {target} Einheiten erledigt",
-    "detailsShort": "Details"
+    "detailsShort": "Details",
+    "noTimeToday": "Heute keine Zeit?"
   },
   "onboarding": {
     "title": "Dein Athletenprofil",
@@ -1950,7 +1951,8 @@
     "superset": "Supersatz",
     "dropped": "Weggelassen: {names}",
     "about": "Etwa {minutes} Min., Aufwärmen inklusive. Sie zählt als geplante Einheit.",
-    "start": "Kurzversion starten"
+    "start": "Kurzversion starten",
+    "notToday": "Nicht heute: Einheit verschieben"
   },
   "review": {
     "title": "Bilanz des Programms",

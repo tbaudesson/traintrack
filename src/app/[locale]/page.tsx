@@ -310,7 +310,9 @@ export default function HomePage() {
   const movable = shownWeek
     .filter((d) => d.sessions.some((x) => x.status === "planned" || x.status === "missed") || skippedOn(d.date).length > 0)
     .map((d) => d.date);
-  const moveDay = shownWeek.find((d) => d.date === moveDate);
+  // This week as planned: today's session can be moved from the session card, whatever week the strip shows.
+  const thisWeek = useMemo(() => (planned.length ? scheduleOf(weekStart) : []), [planned, scheduleOf, weekStart]);
+  const moveDay = shownWeek.find((d) => d.date === moveDate) ?? thisWeek.find((d) => d.date === moveDate);
   // Weeks kept in a row: as many sessions as the planning asks for.
   const streak = useMemo(() => {
     const target = planned.length
@@ -351,6 +353,10 @@ export default function HomePage() {
   const sportHint = detected && prefs.sport && kindOf(detected) !== kindOf(prefs.sport) && !closedCards.includes(`sport-${detected}`) ? detected : null;
   // Pressed for time: a shorter version of a strength session not begun, when it is long enough to shorten.
   const canExpress = hasFeature("planning") && !!session && session.date === today && !session.workoutId && !session.day.cardio && session.day.exercises.length > 1 && dayMinutes(session.day) > 25;
+  // No time at all today: today's planned session, not begun, can go to another day.
+  const canMoveToday =
+    !!profile && hasFeature("planning") && !!session && session.date === today && !session.workoutId &&
+    thisWeek.some((d) => d.date === today && d.sessions.some((x) => x.status === "planned"));
   // A plan just over (trained in the last four weeks): its review, until closed.
   const finishedProgram = !hasFeature("reports") ? undefined : programs.find(
     (p) =>
@@ -765,11 +771,22 @@ export default function HomePage() {
                   <SessionMenu
                     items={[
                       { key: "change", icon: ListChecks, label: t("changeSession"), onClick: () => setChoosing(true) },
-                      ...(canExpress ? [{ key: "express", icon: Timer, label: t("express"), onClick: () => setExpressOpen(true) }] : []),
+
                     ]}
                   />
                 </div>
               </div>
+              {/* Pressed for time: the shorter version, or another day, one tap from the card. */}
+              {(canExpress || canMoveToday) && (
+                <button
+                  type="button"
+                  onClick={() => (canExpress ? setExpressOpen(true) : setMoveDate(today))}
+                  className="relative mt-2.5 flex min-h-10 w-full items-center justify-center gap-1.5 rounded-full text-sm font-semibold text-white/90 ring-1 ring-white/25 hover:bg-white/10"
+                >
+                  <Timer className="size-4" aria-hidden="true" />
+                  {t("noTimeToday")}
+                </button>
+              )}
             </section>
 
             {alerts.length > 0 && (
@@ -839,6 +856,14 @@ export default function HomePage() {
               open={expressOpen}
               onOpenChange={setExpressOpen}
               onStart={(shorter) => startDay(session!.program, session!.index, shorter)}
+              onMove={
+                canMoveToday
+                  ? () => {
+                      setExpressOpen(false);
+                      setMoveDate(today);
+                    }
+                  : undefined
+              }
             />
           )}
           <MoveSessionDialog
