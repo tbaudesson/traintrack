@@ -10,10 +10,14 @@ import { OfflineBanner } from "./OfflineBanner";
 import { OfflineWarmup } from "./OfflineWarmup";
 import { Loader2 } from "lucide-react";
 import { useSportChoiceSync } from "@/hooks/useSportChoice";
+import { autoSyncStrava } from "@/lib/stravaService";
 
-/** The favourite sport, in step with the profile (signed in only). */
+/** The favourite sport, in step with the profile; Strava's new activities when the app opens (signed in only). */
 function SportChoiceSync() {
   useSportChoiceSync();
+  useEffect(() => {
+    void autoSyncStrava();
+  }, []);
   return null;
 }
 

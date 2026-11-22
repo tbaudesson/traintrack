@@ -585,7 +585,7 @@
     "groupAlerts": "Notifications et assistant",
     "groupAlertsSummary": "Notifications, assistant IA",
     "groupData": "Données et compte",
-    "groupDataSummary": "Synchronisation, import, export",
+    "groupDataSummary": "Synchronisation, Strava, import, export",
     "rerunWizard": "Relancer l’assistant de démarrage"
   },
   "programs": {
@@ -2896,5 +2896,33 @@
     "power": "Puissance (W)",
     "chartLabel": "{name} : {count} séances sur six mois",
     "hint": "Chaque point est une séance. L'allure dépend du parcours et de l'intensité voulue : comparez des séances semblables."
+  },
+  "strava": {
+    "title": "Strava",
+    "desc": "Vos activités Strava arrivent comme séances : distance, temps, dénivelé, fréquence cardiaque, cadence et puissance. À la connexion, les 90 derniers jours ; ensuite, automatiquement à l'ouverture de l'app (toutes les 6 h au plus) ou quand vous le demandez.",
+    "loading": "Chargement",
+    "offline": "Hors ligne : l'état de la connexion Strava s'affichera au retour du réseau.",
+    "notConfigured": "Strava n'est pas encore configuré sur ce serveur.",
+    "connect": "Se connecter avec Strava",
+    "connected": "Compte Strava connecté",
+    "lastSync": "dernier import le {date}",
+    "syncNow": "Importer maintenant",
+    "disconnect": "Déconnecter",
+    "disconnectConfirm": "Déconnecter Strava ? Les séances importées depuis Strava seront supprimées de TrainTrack (vos activités restent sur Strava).",
+    "disconnected": "Strava déconnecté, et ses séances retirées.",
+    "imported": "{count, plural, =0 {Rien de nouveau sur Strava.} one {# activité importée.} other {# activités importées.}}",
+    "privacy": "Les séances venues de Strava ne sont visibles que par vous : ni votre coach ni l'assistant IA ne les reçoivent, comme l'exigent les conditions de Strava.",
+    "poweredBy": "Compatible avec Strava",
+    "connecting": "Connexion à Strava…",
+    "connectedNow": "{count, plural, =0 {Strava est connecté. Aucune activité des 90 derniers jours à importer.} one {Strava est connecté : # activité importée.} other {Strava est connecté : # activités importées.}}",
+    "declined": "La connexion à Strava n'a pas été autorisée (il faut accepter le partage des activités).",
+    "errState": "Cette connexion n'a pas été lancée depuis cet appareil : recommencez depuis les Réglages.",
+    "errGeneric": "Strava n'a pas pu répondre. Réessayez dans un moment.",
+    "errRate": "Strava limite le nombre de demandes : réessayez dans 15 minutes.",
+    "errAuth": "Strava a refusé l'accès : déconnectez puis reconnectez votre compte.",
+    "backToSettings": "Retour aux Réglages",
+    "fromStrava": "Importée de Strava",
+    "viewOnStrava": "Voir sur Strava",
+    "sectionTitle": "Strava"
   }
 }

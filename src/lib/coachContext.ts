@@ -38,6 +38,9 @@ export function coachContext(input: {
   goals?: Goal[];
   bodyMetrics?: Pick<BodyMetric, "date" | "weightKg">[];
 }): string {
+  // Strava's API agreement: data from Strava is never sent to an AI model.
+  // The sessions that came from it are left out of the summary.
+  input = { ...input, workouts: input.workouts.filter((w) => w.source !== "strava") };
   const from = addDays(input.today, -7 * WEEKS);
   const name = (id: number) => input.exercises.find((e) => e.id === id)?.name ?? `#${id}`;
   const p = input.profile;

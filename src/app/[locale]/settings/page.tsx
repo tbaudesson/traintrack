@@ -12,6 +12,7 @@ import { HistoryImport } from "@/components/domain/HistoryImport";
 import { saveSportChoice } from "@/hooks/useSportChoice";
 import { InjuryAreasPicker } from "@/components/domain/InjuryAreas";
 import { RestrictionsEditor } from "@/components/domain/RestrictionsEditor";
+import { StravaSection } from "@/components/domain/StravaSection";
 import { Ban } from "lucide-react";
 import db from "@/db";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -107,7 +108,7 @@ const SECTION_GROUP: Record<string, SettingsGroupId> = {
   level: "training", plan: "training", injuries: "training", restrictions: "training", rest: "training",
   sport: "personal", appearance: "personal", a11y: "personal", language: "personal", navigation: "personal",
   notifications: "alerts", ai: "alerts",
-  resync: "data", import: "data", export: "data",
+  resync: "data", strava: "data", import: "data", export: "data",
 };
 type SettingsGroupId = "training" | "personal" | "alerts" | "data";
 
@@ -155,6 +156,7 @@ function SettingsContent() {
   const tai = useTranslations("ai");
   const tconsent = useTranslations("aiConsent");
   const trs = useTranslations("restrictions");
+  const tstrava = useTranslations("strava");
   const target = useSearchParams().get("section");
   const [openGroups, setOpenGroups] = useState<Set<SettingsGroupId>>(() => new Set(target && SECTION_GROUP[target] ? [SECTION_GROUP[target]] : []));
   const toggleGroup = (id: SettingsGroupId) =>
@@ -895,6 +897,11 @@ function SettingsContent() {
               : <RotateCcw className="mr-2 h-4 w-4" />}
             {resyncState === "done" ? t("resyncDone") : t("resyncBtn")}
           </Button>
+        </Section>
+
+        {/* Strava: activities in as sessions, for the athlete only. */}
+        <Section id="strava" icon={Activity} title={tstrava("sectionTitle")}>
+          <StravaSection />
         </Section>
 
         {/* History from another app */}

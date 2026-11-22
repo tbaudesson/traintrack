@@ -585,7 +585,7 @@
     "groupAlerts": "Benachrichtigungen und Assistent",
     "groupAlertsSummary": "Benachrichtigungen, KI-Assistent",
     "groupData": "Daten und Konto",
-    "groupDataSummary": "Synchronisierung, Import, Export",
+    "groupDataSummary": "Synchronisierung, Strava, Import, Export",
     "rerunWizard": "Einrichtungsassistent erneut starten"
   },
   "programs": {
@@ -2896,5 +2896,33 @@
     "power": "Leistung (W)",
     "chartLabel": "{name}: {count} Einheiten in sechs Monaten",
     "hint": "Jeder Punkt ist eine Einheit. Das Tempo hängt von Strecke und Intensität ab: Vergleiche Ähnliches."
+  },
+  "strava": {
+    "title": "Strava",
+    "desc": "Deine Strava-Aktivitäten kommen als Einheiten an: Distanz, Zeit, Höhenmeter, Herzfrequenz, Kadenz und Leistung. Beim Verbinden die letzten 90 Tage, danach automatisch beim Öffnen der App (höchstens alle 6 h) oder auf Wunsch.",
+    "loading": "Wird geladen",
+    "offline": "Offline: Der Strava-Status erscheint, sobald das Netz zurück ist.",
+    "notConfigured": "Strava ist auf diesem Server noch nicht eingerichtet.",
+    "connect": "Mit Strava verbinden",
+    "connected": "Strava-Konto verbunden",
+    "lastSync": "letzter Import am {date}",
+    "syncNow": "Jetzt importieren",
+    "disconnect": "Trennen",
+    "disconnectConfirm": "Strava trennen? Die aus Strava importierten Einheiten werden aus TrainTrack entfernt (deine Aktivitäten bleiben auf Strava).",
+    "disconnected": "Strava getrennt und seine Einheiten entfernt.",
+    "imported": "{count, plural, =0 {Nichts Neues auf Strava.} one {# Aktivität importiert.} other {# Aktivitäten importiert.}}",
+    "privacy": "Einheiten aus Strava siehst nur du: Weder dein Coach noch der KI-Assistent erhalten sie, wie es die Bedingungen von Strava verlangen.",
+    "poweredBy": "Kompatibel mit Strava",
+    "connecting": "Verbindung mit Strava…",
+    "connectedNow": "{count, plural, =0 {Strava ist verbunden. Keine Aktivität der letzten 90 Tage zu importieren.} one {Strava ist verbunden: # Aktivität importiert.} other {Strava ist verbunden: # Aktivitäten importiert.}}",
+    "declined": "Die Verbindung zu Strava wurde nicht erlaubt (das Teilen der Aktivitäten muss akzeptiert werden).",
+    "errState": "Diese Verbindung wurde nicht auf diesem Gerät gestartet: Bitte in den Einstellungen neu beginnen.",
+    "errGeneric": "Strava hat nicht geantwortet. Versuche es gleich noch einmal.",
+    "errRate": "Strava begrenzt die Anzahl der Anfragen: Versuche es in 15 Minuten erneut.",
+    "errAuth": "Strava hat den Zugriff verweigert: Trenne dein Konto und verbinde es neu.",
+    "backToSettings": "Zurück zu den Einstellungen",
+    "fromStrava": "Aus Strava importiert",
+    "viewOnStrava": "Auf Strava ansehen",
+    "sectionTitle": "Strava"
   }
 }

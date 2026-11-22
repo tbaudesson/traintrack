@@ -585,7 +585,7 @@
     "groupAlerts": "Notifications and assistant",
     "groupAlertsSummary": "Notifications, AI assistant",
     "groupData": "Data and account",
-    "groupDataSummary": "Sync, import, export",
+    "groupDataSummary": "Sync, Strava, import, export",
     "rerunWizard": "Run the set-up guide again"
   },
   "programs": {
@@ -2896,5 +2896,33 @@
     "power": "Power (W)",
     "chartLabel": "{name}: {count} sessions over six months",
     "hint": "Each dot is a session. Pace depends on the route and the intensity aimed at: compare like with like."
+  },
+  "strava": {
+    "title": "Strava",
+    "desc": "Your Strava activities come in as sessions: distance, time, climb, heart rate, cadence and power. On connecting, the last 90 days; then automatically when the app opens (every 6 h at most) or when you ask.",
+    "loading": "Loading",
+    "offline": "Offline: the Strava connection shows when the network is back.",
+    "notConfigured": "Strava is not set up on this server yet.",
+    "connect": "Connect with Strava",
+    "connected": "Strava account connected",
+    "lastSync": "last import on {date}",
+    "syncNow": "Import now",
+    "disconnect": "Disconnect",
+    "disconnectConfirm": "Disconnect Strava? The sessions imported from Strava will be removed from TrainTrack (your activities stay on Strava).",
+    "disconnected": "Strava disconnected, and its sessions removed.",
+    "imported": "{count, plural, =0 {Nothing new on Strava.} one {# activity imported.} other {# activities imported.}}",
+    "privacy": "Sessions from Strava are visible to you only: neither your coach nor the AI assistant receives them, as Strava's terms require.",
+    "poweredBy": "Compatible with Strava",
+    "connecting": "Connecting to Strava…",
+    "connectedNow": "{count, plural, =0 {Strava is connected. No activity of the last 90 days to import.} one {Strava is connected: # activity imported.} other {Strava is connected: # activities imported.}}",
+    "declined": "The connection to Strava was not authorized (sharing your activities must be accepted).",
+    "errState": "This connection was not started from this device: start again from Settings.",
+    "errGeneric": "Strava could not answer. Try again in a moment.",
+    "errRate": "Strava limits the number of requests: try again in 15 minutes.",
+    "errAuth": "Strava refused access: disconnect, then connect your account again.",
+    "backToSettings": "Back to Settings",
+    "fromStrava": "Imported from Strava",
+    "viewOnStrava": "View on Strava",
+    "sectionTitle": "Strava"
   }
 }

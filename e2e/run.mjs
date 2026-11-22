@@ -2140,6 +2140,26 @@ await test("an exercise's card gives its key points and usual faults in one's la
   await page.getByText("Placer la barre au-dessus du milieu des pieds").waitFor({ timeout: 5000 });
 });
 
+await test("Strava: the section in Settings, a declined return, and an imported session's link to Strava", async () => {
+  await page.goto(`${BASE}/fr/settings?section=strava`);
+  // Offline here: the section says so rather than offering a connection it cannot make.
+  await page.getByText(/Hors ligne : l'état de la connexion Strava/).waitFor({ timeout: 10000 });
+  await page.getByText(/ni votre coach ni l'assistant IA ne les reçoivent/).waitFor({ timeout: 5000 });
+  await page.goto(`${BASE}/fr/strava?error=access_denied`);
+  await page.getByText(/La connexion à Strava n'a pas été autorisée/).waitFor({ timeout: 10000 });
+  const id = await page.evaluate(async (user) => {
+    const db = await new Promise((res, rej) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+    const now = new Date().toISOString();
+    const out = await new Promise((res, rej) => { const tx = db.transaction("workouts", "readwrite"); const r = tx.objectStore("workouts").add({ userId: user, uuid: `e2e-strava-${Date.now()}`, date: "2026-11-20", title: "Sortie Strava", kind: "cardio", sport: "run", distanceM: 10000, durationSec: 3000, source: "strava", externalId: "123456", _dirty: 0, createdAt: now, updatedAt: now }); tx.oncomplete = () => res(r.result); tx.onerror = () => rej(tx.error); });
+    db.close();
+    return out;
+  }, USER);
+  await page.goto(`${BASE}/fr/log/session?id=${id}`);
+  const link = page.getByRole("link", { name: "Voir sur Strava" });
+  await link.waitFor({ timeout: 10000 });
+  expect((await link.getAttribute("href")) === "https://www.strava.com/activities/123456", "wrong Strava link");
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });

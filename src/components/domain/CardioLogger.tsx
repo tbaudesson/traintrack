@@ -15,6 +15,8 @@ import { RunGuide } from "@/components/domain/RunGuide";
 import { GpxImport } from "@/components/domain/GpxImport";
 import { SportDetails, hasAdvancedValues } from "@/components/domain/SportDetails";
 import { TrimpLine } from "@/components/domain/TrimpLine";
+import { STRAVA_ORANGE } from "@/components/domain/StravaSection";
+import { activityUrl } from "../../../supabase/functions/_shared/strava";
 import { metricPlace, sportDef } from "@/lib/disciplines";
 import type { CardioTarget, Workout } from "@/db";
 import { updateWorkout } from "@/hooks/useWorkouts";
@@ -30,6 +32,7 @@ import { IntervalPlayer, type IntervalResult, type PlayerStep } from "@/componen
 export function CardioLogger({ workout, target }: { workout: Workout; target?: CardioTarget }) {
   const t = useTranslations("cardio");
   const tp = useTranslations("programs");
+  const tstrava = useTranslations("strava");
   // The countdown before the first step; without the reference yet, none.
   const readySec = useTimedGuidance()?.getReadySec ?? 0;
   const swim = workout.sport === "swim";
@@ -193,6 +196,14 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
       <Card>
         <CardContent className="space-y-3 py-4">
           <h3 className="font-semibold">{workout.sport ? t(`sport_${workout.sport}`) : ""}</h3>
+          {workout.source === "strava" && workout.externalId && (
+            <p className="text-xs text-muted-foreground">
+              {tstrava("fromStrava")} ·{" "}
+              <a href={activityUrl(workout.externalId)} target="_blank" rel="noopener noreferrer" className="font-semibold underline" style={{ color: STRAVA_ORANGE }}>
+                {tstrava("viewOnStrava")}
+              </a>
+            </p>
+          )}
           {measured && (
             <label className="block text-sm font-medium">
               {swim ? t("distanceM") : t("distanceKm")}

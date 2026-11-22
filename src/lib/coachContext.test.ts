@@ -45,3 +45,27 @@ describe("coachContext", () => {
     expect(text).not.toContain("private note");
   });
 });
+
+describe("sessions from Strava", () => {
+  it("are never in what the AI is told", async () => {
+    const { coachContext } = await import("./coachContext");
+    const text = coachContext({
+      today: "2026-11-22",
+      profile: null,
+      programs: [],
+      workouts: [
+        { id: 1, uuid: "a", date: "2026-11-20", title: "Footing tapé", kind: "cardio", sport: "run", distanceM: 8000, durationSec: 2400, _dirty: 0, createdAt: "", updatedAt: "" },
+        { id: 2, uuid: "b", date: "2026-11-21", title: "Sortie Strava", kind: "cardio", sport: "run", distanceM: 12000, durationSec: 3600, source: "strava", _dirty: 0, createdAt: "", updatedAt: "" },
+      ],
+      sets: [],
+      exercises: [],
+      injuries: [],
+      pains: [],
+      readiness: [],
+      proposals: [],
+    });
+    expect(text).toContain("Footing tapé");
+    expect(text).not.toContain("Sortie Strava");
+    expect(text).not.toContain("2026-11-21");
+  });
+});
