@@ -1,5 +1,6 @@
 "use client";
 
+import { useGoalText } from "@/components/domain/GoalsSection";
 import { useMemo, type ReactNode } from "react";
 import { useInjuryGuidance } from "@/hooks/useInjuryGuidance";
 import { useTranslations } from "next-intl";
@@ -29,6 +30,7 @@ export default function CoachDashboardPage() {
   const tt = useTranslations("teams");
   const tpain = useTranslations("pain");
   const xl = useExerciseLabel();
+  const goalText = useGoalText();
   const { num, short } = useFormat();
   const { clients, loading } = useClients();
   const exercises = useExercises();
@@ -175,7 +177,7 @@ export default function CoachDashboardPage() {
                   <span className="text-xs font-medium text-success-text">
                     {digest!
                       .get(a.userId)!
-                      .goalsReached.map(({ goal, on }) => `${xl(goal.exerciseName)} ${num(goal.targetKg)} kg · ${short(on)}`)
+                      .goalsReached.map(({ goal, on }) => `${goalText.title(goal)} ${goalText.value(goal, goal.targetValue)} · ${short(on)}`)
                       .join(" · ")}
                   </span>
                 </Row>

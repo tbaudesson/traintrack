@@ -158,6 +158,13 @@ const TABLE_CONFIGS: TableSyncConfig[] = [
     hasUpdatedAt: true,
     trainerVisible: true,
   },
+  {
+    // Goals of every kind (migration 075): the coach reads a client's.
+    dexieTable: "goals",
+    supabaseTable: "goals",
+    hasUpdatedAt: true,
+    trainerVisible: true,
+  },
 ];
 
 // Sync order: parents first, then children
@@ -177,6 +184,7 @@ const SYNC_ORDER = [
   "competitionResults",
   "horses",
   "horseSessions",
+  "goals",
 ];
 
 // ─── Retry with exponential backoff ───────────────────────────────────

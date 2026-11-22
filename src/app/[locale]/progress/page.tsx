@@ -308,10 +308,8 @@ export default function ProgressPage() {
           </section>
         )}
 
-        {/* Strength goals (an estimated 1RM to reach): for those who lift, or who set one. */}
-        {(activity === "strength" || (athlete?.strengthGoals ?? []).length > 0) && (
-          <GoalsSection profile={athlete} workouts={workouts} sets={sets} exercises={exercises} editable />
-        )}
+        {/* Goals of every kind: a time, a distance, sessions a week, a lift, a weight. */}
+        <GoalsSection workouts={workouts} sets={sets} exercises={exercises} bodyMetrics={metrics} editable />
 
         {hasFeature("reports") && (
           <section className="space-y-2">

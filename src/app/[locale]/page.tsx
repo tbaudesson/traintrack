@@ -1,5 +1,6 @@
 "use client";
 
+import { HomeAtAGlance } from "@/components/domain/HomeAtAGlance";
 import { sessionHref } from "@/lib/routes";
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
@@ -823,6 +824,9 @@ export default function HomePage() {
                   </p>
                 </section>
               )}
+
+              {/* The main goal, the last session, the next competition: a line each. */}
+              <HomeAtAGlance today={today} workouts={workouts} sets={sets} exercises={exercises} competitions={competitions} />
 
               {/* The week in one line; the details in Performance. */}
               <section>

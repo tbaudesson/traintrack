@@ -397,6 +397,35 @@ export interface Horse extends SyncFields {
 }
 
 /** The work a session put on a horse, in minutes at each gait. */
+/** What a goal measures (migration 075). */
+export type GoalType = "strength" | "time" | "distance" | "frequency" | "weight";
+
+/**
+ * A goal: a target value on one measure, maybe by a date. Its progress is
+ * computed from the sessions and the weigh-ins, never stored (migration 075).
+ */
+export interface Goal extends SyncFields {
+  id?: number;
+  type: GoalType;
+  /** The sport (time, distance), or what is counted (frequency: "all", "strength", "mobility" or a sport). */
+  scope?: string | null;
+  /** A strength goal's exercise: its synced id, the name as a fallback. */
+  exerciseUuid?: string | null;
+  exerciseName?: string | null;
+  /** A time goal's distance, in metres. */
+  distanceM?: number | null;
+  /** kg (strength, weight), seconds (time), metres (distance), sessions a week (frequency). */
+  targetValue: number;
+  /** Where it started: the best 1RM, the best time or the weight when it was set. */
+  startValue?: number | null;
+  /** YYYY-MM-DD */
+  deadline?: string | null;
+  /** 1: the main goal, shown on the home screen; 2: the others. */
+  priority: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface HorseSession extends SyncFields {
   id?: number;
   horseId: number;
@@ -460,6 +489,7 @@ const db = new Dexie("TrainTrack") as Dexie & {
   competitionResults: EntityTable<CompetitionResult, "id">;
   horses: EntityTable<Horse, "id">;
   horseSessions: EntityTable<HorseSession, "id">;
+  goals: EntityTable<Goal, "id">;
   formDrafts: EntityTable<FormDraft, "id">;
   syncMeta: EntityTable<SyncMeta, "tableName">;
   authMeta: EntityTable<AuthMeta, "key">;
@@ -566,6 +596,11 @@ db.version(7).stores({
 db.version(8).stores({
   horses: "++id, uuid, _dirty",
   horseSessions: "++id, horseId, date, uuid, _dirty",
+});
+
+// v9: goals of every kind (migration 075).
+db.version(9).stores({
+  goals: "++id, uuid, _dirty, userId",
 });
 
 export { db };

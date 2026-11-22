@@ -36,6 +36,11 @@ describe("the athlete's agreement", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
+  it("is asked again when what is sent grows", () => {
+    window.localStorage.setItem("traintrack.aiConsent", "2026-11-01T10:00:00.000Z");
+    expect(getAiConsent()).toBeNull();
+  });
+
   it("is dated when given", () => {
     expect(getAiConsent()).toMatch(/^\d{4}-\d{2}-\d{2}T/);
   });

@@ -1,7 +1,7 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import db from "@/db";
+import db, { type Goal } from "@/db";
 import { localDate, localDateIn } from "@/lib/dates";
-import { goalProgress, oneRepMaxHistory, type StrengthGoal } from "@/lib/goals";
+import { goalStatus } from "@/lib/goalTracking";
 import { weeklyReport } from "@/lib/weeklyReport";
 import { mondayOfDate } from "@/lib/weekPlan";
 import { trainingLoad, type LoadZone } from "@/lib/trainingLoad";
@@ -15,7 +15,7 @@ export interface AthleteDigest {
   /** Records beaten this week: exercise id, weight and reps. */
   records: { exerciseId: number; weightKg: number; reps: number }[];
   /** Goals reached in the last two weeks. */
-  goalsReached: { goal: StrengthGoal; on: string }[];
+  goalsReached: { goal: Goal; on: string }[];
   /** Days trained this week. */
   daysThisWeek: number;
   deloading: boolean;
@@ -34,12 +34,14 @@ export function useCoachDigest(userIds: string[]): Map<string, AthleteDigest> | 
     const monday = mondayOfDate(today);
     const since = localDateIn(-14);
     const lastWeek = localDateIn(-7);
-    const [workouts, sets, profiles, exercises, checkins] = await Promise.all([
+    const [workouts, sets, profiles, exercises, checkins, goals, metrics] = await Promise.all([
       db.workouts.filter((w) => !w.deletedAt && !!w.userId && ids.includes(w.userId)).toArray(),
       db.workoutSets.filter((s) => !s.deletedAt && !s.isWarmup && !!s.userId && ids.includes(s.userId)).toArray(),
       db.athleteProfiles.filter((p) => !p.deletedAt && !!p.userId && ids.includes(p.userId)).toArray(),
       db.exercises.toArray(),
       db.readinessCheckins.filter((r) => !r.deletedAt && !!r.userId && ids.includes(r.userId) && r.date > lastWeek && r.date <= today).toArray(),
+      db.goals.filter((g) => !g.deletedAt && !!g.userId && ids.includes(g.userId)).toArray(),
+      db.bodyMetrics.filter((m) => !m.deletedAt && !!m.userId && ids.includes(m.userId)).toArray(),
     ]);
     const result = new Map<string, AthleteDigest>();
     for (const id of ids) {
@@ -47,11 +49,14 @@ export function useCoachDigest(userIds: string[]): Map<string, AthleteDigest> | 
       const ownSets = sets.filter((s) => s.userId === id);
       const profile = profiles.find((p) => p.userId === id);
       const week = weeklyReport({ monday, workouts: own, sets: ownSets });
-      const goalsReached = (profile?.strengthGoals ?? []).flatMap((goal) => {
-        const exercise = exercises.find((e) => (goal.exerciseUuid && e.uuid === goal.exerciseUuid) || e.name === goal.exerciseName);
-        const on = exercise?.id !== undefined ? goalProgress(goal, oneRepMaxHistory(exercise.id, own, ownSets), today).achievedOn : undefined;
-        return on && on >= since ? [{ goal, on }] : [];
-      });
+      // Goals of every kind reached in the last two weeks.
+      const data = { today, workouts: own, sets: ownSets, exercises, bodyMetrics: metrics.filter((m) => m.userId === id) };
+      const goalsReached = goals
+        .filter((g) => g.userId === id)
+        .flatMap((goal) => {
+          const on = goalStatus(goal, data).achievedOn;
+          return on && on >= since ? [{ goal, on }] : [];
+        });
       const load = trainingLoad({ today, workouts: own, sets: ownSets });
       const scores = checkins.filter((r) => r.userId === id).map(readinessScore).filter((x): x is number => x !== null);
       const form = scores.length >= 2 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;

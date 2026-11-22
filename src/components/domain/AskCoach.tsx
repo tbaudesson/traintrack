@@ -15,6 +15,8 @@ import { useTrainablePrograms } from "@/hooks/usePrograms";
 import { useWorkouts } from "@/hooks/useWorkouts";
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
 import { useExercises } from "@/hooks/useExercises";
+import { useGoals } from "@/hooks/useGoals";
+import { useBodyMetrics } from "@/hooks/useBodyMetrics";
 import { localDate } from "@/lib/dates";
 import { Button } from "@/components/ui/button";
 
@@ -45,6 +47,8 @@ export function AskCoach({ proposals }: { proposals: CoachProposal[] }) {
   const injuries = useInjuries();
   const pains = usePainReports();
   const readiness = useReadiness();
+  const goals = useGoals();
+  const bodyMetrics = useBodyMetrics();
   const context = useMemo(
     () =>
       coachContext({
@@ -58,8 +62,10 @@ export function AskCoach({ proposals }: { proposals: CoachProposal[] }) {
         pains,
         readiness: readiness.map((r) => ({ date: r.date, score: readinessScore(r) })),
         proposals,
+        goals,
+        bodyMetrics,
       }),
-    [profile, programs, workouts, sets, exercises, injuries, pains, readiness, proposals]
+    [profile, programs, workouts, sets, exercises, injuries, pains, readiness, proposals, goals, bodyMetrics]
   );
   const [history, setHistory] = useState<CoachTurn[]>([]);
   const [question, setQuestion] = useState("");

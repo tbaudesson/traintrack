@@ -1971,6 +1971,42 @@ await test("the sport chosen goes with the profile, so other devices follow", as
   await setSportChoice(null);
 });
 
+await test("a goal of any sport: 10 km under 50 min, followed in Progress and on the home screen", async () => {
+  await page.goto(`${BASE}/fr/progress`);
+  await page.getByRole("button", { name: "Nouvel objectif" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("button", { name: "Temps sur une distance" }).click();
+  await dialog.getByRole("button", { name: "Course à pied" }).click();
+  await dialog.getByLabel("Distance (km)").fill("10");
+  await dialog.getByLabel("Temps visé").fill("50:00");
+  await dialog.getByRole("button", { name: "Enregistrer l'objectif" }).click();
+  await dialog.waitFor({ state: "detached", timeout: 5000 });
+  await page.getByText("Course à pied : 10 km").first().waitFor({ timeout: 5000 });
+  await page.getByText("Objectif : moins de 50:00").first().waitFor({ timeout: 5000 });
+  // The first goal is the main one: on the home screen, with where it stands.
+  await page.goto(`${BASE}/fr`);
+  const line = page.getByRole("link", { name: /Course à pied : 10 km · 50:00/ });
+  await line.waitFor({ timeout: 10000 });
+  // A 10 km in 49 min: reached.
+  await page.evaluate(async (user) => {
+    const db = await new Promise((res, rej) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+    const now = new Date().toISOString();
+    const d = new Date();
+    const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    await new Promise((res, rej) => { const tx = db.transaction("workouts", "readwrite"); tx.objectStore("workouts").add({ userId: user, uuid: `e2e-10k-${Date.now()}`, date, kind: "cardio", sport: "run", title: "10 km e2e", distanceM: 10000, durationSec: 49 * 60, _dirty: 0, createdAt: now, updatedAt: now }); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+    db.close();
+  }, USER);
+  await page.reload();
+  await page.getByRole("link", { name: /Course à pied : 10 km · 50:00.*Atteint le/ }).waitFor({ timeout: 10000 });
+  // The last session done, one line.
+  await page.getByText(/Dernière séance :/).waitFor({ timeout: 5000 });
+  // Cleaned up: the goal deleted from Progress.
+  await page.goto(`${BASE}/fr/progress`);
+  page.once("dialog", (d) => d.accept());
+  await page.getByRole("button", { name: "Supprimer l'objectif" }).first().click();
+  await page.getByText("Course à pied : 10 km").waitFor({ state: "detached", timeout: 5000 });
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });

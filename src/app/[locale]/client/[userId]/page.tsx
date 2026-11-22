@@ -1,5 +1,6 @@
 "use client";
 
+import { useBodyMetrics } from "@/hooks/useBodyMetrics";
 import { totalVolume as volumeOf } from "@/lib/performance";
 import { useMemo } from "react";
 import { useInjuryGuidance } from "@/hooks/useInjuryGuidance";
@@ -60,6 +61,7 @@ export default function ClientDetailPage() {
 
   const workouts = useWorkouts(userId);
   const sets = useAllWorkoutSets(userId);
+  const clientMetrics = useBodyMetrics(userId);
   const exercises = useExercises();
   const exMap = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises]);
   const readiness = useReadiness(userId);
@@ -273,7 +275,7 @@ export default function ClientDetailPage() {
 
         <DetailRow href={`/client/${userId}/report`} icon={FileText} title={tm("open")} subtitle={tm("openHintCoach")} />
 
-        <GoalsSection profile={clientProfile} workouts={workouts} sets={sets} exercises={exercises} editable={false} />
+        <GoalsSection userId={userId} workouts={workouts} sets={sets} exercises={exercises} bodyMetrics={clientMetrics} editable={false} />
 
         <HorseLoadSummary userId={userId} />
 

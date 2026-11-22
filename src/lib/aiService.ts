@@ -48,19 +48,23 @@ export function clearApiKey(): void {
 // on this device before the first request (the summary sent to the assistant
 // includes health data: injuries, pain, readiness). Withdrawn from Settings.
 const CONSENT_STORAGE = "traintrack.aiConsent";
+// Raised whenever what is sent grows (2: goals and body weight): the agreement is asked again.
+const CONSENT_VERSION = 2;
 
-/** When the athlete agreed (ISO date), or null: nothing is sent without it. */
+/** When the athlete agreed (ISO date) to what is sent now, or null: nothing is sent without it. */
 export function getAiConsent(): string | null {
   if (typeof window === "undefined") return null;
   try {
-    return window.localStorage.getItem(CONSENT_STORAGE);
+    const raw = window.localStorage.getItem(CONSENT_STORAGE);
+    const parsed = raw?.startsWith("{") ? (JSON.parse(raw) as { v?: number; at?: string }) : null;
+    return parsed && (parsed.v ?? 0) >= CONSENT_VERSION && parsed.at ? parsed.at : null;
   } catch {
     return null;
   }
 }
 
 export function giveAiConsent(): void {
-  window.localStorage.setItem(CONSENT_STORAGE, new Date().toISOString());
+  window.localStorage.setItem(CONSENT_STORAGE, JSON.stringify({ v: CONSENT_VERSION, at: new Date().toISOString() }));
 }
 
 export function withdrawAiConsent(): void {

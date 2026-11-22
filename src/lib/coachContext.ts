@@ -1,4 +1,5 @@
-import type { AthleteProfile, Exercise, Program, Workout, WorkoutSet } from "@/db";
+import type { AthleteProfile, BodyMetric, Exercise, Goal, Program, Workout, WorkoutSet } from "@/db";
+import { goalStatus } from "./goalTracking";
 import type { Injury } from "./injuries";
 import type { PainReport } from "./pain";
 import type { CoachProposal } from "./coach";
@@ -33,6 +34,9 @@ export function coachContext(input: {
   pains: PainReport[];
   readiness: { date: string; score: number | null }[];
   proposals: CoachProposal[];
+  /** The athlete's goals and weigh-ins (migration 075); optional. */
+  goals?: Goal[];
+  bodyMetrics?: Pick<BodyMetric, "date" | "weightKg">[];
 }): string {
   const from = addDays(input.today, -7 * WEEKS);
   const name = (id: number) => input.exercises.find((e) => e.id === id)?.name ?? `#${id}`;
@@ -48,6 +52,22 @@ export function coachContext(input: {
   if (pains.length) lines.push(`Pain reported (last 4 weeks): ${pains.map((x) => `${x.date} ${x.area} ${x.level}/10${x.exerciseName ? ` (${x.exerciseName})` : ""}`).join("; ")}.`);
   const scores = input.readiness.filter((r) => r.date >= addDays(input.today, -14) && r.score !== null).map((r) => r.score!);
   if (scores.length) lines.push(`Readiness (last 14 days, 0-100): average ${Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)} over ${scores.length} check-ins.`);
+
+  if (input.goals?.length) {
+    lines.push("", "Goals (main first):");
+    const data = { today: input.today, workouts: input.workouts, sets: input.sets, exercises: input.exercises, bodyMetrics: input.bodyMetrics ?? [] };
+    for (const g of input.goals) {
+      const s = goalStatus(g, data);
+      const what =
+        g.type === "strength" ? `estimated 1RM ${g.exerciseName} ${g.targetValue} kg`
+        : g.type === "time" ? `${g.scope} ${g.distanceM} m in under ${g.targetValue} s`
+        : g.type === "distance" ? `${g.scope} ${g.targetValue} m covered since ${g.createdAt.slice(0, 10)}`
+        : g.type === "frequency" ? `${g.targetValue} sessions a week (${g.scope ?? "all"})`
+        : `body weight ${g.targetValue} kg`;
+      const state = s.achievedOn ? `reached on ${s.achievedOn}` : s.current === null ? "nothing measured yet" : `now ${round1(s.current)}, ${Math.round(s.share * 100)}% of the way${s.onTrack === false ? ", behind" : s.onTrack ? ", on track" : ""}`;
+      lines.push(`- ${g.priority === 1 ? "[main] " : ""}${what}${g.deadline ? `, by ${g.deadline}` : ""}: ${state}.`);
+    }
+  }
 
   lines.push("", "Programs followed:");
   for (const prog of input.programs.filter((x) => !x.archivedAt)) {
