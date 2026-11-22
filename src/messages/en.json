@@ -2950,6 +2950,9 @@
     "formLowText": "The session starts lighter",
     "loadTitle": "Load rising too fast",
     "loadText": "Go lighter the next few days",
-    "competitionSoon": "{count, plural, =0 {Competition today} one {Competition in # day} other {Competition in # days}}"
+    "competitionSoon": "{count, plural, =0 {Competition today} one {Competition in # day} other {Competition in # days}}",
+    "areaAssistant": "Assistant",
+    "areaCompetitions": "Competitions",
+    "areaCoach": "Your coach"
   }
 }

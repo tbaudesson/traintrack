@@ -2950,6 +2950,9 @@
     "formLowText": "Die Einheit beginnt leichter",
     "loadTitle": "Belastung steigt zu schnell",
     "loadText": "Die nächsten Tage leichter trainieren",
-    "competitionSoon": "{count, plural, =0 {Wettkampf heute} one {Wettkampf in # Tag} other {Wettkampf in # Tagen}}"
+    "competitionSoon": "{count, plural, =0 {Wettkampf heute} one {Wettkampf in # Tag} other {Wettkampf in # Tagen}}",
+    "areaAssistant": "Assistent",
+    "areaCompetitions": "Wettkämpfe",
+    "areaCoach": "Dein Coach"
   }
 }

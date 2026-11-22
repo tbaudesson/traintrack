@@ -21,22 +21,22 @@ import { cn } from "@/lib/utils";
  * opens the screen where its detail lives; nothing here computes anew.
  */
 
-/** One line of "Worth knowing": an icon, what it is, where to see it. */
-export function AlertLine({ icon: Icon, tone = "info", title, text, href, action }: { icon: LucideIcon; tone?: "danger" | "warn" | "info"; title: string; text?: string; href: string; action: string }) {
+/**
+ * One line of "Worth knowing": the screen it opens as its title (Health,
+ * Performance…), so where a tap leads is never in doubt; under it, the point
+ * that matters, highlighted, and a word more.
+ */
+export function AlertLine({ icon: Icon, tone = "info", area, title, text, href }: { icon: LucideIcon; tone?: "danger" | "warn" | "info"; area: string; title: string; text?: string; href: string }) {
+  const color = tone === "danger" ? "text-rose-700 dark:text-rose-300" : tone === "warn" ? "text-amber-700 dark:text-amber-300" : "text-accent-text";
   return (
-    <Link href={href} className="t-panel flex min-h-12 items-center gap-3 rounded-xl px-3.5 py-2.5 transition-colors hover:border-accent-500/40">
-      <Icon
-        className={cn("size-5 shrink-0", tone === "danger" ? "text-rose-600 dark:text-rose-400" : tone === "warn" ? "text-amber-600 dark:text-amber-400" : "text-accent-text")}
-        aria-hidden="true"
-      />
+    <Link href={href} aria-label={`${area} : ${title}${text ? `, ${text}` : ""}`} className="t-panel flex min-h-12 items-center gap-3 rounded-xl px-3.5 py-2.5 transition-colors hover:border-accent-500/40">
+      <Icon className={cn("size-5 shrink-0", color)} aria-hidden="true" />
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-semibold">{title}</span>
+        <span className="block text-[0.7rem] font-semibold tracking-wide text-muted-foreground uppercase">{area}</span>
+        <span className={cn("block truncate text-sm font-semibold", tone === "info" ? "text-foreground" : color)}>{title}</span>
         {text && <span className="block truncate text-xs text-muted-foreground">{text}</span>}
       </span>
-      <span className="flex shrink-0 items-center text-sm font-medium text-accent-text">
-        {action}
-        <ChevronRight className="size-4" aria-hidden="true" />
-      </span>
+      <ChevronRight className="size-5 shrink-0 text-accent-text" aria-hidden="true" />
     </Link>
   );
 }
@@ -106,13 +106,11 @@ export function HomeProgress({ goal, data, week, load }: { goal: Goal | undefine
   if (!goal && !week && !load) return null;
   return (
     <section className="t-panel space-y-2.5 rounded-xl p-3.5" aria-labelledby="home-progress">
-      <div className="flex items-center">
-        <h2 id="home-progress" className="text-sm font-semibold">{t("progress")}</h2>
-        <Link href="/progress" className="ml-auto flex min-h-10 items-center gap-0.5 text-sm font-medium text-accent-text">
-          {t("performance")}
-          <ChevronRight className="size-4" aria-hidden="true" />
-        </Link>
-      </div>
+      {/* Titled by where it leads: Performance, the charts and the detail. */}
+      <Link href="/progress" className="flex min-h-10 items-center">
+        <h2 id="home-progress" className="text-sm font-semibold">{t("performance")}</h2>
+        <ChevronRight className="ml-auto size-5 text-accent-text" aria-hidden="true" />
+      </Link>
       {goal && status && (
         <Link href="/progress#goals" className="block space-y-1">
           <span className="flex items-center gap-2 text-sm">

@@ -2950,6 +2950,9 @@
     "formLowText": "La séance démarre plus légère",
     "loadTitle": "Charge en hausse trop rapide",
     "loadText": "Allégez ces prochains jours",
-    "competitionSoon": "{count, plural, =0 {Compétition aujourd'hui} one {Compétition dans # jour} other {Compétition dans # jours}}"
+    "competitionSoon": "{count, plural, =0 {Compétition aujourd'hui} one {Compétition dans # jour} other {Compétition dans # jours}}",
+    "areaAssistant": "Assistant",
+    "areaCompetitions": "Compétitions",
+    "areaCoach": "Votre coach"
   }
 }

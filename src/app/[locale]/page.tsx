@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, Award, CalendarClock, History } from "lucide-react";
+import { Activity, Award, CalendarClock, History, Users } from "lucide-react";
 import { sessionConflicts } from "@/lib/conflicts";
 import { AlertLine, HomeAlerts, HomeProgress, SessionMenu, useInjurySummary } from "@/components/domain/HomeZones";
 import { useGoals } from "@/hooks/useGoals";
@@ -156,6 +156,7 @@ export default function HomePage() {
   const trcv = useTranslations("recovery");
   const tex = useTranslations("exercises");
   const tz = useTranslations("homeZones");
+  const tnav = useTranslations("nav");
   const tload = useTranslations("load");
   const tm = useTranslations("more");
   const tcat = useTranslations("catalog");
@@ -374,33 +375,16 @@ export default function HomePage() {
   const deloadShown = deloading || (!!deload && deloadLaterFor() !== thisMonday);
   // Actionable news, in the signal of the day: a coach's comments, a team invitation.
   const commentsNode = comments.length > 0 && (
-    <Link href={sessionHref(comments[0].workoutId)} className="block">
-      <Card className="active:scale-[0.99]">
-        <CardContent className="flex items-center gap-3 py-3">
-          <MessageSquare className="size-5 shrink-0 text-accent-text" aria-hidden="true" />
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium">{t("newComments", { count: comments.length })}</p>
-            <p className="truncate text-xs text-muted-foreground">
-              {comments[0].authorName ?? "—"}{comments[0].body ? ` : ${comments[0].body}` : ""}
-            </p>
-          </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-        </CardContent>
-      </Card>
-    </Link>
+    <AlertLine
+      icon={MessageSquare}
+      area={tz("areaCoach")}
+      title={t("newComments", { count: comments.length })}
+      text={`${comments[0].authorName ?? "—"}${comments[0].body ? ` : ${comments[0].body}` : ""}`}
+      href={sessionHref(comments[0].workoutId)}
+    />
   );
   const inviteNode = hasTeamInvite && (
-    <Link href="/teams" className="block">
-      <Card className="active:scale-[0.99]">
-        <CardContent className="flex items-center gap-3 py-3">
-          <div className="flex-1">
-            <p className="text-sm font-medium">{t("teamInvite")}</p>
-            <p className="text-xs text-muted-foreground">{t("teamInviteDesc")}</p>
-          </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-        </CardContent>
-      </Card>
-    </Link>
+    <AlertLine icon={Users} area={tnav("teams")} title={t("teamInvite")} text={t("teamInviteDesc")} href="/teams" />
   );
   // Today's form: asked for when not given yet; otherwise its score, when nothing else is pressing.
   const readinessNode = hasFeature("readiness") && (
@@ -458,10 +442,10 @@ export default function HomePage() {
 
   // "Worth knowing": what matters now, most pressing first; the first two show, the others behind "+ n".
   const alerts: { key: string; node: ReactNode }[] = [
-    ...(injuryLine ? [{ key: "injury", node: <AlertLine icon={injuryLine.icon} tone={injuryLine.tone} title={injuryLine.title} text={injuryLine.text} href="/health#injuries" action={tz("see")} /> }] : []),
+    ...(injuryLine ? [{ key: "injury", node: <AlertLine icon={injuryLine.icon} tone={injuryLine.tone} area={tnav("health")} title={injuryLine.title} text={injuryLine.text} href="/health#injuries" /> }] : []),
     ...(lowForm !== null && lowForm < LOW_READINESS ? [{ key: "form", node: <ReadinessBanner readiness={lowForm} keptNormal={lighterToday.keptNormal} onKeep={lighterToday.setKeptNormal} /> }] : []),
     ...(load && (load.zone === "caution" || load.zone === "danger")
-      ? [{ key: "load", node: <AlertLine icon={Activity} tone={load.zone === "danger" ? "danger" : "warn"} title={tz("loadTitle")} text={`${tload(`zone_${load.zone}`)} · ${tz("loadText")}`} href="/progress#chart-load" action={tz("see")} /> }]
+      ? [{ key: "load", node: <AlertLine icon={Activity} tone={load.zone === "danger" ? "danger" : "warn"} area={tnav("sectionPerformance")} title={tz("loadTitle")} text={`${tload(`zone_${load.zone}`)} · ${tz("loadText")}`} href="/progress#chart-load" /> }]
       : []),
     ...(painInsight ? [insightNote("insight-pain", painInsight)] : []),
     ...(commentsNode ? [{ key: "comments", node: commentsNode }] : []),
@@ -471,15 +455,15 @@ export default function HomePage() {
           <AlertLine
             icon={CalendarClock}
             tone="warn"
+            area={tz("areaAssistant")}
             title={trcv("conflictTitle")}
             text={`${conflict.first.label} (${short(conflict.first.date)}) · ${conflict.second.label} (${short(conflict.second.date)}) · ${conflict.groups.map((g) => tex(`mg_${g}`).toLowerCase()).join(", ")}`}
             href="/assistant"
-            action={tz("see")}
           />
         ) }]
       : []),
     ...(nextCompetition && competitionIn !== null && competitionIn <= 7
-      ? [{ key: "competition", node: <AlertLine icon={Award} title={tz("competitionSoon", { count: competitionIn })} text={`${nextCompetition.event} · ${short(nextCompetition.date)}`} href="/competitions" action={tz("see")} /> }]
+      ? [{ key: "competition", node: <AlertLine icon={Award} area={tz("areaCompetitions")} title={tz("competitionSoon", { count: competitionIn })} text={`${nextCompetition.event} · ${short(nextCompetition.date)}`} href="/competitions" /> }]
       : []),
   ];
 
@@ -541,10 +525,10 @@ export default function HomePage() {
     ...(lastDone ? [{ key: "last", node: (
       <AlertLine
         icon={History}
+        area={tnav("history")}
         title={t("lastSession")}
         text={[lastDone.date === today ? t("lastToday") : short(lastDone.date), lastDone.title, lastDone.sessionRpe ? t("lastEffort", { rpe: lastDone.sessionRpe }) : null].filter(Boolean).join(" · ")}
         href={sessionHref(lastDone.id!)}
-        action={tz("see")}
       />
     ) }] : []),
     ...(steadyInsight ? [insightNote("insight-steady", steadyInsight)] : []),
