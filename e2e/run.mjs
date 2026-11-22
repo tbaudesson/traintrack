@@ -153,7 +153,14 @@ const exerciseDetails = Object.fromEntries(
     .map((m) => [m[4].replace(/''/g, "'"), { movements: JSON.parse(m[1]), level: m[2], secondaryMuscles: JSON.parse(m[3]) }])
 );
 if (Object.keys(exerciseDetails).length !== 141) throw new Error(`076: ${Object.keys(exerciseDetails).length} exercises described`);
-const libraryRows = [...library.values()].map((e) => ({ ...e, injuryRules: exerciseRules[e.name] ?? null, ...(exerciseDetails[e.name] ?? {}) }));
+// Their key points and usual faults, as migration 079 fills them.
+const exerciseCues = {};
+for (const m of readFileSync("supabase/migrations/079_exercise_cues.sql", "utf8").matchAll(/SET (cues|mistakes) = '(.+?)'::jsonb, updated_at = now\(\) WHERE user_id IS NULL AND name = '((?:[^']|'')+)'/g)) {
+  const name = m[3].replace(/''/g, "'");
+  exerciseCues[name] = { ...(exerciseCues[name] ?? {}), [m[1]]: JSON.parse(m[2].replace(/''/g, "'")) };
+}
+if (Object.keys(exerciseCues).length !== 141) throw new Error(`079: ${Object.keys(exerciseCues).length} exercises with cues`);
+const libraryRows = [...library.values()].map((e) => ({ ...e, injuryRules: exerciseRules[e.name] ?? null, ...(exerciseDetails[e.name] ?? {}), ...(exerciseCues[e.name] ?? {}) }));
 
 // A signed-in user as the app caches it, a profile, and the exercise library.
 await page.evaluate(async ({ user, libraryRows }) => {
@@ -2122,6 +2129,15 @@ await test("a watch file already imported is not logged a second time", async ()
   expect(await dialog.getByRole("button", { name: "Remplir la séance" }).isDisabled(), "the duplicate can still be saved");
   await dialog.getByRole("link", { name: "Ouvrir cette séance" }).click();
   await page.waitForURL(new RegExp(`id=${first}$`), { timeout: 10000 });
+});
+
+await test("an exercise's card gives its key points and usual faults in one's language", async () => {
+  await page.goto(`${BASE}/fr/exercises`);
+  await page.getByPlaceholder(/Rechercher/).fill("soulevé de terre");
+  await page.getByRole("button", { name: /^Soulevé de terre$/ }).first().click();
+  await page.getByText("Points clés").first().waitFor({ timeout: 5000 });
+  await page.getByText("Erreurs fréquentes").first().waitFor({ timeout: 5000 });
+  await page.getByText("Placer la barre au-dessus du milieu des pieds").waitFor({ timeout: 5000 });
 });
 
 await test("no page threw an error", async () => {
