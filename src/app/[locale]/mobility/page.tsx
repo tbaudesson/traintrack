@@ -35,12 +35,14 @@ import { IntervalPlayer } from "@/components/domain/IntervalPlayer";
 const FOCUS_MUSCLES: Record<string, MuscleGroup[]> = { full: ["full_body"], abs: ["core"], lower: ["legs", "core"] };
 
 /** The mode and the workout from the link: "?mode=stretch&workout=12". */
-function fromLink(): { mode: MobilityMode; workoutId?: number } {
+function fromLink(): { mode: MobilityMode; workoutId?: number; minutes?: number } {
   try {
     const params = new URLSearchParams(window.location.search);
     const id = Number(params.get("workout"));
     const asked = params.get("mode");
-    return { mode: asked === "stretch" || asked === "yoga" ? asked : "warmup", workoutId: id > 0 ? id : undefined };
+    // One's plan B asks for a length too; a length the references do not offer is set right after.
+    const minutes = Number(params.get("minutes"));
+    return { mode: asked === "stretch" || asked === "yoga" ? asked : "warmup", workoutId: id > 0 ? id : undefined, minutes: minutes > 0 ? minutes : undefined };
   } catch {
     return { mode: "warmup" };
   }
@@ -59,7 +61,7 @@ export default function MobilityPage() {
   const tinj = useTranslations("injuries");
   const tpain = useTranslations("pain");
   const locale = useLocale();
-  const [link, setLink] = useState<{ mode: MobilityMode; workoutId?: number } | null>(null);
+  const [link, setLink] = useState<{ mode: MobilityMode; workoutId?: number; minutes?: number } | null>(null);
   const [mode, setMode] = useState<MobilityMode>("warmup");
   const [target, setTarget] = useState<MobilityTarget | "session">("full");
   const [minutes, setMinutes] = useState(5);
@@ -75,6 +77,7 @@ export default function MobilityPage() {
     /* eslint-disable react-hooks/set-state-in-effect -- the link is read on the client only */
     setLink(read);
     setMode(read.mode);
+    if (read.minutes) setMinutes(read.minutes);
     if (read.workoutId) setTarget("session");
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);

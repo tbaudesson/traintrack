@@ -1,3 +1,4 @@
+import { readPlanB, type PlanB } from "./planB";
 // App appearance: light/dark/system mode + brand accent color.
 
 export type ThemeMode = "light" | "dark" | "system";
@@ -90,12 +91,14 @@ export interface AppPrefs {
   voice: boolean;
   /** The menu: round buttons or the dial; null follows the style (the dial in Dynamic). */
   wheel: "pills" | "dial" | null;
+  /** What to do on a day without time for the planned session, offered from the session card. */
+  planB: PlanB | null;
 }
 
 const PREFS_KEY = "traintrack.prefs";
 const PREFS_EVENT = "traintrack-prefs";
 const DEFAULT_REST: RestPrefs = { defaultSec: 90, warmupSec: 60, sound: false, vibrate: true, notify: false, autoChain: true };
-const DEFAULT_PREFS: AppPrefs = { style: "classic", sport: null, sport2: null, allSports: false, silhouette: "male", rest: DEFAULT_REST, voice: true, wheel: null };
+const DEFAULT_PREFS: AppPrefs = { style: "classic", sport: null, sport2: null, allSports: false, silhouette: "male", rest: DEFAULT_REST, voice: true, wheel: null, planB: null };
 
 let cached: { raw: string | null; prefs: AppPrefs } | null = null;
 
@@ -133,6 +136,7 @@ export function getPrefs(): AppPrefs {
     },
     voice: typeof parsed.voice === "boolean" ? parsed.voice : true,
     wheel: parsed.wheel === "pills" || parsed.wheel === "dial" ? parsed.wheel : null,
+    planB: readPlanB(parsed.planB),
   };
   cached = { raw, prefs };
   return prefs;

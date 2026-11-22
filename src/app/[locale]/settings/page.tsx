@@ -13,6 +13,8 @@ import { saveSportChoice } from "@/hooks/useSportChoice";
 import { InjuryAreasPicker } from "@/components/domain/InjuryAreas";
 import { RestrictionsEditor } from "@/components/domain/RestrictionsEditor";
 import { StravaSection } from "@/components/domain/StravaSection";
+import { PlanBEditor } from "@/components/domain/PlanBEditor";
+import { Zap } from "lucide-react";
 import { Ban } from "lucide-react";
 import db from "@/db";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -105,7 +107,7 @@ function Section({ id, icon: Icon, title, action, children }: {
 
 /** Where each section is: the menu opens Settings on one of them (?section=…). */
 const SECTION_GROUP: Record<string, SettingsGroupId> = {
-  level: "training", plan: "training", injuries: "training", restrictions: "training", rest: "training",
+  level: "training", plan: "training", planb: "training", injuries: "training", restrictions: "training", rest: "training",
   sport: "personal", appearance: "personal", a11y: "personal", language: "personal", navigation: "personal",
   notifications: "alerts", ai: "alerts",
   resync: "data", strava: "data", import: "data", export: "data",
@@ -157,6 +159,7 @@ function SettingsContent() {
   const tconsent = useTranslations("aiConsent");
   const trs = useTranslations("restrictions");
   const tstrava = useTranslations("strava");
+  const tplanb = useTranslations("planB");
   const target = useSearchParams().get("section");
   const [openGroups, setOpenGroups] = useState<Set<SettingsGroupId>>(() => new Set(target && SECTION_GROUP[target] ? [SECTION_GROUP[target]] : []));
   const toggleGroup = (id: SettingsGroupId) =>
@@ -501,6 +504,11 @@ function SettingsContent() {
             <InjuryAreasPicker />
           </Section>
         )}
+
+        {/* One's plan B: what the session card offers on a day without time. */}
+        <Section id="planb" icon={Zap} title={tplanb("title")}>
+          <PlanBEditor />
+        </Section>
 
         {/* What one rules out besides an injury: a muscle, a movement, an exercise. */}
         {athlete && (

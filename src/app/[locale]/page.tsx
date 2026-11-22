@@ -1,6 +1,8 @@
 "use client";
 
-import { Activity, Award, CalendarClock, History, Users } from "lucide-react";
+import { Activity, Award, CalendarClock, History, Users, Zap } from "lucide-react";
+import { NoTimeDialog, usePlanBLabel } from "@/components/domain/NoTimeDialog";
+import { planBHref } from "@/lib/planB";
 import { sessionConflicts } from "@/lib/conflicts";
 import { AlertLine, HomeAlerts, HomeProgress, SessionMenu, useInjurySummary } from "@/components/domain/HomeZones";
 import { useGoals } from "@/hooks/useGoals";
@@ -158,6 +160,7 @@ export default function HomePage() {
   const tex = useTranslations("exercises");
   const tz = useTranslations("homeZones");
   const tnav = useTranslations("nav");
+  const tpb = useTranslations("planB");
   const tload = useTranslations("load");
   const tm = useTranslations("more");
   const tcat = useTranslations("catalog");
@@ -362,6 +365,24 @@ export default function HomePage() {
   const canExpress =
     hasFeature("planning") && !!session && session.date === today && !session.workoutId &&
     (session.day.cardio ? (cardioFull ?? 0) > 20 : session.day.exercises.length > 1 && dayMinutes(session.day) > 25);
+  // The session of the day, not begun: "No time today?" offers what fits instead.
+  const todayNotBegun = !!session && session.date === today && !session.workoutId;
+  // One's plan B, when chosen: from "No time today?", or straight from the card when nothing is planned today.
+  const planB = prefs.planB;
+  const planBLabel = usePlanBLabel();
+  const planBText = planB ? planBLabel(planB, programs) : null;
+  const [noTimeOpen, setNoTimeOpen] = useState(false);
+  function startPlanB() {
+    if (!planB) return;
+    const href = planBHref(planB);
+    if (href) return router.push(href);
+    if (planB.kind === "cardio") return void actions.startCardio(planB.sport, planB.minutes);
+    if (planB.kind === "program") {
+      const program = programs.find((p) => p.uuid === planB.programUuid);
+      if (program && program.structure[planB.dayIndex]) return void startDay(program, planB.dayIndex);
+      router.push("/settings?section=planb");
+    }
+  }
   // No time at all today: today's planned session, not begun, can go to another day.
   const canMoveToday =
     !!profile && hasFeature("planning") && !!session && session.date === today && !session.workoutId &&
@@ -785,15 +806,27 @@ export default function HomePage() {
                   />
                 </div>
               </div>
-              {/* Pressed for time: the shorter version, or another day, one tap from the card. */}
-              {(canExpress || canMoveToday) && (
+              {/* Pressed for time: the shorter version, one's plan B, or another day. */}
+              {todayNotBegun && (
                 <button
                   type="button"
-                  onClick={() => (canExpress ? setExpressOpen(true) : setMoveDate(today))}
+                  onClick={() => setNoTimeOpen(true)}
                   className="relative mt-2.5 flex min-h-10 w-full items-center justify-center gap-1.5 rounded-full text-sm font-semibold text-white/90 ring-1 ring-white/25 hover:bg-white/10"
                 >
                   <Timer className="size-4" aria-hidden="true" />
                   {t("noTimeToday")}
+                </button>
+              )}
+              {/* Nothing planned today: one's plan B, one tap away. */}
+              {!todayNotBegun && !(session?.date === today && session.workoutId) && planB && planBText && (
+                <button
+                  type="button"
+                  onClick={startPlanB}
+                  disabled={starting}
+                  className="relative mt-2.5 flex min-h-10 w-full items-center justify-center gap-1.5 rounded-full text-sm font-semibold text-white/90 ring-1 ring-white/25 hover:bg-white/10"
+                >
+                  <Zap className="size-4" aria-hidden="true" />
+                  <span className="truncate">{tpb("start", { label: planBText })}</span>
                 </button>
               )}
             </section>
@@ -858,6 +891,14 @@ export default function HomePage() {
             </div>
           </div>
 
+          <NoTimeDialog
+            open={noTimeOpen}
+            onOpenChange={setNoTimeOpen}
+            onExpress={canExpress ? () => setExpressOpen(true) : undefined}
+            planB={planBText}
+            onPlanB={startPlanB}
+            onMove={canMoveToday ? () => setMoveDate(today) : undefined}
+          />
           {canExpress && (
             <ExpressDialog
               key={`${session!.program.id}-${session!.index}`}

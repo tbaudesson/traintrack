@@ -69,8 +69,19 @@ export function useStartActions({
 
   const repeat = (source: Workout) => open(async () => sessionHref(await repeatWorkout(source, today, lighter)));
 
-  const startCardio = (sport: Sport) =>
-    open(async () => sessionHref(await createWorkout({ date: today, title: tc(`sport_${sport}`), kind: "cardio", sport })));
+  /** A free outing; with minutes (one's plan B), that length as its target. */
+  const startCardio = (sport: Sport, minutes?: number) =>
+    open(async () =>
+      sessionHref(
+        await createWorkout({
+          date: today,
+          title: tc(`sport_${sport}`),
+          kind: "cardio",
+          sport,
+          ...(minutes ? { plannedDay: { name: tc(`sport_${sport}`), exercises: [], cardio: { sport, durationMin: minutes } } } : {}),
+        })
+      )
+    );
 
   return { starting, repeatable, likeLastWeek, startDay, startFree, repeatLast, repeat, startCardio };
 }

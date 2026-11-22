@@ -584,7 +584,7 @@
     "resyncDone": "Aktuell",
     "changePassword": "Mein Passwort ändern",
     "groupTraining": "Training",
-    "groupTrainingSummary": "Niveau, Trainingstage, Verletzungen, Einschränkungen, Pausen",
+    "groupTrainingSummary": "Niveau, Trainingstage, Plan B, Verletzungen, Einschränkungen, Pausen",
     "groupPersonal": "Personalisierung",
     "groupPersonalSummary": "Sport, Erscheinungsbild, Lesbarkeit, Sprache, Menü",
     "groupAlerts": "Benachrichtigungen und Assistent",
@@ -2959,5 +2959,28 @@
     "areaAssistant": "Assistent",
     "areaCompetitions": "Wettkämpfe",
     "areaCoach": "Dein Coach"
+  },
+  "planB": {
+    "title": "Mein Plan B",
+    "hint": "Was du machst, wenn die geplante Einheit nicht passt oder nichts geplant ist: mit einem Tipp über die Tageskarte.",
+    "kind": "Art von Plan B",
+    "none": "Keiner",
+    "kind_timed": "HIIT",
+    "kind_mobility": "Mobilität",
+    "kind_cardio": "Ausdauereinheit",
+    "kind_program": "Ein Programmtag",
+    "minutes": "Dauer",
+    "min": "{m} min",
+    "program": "Programm",
+    "day": "Tag",
+    "noTimeTitle": "Heute keine Zeit?",
+    "shorter": "Kurzversion der Einheit",
+    "shorterText": "Die Zeit, die du hast, dieselbe Einheit",
+    "instead": "Stattdessen mein Plan B",
+    "choose": "Plan B wählen",
+    "chooseText": "HIIT, Mobilität, eine Einheit oder ein Programmtag, einmal eingestellt",
+    "move": "Einheit verschieben",
+    "moveText": "Auf einen anderen Tag der Woche",
+    "start": "Plan B: {label}"
   }
 }

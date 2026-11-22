@@ -309,6 +309,7 @@ await test("a sharp rise of the training load is flagged on the home screen", as
 await test("pressed for time, the session of the day has a short version", async () => {
   await page.goto(`${BASE}/fr`);
   await heroCard().getByRole("button", { name: "Pas le temps aujourd'hui ?" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: /Version courte de la séance/ }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByRole("heading", { name: "Séance express" }).waitFor({ timeout: 5000 });
   const times = dialog.getByRole("group", { name: "Temps disponible" }).getByRole("button");
@@ -2240,6 +2241,7 @@ await test("pressed for time, a run of the day has a short version too: same int
   if (await chip.count()) await chip.click();
   await hero.getByRole("heading", { name: "Sortie tempo" }).waitFor({ timeout: 10000 });
   await hero.getByRole("button", { name: "Pas le temps aujourd'hui ?" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: /Version courte de la séance/ }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByRole("heading", { name: "Séance express" }).waitFor({ timeout: 5000 });
   await dialog.getByRole("button", { name: "20 min" }).click();
@@ -2255,6 +2257,43 @@ await test("pressed for time, a run of the day has a short version too: same int
     return w.plannedDay?.cardio;
   });
   expect(planned?.durationMin === 20 && planned?.distanceKm === 4 && planned?.intensity === "Z3" && !planned?.steps, `planned ${JSON.stringify(planned)}`);
+});
+
+await test("a plan B chosen once is one tap away from the session card", async () => {
+  await page.goto(`${BASE}/fr/settings?section=planb`);
+  const section = page.locator("#settings-planb");
+  await section.getByRole("button", { name: "HIIT", exact: true }).click();
+  await section.getByRole("button", { name: "Abdos", exact: true }).click();
+  await section.getByRole("button", { name: "Abdos", exact: true, pressed: true }).waitFor({ timeout: 5000 });
+  // A session of the day not begun yet.
+  await page.evaluate(async (user) => {
+    const db = await new Promise((res, rej) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+    const now = new Date().toISOString();
+    const d = new Date();
+    const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const day = { key: "e2e-planb", name: "Séance plan B", exercises: [{ exerciseName: "Back Squat", targetSets: 3, targetReps: "5" }] };
+    await new Promise((res, rej) => { const tx = db.transaction("programs", "readwrite"); tx.objectStore("programs").add({ userId: user, ownerUserId: user, uuid: `e2e-planb-${Date.now()}`, name: "Programme plan B", structure: [day], weekdays: [((d.getDay() + 6) % 7) + 1], startDate: today, _dirty: 0, createdAt: now, updatedAt: now }); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+    db.close();
+  }, USER);
+  await page.goto(`${BASE}/fr`);
+  const hero = heroCard();
+  const chip = hero.getByRole("group", { name: "Séances prévues ce jour-là" }).getByRole("button", { name: /Programme plan B/ });
+  await chip.or(hero.getByRole("heading", { name: "Séance plan B" })).first().waitFor({ timeout: 10000 });
+  if (await chip.count()) await chip.click();
+  await hero.getByRole("heading", { name: "Séance plan B" }).waitFor({ timeout: 10000 });
+  const noTime = hero.getByRole("button", { name: "Pas le temps aujourd'hui ?" });
+  const direct = hero.getByRole("button", { name: /^Plan B : HIIT · Abdos/ });
+  await noTime.or(direct).first().waitFor({ timeout: 10000 });
+  if (await noTime.count()) {
+    await noTime.click();
+    await page.getByRole("dialog").getByRole("button", { name: /Mon plan B à la place/ }).click();
+  } else {
+    await direct.click();
+  }
+  await page.waitForURL(/\/fr\/intervals\?focus=abs&minutes=\d+/, { timeout: 10000 });
+  // Back to none: as before.
+  await page.goto(`${BASE}/fr/settings?section=planb`);
+  await page.locator("#settings-planb").getByRole("button", { name: "Aucun", exact: true }).click();
 });
 
 await test("no page threw an error", async () => {

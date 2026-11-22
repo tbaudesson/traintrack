@@ -584,7 +584,7 @@
     "resyncDone": "À jour",
     "changePassword": "Changer mon mot de passe",
     "groupTraining": "Entraînement",
-    "groupTrainingSummary": "Niveau, jours d'entraînement, blessures, restrictions, repos",
+    "groupTrainingSummary": "Niveau, jours d'entraînement, plan B, blessures, restrictions, repos",
     "groupPersonal": "Personnalisation",
     "groupPersonalSummary": "Sport, apparence, lisibilité, langue, menu",
     "groupAlerts": "Notifications et assistant",
@@ -2959,5 +2959,28 @@
     "areaAssistant": "Assistant",
     "areaCompetitions": "Compétitions",
     "areaCoach": "Votre coach"
+  },
+  "planB": {
+    "title": "Mon plan B",
+    "hint": "Ce que vous faites un jour où la séance prévue ne passe pas, ou quand rien n'est prévu : proposé d'un toucher depuis la carte du jour.",
+    "kind": "Type de plan B",
+    "none": "Aucun",
+    "kind_timed": "HIIT",
+    "kind_mobility": "Mobilité",
+    "kind_cardio": "Sortie d'endurance",
+    "kind_program": "Un jour de programme",
+    "minutes": "Durée",
+    "min": "{m} min",
+    "program": "Programme",
+    "day": "Jour",
+    "noTimeTitle": "Pas le temps aujourd'hui ?",
+    "shorter": "Version courte de la séance",
+    "shorterText": "Le temps que vous avez, la même séance",
+    "instead": "Mon plan B à la place",
+    "choose": "Choisir un plan B",
+    "chooseText": "HIIT, mobilité, une sortie ou un jour de programme, réglé une fois",
+    "move": "Déplacer la séance",
+    "moveText": "À un autre jour de la semaine",
+    "start": "Plan B : {label}"
   }
 }

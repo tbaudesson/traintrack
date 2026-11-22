@@ -584,7 +584,7 @@
     "resyncDone": "Up to date",
     "changePassword": "Change my password",
     "groupTraining": "Training",
-    "groupTrainingSummary": "Level, training days, injuries, restrictions, rest",
+    "groupTrainingSummary": "Level, training days, plan B, injuries, restrictions, rest",
     "groupPersonal": "Personalisation",
     "groupPersonalSummary": "Sport, appearance, readability, language, menu",
     "groupAlerts": "Notifications and assistant",
@@ -2959,5 +2959,28 @@
     "areaAssistant": "Assistant",
     "areaCompetitions": "Competitions",
     "areaCoach": "Your coach"
+  },
+  "planB": {
+    "title": "My plan B",
+    "hint": "What you do on a day the planned session does not fit, or when nothing is planned: offered in one tap from the session card.",
+    "kind": "Kind of plan B",
+    "none": "None",
+    "kind_timed": "HIIT",
+    "kind_mobility": "Mobility",
+    "kind_cardio": "Endurance outing",
+    "kind_program": "A program day",
+    "minutes": "Length",
+    "min": "{m} min",
+    "program": "Program",
+    "day": "Day",
+    "noTimeTitle": "No time today?",
+    "shorter": "Short version of the session",
+    "shorterText": "The time you have, the same session",
+    "instead": "My plan B instead",
+    "choose": "Choose a plan B",
+    "chooseText": "HIIT, mobility, an outing or a program day, set once",
+    "move": "Move the session",
+    "moveText": "To another day of the week",
+    "start": "Plan B: {label}"
   }
 }
