@@ -2289,16 +2289,24 @@ await test("a plan B chosen once is one tap away from the session card", async (
   await chip.or(hero.getByRole("heading", { name: "Séance plan B" })).first().waitFor({ timeout: 10000 });
   if (await chip.count()) await chip.click();
   await hero.getByRole("heading", { name: "Séance plan B" }).waitFor({ timeout: 10000 });
-  const noTime = hero.getByRole("button", { name: "Pas le temps aujourd'hui ?" });
-  const direct = hero.getByRole("button", { name: /^Plan B : HIIT · Abdos/ });
-  await noTime.or(direct).first().waitFor({ timeout: 10000 });
-  if (await noTime.count()) {
-    await noTime.click();
-    await page.getByRole("dialog").getByRole("button", { name: /Mon plan B à la place/ }).click();
-  } else {
-    await direct.click();
-  }
+  // From "No time today?": the plan B among the choices.
+  await hero.getByRole("button", { name: "Pas le temps aujourd'hui ?" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: /Mon plan B à la place/ }).waitFor({ timeout: 5000 });
+  await page.keyboard.press("Escape");
+  // The session opened, nothing done: the plan B, always on the card, calls it off and starts.
+  await hero.getByRole("button", { name: /^Démarrer|^Commencer/ }).click();
+  await page.waitForURL(/\/fr\/log\/session\?id=\d+/, { timeout: 10000 });
+  const opened = Number(new URL(page.url()).searchParams.get("id"));
+  await page.goto(`${BASE}/fr`);
+  await heroCard().getByRole("button", { name: /^Plan B : HIIT · Abdos/ }).click();
   await page.waitForURL(/\/fr\/intervals\?focus=abs&minutes=\d+/, { timeout: 10000 });
+  const cancelled = await page.evaluate(async (id) => {
+    const db = await new Promise((res) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); });
+    const w = await new Promise((res) => { const r = db.transaction("workouts").objectStore("workouts").get(id); r.onsuccess = () => res(r.result); });
+    db.close();
+    return !!w?.cancelledAt;
+  }, opened);
+  expect(cancelled, "the session opened for nothing was not called off");
   // Back to none: as before.
   await page.goto(`${BASE}/fr/settings?section=planb`);
   await page.locator("#settings-planb").getByRole("button", { name: "Aucun", exact: true }).click();

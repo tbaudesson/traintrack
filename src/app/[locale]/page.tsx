@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAthleteProfile } from "@/hooks/useAthleteProfile";
-import { useWorkouts } from "@/hooks/useWorkouts";
+import { updateWorkout, useWorkouts } from "@/hooks/useWorkouts";
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
 import { useTrainablePrograms } from "@/hooks/usePrograms";
 import { useProgramTemplates } from "@/lib/templateService";
@@ -372,8 +372,14 @@ export default function HomePage() {
   const planBLabel = usePlanBLabel();
   const planBText = planB ? planBLabel(planB, programs) : null;
   const [noTimeOpen, setNoTimeOpen] = useState(false);
-  function startPlanB() {
-    if (!planB) return;
+  async function startPlanB() {
+    if (!planB) return router.push("/settings?section=planb");
+    // The session of the day opened for nothing makes way: called off (kept in the history, can be brought back).
+    // One with a set done is real work, and stays.
+    const openedId = session?.date === today ? session.workoutId : undefined;
+    if (openedId && !sets.some((s) => s.workoutId === openedId && s.completed)) {
+      await updateWorkout(openedId, { cancelledAt: new Date().toISOString() });
+    }
     const href = planBHref(planB);
     if (href) return router.push(href);
     if (planB.kind === "cardio") return void actions.startCardio(planB.sport, planB.minutes);
@@ -817,18 +823,16 @@ export default function HomePage() {
                   {t("noTimeToday")}
                 </button>
               )}
-              {/* Nothing planned today: one's plan B, one tap away. */}
-              {!todayNotBegun && !(session?.date === today && session.workoutId) && planB && planBText && (
-                <button
-                  type="button"
-                  onClick={startPlanB}
-                  disabled={starting}
-                  className="relative mt-2.5 flex min-h-10 w-full items-center justify-center gap-1.5 rounded-full text-sm font-semibold text-white/90 ring-1 ring-white/25 hover:bg-white/10"
-                >
-                  <Zap className="size-4" aria-hidden="true" />
-                  <span className="truncate">{tpb("start", { label: planBText })}</span>
-                </button>
-              )}
+              {/* One's plan B, always one tap away (or the way to choose one). */}
+              <button
+                type="button"
+                onClick={() => void startPlanB()}
+                disabled={starting}
+                className="relative mt-2 flex min-h-10 w-full items-center justify-center gap-1.5 rounded-full text-sm font-semibold text-white/90 ring-1 ring-white/25 hover:bg-white/10"
+              >
+                <Zap className="size-4 shrink-0" aria-hidden="true" />
+                <span className="truncate">{planBText ? tpb("start", { label: planBText }) : tpb("choose")}</span>
+              </button>
             </section>
 
             {alerts.length > 0 && (
@@ -896,7 +900,7 @@ export default function HomePage() {
             onOpenChange={setNoTimeOpen}
             onExpress={canExpress ? () => setExpressOpen(true) : undefined}
             planB={planBText}
-            onPlanB={startPlanB}
+            onPlanB={() => void startPlanB()}
             onMove={canMoveToday ? () => setMoveDate(today) : undefined}
           />
           {canExpress && (
