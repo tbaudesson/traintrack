@@ -92,6 +92,8 @@ export interface AthleteProfile extends SyncFields {
   secondSport?: string | null;
   /** Muscles, movements or exercises ruled out (migration 076). */
   restrictions?: Restriction[] | null;
+  /** One's plan B, read by lib/planB ({"kind": "none"} when chosen to have none; migration 081). */
+  planB?: unknown;
   /** Diet, foods left out and meals a day, for the meal ideas, see lib/mealCatalog. */
   mealPrefs?: MealPrefs | null;
   /** Optional daily macro targets */

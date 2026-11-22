@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { getPrefs, savePrefs, type AppPrefs } from "@/lib/appTheme";
 import { reconcileChoice, storeChoice } from "@/lib/sportChoice";
+import { reconcilePlanB, storePlanB, type PlanB } from "@/lib/planB";
 import { updateTrainingSchedule, useAthleteProfileOrNull } from "@/hooks/useAthleteProfile";
 
 type Change = Partial<Pick<AppPrefs, "sport" | "sport2" | "allSports">>;
@@ -10,6 +11,12 @@ export async function saveSportChoice(change: Change): Promise<void> {
   const next = { ...getPrefs(), ...change };
   await updateTrainingSchedule(storeChoice(next));
   savePrefs(change);
+}
+
+/** One's plan B: on this device at once, and with the profile so the other devices follow (migration 081). */
+export async function savePlanB(planB: PlanB | null): Promise<void> {
+  await updateTrainingSchedule({ planB: storePlanB(planB) });
+  savePrefs({ planB });
 }
 
 /**
@@ -29,4 +36,13 @@ export function useSportChoiceSync(): void {
     if (action?.kind === "useProfile") savePrefs(action.choice);
     else if (action?.kind === "saveToProfile") void updateTrainingSchedule(action.stored);
   }, [loaded, favorite, second]);
+
+  // The plan B likewise, following the profile's changes only.
+  const planB = JSON.stringify(profile?.planB ?? null);
+  useEffect(() => {
+    if (!loaded) return;
+    const action = reconcilePlanB(getPrefs().planB, JSON.parse(planB));
+    if (action?.kind === "useProfile") savePrefs({ planB: action.planB });
+    else if (action?.kind === "saveToProfile") void updateTrainingSchedule({ planB: action.stored });
+  }, [loaded, planB]);
 }

@@ -47,3 +47,25 @@ export function planBHref(p: PlanB): string | null {
   if (p.kind === "mobility") return `/mobility?mode=${p.mode}&minutes=${p.minutes}`;
   return null;
 }
+
+/** The plan B as the profile keeps it: the plan, or {"kind": "none"} when chosen to have none. */
+export type StoredPlanB = PlanB | { kind: "none" };
+
+export const storePlanB = (p: PlanB | null): StoredPlanB => p ?? { kind: "none" };
+
+const samePlanB = (a: PlanB | null, b: PlanB | null) => JSON.stringify(a) === JSON.stringify(b);
+
+/**
+ * The profile and this device disagree: the profile wins once it holds a
+ * choice (made on any device, "none" included); a device with a plan B and a
+ * profile without any choice hands it over. Nothing to do otherwise.
+ */
+export function reconcilePlanB(local: PlanB | null, stored: unknown): { kind: "useProfile"; planB: PlanB | null } | { kind: "saveToProfile"; stored: StoredPlanB } | null {
+  if (stored && typeof stored === "object" && (stored as { kind?: unknown }).kind === "none") {
+    return local ? { kind: "useProfile", planB: null } : null;
+  }
+  const fromProfile = readPlanB(stored);
+  if (fromProfile) return samePlanB(fromProfile, local) ? null : { kind: "useProfile", planB: fromProfile };
+  if (stored == null && local) return { kind: "saveToProfile", stored: storePlanB(local) };
+  return null;
+}

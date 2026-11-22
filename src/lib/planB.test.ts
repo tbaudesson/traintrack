@@ -18,3 +18,20 @@ describe("one's plan B", () => {
     expect(planBHref({ kind: "cardio", sport: "run", minutes: 20 })).toBeNull();
   });
 });
+
+describe("the plan B kept with the profile", async () => {
+  const { reconcilePlanB, storePlanB } = await import("./planB");
+  const hiit = { kind: "timed" as const, focus: "full" as const, minutes: 15 };
+
+  it("comes from the profile once chosen anywhere, none included", () => {
+    expect(reconcilePlanB(null, hiit)).toEqual({ kind: "useProfile", planB: hiit });
+    expect(reconcilePlanB(hiit, { kind: "none" })).toEqual({ kind: "useProfile", planB: null });
+    expect(reconcilePlanB(hiit, hiit)).toBeNull();
+  });
+
+  it("is handed to a profile that has none yet", () => {
+    expect(reconcilePlanB(hiit, null)).toEqual({ kind: "saveToProfile", stored: hiit });
+    expect(reconcilePlanB(null, null)).toBeNull();
+    expect(storePlanB(null)).toEqual({ kind: "none" });
+  });
+});

@@ -6,7 +6,7 @@ import { useAppPrefs } from "@/hooks/useAppPrefs";
 import { useTimedGuidance } from "@/hooks/useTimedGuidance";
 import { useMobilityGuidance } from "@/hooks/useMobilityGuidance";
 import { useTrainablePrograms } from "@/hooks/usePrograms";
-import { savePrefs } from "@/lib/appTheme";
+import { savePlanB } from "@/hooks/useSportChoice";
 import { CARDIO_MINUTES, PLAN_B_KINDS, type PlanB } from "@/lib/planB";
 import { INTERVAL_FOCUSES } from "@/lib/intervals";
 import { DISTANCE_SPORTS } from "@/lib/cardio";
@@ -29,7 +29,7 @@ export function PlanBEditor() {
   const mobility = useMobilityGuidance();
   const programs = useTrainablePrograms();
   const plan = prefs.planB;
-  const set = (planB: PlanB | null) => savePrefs({ planB });
+  const set = (planB: PlanB | null) => void savePlanB(planB);
 
   const chip = (on: boolean) => cn("min-h-11 rounded-full border px-3 text-sm font-medium", on ? "border-accent-500 bg-accent-500 text-white" : "border-border hover:bg-muted");
   const timedMinutes = timed?.minutes ?? [10, 15, 20];

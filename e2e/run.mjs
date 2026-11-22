@@ -2265,6 +2265,14 @@ await test("a plan B chosen once is one tap away from the session card", async (
   await section.getByRole("button", { name: "HIIT", exact: true }).click();
   await section.getByRole("button", { name: "Abdos", exact: true }).click();
   await section.getByRole("button", { name: "Abdos", exact: true, pressed: true }).waitFor({ timeout: 5000 });
+  // Kept with the profile too, so the other devices follow (migration 081).
+  const stored = await page.evaluate(async () => {
+    const db = await new Promise((res) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); });
+    const all = await new Promise((res) => { const r = db.transaction("athleteProfiles").objectStore("athleteProfiles").getAll(); r.onsuccess = () => res(r.result); });
+    db.close();
+    return all.map((p) => p.planB);
+  });
+  expect(stored.length > 0 && stored.every((b) => b?.kind === "timed" && b?.focus === "abs"), `profile plan B ${JSON.stringify(stored)}`);
   // A session of the day not begun yet.
   await page.evaluate(async (user) => {
     const db = await new Promise((res, rej) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
