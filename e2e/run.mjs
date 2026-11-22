@@ -2054,6 +2054,45 @@ await test("a movement ruled out is flagged, and its exercise replaced only when
   await page.getByText("Aucune restriction.").waitFor({ timeout: 5000 });
 });
 
+await test("the body's signals sit beside the check-in, against one's usual values", async () => {
+  const today = new Date();
+  const dayOf = (n) => { const d = new Date(today.getTime() - n * 86400000); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+  const rows = [[20, 52, 70], [16, 51, 72], [12, 53, 69], [8, 52, 71], [4, 52, 70], [0, 59, 55]].map(([n, rhr, hrv]) => ({ date: dayOf(n), restingHr: rhr, hrv }));
+  const ids = await page.evaluate(async ({ user, rows }) => {
+    const db = await new Promise((res, rej) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+    const now = new Date().toISOString();
+    const out = [];
+    for (const [i, row] of rows.entries()) {
+      out.push(await new Promise((res, rej) => { const tx = db.transaction("healthMetrics", "readwrite"); const r = tx.objectStore("healthMetrics").add({ ...row, userId: user, uuid: `e2e-hm-${i}-${Date.now()}`, _dirty: 0, createdAt: now, updatedAt: now }); tx.oncomplete = () => res(r.result); tx.onerror = () => rej(tx.error); }));
+    }
+    db.close();
+    return out;
+  }, { user: USER, rows });
+  try {
+    await page.goto(`${BASE}/fr/readiness`);
+    const card = page.locator("section", { has: page.locator("#body-signals") });
+    await card.waitFor({ timeout: 10000 });
+    await card.getByText(/59 bpm, contre 52 d'habitude \(\+7\)/).waitFor({ timeout: 5000 });
+    await card.getByText(/55 ms, contre 70 d'habitude \(-22 %\)/).waitFor({ timeout: 5000 });
+    await card.getByText(/Ce n'est pas un avis médical/).waitFor({ timeout: 5000 });
+    await page.getByRole("heading", { name: "Votre forme sur 4 semaines" }).waitFor({ timeout: 5000 });
+  } finally {
+    await page.evaluate(async (ids) => {
+      const db = await new Promise((res) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); });
+      await new Promise((res) => { const tx = db.transaction("healthMetrics", "readwrite"); for (const id of ids) tx.objectStore("healthMetrics").delete(id); tx.oncomplete = res; });
+      db.close();
+    }, ids);
+  }
+});
+
+await test("Progress draws the pace of each outing over six months", async () => {
+  await page.goto(`${BASE}/fr/progress`);
+  const fold = page.getByText("Allure et puissance sur six mois");
+  await fold.waitFor({ timeout: 10000 });
+  await fold.click();
+  await page.getByRole("img", { name: /Allure \(\/km\).*séances sur six mois/ }).or(page.getByText(/Il faut au moins trois sorties/)).first().waitFor({ timeout: 5000 });
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });

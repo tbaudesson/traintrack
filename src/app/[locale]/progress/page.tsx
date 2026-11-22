@@ -16,6 +16,7 @@ import { useInsights } from "@/hooks/useInsights";
 import { trainingLoad } from "@/lib/trainingLoad";
 import { TrainingLoadCard } from "@/components/domain/TrainingLoadCard";
 import { LoadHistoryCard } from "@/components/domain/LoadHistoryCard";
+import { EnduranceTrendCard } from "@/components/domain/EnduranceTrendCard";
 import { InsightAction, InsightCard, MoreInsights } from "@/components/domain/InsightCard";
 import type { InsightChart } from "@/lib/insights";
 import { mondayOfDate } from "@/lib/weekPlan";
@@ -295,6 +296,12 @@ export default function ProgressPage() {
             <Fold id="chart-load-history" title={t("loadHistory")}>
               <LoadHistoryCard workouts={workouts} sets={sets} today={today} />
             </Fold>
+            {/* The pace of each outing and the power of each ride. */}
+            {workouts.some((w) => w.kind === "cardio") && (
+              <Fold id="chart-endurance-trend" title={t("enduranceTrend")}>
+                <EnduranceTrendCard workouts={workouts} today={today} />
+              </Fold>
+            )}
             {hasFeature("reports") && (
               <WeeklyReportCard
                 workouts={workouts}

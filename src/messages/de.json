@@ -443,7 +443,8 @@
     "sectionMine": "Meine Zahlen",
     "loadHistory": "Belastung nach Disziplin",
     "assistantLink": "Assistent: Was in meinen Programmen ändern?",
-    "assistantHint": "Erklärte Vorschläge, nur übernommen, wenn du willst"
+    "assistantHint": "Erklärte Vorschläge, nur übernommen, wenn du willst",
+    "enduranceTrend": "Tempo und Leistung über sechs Monate"
   },
   "exercises": {
     "translations": "Übersetzungen",
@@ -2705,7 +2706,9 @@
     "zone_6": "anaerob",
     "zone_7": "neuromuskulär",
     "needFtp": "Gib deine FTP an, um Leistungszone und Belastung der Fahrt zu sehen.",
-    "tssHint": "Aus der Durchschnittsleistung geschätzt (der genaue TSS nutzt die normalisierte Leistung, höher bei unregelmäßiger Fahrt). Ein Richtwert, getrennt von der Belastung Minuten × Anstrengung."
+    "tssHint": "Aus der Durchschnittsleistung geschätzt (der genaue TSS nutzt die normalisierte Leistung, höher bei unregelmäßiger Fahrt). Ein Richtwert, getrennt von der Belastung Minuten × Anstrengung.",
+    "normalizedPower": "Normalisierte Leistung: {watts} W",
+    "tssHintNp": "IF und TSS aus der normalisierten Leistung der Datei: die echte Belastung einer ungleichmäßigen Fahrt."
   },
   "assistant": {
     "title": "Assistent",
@@ -2865,5 +2868,31 @@
     "movementShort_jump": "Sprünge",
     "movementShort_conditioning": "Cardio mit Körpergewicht",
     "movementShort_mobility": "Beweglichkeit"
+  },
+  "recovery": {
+    "title": "Körpersignale",
+    "restingHr": "Ruhepuls",
+    "hrv": "HRV",
+    "restingHrLine": "{value} bpm, sonst {baseline} ({delta}).",
+    "hrvLine": "{value} ms, sonst {baseline} ({delta} %).",
+    "flaggedHint": "Eine Abweichung vom Üblichen geht oft mit Müdigkeit, schlechtem Schlaf oder einer beginnenden Krankheit einher. Ein einzelner Wert sagt wenig: Hör auf dein Gefühl und trainiere leichter, wenn es in dieselbe Richtung weist. Kein medizinischer Rat.",
+    "calmHint": "Verglichen mit deinem eigenen Durchschnitt der letzten 4 Wochen. Markiert ab {beats} bpm darüber (Ruhepuls) oder {share} % darunter (HRV).",
+    "trendsTitle": "Deine Form über 4 Wochen",
+    "trendsHint": "Jeder Wert auf seiner eigenen Skala, ab drei Messungen.",
+    "lowerIsBetter": "niedriger ist besser",
+    "trendLabel": "{name}: {count} Messungen in 4 Wochen",
+    "trimp": "TRIMP ≈ {value}",
+    "trimpHint": "Die Herzarbeit während der Einheit (Minuten gewichtet nach dem Durchschnittspuls, vom Ruhe- zum Maximalpuls). Eine Schätzung, nur mit dem Durchschnitt.",
+    "conflict": "{first} und dann {second} belasten beide {groups} in weniger als 48 h: verschiebe eine oder mache die zweite leichter.",
+    "conflictTitle": "Einheiten zu dicht",
+    "conflictAction": "Woche anpassen"
+  },
+  "enduranceTrend": {
+    "empty": "Für eine Kurve braucht es mindestens drei Einheiten einer Sportart in sechs Monaten.",
+    "sport": "Sportart",
+    "pace": "Tempo ({unit}), höher = schneller",
+    "power": "Leistung (W)",
+    "chartLabel": "{name}: {count} Einheiten in sechs Monaten",
+    "hint": "Jeder Punkt ist eine Einheit. Das Tempo hängt von Strecke und Intensität ab: Vergleiche Ähnliches."
   }
 }

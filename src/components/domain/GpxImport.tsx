@@ -83,6 +83,7 @@ export function GpxImport({
         avgCadence: activity.avgCadence ?? null,
         avgPowerW: activity.avgPowerW ?? null,
         maxPowerW: activity.maxPowerW ?? null,
+        normalizedPowerW: activity.normalizedPowerW ?? null,
         ...(activity.poolLengthM !== undefined ? { poolLengthM: activity.poolLengthM } : {}),
         ...(activity.swimStroke ? { swimStroke: activity.swimStroke } : {}),
         ...(activity.strokesPerLength ? { strokesPerLength: activity.strokesPerLength } : {}),

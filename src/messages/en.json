@@ -443,7 +443,8 @@
     "sectionMine": "My figures",
     "loadHistory": "Load by discipline",
     "assistantLink": "Assistant: what to change in my programs?",
-    "assistantHint": "Explained proposals, applied only if you want"
+    "assistantHint": "Explained proposals, applied only if you want",
+    "enduranceTrend": "Pace and power over six months"
   },
   "exercises": {
     "translations": "Translations",
@@ -2705,7 +2706,9 @@
     "zone_6": "anaerobic",
     "zone_7": "neuromuscular",
     "needFtp": "Give your FTP to see the power zone and the ride load.",
-    "tssHint": "Estimated from the average power (the exact TSS uses normalised power, higher on an uneven ride). A guide, kept apart from the minutes × effort load."
+    "tssHint": "Estimated from the average power (the exact TSS uses normalised power, higher on an uneven ride). A guide, kept apart from the minutes × effort load.",
+    "normalizedPower": "Normalized power: {watts} W",
+    "tssHintNp": "IF and TSS from the file's normalized power: the real load of an uneven ride."
   },
   "assistant": {
     "title": "Assistant",
@@ -2865,5 +2868,31 @@
     "movementShort_jump": "jumps",
     "movementShort_conditioning": "bodyweight cardio",
     "movementShort_mobility": "flexibility"
+  },
+  "recovery": {
+    "title": "Body signals",
+    "restingHr": "Resting HR",
+    "hrv": "HRV",
+    "restingHrLine": "{value} bpm, against {baseline} usually ({delta}).",
+    "hrvLine": "{value} ms, against {baseline} usually ({delta} %).",
+    "flaggedHint": "A gap from your usual value often goes with fatigue, poor sleep or an illness coming. One reading says little: listen to how you feel, and go lighter if it points the same way. Not medical advice.",
+    "calmHint": "Compared with your own average of the last 4 weeks. Flagged from {beats} bpm above (resting HR) or {share} % below (HRV).",
+    "trendsTitle": "Your form over 4 weeks",
+    "trendsHint": "Each measure on its own scale, from three readings.",
+    "lowerIsBetter": "lower is better",
+    "trendLabel": "{name}: {count} readings over 4 weeks",
+    "trimp": "TRIMP ≈ {value}",
+    "trimpHint": "The heart's effort during the session (minutes weighted by the average HR, from your resting to your max HR). An estimate, with the average only.",
+    "conflict": "{first} then {second} both work {groups} less than 48 h apart: move one, or go lighter on the second.",
+    "conflictTitle": "Sessions close together",
+    "conflictAction": "Adjust the week"
+  },
+  "enduranceTrend": {
+    "empty": "Three outings of one sport within six months are needed to draw a curve.",
+    "sport": "Sport",
+    "pace": "Pace ({unit}), higher = faster",
+    "power": "Power (W)",
+    "chartLabel": "{name}: {count} sessions over six months",
+    "hint": "Each dot is a session. Pace depends on the route and the intensity aimed at: compare like with like."
   }
 }

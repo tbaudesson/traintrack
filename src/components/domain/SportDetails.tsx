@@ -61,7 +61,9 @@ export function SportDetails({ workout, distanceM, durationSec, place }: { worko
     const lengths = lengthsOf(distanceM, workout.poolLengthM);
     return { value, lengths };
   })() : null;
-  const load = here("avgPower") ? powerLoad(durationSec, workout.avgPowerW, ftp) : null;
+  // The normalized power when the file gave it (the true TSS), else the average (an estimate).
+  const np = workout.normalizedPowerW ?? null;
+  const load = here("avgPower") ? powerLoad(durationSec, np ?? workout.avgPowerW, ftp) : null;
   const zone = here("avgPower") ? powerZone(workout.avgPowerW, ftp) : null;
 
   const numbers = [
@@ -107,7 +109,8 @@ export function SportDetails({ workout, distanceM, durationSec, place }: { worko
         <p className="text-sm font-medium">{t("powerLine", { zone, name: t(`zone_${zone}`), intensity: num(load.intensity, 2), tss: load.tss })}</p>
       )}
       {here("avgPower") && workout.avgPowerW && !ftp && <p className="text-xs text-muted-foreground">{t("needFtp")}</p>}
-      {load && <p className="text-xs text-muted-foreground">{t("tssHint")}</p>}
+      {here("avgPower") && np && <p className="text-sm">{t("normalizedPower", { watts: np })}</p>}
+      {load && <p className="text-xs text-muted-foreground">{t(np ? "tssHintNp" : "tssHint")}</p>}
     </div>
   );
 }

@@ -1,6 +1,8 @@
 "use client";
 
 import { DeclareInjuryButton } from "@/components/domain/InjuryAreas";
+import { BodySignalsCard, FormTrends } from "@/components/domain/FormSignals";
+import { useAllHealth } from "@/hooks/useHealth";
 import { useId, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
@@ -78,6 +80,7 @@ export default function ReadinessPage() {
   const { hasFeature } = useFeatureAccess();
   const today = useTodayReadiness();
   const history = useReadiness();
+  const health = useAllHealth();
   const workouts = useWorkouts();
   const sets = useAllWorkoutSets();
 
@@ -141,6 +144,12 @@ export default function ReadinessPage() {
         )}
 
         {load && <div className="t-readiness-load"><TrainingLoadCard load={load} /></div>}
+
+        {/* The resting HR and the HRV against one's usual values, and four weeks of form. */}
+        <div className="t-workspace-wide space-y-4">
+          <BodySignalsCard metrics={health} today={localDate()} />
+          <FormTrends checkins={history} metrics={health} today={localDate()} />
+        </div>
 
         <Card className="t-health-entry">
           <CardContent className="space-y-4 py-4">

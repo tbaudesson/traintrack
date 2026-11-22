@@ -1,4 +1,5 @@
 import { Decoder, Stream } from "@garmin/fitsdk";
+import { normalizedPower, powerPerSecond } from "./recovery";
 import type { Sport } from "@/db";
 import type { GpxActivity } from "./gpx";
 
@@ -39,6 +40,14 @@ function mainStroke(session: Mesg, lengths: Mesg[]): GpxActivity["swimStroke"] {
   return n! * 2 > total ? STROKES[best] : "mixed";
 }
 
+/** From the records' power, one a second, when the device did not write it. */
+function fitNormalizedPower(records: Mesg[]): number | undefined {
+  const samples = records
+    .filter((r) => r.timestamp instanceof Date && typeof r.power === "number")
+    .map((r) => ({ t: (r.timestamp as Date).getTime() / 1000, w: r.power as number }));
+  return normalizedPower(powerPerSecond(samples)) ?? undefined;
+}
+
 export function parseFit(bytes: Uint8Array): GpxActivity | null {
   let messages: Record<string, Mesg[]>;
   try {
@@ -75,6 +84,7 @@ export function parseFit(bytes: Uint8Array): GpxActivity | null {
     avgCadence: swim || cadence === undefined || cadence <= 0 ? undefined : Math.round(onFoot && cadence < 120 ? cadence * 2 : cadence),
     avgPowerW: swim ? undefined : round(session.avgPower),
     maxPowerW: swim ? undefined : round(session.maxPower),
+    normalizedPowerW: swim ? undefined : round(session.normalizedPower) ?? fitNormalizedPower(messages.recordMesgs ?? []),
     ...(swim
       ? {
           poolLengthM: openWater ? 0 : round(session.poolLength),

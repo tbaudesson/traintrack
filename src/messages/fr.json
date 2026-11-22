@@ -443,7 +443,8 @@
     "sectionMine": "Mes chiffres",
     "loadHistory": "Charge par discipline",
     "assistantLink": "Assistant : que changer dans mes programmes ?",
-    "assistantHint": "Des propositions expliquées, appliquées seulement si vous le voulez"
+    "assistantHint": "Des propositions expliquées, appliquées seulement si vous le voulez",
+    "enduranceTrend": "Allure et puissance sur six mois"
   },
   "exercises": {
     "translations": "Traductions",
@@ -2705,7 +2706,9 @@
     "zone_6": "anaérobie",
     "zone_7": "neuromusculaire",
     "needFtp": "Indiquez votre FTP pour voir la zone de puissance et la charge de la sortie.",
-    "tssHint": "Estimé à partir de la puissance moyenne (le TSS exact utilise la puissance normalisée, plus haute sur un parcours irrégulier). Indicatif, séparé de la charge minutes × effort."
+    "tssHint": "Estimé à partir de la puissance moyenne (le TSS exact utilise la puissance normalisée, plus haute sur un parcours irrégulier). Indicatif, séparé de la charge minutes × effort.",
+    "normalizedPower": "Puissance normalisée : {watts} W",
+    "tssHintNp": "IF et TSS calculés avec la puissance normalisée du fichier : la charge réelle d'une sortie irrégulière."
   },
   "assistant": {
     "title": "Assistant",
@@ -2865,5 +2868,31 @@
     "movementShort_jump": "sauts",
     "movementShort_conditioning": "cardio au poids du corps",
     "movementShort_mobility": "souplesse"
+  },
+  "recovery": {
+    "title": "Signaux du corps",
+    "restingHr": "FC de repos",
+    "hrv": "VFC",
+    "restingHrLine": "{value} bpm, contre {baseline} d'habitude ({delta}).",
+    "hrvLine": "{value} ms, contre {baseline} d'habitude ({delta} %).",
+    "flaggedHint": "Un écart à votre habitude va souvent avec la fatigue, un mauvais sommeil ou une maladie qui arrive. Un seul relevé dit peu : écoutez vos sensations, et allégez si elles vont dans le même sens. Ce n'est pas un avis médical.",
+    "calmHint": "Comparé à votre propre moyenne des 4 dernières semaines. Signalé à partir de {beats} bpm au-dessus (FC de repos) ou {share} % en dessous (VFC).",
+    "trendsTitle": "Votre forme sur 4 semaines",
+    "trendsHint": "Chaque mesure sur sa propre échelle, à partir de trois relevés.",
+    "lowerIsBetter": "plus bas = mieux",
+    "trendLabel": "{name} : {count} relevés sur 4 semaines",
+    "trimp": "TRIMP ≈ {value}",
+    "trimpHint": "L'effort du cœur pendant la séance (minutes pondérées par la FC moyenne, de votre FC de repos à votre FC max). Une estimation, avec la moyenne seulement.",
+    "conflict": "{first} puis {second} sollicitent tous deux {groups} à moins de 48 h : déplacez l'une des deux, ou allégez la seconde.",
+    "conflictTitle": "Séances rapprochées",
+    "conflictAction": "Ajuster la semaine"
+  },
+  "enduranceTrend": {
+    "empty": "Il faut au moins trois sorties d'un même sport sur six mois pour tracer une courbe.",
+    "sport": "Sport",
+    "pace": "Allure ({unit}), plus haut = plus rapide",
+    "power": "Puissance (W)",
+    "chartLabel": "{name} : {count} séances sur six mois",
+    "hint": "Chaque point est une séance. L'allure dépend du parcours et de l'intensité voulue : comparez des séances semblables."
   }
 }

@@ -337,6 +337,8 @@ export interface Workout extends SyncFields {
   /** Watts, from a power meter (migration 071). */
   avgPowerW?: number | null;
   maxPowerW?: number | null;
+  /** The steady power the ride's ups and downs cost, from a watch file (migration 077). */
+  normalizedPowerW?: number | null;
   /** A swim: the stroke, the pool length (0 in open water) and the strokes per length (migration 071). */
   swimStroke?: "free" | "breast" | "back" | "fly" | "mixed" | null;
   poolLengthM?: number | null;

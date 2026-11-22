@@ -1,5 +1,7 @@
 "use client";
 
+import { CalendarClock } from "lucide-react";
+import { sessionConflicts } from "@/lib/conflicts";
 import { HomeAtAGlance } from "@/components/domain/HomeAtAGlance";
 import { sessionHref } from "@/lib/routes";
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
@@ -155,6 +157,8 @@ export default function HomePage() {
   const locale = useLocale();
   const tr = useTranslations("readiness");
   const trec = useTranslations("recommend");
+  const trcv = useTranslations("recovery");
+  const tex = useTranslations("exercises");
   const tm = useTranslations("more");
   const tcat = useTranslations("catalog");
   const router = useRouter();
@@ -437,6 +441,14 @@ export default function HomePage() {
     injuryG && (activeInjuries(profile?.injuryAreas ?? []).length > 0 || persistentPains(injuryG, pains, today).length > 0) ? (
       <InjuryCareCard guidance={injuryG} injuries={profile?.injuryAreas ?? []} pains={pains} today={today} />
     ) : null;
+  // Two planned sessions working the same muscles hard less than 48 h apart, this week and next.
+  const conflict = useMemo(() => {
+    if (!planned.length) return null;
+    const ahead = scheduleSessions({ planned, workouts, from: today, to: localDateIn(13, now), today }).filter((x) => x.status === "planned");
+    return sessionConflicts(ahead.map((x) => ({ date: x.date, label: x.label, day: x.program.structure?.[x.index] })), exercises)[0] ?? null;
+  }, [planned, workouts, today, now, exercises]);
+  const conflictKey = conflict ? `conflict-${conflict.first.date}-${conflict.second.date}` : "";
+
   const notes: { key: string; node: ReactNode }[] = [
     ...(load && (load.zone === "caution" || load.zone === "danger") ? [{ key: "load", node: <TrainingLoadCard key="load" load={load} /> }] : []),
     ...(lowForm !== null && lowForm < LOW_READINESS ? [{ key: "form", node: <Fragment key="form"><ReadinessBanner readiness={lowForm} keptNormal={lighterToday.keptNormal} onKeep={lighterToday.setKeptNormal} /></Fragment> }] : []),
@@ -480,6 +492,18 @@ export default function HomePage() {
             /></Fragment> }] : []),
     ...(progressInsight ? [insightNote("insight", progressInsight)] : []),
     ...(readinessNode && readyScore == null ? [{ key: "readiness", node: <Fragment key="readiness">{readinessNode}</Fragment> }] : []),
+    ...(conflict && !closedCards.includes(conflictKey) ? [{ key: "conflict", node: <Fragment key="conflict"><HomeNote
+              icon={CalendarClock}
+              title={trcv("conflictTitle")}
+              action={trcv("conflictAction")}
+              href="/assistant"
+              text={trcv("conflict", {
+                first: `${conflict.first.label} (${short(conflict.first.date)})`,
+                second: `${conflict.second.label} (${short(conflict.second.date)})`,
+                groups: conflict.groups.map((g) => tex(`mg_${g}`).toLowerCase()).join(", "),
+              })}
+              onClose={() => closeCard(conflictKey)}
+            /></Fragment> }] : []),
     ...(sportHint ? [{ key: "sport", node: <Fragment key="sport"><HomeNote
               icon={Sparkles}
               title={t("sportHint", { sport: tcat(sportHint === "callisthenics" ? "cat_timed" : `cat_${sportHint}`) })}

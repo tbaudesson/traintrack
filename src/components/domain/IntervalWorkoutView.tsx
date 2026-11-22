@@ -1,5 +1,6 @@
 "use client";
 
+import { TrimpLine } from "@/components/domain/TrimpLine";
 import { SessionFeedback } from "@/components/domain/SessionFeedback";
 import { useTranslations } from "next-intl";
 import { RotateCcw, Timer, Trash2 } from "lucide-react";
@@ -59,6 +60,7 @@ export function IntervalWorkoutView({ workout, sets, exercises }: { workout: Wor
               {workout.avgHr ? <Fact value={`${workout.avgHr} · ${workout.maxHr ?? "—"}`} label={t("factHeart")} /> : null}
             </div>
           )}
+          {workout.avgHr ? <div className="mt-3"><TrimpLine workout={workout} /></div> : null}
           {plan && rhythm && (
             <p className="mt-3 text-sm text-muted-foreground">
               {t(`focus_${plan.focus}`)} · {plan.dumbbells ? t("dumbbells") : t("bodyweight")} · {t("patternLabel", rhythm)}

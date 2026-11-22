@@ -1,4 +1,5 @@
 import type { Sport } from "@/db";
+import { normalizedPower, powerPerSecond } from "./recovery";
 
 export interface GpxActivity {
   name?: string;
@@ -14,6 +15,8 @@ export interface GpxActivity {
   avgCadence?: number;
   avgPowerW?: number;
   maxPowerW?: number;
+  /** The steady power the ride's ups and downs cost (written by the device, or from the power samples). */
+  normalizedPowerW?: number;
   /** A swim, when the file knows it (FIT): the pool (0 in open water), the main stroke, the strokes per length. */
   poolLengthM?: number;
   swimStroke?: "free" | "breast" | "back" | "fly" | "mixed";
@@ -189,14 +192,17 @@ export function parseTcx(xml: string): GpxActivity | null {
     const ele = tag(tp, "AltitudeMeters");
     const cad = tag(tp, "Cadence") ?? tag(tp, "RunCadence");
     const watts = tag(tp, "Watts");
+    const time = tag(tp, "Time");
     const hr = tp.match(/<HeartRateBpm>[\s\S]*?<Value>([^<]+)<\/Value>/)?.[1];
-    points.push({ lat: 0, lon: 0, ele: ele !== undefined ? Number(ele) : undefined, hr: hr ? Number(hr) : undefined, cad: cad !== undefined ? Number(cad) : undefined, power: watts !== undefined ? Number(watts) : undefined });
+    points.push({ lat: 0, lon: 0, ele: ele !== undefined ? Number(ele) : undefined, hr: hr ? Number(hr) : undefined, cad: cad !== undefined ? Number(cad) : undefined, power: watts !== undefined ? Number(watts) : undefined, time: time ? Date.parse(time) / 1000 : undefined });
   }
   const sport = sportOf(attr(activity[1], "Sport"));
   const rates = points.map((p) => p.hr).filter((h): h is number => h !== undefined && h > 30 && h < 250);
   const start = tag(body, "Id");
+  const np = normalizedPower(powerPerSecond(points.filter((p) => p.time !== undefined && p.power !== undefined).map((p) => ({ t: p.time!, w: p.power! }))));
   return {
     ...cadenceAndPower(points, sport),
+    normalizedPowerW: np ?? undefined,
     name: tag(body, "Notes") ? decode(tag(body, "Notes")!) : undefined,
     sport,
     start: start && !Number.isNaN(Date.parse(start)) ? new Date(start) : undefined,

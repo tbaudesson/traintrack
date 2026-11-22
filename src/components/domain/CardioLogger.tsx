@@ -14,6 +14,7 @@ import { planRunBlocks } from "@/lib/runWorkouts";
 import { RunGuide } from "@/components/domain/RunGuide";
 import { GpxImport } from "@/components/domain/GpxImport";
 import { SportDetails, hasAdvancedValues } from "@/components/domain/SportDetails";
+import { TrimpLine } from "@/components/domain/TrimpLine";
 import { metricPlace, sportDef } from "@/lib/disciplines";
 import type { CardioTarget, Workout } from "@/db";
 import { updateWorkout } from "@/hooks/useWorkouts";
@@ -240,6 +241,7 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
             </p>
           )}
           <SportDetails workout={workout} distanceM={distanceM} durationSec={durationSec} place="essential" />
+          <TrimpLine workout={workout} />
           {hasAdvanced && (
             <details open={hasAdvancedValues(workout) || !!workout.elevationGainM && climbPlace === "advanced"} className="rounded-xl bg-muted/40 px-3">
               <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold text-muted-foreground">{tp("moreDetails")}</summary>
