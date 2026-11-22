@@ -1,5 +1,6 @@
 "use client";
 
+import { DeclareInjuryButton } from "@/components/domain/InjuryAreas";
 import { useId, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
@@ -181,6 +182,9 @@ export default function ReadinessPage() {
             })}
           </section>
         )}
+        <div className="t-workspace-wide">
+          <DeclareInjuryButton />
+        </div>
       </div>
     </>
   );

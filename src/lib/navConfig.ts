@@ -27,7 +27,7 @@ export const NAVIGATION_CATALOG: readonly NavigationSectionDef[] = [
       { id: "exercises", href: "/exercises", icon: "ListChecks", key: "exercises" },
       { id: "sports", href: "/more", icon: "Bike", key: "sports" },
       { id: "history", href: "/log", icon: "History", key: "history" },
-      { id: "import", href: "/settings", icon: "FileUp", key: "import", feature: "excel_import" },
+      { id: "import", href: "/settings?section=import", icon: "FileUp", key: "import", feature: "excel_import" },
     ],
   },
   {
@@ -44,8 +44,7 @@ export const NAVIGATION_CATALOG: readonly NavigationSectionDef[] = [
     id: "coaching", href: "/teams", icon: "Users", key: "sectionCoaching", feature: "coaching", children: [
       { id: "teams", href: "/teams", icon: "Users", key: "teams", feature: "coaching" },
       { id: "athletes", href: "/coach", icon: "UserRound", key: "athletes", feature: "coaching" },
-      { id: "assignments", href: "/coach", icon: "ClipboardCheck", key: "assignments", feature: "coaching" },
-      { id: "planning", href: "/coach", icon: "CalendarDays", key: "planning", feature: "coaching" },
+      { id: "assignments", href: "/programs?view=assigned", icon: "ClipboardCheck", key: "assignments", feature: "coaching" },
       { id: "messages", href: "/messages", icon: "MessageCircle", key: "messages", feature: "coaching" },
       { id: "requests", href: "/activity", icon: "Inbox", key: "requests", feature: "coaching" },
     ],
@@ -53,10 +52,9 @@ export const NAVIGATION_CATALOG: readonly NavigationSectionDef[] = [
   {
     id: "profileAdmin", href: "/profile", icon: "UserRoundCog", key: "sectionProfileAdmin", children: [
       { id: "profile", href: "/profile", icon: "Trophy", key: "profile" },
-      { id: "notifications", href: "/settings", icon: "Bell", key: "notifications" },
+      { id: "notifications", href: "/settings?section=notifications", icon: "Bell", key: "notifications" },
       { id: "admin", href: "/admin", icon: "ShieldCheck", key: "administration", roles: ["admin"] },
-      { id: "layouts", href: "/settings", icon: "PanelsTopLeft", key: "layouts" },
-      { id: "connections", href: "/more", icon: "Plug", key: "connections" },
+      { id: "layouts", href: "/settings?section=appearance", icon: "PanelsTopLeft", key: "layouts" },
       { id: "settings", href: "/settings", icon: "Settings", key: "settings" },
     ],
   },
@@ -116,25 +114,30 @@ export function navigationForAccess(access: NavigationAccess, sports: readonly (
  * otherwise the first of them in the section's order.
  */
 export function currentItemId(section: Pick<NavigationSectionDef, "children">, pathname: string): string | undefined {
-  const matching = section.children.filter((item) =>
-    item.href === "/" ? pathname === "/" : pathname === item.href || pathname.startsWith(`${item.href}/`));
+  const matching = section.children.filter((item) => {
+    const href = pagePath(item.href);
+    return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
+  });
   if (!matching.length) return undefined;
-  const longest = Math.max(...matching.map((item) => item.href.length));
-  const candidates = matching.filter((item) => item.href.length === longest);
-  const page = candidates[0].href.split("/").pop();
+  const longest = Math.max(...matching.map((item) => pagePath(item.href).length));
+  const candidates = matching.filter((item) => pagePath(item.href).length === longest);
+  const page = pagePath(candidates[0].href).split("/").pop();
   return (candidates.find((item) => item.id === page) ?? candidates[0]).id;
 }
+
+/** The page an entry opens, without the part of it the entry points to (?section=…). */
+export const pagePath = (href: string) => href.split(/[?#]/)[0];
 
 export function sectionForPath(pathname: string): NavigationSectionDef | undefined {
   // A sport's own pages belong to Training, wherever one's sport puts them.
   const matches = [...NAVIGATION_CATALOG.flatMap((section) => section.children.map((item) => ({ section, item }))), ...SPORT_ITEMS.map((item) => ({ section: NAVIGATION_CATALOG[0], item }))]
-    .filter(({ item }) => item.href !== "/" && (pathname === item.href || pathname.startsWith(`${item.href}/`)))
-    .sort((a, b) => b.item.href.length - a.item.href.length);
+    .filter(({ item }) => pagePath(item.href) !== "/" && (pathname === pagePath(item.href) || pathname.startsWith(`${pagePath(item.href)}/`)))
+    .sort((a, b) => pagePath(b.item.href).length - pagePath(a.item.href).length);
   // Several entries can share a page (Settings is under Training too, for Import):
   // the one named after the page wins, as in currentItemId.
   const page = pathname.split("/").filter(Boolean).pop();
-  const longest = matches[0]?.item.href.length;
-  const named = matches.find(({ item }) => item.href.length === longest && item.id === page);
+  const longest = matches[0] ? pagePath(matches[0].item.href).length : undefined;
+  const named = matches.find(({ item }) => pagePath(item.href).length === longest && item.id === page);
   return (named ?? matches[0])?.section ?? (pathname === "/" ? NAVIGATION_CATALOG[0] : undefined);
 }
 

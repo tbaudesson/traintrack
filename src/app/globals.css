@@ -236,6 +236,9 @@
   body {
     @apply bg-background text-foreground;
     min-height: 100dvh;
+    /* Landscape on a notched phone: content keeps clear of the notch. */
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
     background-image:
       radial-gradient(70% 45% at 88% -5%, color-mix(in oklab, var(--accent-600) 14%, transparent), transparent 70%),
       linear-gradient(to bottom, color-mix(in oklab, var(--surface-2) 35%, transparent), transparent 24rem);

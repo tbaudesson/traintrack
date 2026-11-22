@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useInjuryGuidance } from "@/hooks/useInjuryGuidance";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { ChevronDown } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter, usePathname, Link } from "@/i18n/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { deleteMyAccount, updateMyDisplayName } from "@/lib/adminService";
 import { downloadJSONBackup, downloadSessionsCsv } from "@/lib/exportService";
 import { HistoryImport } from "@/components/domain/HistoryImport";
+import { InjuryAreasPicker } from "@/components/domain/InjuryAreas";
 import db from "@/db";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -45,8 +47,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { localDate } from "@/lib/dates";
-import { useFormat } from "@/lib/format";
-import { INJURY_AREAS, injuryState, returnPhases, toggleInjury } from "@/lib/injuries";
 
 /** A thumbnail of each style: its background, a card and a button. */
 const STYLE_PREVIEW: Record<AppStyle, { frame: string; card: string; button: string }> = {
@@ -82,11 +82,11 @@ function weekdayName(locale: string, day: number, width: "narrow" | "long") {
   return new Intl.DateTimeFormat(locale, { weekday: width, timeZone: "UTC" }).format(new Date(Date.UTC(2024, 0, day)));
 }
 
-function Section({ icon: Icon, title, action, children }: {
-  icon: LucideIcon; title: string; action?: React.ReactNode; children: React.ReactNode;
+function Section({ id, icon: Icon, title, action, children }: {
+  id?: string; icon: LucideIcon; title: string; action?: React.ReactNode; children: React.ReactNode;
 }) {
   return (
-    <Card>
+    <Card id={id ? `settings-${id}` : undefined} className="scroll-mt-20">
       <CardContent className="py-4">
         <div className="mb-3 flex items-center gap-2">
           <Icon className="h-4 w-4 text-accent-500" />
@@ -99,11 +99,76 @@ function Section({ icon: Icon, title, action, children }: {
   );
 }
 
+/** Where each section is: the menu opens Settings on one of them (?section=…). */
+const SECTION_GROUP: Record<string, SettingsGroupId> = {
+  level: "training", plan: "training", injuries: "training", rest: "training",
+  sport: "personal", appearance: "personal", a11y: "personal", language: "personal", navigation: "personal",
+  notifications: "alerts", ai: "alerts",
+  resync: "data", import: "data", export: "data",
+};
+type SettingsGroupId = "training" | "personal" | "alerts" | "data";
+
+/**
+ * A group of settings, closed until opened: Settings shows four lines and
+ * what each holds, rather than one long page.
+ */
+function SettingsGroup({ id, title, summary, open, onToggle, children }: {
+  id: SettingsGroupId; title: string; summary: string; open: boolean; onToggle: (id: SettingsGroupId) => void; children: React.ReactNode;
+}) {
+  return (
+    <section aria-labelledby={`group-${id}`} className="space-y-3">
+      <h2 id={`group-${id}`} className="t-settings-group">
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls={`group-${id}-body`}
+          onClick={() => onToggle(id)}
+          className="t-surface flex min-h-14 w-full items-center gap-3 rounded-2xl px-4 py-3 text-left ring-1 ring-foreground/5"
+        >
+          <span className="min-w-0 flex-1">
+            <span className="t-section-heading block">{title}</span>
+            <span className="block truncate text-xs font-normal text-muted-foreground">{summary}</span>
+          </span>
+          <ChevronDown className={cn("h-5 w-5 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")} aria-hidden="true" />
+        </button>
+      </h2>
+      {open && <div id={`group-${id}-body`} className="space-y-3">{children}</div>}
+    </section>
+  );
+}
+
+// useSearchParams needs a Suspense boundary on a statically rendered page.
 export default function SettingsPage() {
+  return (
+    <Suspense>
+      <SettingsContent />
+    </Suspense>
+  );
+}
+
+function SettingsContent() {
   const t = useTranslations("settings");
   const tAuth = useTranslations("auth");
   const tai = useTranslations("ai");
   const tconsent = useTranslations("aiConsent");
+  const target = useSearchParams().get("section");
+  const [openGroups, setOpenGroups] = useState<Set<SettingsGroupId>>(() => new Set(target && SECTION_GROUP[target] ? [SECTION_GROUP[target]] : []));
+  const toggleGroup = (id: SettingsGroupId) =>
+    setOpenGroups((open) => {
+      const next = new Set(open);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  // Opened from the menu on one section: its group opens and it comes into view.
+  useEffect(() => {
+    const group = target ? SECTION_GROUP[target] : undefined;
+    if (!group) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- follows the address
+    setOpenGroups((open) => (open.has(group) ? open : new Set(open).add(group)));
+    const frame = requestAnimationFrame(() => document.getElementById(`settings-${target}`)?.scrollIntoView({ block: "start" }));
+    return () => cancelAnimationFrame(frame);
+  }, [target]);
   const ta11y = useTranslations("a11y");
   const ta = useTranslations("appearance");
   const tnav = useTranslations("nav");
@@ -112,8 +177,6 @@ export default function SettingsPage() {
   const tm = useTranslations("more");
   const to = useTranslations("onboarding");
   const tinj = useTranslations("injuries");
-  const tpain = useTranslations("pain");
-  const { short } = useFormat();
   const athlete = useAthleteProfile();
   const { user, profile, signOut, isAdmin, refreshProfile } = useAuth();
   const { hasFeature } = useFeatureAccess();
@@ -138,7 +201,6 @@ export default function SettingsPage() {
   const [accent, setAccent] = useState<Accent>(() => getAccent());
   const prefs = useAppPrefs();
   const trest = useTranslations("restTimer");
-  const injuryG = useInjuryGuidance();
   const [restError, setRestError] = useState<string | null>(null);
   const restLabel = (sec: number) => (sec % 60 === 0 ? `${sec / 60} min` : sec > 60 ? `${Math.floor(sec / 60)} min ${sec % 60}` : `${sec} s`);
   const tcat = useTranslations("catalog");
@@ -313,10 +375,10 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <h2 className="t-settings-group t-section-heading pt-3">{t("groupTraining")}</h2>
+        <SettingsGroup id="training" title={t("groupTraining")} summary={t("groupTrainingSummary")} open={openGroups.has("training")} onToggle={toggleGroup}>
 
         {/* Training level */}
-        <Section icon={Gauge} title={t("level")}>
+        <Section id="level" icon={Gauge} title={t("level")}>
           <p className="mb-2 text-xs text-muted-foreground">{t("levelHint")}</p>
           {athlete ? (
             <div className="grid grid-cols-3 gap-2">
@@ -350,7 +412,7 @@ export default function SettingsPage() {
         </Section>
 
         {/* Week plan */}
-        <Section icon={CalendarDays} title={t("plan")}>
+        <Section id="plan" icon={CalendarDays} title={t("plan")}>
           <p className="mb-2 text-xs text-muted-foreground">{t("planHint")}</p>
           {athlete ? (
             <>
@@ -428,42 +490,14 @@ export default function SettingsPage() {
 
         {/* Injuries in progress */}
         {athlete && (
-          <Section icon={Bandage} title={tinj("title")}>
+          <Section id="injuries" icon={Bandage} title={tinj("title")}>
             <p className="mb-2 text-xs text-muted-foreground">{tinj("settingsHint")}</p>
-            <div className="flex flex-wrap gap-2">
-              {INJURY_AREAS.map((area) => {
-                const injuries = athlete.injuryAreas ?? [];
-                const injury = injuries.find((i) => i.area === area);
-                const state = injuryState(injuryG, injuries, area, localDate());
-                const phase = state === "returning" ? returnPhases(injuryG, [injury!], localDate())[0] : null;
-                return (
-                  <button
-                    key={area}
-                    type="button"
-                    onClick={() => updateTrainingSchedule({ injuryAreas: toggleInjury(injuryG, injuries, area, localDate()) })}
-                    aria-pressed={state !== "none"}
-                    className={cn(
-                      "min-h-10 rounded-full border px-3 text-sm transition-colors",
-                      state === "injured"
-                        ? "border-rose-500 bg-rose-500 font-semibold text-white"
-                        : state === "returning"
-                          ? "border-amber-500 bg-amber-500 font-semibold text-white"
-                          : "border-border text-muted-foreground hover:border-rose-300"
-                    )}
-                  >
-                    {tpain(`area_${area}`)}
-                    {state === "injured" && <span className="ml-1 text-xs font-normal opacity-90">· {tinj("since", { date: short(injury!.since) })}</span>}
-                    {phase && <span className="ml-1 text-xs font-normal opacity-90">· {tinj("returningChip", { week: phase.week, weeks: injuryG?.return.loads.length ?? phase.week })}</span>}
-                  </button>
-                );
-              })}
-            </div>
-            <p className="mt-2 text-xs text-muted-foreground">{tinj("stepsHint")}</p>
+            <InjuryAreasPicker />
           </Section>
         )}
 
         {/* The rest timer between sets */}
-        <Section icon={Timer} title={trest("title")}>
+        <Section id="rest" icon={Timer} title={trest("title")}>
           <p className="mb-2 text-xs text-muted-foreground">{trest("default")}</p>
           <div className="mb-3 flex flex-wrap gap-2">
             {REST_DEFAULTS.map((sec) => (
@@ -526,10 +560,12 @@ export default function SettingsPage() {
           {restError && <p className="mt-1 text-xs text-destructive">{restError}</p>}
         </Section>
 
-        <h2 className="t-settings-group t-section-heading pt-3">{t("groupPersonal")}</h2>
+        </SettingsGroup>
+
+        <SettingsGroup id="personal" title={t("groupPersonal")} summary={t("groupPersonalSummary")} open={openGroups.has("personal")} onToggle={toggleGroup}>
 
         {/* My sport and the picture of the home screen */}
-        <Section icon={Medal} title={ta("sport")}>
+        <Section id="sport" icon={Medal} title={ta("sport")}>
           <p className="mb-2 text-xs text-muted-foreground">{ta("sportHint")}</p>
           <div className="mb-4 flex flex-wrap gap-2">
             <Choice on={prefs.sport === null && !prefs.allSports} onClick={() => savePrefs({ sport: null, sport2: null, allSports: false })}>{ta("sport_none")}</Choice>
@@ -565,7 +601,7 @@ export default function SettingsPage() {
         </Section>
 
         {/* Theme mode */}
-        <Section icon={Palette} title={ta("section")}>
+        <Section id="appearance" icon={Palette} title={ta("section")}>
           <p className="mb-2 text-xs text-muted-foreground">{ta("mode")}</p>
           <div className="mb-4 grid grid-cols-3 gap-2">
             {([
@@ -640,7 +676,7 @@ export default function SettingsPage() {
         </Section>
 
         {/* Accessibility — text size */}
-        <Section icon={Type} title={ta11y("section")}>
+        <Section id="a11y" icon={Type} title={ta11y("section")}>
           <p className="mb-2 text-xs text-muted-foreground">{ta11y("textSize")}</p>
           <div className="grid grid-cols-3 gap-2">
             {(["small", "normal", "large"] as TextSize[]).map((s) => (
@@ -662,7 +698,7 @@ export default function SettingsPage() {
         </Section>
 
         {/* Language */}
-        <Section icon={Globe} title={t("language")}>
+        <Section id="language" icon={Globe} title={t("language")}>
           <div className="grid grid-cols-3 gap-2">
             {LOCALES.map((l) => (
               <button
@@ -684,6 +720,7 @@ export default function SettingsPage() {
 
         {/* Bottom navigation */}
         <Section
+          id="navigation"
           icon={LayoutGrid}
           title={ta("navSection")}
           action={
@@ -742,11 +779,13 @@ export default function SettingsPage() {
           </div>
         </Section>
 
-        <h2 className="t-settings-group t-section-heading pt-3">{t("groupAlerts")}</h2>
+        </SettingsGroup>
+
+        <SettingsGroup id="alerts" title={t("groupAlerts")} summary={t("groupAlertsSummary")} open={openGroups.has("alerts")} onToggle={toggleGroup}>
 
         {/* Push notifications */}
         {isPushSupported() && (
-          <Section icon={Bell} title={tn("section")}>
+          <Section id="notifications" icon={Bell} title={tn("section")}>
             <p className="mb-3 text-xs text-muted-foreground">{tn("desc")}</p>
             {!isPushConfigured() ? (
               <p className="rounded-md bg-muted p-2 text-xs text-foreground">{tn("notConfigured")}</p>
@@ -793,7 +832,7 @@ export default function SettingsPage() {
         )}
 
         {/* AI program builder key */}
-        <Section icon={Sparkles} title={tai("section")}>
+        <Section id="ai" icon={Sparkles} title={tai("section")}>
           <p className="mb-2 text-xs text-muted-foreground">{tai("keyDesc")}</p>
           {keyIsSet && (
             <p className="mb-2 flex items-center gap-1.5 text-sm text-green-600">
@@ -832,10 +871,12 @@ export default function SettingsPage() {
           {consentWithdrawn && <p className="mt-2 text-xs text-muted-foreground" role="status">{tconsent("withdrawn")}</p>}
         </Section>
 
-        <h2 className="t-settings-group t-section-heading pt-3">{t("groupData")}</h2>
+        </SettingsGroup>
+
+        <SettingsGroup id="data" title={t("groupData")} summary={t("groupDataSummary")} open={openGroups.has("data")} onToggle={toggleGroup}>
 
         {/* Refresh from server */}
-        <Section icon={RotateCcw} title={t("resyncTitle")}>
+        <Section id="resync" icon={RotateCcw} title={t("resyncTitle")}>
           <p className="mb-3 text-xs text-muted-foreground">{t("resyncDesc")}</p>
           <Button variant="outline" onClick={handleResync} disabled={resyncState === "busy"} className="w-full">
             {resyncState === "busy" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -846,12 +887,12 @@ export default function SettingsPage() {
         </Section>
 
         {/* History from another app */}
-        <Section icon={FileUp} title={t("importTitle")}>
+        <Section id="import" icon={FileUp} title={t("importTitle")}>
           <HistoryImport />
         </Section>
 
         {/* Data & privacy */}
-        <Section icon={Download} title={t("export")}>
+        <Section id="export" icon={Download} title={t("export")}>
           <p className="mb-3 text-xs text-muted-foreground">{t("exportDesc")}</p>
           <Button variant="outline" onClick={() => downloadJSONBackup(user?.id)} className="w-full">
             <Download className="mr-2 h-4 w-4" />
@@ -868,6 +909,8 @@ export default function SettingsPage() {
             </Button>
           </Link>
         </Section>
+
+        </SettingsGroup>
 
         <Link href="/auth/reset?recovery=1" className={cn(buttonVariants({ variant: "outline" }), "w-full")}>
           <KeyRound className="mr-2 h-4 w-4" aria-hidden="true" />

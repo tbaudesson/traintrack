@@ -32,7 +32,7 @@ export function PageHeader({ title, showBack = true, actions }: PageHeaderProps)
   }, []);
 
   return (
-    <header className="t-page-header sticky top-0 z-40 px-4 py-3 backdrop-blur-xl">
+    <header className="t-page-header sticky top-0 z-40 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-xl">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-3 gap-y-2">
         {showBack && (
           <Button

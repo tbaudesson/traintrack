@@ -27,6 +27,7 @@ import { localDate } from "@/lib/dates";
 import { canEditProgram, programOrigin } from "@/lib/programOrigin";
 import { useReadyMadeNames } from "@/lib/templateService";
 import { getCurrentUserIdSync } from "@/db";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 
 export default function ProgramEditorPage() {
   const t = useTranslations("programs");
@@ -42,6 +43,7 @@ export default function ProgramEditorPage() {
     if (program && (origin !== "mine" || !canEditProgram(program, getCurrentUserIdSync()))) router.replace(`/programs/${programId}`);
   }, [program, origin, router, programId]);
   const { clients } = useClients();
+  const { hasFeature } = useFeatureAccess();
   // A team program has no single athlete: no injury to flag.
   const forTeam = !!program?.groupId && !program.assignedToUserId;
   const athleteInjuries = useInjuriesOf(program?.assignedToUserId);
@@ -149,13 +151,17 @@ export default function ProgramEditorPage() {
       />
       <div className="space-y-5 p-4 pb-28">
         <div className="space-y-2">
-          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("name")} />
-          <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("description")} />
+          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("name")} aria-label={t("name")} />
+          <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("description")} aria-label={t("description")} />
         </div>
 
         {teamResult && <p role="status" className="text-sm font-medium text-success-text">{teamResult}</p>}
 
-        {/* Assignment */}
+        <ProgramDaysEditor days={days} setDays={setDays} injuries={injuries} programId={programId} />
+
+        {/* When it starts and who it is for come after its sessions. */}
+        {/* Assignment: for a coach (or a program already given to someone). */}
+        {(hasFeature("coaching") || !!assignedTo) && (
         <Card>
           <CardContent className="flex items-center gap-3 py-3">
             <UserCheck className="h-5 w-5 text-green-600" />
@@ -178,6 +184,7 @@ export default function ProgramEditorPage() {
             </div>
           </CardContent>
         </Card>
+        )}
 
         {/* Start date */}
         <Card>
@@ -215,7 +222,6 @@ export default function ProgramEditorPage() {
           </CardContent>
         </Card>
 
-        <ProgramDaysEditor days={days} setDays={setDays} injuries={injuries} programId={programId} />
 
         <Button variant="ghost" className="w-full text-destructive" onClick={handleDelete}>
           <Trash2 className="mr-1 h-4 w-4" />

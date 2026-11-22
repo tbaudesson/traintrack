@@ -566,9 +566,13 @@
     "resyncDone": "Aktuell",
     "changePassword": "Mein Passwort ändern",
     "groupTraining": "Training",
+    "groupTrainingSummary": "Niveau, Trainingstage, Verletzungen, Pausen",
     "groupPersonal": "Personalisierung",
+    "groupPersonalSummary": "Sport, Erscheinungsbild, Lesbarkeit, Sprache, Menü",
     "groupAlerts": "Benachrichtigungen und Assistent",
+    "groupAlertsSummary": "Benachrichtigungen, KI-Assistent",
     "groupData": "Daten und Konto",
+    "groupDataSummary": "Synchronisierung, Import, Export",
     "rerunWizard": "Einrichtungsassistent erneut starten"
   },
   "programs": {
@@ -622,7 +626,16 @@
     "lastSession": "letzte Einheit {date}",
     "archived": "Archiviert ({count})",
     "addExisting": "Vorhandene Einheit übernehmen",
-    "removeExercise": "{name} entfernen"
+    "removeExercise": "{name} entfernen",
+    "dayName": "Name des Tages",
+    "removeDay": "„{name}“ entfernen",
+    "editExercise": "{name} bearbeiten",
+    "advanced": "Erweiterte Optionen",
+    "exerciseSummary": "{sets} × {reps}",
+    "restSummary": "{sec} s Pause",
+    "supersetMark": "Supersatz",
+    "percentsMark": "% 1RM",
+    "moreDetails": "Weitere Details"
   },
   "readiness": {
     "title": "Tagesform",
@@ -1464,7 +1477,9 @@
     "returnLine": "Rückkehr nach Verletzung ({area}): Woche {week} von {weeks}, Gewichte −{percent} %, um sanft einzusteigen.",
     "returnLastWeek": "Rückkehr nach Verletzung ({area}): letzte Woche, übliche Gewichte, aufhören, wenn der Schmerz zurückkommt.",
     "cautiousKept": "Nicht genug risikofreie Übungen für diesen Schwerpunkt: {count, plural, one {# Übung mit „Vorsicht“ bleibt} other {# Übungen mit „Vorsicht“ bleiben}}, nur schmerzfrei ausführen.",
-    "returnHeld": "Rückkehr verlangsamt: kürzlich wurde ein Schmerz gemeldet."
+    "returnHeld": "Rückkehr verlangsamt: kürzlich wurde ein Schmerz gemeldet.",
+    "declare": "Verletzung melden oder aktualisieren",
+    "done": "Fertig"
   },
   "catalog": {
     "title": "Fertige Programme",
@@ -2723,5 +2738,16 @@
     "withdraw": "Zustimmung widerrufen",
     "withdrawn": "Zustimmung widerrufen: Die KI fragt vor jedem Senden erneut.",
     "errNoConsent": "Stimmen Sie zu, bevor Sie die KI nutzen."
+  },
+  "quickProgram": {
+    "title": "Neues Programm",
+    "name": "Name",
+    "namePlaceholder": "Z. B. Kraft 3 Tage",
+    "kind": "Was es trainiert",
+    "daysPerWeek": "Tage pro Woche",
+    "days": "{count, plural, one {# Tag} other {# Tage}} pro Woche",
+    "hint": "Danach füllen Sie die Einheiten aus: Übungen oder Distanz und Dauer.",
+    "create": "Erstellen und Einheiten ausfüllen",
+    "readyMade": "Mit einem fertigen Programm beginnen"
   }
 }

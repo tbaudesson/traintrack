@@ -9,6 +9,7 @@ import { persistentPains, type InjuryGuidance } from "@/lib/injuryGuidance";
 import { useMobilityGuidance } from "@/hooks/useMobilityGuidance";
 import type { PainReport } from "@/lib/pain";
 import { DemoButton, DemoDialog } from "@/components/domain/DemoDialog";
+import { DeclareInjuryButton } from "@/components/domain/InjuryAreas";
 
 /**
  * Looking after an injury from the home screen: a pain that keeps coming
@@ -63,6 +64,7 @@ export function InjuryCareCard({ guidance, injuries, pains, today }: { guidance:
       })}
 
       <p className="text-xs text-muted-foreground">{t("care")}</p>
+      <DeclareInjuryButton />
       <DemoDialog demo={demo} onClose={() => setDemo(null)} />
     </section>
   );

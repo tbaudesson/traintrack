@@ -566,9 +566,13 @@
     "resyncDone": "Up to date",
     "changePassword": "Change my password",
     "groupTraining": "Training",
+    "groupTrainingSummary": "Level, training days, injuries, rest",
     "groupPersonal": "Personalisation",
+    "groupPersonalSummary": "Sport, appearance, readability, language, menu",
     "groupAlerts": "Notifications and assistant",
+    "groupAlertsSummary": "Notifications, AI assistant",
     "groupData": "Data and account",
+    "groupDataSummary": "Sync, import, export",
     "rerunWizard": "Run the set-up guide again"
   },
   "programs": {
@@ -622,7 +626,16 @@
     "lastSession": "last session {date}",
     "archived": "Archived ({count})",
     "addExisting": "Add an existing session",
-    "removeExercise": "Remove {name}"
+    "removeExercise": "Remove {name}",
+    "dayName": "Day name",
+    "removeDay": "Remove “{name}”",
+    "editExercise": "Edit {name}",
+    "advanced": "Advanced options",
+    "exerciseSummary": "{sets} × {reps}",
+    "restSummary": "{sec} s rest",
+    "supersetMark": "superset",
+    "percentsMark": "% 1RM",
+    "moreDetails": "More details"
   },
   "readiness": {
     "title": "Daily readiness",
@@ -1464,7 +1477,9 @@
     "returnLine": "Coming back from injury ({area}): week {week} of {weeks}, loads −{percent} % to ease back in.",
     "returnLastWeek": "Coming back from injury ({area}): last week, usual loads, stop if the pain comes back.",
     "cautiousKept": "Not enough risk-free exercises for this focus: {count, plural, one {# exercise marked “Caution” is kept} other {# exercises marked “Caution” are kept}}, to do without pain.",
-    "returnHeld": "Return slowed down: a pain was reported recently."
+    "returnHeld": "Return slowed down: a pain was reported recently.",
+    "declare": "Declare or update an injury",
+    "done": "Done"
   },
   "catalog": {
     "title": "Ready-made programs",
@@ -2723,5 +2738,16 @@
     "withdraw": "Withdraw my agreement",
     "withdrawn": "Agreement withdrawn: the AI will ask again before sending anything.",
     "errNoConsent": "Give your agreement before using the AI."
+  },
+  "quickProgram": {
+    "title": "New program",
+    "name": "Name",
+    "namePlaceholder": "E.g. Strength 3 days",
+    "kind": "What it trains",
+    "daysPerWeek": "Days a week",
+    "days": "{count, plural, one {# day} other {# days}} a week",
+    "hint": "You then fill in the sessions: exercises, or distance and time.",
+    "create": "Create and fill in the sessions",
+    "readyMade": "Start from a ready-made program"
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { usePrograms, createProgram } from "@/hooks/usePrograms";
@@ -13,6 +13,7 @@ import { PROGRAM_TEMPLATES, type ProgramTemplate } from "@/lib/programTemplates"
 import { planWeeks, programCategory } from "@/lib/programCategories";
 import type { ProgramDay } from "@/db";
 import { CategoryIcon, ProgramCatalog } from "@/components/domain/ProgramCatalog";
+import { QuickProgramDialog } from "@/components/domain/QuickProgramDialog";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,11 +87,8 @@ export default function ProgramsPage() {
   const [generating, setGenerating] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
 
-  async function handleCreate() {
-    setBusy(true);
-    const id = await createProgram({ name: t("untitled"), structure: [{ name: t("day") + " 1", exercises: [] }] });
-    router.push(`/programs/${id}/edit`);
-  }
+  // A new program: three answers first, then the editor.
+  const [creating, setCreating] = useState(false);
 
   function openAi() {
     setAiError(null);
@@ -142,6 +140,13 @@ export default function ProgramsPage() {
 
   const mine = programs.filter((p) => !p.assignedToUserId || p.assignedToUserId === user?.id);
   const toClients = programs.filter((p) => p.assignedToUserId && p.assignedToUserId !== user?.id);
+  // Opened from the menu's "Assignments": straight to the programs given to clients.
+  const hasAssigned = toClients.length > 0;
+  useEffect(() => {
+    if (hasAssigned && new URLSearchParams(window.location.search).get("view") === "assigned") {
+      document.getElementById("assigned")?.scrollIntoView({ block: "start" });
+    }
+  }, [hasAssigned]);
   const clientName = (id?: string | null) => clients.find((c) => c.userId === id)?.displayName ?? "—";
   const readyMade = useReadyMadeNames();
   // Favourites, then the last used, narrowed by the search; the archived apart.
@@ -189,7 +194,7 @@ export default function ProgramsPage() {
                 {t("importExcel")}
               </Button>
             )}
-            <Button size="sm" onClick={handleCreate} disabled={busy}>
+            <Button size="sm" onClick={() => setCreating(true)} disabled={busy}>
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="mr-1 h-4 w-4" />{t("create")}</>}
             </Button>
           </div>
@@ -227,6 +232,7 @@ export default function ProgramsPage() {
             <div className="space-y-2 pt-1 pb-3">{archived.map((p) => rowOf(p))}</div>
           </details>
         )}
+        <div id="catalog" className="scroll-mt-20" />
         <ProgramCatalog
           templates={catalogue}
           level={profile?.fitnessLevel}
@@ -244,7 +250,7 @@ export default function ProgramsPage() {
         )}
 
         {toClients.length > 0 && (
-          <section className="space-y-2">
+          <section id="assigned" className="scroll-mt-20 space-y-2">
             <SectionHeading>{t("assignedToClients")}</SectionHeading>
             {toClients.map((p) => (
               <DetailRow
@@ -261,6 +267,12 @@ export default function ProgramsPage() {
       </div>
 
       {/* AI generation dialog */}
+      <QuickProgramDialog
+        open={creating}
+        onOpenChange={setCreating}
+        onReadyMade={() => document.getElementById("catalog")?.scrollIntoView({ block: "start", behavior: "smooth" })}
+      />
+
       <Dialog open={aiOpen} onOpenChange={setAiOpen}>
         <DialogContent>
           <DialogHeader>

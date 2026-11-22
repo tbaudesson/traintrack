@@ -21,6 +21,9 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
+  // Edge to edge on phones with a notch or a home bar: the header, the launcher
+  // and the fixed bars keep clear of them with env(safe-area-inset-*).
+  viewportFit: "cover",
   themeColor: "#6D28D9",
 };
 

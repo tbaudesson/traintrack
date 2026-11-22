@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   NAVIGATION_CATALOG, canAccessNavigation, currentItemId, getNavigationPreferences, migrateNavigationPreferences,
-  navigationForAccess, saveNavigationPreferences, sectionForPath,
+  navigationForAccess, pagePath, saveNavigationPreferences, sectionForPath,
 } from "./navConfig";
 
 describe("hierarchical navigation catalog", () => {
@@ -35,7 +35,7 @@ describe("the current item of a section", () => {
   it("is a single item even when several share the page's address", () => {
     for (const entry of NAVIGATION_CATALOG) {
       for (const item of entry.children) {
-        const current = entry.children.filter((other) => other.id === currentItemId(entry, item.href));
+        const current = entry.children.filter((other) => other.id === currentItemId(entry, pagePath(item.href)));
         expect(current, `${entry.id} ${item.href}`).toHaveLength(1);
       }
     }
@@ -46,6 +46,18 @@ describe("the current item of a section", () => {
     expect(currentItemId(section("performance"), "/progress")).toBe("progress");
     expect(currentItemId(section("coaching"), "/coach")).toBe("athletes");
     expect(currentItemId(section("train"), "/programs/12")).toBe("programs");
+  });
+
+  it("never has two entries that open the same place", () => {
+    // A section's own entry (its first child) repeats the section; the rest are each somewhere of their own.
+    const places = NAVIGATION_CATALOG.flatMap((section) => section.children.map((item) => item.href));
+    const repeated = places.filter((href, i) => places.indexOf(href) !== i);
+    expect(repeated).toEqual([]);
+  });
+
+  it("knows the page of an entry pointing to one of its sections", () => {
+    expect(currentItemId(section("profileAdmin"), "/settings")).toBe("settings");
+    expect(currentItemId(section("train"), "/settings")).toBe("import");
   });
 
   it("puts a shared page in the section of the entry named after it", () => {

@@ -566,9 +566,13 @@
     "resyncDone": "À jour",
     "changePassword": "Changer mon mot de passe",
     "groupTraining": "Entraînement",
+    "groupTrainingSummary": "Niveau, jours d'entraînement, blessures, repos",
     "groupPersonal": "Personnalisation",
+    "groupPersonalSummary": "Sport, apparence, lisibilité, langue, menu",
     "groupAlerts": "Notifications et assistant",
+    "groupAlertsSummary": "Notifications, assistant IA",
     "groupData": "Données et compte",
+    "groupDataSummary": "Synchronisation, import, export",
     "rerunWizard": "Relancer l’assistant de démarrage"
   },
   "programs": {
@@ -622,7 +626,16 @@
     "lastSession": "dernière séance {date}",
     "archived": "Archivés ({count})",
     "addExisting": "Reprendre une séance existante",
-    "removeExercise": "Retirer {name}"
+    "removeExercise": "Retirer {name}",
+    "dayName": "Nom du jour",
+    "removeDay": "Supprimer « {name} »",
+    "editExercise": "Modifier {name}",
+    "advanced": "Options avancées",
+    "exerciseSummary": "{sets} × {reps}",
+    "restSummary": "{sec} s de repos",
+    "supersetMark": "superset",
+    "percentsMark": "% 1RM",
+    "moreDetails": "Plus de détails"
   },
   "readiness": {
     "title": "Forme du jour",
@@ -1464,7 +1477,9 @@
     "returnLine": "Reprise après blessure ({area}) : semaine {week} sur {weeks}, charges −{percent} % pour revenir en douceur.",
     "returnLastWeek": "Reprise après blessure ({area}) : dernière semaine, charges habituelles, arrêtez si la douleur revient.",
     "cautiousKept": "Pas assez d’exercices sans risque pour ce thème : {count, plural, one {# exercice marqué « Prudence » est gardé} other {# exercices marqués « Prudence » sont gardés}}, à faire sans douleur.",
-    "returnHeld": "Reprise ralentie : une douleur a été signalée récemment."
+    "returnHeld": "Reprise ralentie : une douleur a été signalée récemment.",
+    "declare": "Déclarer ou mettre à jour une blessure",
+    "done": "Terminé"
   },
   "catalog": {
     "title": "Programmes tout faits",
@@ -2723,5 +2738,16 @@
     "withdraw": "Retirer mon accord",
     "withdrawn": "Accord retiré : l'IA le redemandera avant tout envoi.",
     "errNoConsent": "Donnez votre accord avant d'utiliser l'IA."
+  },
+  "quickProgram": {
+    "title": "Nouveau programme",
+    "name": "Nom",
+    "namePlaceholder": "Ex. : Force 3 jours",
+    "kind": "Ce qu'il entraîne",
+    "daysPerWeek": "Jours par semaine",
+    "days": "{count, plural, one {# jour} other {# jours}} par semaine",
+    "hint": "Vous remplirez ensuite les séances : exercices, ou distance et durée.",
+    "create": "Créer et remplir les séances",
+    "readyMade": "Partir d'un programme tout fait"
   }
 }

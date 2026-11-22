@@ -1,5 +1,6 @@
 "use client";
 
+import { DeclareInjuryButton } from "@/components/domain/InjuryAreas";
 import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
@@ -151,6 +152,9 @@ export default function HealthPage() {
             ))}
           </section>
         )}
+        <div className="t-workspace-wide">
+          <DeclareInjuryButton />
+        </div>
       </div>
     </>
   );

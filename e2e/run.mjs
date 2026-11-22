@@ -560,7 +560,7 @@ await test("yoga: a session of its own, from the breathing to the final relaxati
 });
 
 await test("the style chosen in Settings restyles the whole app", async () => {
-  await page.goto(`${BASE}/fr/settings`);
+  await page.goto(`${BASE}/fr/settings?section=appearance`);
   await page.getByRole("button", { name: /Dynamique/ }).click();
   expect(await page.evaluate(() => document.documentElement.classList.contains("style-dynamic")), "no style-dynamic class");
   await page.getByRole("button", { name: /Classique/ }).click();
@@ -727,7 +727,7 @@ await test("the monthly report counts the sessions of the month", async () => {
 
 await test("sign-up: sport, injuries, a program of that sport put in the planning", async () => {
   // From Settings, the set-up guide runs again, opening on its welcome screen.
-  await page.goto(`${BASE}/fr/settings`);
+  await page.goto(`${BASE}/fr/settings?section=level`);
   await page.getByRole("link", { name: "Relancer l’assistant de démarrage" }).click();
   await page.getByRole("heading", { name: "Bienvenue sur TrainTrack" }).waitFor({ timeout: 10000 });
   await snap("onboarding-welcome");
@@ -830,7 +830,7 @@ await test("the home screen follows the sport practised, and offers it when anot
   });
   await page.keyboard.press("Escape");
   // Weight training chosen in Settings: the app offers the sport the weeks show.
-  await page.goto(`${BASE}/fr/settings`);
+  await page.goto(`${BASE}/fr/settings?section=sport`);
   await page.getByRole("button", { name: "Musculation", exact: true }).first().click();
   await page.goto(`${BASE}/fr`);
   // The load rising too fast comes first; the other notes are folded under "To look at".
@@ -844,7 +844,7 @@ await test("the home screen follows the sport practised, and offers it when anot
   const prefs = await page.evaluate(() => JSON.parse(localStorage.getItem("traintrack.prefs") ?? "{}"));
   expect(prefs.sport === "running" && prefs.sport2 === "bodybuilding", `prefs ${JSON.stringify(prefs)}`);
   // "All sports": nothing guessed, the app as it was, kilos and the usual order.
-  await page.goto(`${BASE}/fr/settings`);
+  await page.goto(`${BASE}/fr/settings?section=sport`);
   await page.getByRole("button", { name: "Tous les sports", exact: true }).click();
   await page.getByText("Rien n’est mis en avant").waitFor({ timeout: 5000 });
   await page.goto(`${BASE}/fr`);
@@ -1342,7 +1342,7 @@ await test("in Dynamic the menu is a dial: slices turn with the arrows, the oute
 });
 
 await test("in Classic the dial can be chosen in Settings, and the round buttons back", async () => {
-  await page.goto(`${BASE}/fr/settings`);
+  await page.goto(`${BASE}/fr/settings?section=navigation`);
   const looks = page.getByRole("group", { name: "Apparence de la roue" });
   await looks.getByRole("button", { name: "Cadran" }).click();
   expect((await looks.getByRole("button", { name: "Cadran" }).getAttribute("aria-pressed")) === "true", "the dial is not chosen");
@@ -1350,7 +1350,7 @@ await test("in Classic the dial can be chosen in Settings, and the round buttons
   await page.getByRole("button", { name: "Ouvrir le menu" }).click();
   await page.getByRole("navigation", { name: "Toutes les sections" }).locator(".t-dial-slice").first().waitFor({ timeout: 5000 });
   await page.keyboard.press("Escape");
-  await page.goto(`${BASE}/fr/settings`);
+  await page.goto(`${BASE}/fr/settings?section=navigation`);
   await page.getByRole("group", { name: "Apparence de la roue" }).getByRole("button", { name: "Pastilles" }).click();
   await page.goto(`${BASE}/fr`);
   await page.getByRole("button", { name: "Ouvrir le menu" }).click();
@@ -1605,7 +1605,7 @@ await test("hiking: its shelf, its place among the sports, and the metres climbe
   await dialog.getByText("Préparer un trek de plusieurs jours").waitFor({ timeout: 5000 });
   await dialog.getByText("Randonnée en montagne").waitFor({ timeout: 5000 });
   await page.keyboard.press("Escape");
-  await page.goto(`${BASE}/fr/settings`);
+  await page.goto(`${BASE}/fr/settings?section=sport`);
   await page.getByRole("button", { name: "Randonnée", exact: true }).first().waitFor({ timeout: 10000 });
   // An outing on foot: the metres climbed are asked, and kept.
   const id = await page.evaluate(async (user) => {
@@ -1799,7 +1799,7 @@ await test("the AI asks for the athlete's agreement before anything is sent", as
   await ask.getByRole("textbox").waitFor({ timeout: 5000 });
   expect(sent.length === 0, `sent before any question: ${sent.join(", ")}`);
   // Withdrawn from Settings, it is asked again.
-  await page.goto(`${BASE}/fr/settings`);
+  await page.goto(`${BASE}/fr/settings?section=ai`);
   await page.getByRole("button", { name: "Retirer mon accord" }).click();
   await page.getByText(/Accord retiré/).waitFor({ timeout: 5000 });
   expect(await page.evaluate(() => localStorage.getItem("traintrack.aiConsent")) === null, "the agreement is still stored");
@@ -1834,6 +1834,65 @@ await test("a coach's program is followed as it is: nothing on it can be changed
     return p._dirty;
   }, pid);
   expect(dirty === 0, "the coach's program was changed on the client's device");
+});
+
+await test("a program is created in three answers, then filled in a compact editor", async () => {
+  await page.goto(`${BASE}/fr/programs`);
+  await page.getByRole("button", { name: "Nouveau programme" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Nom").fill("Natation e2e");
+  await dialog.getByRole("button", { name: "Natation" }).click();
+  await dialog.getByRole("button", { name: "4 jours par semaine" }).click();
+  await dialog.getByRole("button", { name: "Créer et remplir les séances" }).click();
+  await page.waitForURL(/\/fr\/programs\/\d+\/edit$/, { timeout: 10000 });
+  await page.getByLabel("Nom du jour").nth(3).waitFor({ timeout: 10000 });
+  expect((await page.getByLabel("Nom du jour").count()) === 4, "not 4 days");
+  expect((await page.getByRole("combobox", { name: "Sport" }).first().inputValue()) === "swim", "not swimming days");
+  // Distance and time first; intensity and the rest under "More details".
+  expect(!(await page.getByLabel("Intensité").first().isVisible()), "intensity shown before More details");
+  await page.getByText("Plus de détails").first().click();
+  await page.getByLabel("Intensité").first().waitFor({ timeout: 5000 });
+
+  // A strength program: an exercise is one line, opened to change it.
+  await page.goto(`${BASE}/fr/programs`);
+  await page.getByRole("button", { name: "Nouveau programme" }).click();
+  await dialog.getByLabel("Nom").fill("Force e2e");
+  await dialog.getByRole("button", { name: "1 jour par semaine" }).click();
+  await dialog.getByRole("button", { name: "Créer et remplir les séances" }).click();
+  await page.waitForURL(/\/fr\/programs\/\d+\/edit$/, { timeout: 10000 });
+  await page.getByRole("button", { name: "Ajouter un exercice" }).click();
+  await page.getByRole("dialog").getByPlaceholder(/Chercher un exercice/).fill("push");
+  await page.getByRole("dialog").getByText("Pompes", { exact: true }).click();
+  const row = page.getByRole("button", { name: "Modifier Pompes" });
+  await row.getByText("3 × 8-12 · 90 s de repos").waitFor({ timeout: 5000 });
+  await page.getByLabel("Séries").waitFor({ timeout: 5000 });
+  await row.click();
+  await page.getByLabel("Séries").waitFor({ state: "detached", timeout: 5000 });
+});
+
+await test("Settings opens in four groups, and the menu opens it on the section asked", async () => {
+  await page.goto(`${BASE}/fr/settings`);
+  await page.getByRole("button", { name: /Données et compte/ }).waitFor({ timeout: 10000 });
+  expect(!(await page.getByText("Niveau d'entraînement").count()), "a group open by default");
+  await page.getByRole("button", { name: /^Entraînement/ }).click();
+  await page.getByText("Niveau d'entraînement").waitFor({ timeout: 5000 });
+  await page.goto(`${BASE}/fr/settings?section=import`);
+  await page.getByText("Importer mon historique (Strong, Hevy)").waitFor({ timeout: 10000 });
+  expect((await page.getByRole("button", { name: /Données et compte/ }).getAttribute("aria-expanded")) === "true", "the data group is closed");
+});
+
+await test("an injury is declared from the Health page, not only in Settings", async () => {
+  await page.goto(`${BASE}/fr/health`);
+  await page.getByRole("button", { name: "Déclarer ou mettre à jour une blessure" }).click();
+  const dialog = page.getByRole("dialog");
+  const knee = dialog.getByRole("button", { name: /^Genou/ });
+  await knee.click();
+  await dialog.getByRole("button", { name: /^Genou/, pressed: true }).waitFor({ timeout: 5000 });
+  // Healed, then gone: as it was.
+  await knee.click();
+  await knee.click();
+  await dialog.getByRole("button", { name: /^Genou/, pressed: false }).waitFor({ timeout: 5000 });
+  await dialog.getByRole("button", { name: "Terminé" }).click();
 });
 
 await test("no page threw an error", async () => {
