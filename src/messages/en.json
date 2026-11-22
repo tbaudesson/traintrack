@@ -2923,6 +2923,7 @@
     "backToSettings": "Back to Settings",
     "fromStrava": "Imported from Strava",
     "viewOnStrava": "View on Strava",
-    "sectionTitle": "Strava"
+    "sectionTitle": "Strava",
+    "unavailable": "Strava is not available for now: not set up on this server yet, or unreachable."
   }
 }

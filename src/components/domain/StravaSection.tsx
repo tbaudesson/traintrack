@@ -31,8 +31,9 @@ export function StravaSection() {
       .then((s) => alive && setStatus(s))
       .catch((e) => {
         if (!alive) return;
-        if (e instanceof Error && e.message === "STRAVA_NOT_CONFIGURED") setError(t("notConfigured"));
-        else setOffline(true);
+        // Online and still no answer: the function is not deployed yet (or down), not the network.
+        if (!navigator.onLine) setOffline(true);
+        else setError(t(e instanceof Error && e.message === "STRAVA_NOT_CONFIGURED" ? "notConfigured" : "unavailable"));
       });
     return () => {
       alive = false;
