@@ -12,8 +12,9 @@ function todayStr() {
 export function useReadiness(userId?: string) {
   return useLiveQuery(async () => {
     const uid = userId ?? getCurrentUserIdSync();
-    const all = await db.readinessCheckins.filter((r) => !r.deletedAt).toArray();
-    const mine = uid ? all.filter((r) => r.userId === uid) : all;
+    const mine = uid
+      ? await db.readinessCheckins.where("userId").equals(uid).filter((r) => !r.deletedAt).toArray()
+      : await db.readinessCheckins.filter((r) => !r.deletedAt).toArray();
     return mine.sort((a, b) => (a.date < b.date ? 1 : -1));
   }, [userId]) ?? [];
 }

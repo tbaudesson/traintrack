@@ -8,8 +8,10 @@ import type { IntervalPlan } from "@/lib/intervals";
 export function useWorkouts(userId?: string) {
   return useLiveQuery(async () => {
     const uid = userId ?? getCurrentUserIdSync();
-    const all = await db.workouts.filter((w) => !w.deletedAt).toArray();
-    const mine = uid ? all.filter((w) => w.userId === uid) : all;
+    // By the owner's index: a coach's device holds every client's sessions too.
+    const mine = uid
+      ? await db.workouts.where("userId").equals(uid).filter((w) => !w.deletedAt).toArray()
+      : await db.workouts.filter((w) => !w.deletedAt).toArray();
     return mine.sort((a, b) => (a.date < b.date ? 1 : -1));
   }, [userId]) ?? [];
 }

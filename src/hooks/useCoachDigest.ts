@@ -35,8 +35,8 @@ export function useCoachDigest(userIds: string[]): Map<string, AthleteDigest> | 
     const since = localDateIn(-14);
     const lastWeek = localDateIn(-7);
     const [workouts, sets, profiles, exercises, checkins, goals, metrics] = await Promise.all([
-      db.workouts.filter((w) => !w.deletedAt && !!w.userId && ids.includes(w.userId)).toArray(),
-      db.workoutSets.filter((s) => !s.deletedAt && !s.isWarmup && !!s.userId && ids.includes(s.userId)).toArray(),
+      db.workouts.where("userId").anyOf(ids).filter((w) => !w.deletedAt).toArray(),
+      db.workoutSets.where("userId").anyOf(ids).filter((s) => !s.deletedAt && !s.isWarmup).toArray(),
       db.athleteProfiles.filter((p) => !p.deletedAt && !!p.userId && ids.includes(p.userId)).toArray(),
       db.exercises.toArray(),
       db.readinessCheckins.filter((r) => !r.deletedAt && !!r.userId && ids.includes(r.userId) && r.date > lastWeek && r.date <= today).toArray(),

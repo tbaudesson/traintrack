@@ -11,6 +11,9 @@ import { createWorkout, updateWorkout } from "@/hooks/useWorkouts";
 import { DISTANCE_SPORTS, formatDistance, formatDuration, formatPace } from "@/lib/cardio";
 import { localDate } from "@/lib/dates";
 import { parseActivityFile, type GpxActivity } from "@/lib/gpx";
+import { alreadyImported, fileHash } from "@/lib/provenance";
+import db, { getCurrentUserIdSync } from "@/db";
+import { Link } from "@/i18n/navigation";
 
 const MAX_BYTES = 20 * 1024 * 1024;
 
@@ -39,6 +42,9 @@ export function GpxImport({
   const [sport, setSport] = useState<Sport>("run");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  // The file's fingerprint, and the session it is already in, if any: importing it again is refused.
+  const [hash, setHash] = useState<string | null>(null);
+  const [already, setAlready] = useState<Pick<Workout, "id" | "date" | "title"> | null>(null);
 
   function pickFile() {
     document.getElementById(inputId)?.click();
@@ -51,14 +57,20 @@ export function GpxImport({
       setError(t("gpxTooBig"));
       return;
     }
+    const bytes = await file.arrayBuffer();
     // A FIT file is binary, read with Garmin's SDK, loaded only when one comes.
     const parsed = /\.fit$/i.test(file.name)
-      ? (await import("@/lib/fit")).parseFit(new Uint8Array(await file.arrayBuffer()))
-      : parseActivityFile(await file.text());
+      ? (await import("@/lib/fit")).parseFit(new Uint8Array(bytes))
+      : parseActivityFile(new TextDecoder().decode(bytes));
     if (!parsed) {
       setError(t("gpxError"));
       return;
     }
+    const h = await fileHash(bytes);
+    const uid = getCurrentUserIdSync();
+    const mine = uid ? await db.workouts.where("userId").equals(uid).toArray() : await db.workouts.toArray();
+    setHash(h);
+    setAlready(alreadyImported(mine, { hash: h, sport: workout?.sport ?? parsed.sport, startedAt: parsed.start?.toISOString() }, workout?.id) ?? null);
     setSport(workout?.sport ?? parsed.sport ?? "run");
     setActivity(parsed);
   }
@@ -72,7 +84,7 @@ export function GpxImport({
     );
 
   async function save() {
-    if (!activity) return;
+    if (!activity || already) return;
     setSaving(true);
     try {
       const details = {
@@ -88,6 +100,9 @@ export function GpxImport({
         ...(activity.swimStroke ? { swimStroke: activity.swimStroke } : {}),
         ...(activity.strokesPerLength ? { strokesPerLength: activity.strokesPerLength } : {}),
         elevationGainM: activity.elevationGainM > 0 ? activity.elevationGainM : null,
+        source: "file" as const,
+        fileHash: hash,
+        startedAt: activity.start?.toISOString() ?? null,
       };
       const climb = activity.elevationGainM > 0 ? t("gpxElevation", { m: activity.elevationGainM }) : undefined;
       let workoutId = workout?.id;
@@ -152,9 +167,18 @@ export function GpxImport({
                 </label>
               )}
 
-              {duplicate && <p className="text-sm text-amber-600 dark:text-amber-400">{t("gpxDuplicate")}</p>}
+              {already ? (
+                <div className="space-y-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-950/40 dark:text-amber-300" role="alert">
+                  <p>{t("gpxAlready", { date: day(already.date), title: already.title || t("gpxTitle") })}</p>
+                  <Link href={`/log/session?id=${already.id}`} className="font-semibold underline" onClick={() => setActivity(null)}>
+                    {t("gpxOpenExisting")}
+                  </Link>
+                </div>
+              ) : (
+                duplicate && <p className="text-sm text-amber-600 dark:text-amber-400">{t("gpxDuplicate")}</p>
+              )}
 
-              <Button className="w-full" onClick={save} disabled={saving}>
+              <Button className="w-full" onClick={save} disabled={saving || !!already}>
                 {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" aria-hidden="true" />}
                 {workout ? t("gpxFill") : t("gpxSave")}
               </Button>

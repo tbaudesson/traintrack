@@ -1151,7 +1151,9 @@
     "faster": "+{percent} % faster",
     "slower": "−{percent} %",
     "gpxCadence": "Average cadence",
-    "gpxPower": "Power avg · max"
+    "gpxPower": "Power avg · max",
+    "gpxAlready": "This file is already imported: session of {date} (“{title}”). It will not be added twice.",
+    "gpxOpenExisting": "Open that session"
   },
   "goals": {
     "titleOther": "Goals",

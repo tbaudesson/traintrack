@@ -339,6 +339,14 @@ export interface Workout extends SyncFields {
   maxPowerW?: number | null;
   /** The steady power the ride's ups and downs cost, from a watch file (migration 077). */
   normalizedPowerW?: number | null;
+  /** Where it came from: typed ("manual", or none), a watch "file", later a connected service (migration 078). */
+  source?: "manual" | "file" | "strava" | "garmin" | "health" | null;
+  /** The service's own id of the activity, for a connected service (migration 078). */
+  externalId?: string | null;
+  /** When the activity started, as the file says (ISO) (migration 078). */
+  startedAt?: string | null;
+  /** SHA-256 of the file it was imported from (migration 078). */
+  fileHash?: string | null;
   /** A swim: the stroke, the pool length (0 in open water) and the strokes per length (migration 071). */
   swimStroke?: "free" | "breast" | "back" | "fly" | "mixed" | null;
   poolLengthM?: number | null;
@@ -639,6 +647,17 @@ db.version(8).stores({
 // v9: goals of every kind (migration 075).
 db.version(9).stores({
   goals: "++id, uuid, _dirty, userId",
+});
+
+// v10: rows read by their owner without scanning the whole table, and a
+// session found by the file it came from (migration 078).
+db.version(10).stores({
+  workouts: "++id, date, programId, uuid, _dirty, userId, [userId+date], fileHash",
+  workoutSets: "++id, workoutId, exerciseId, uuid, _dirty, userId",
+  bodyMetrics: "++id, date, uuid, _dirty, userId",
+  readinessCheckins: "++id, date, uuid, _dirty, userId",
+  healthMetrics: "++id, date, uuid, _dirty, userId",
+  nutritionEntries: "++id, date, uuid, _dirty, userId",
 });
 
 export { db };

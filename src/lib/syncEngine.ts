@@ -408,32 +408,63 @@ async function pushTable(
   if (foreign.length) await restoreFromServer(config, foreign);
 
   let pushed = 0;
+  const ready = dirtyRecords
+    .filter((r) => !isForeignRow(r, userId))
+    .map((record) => ({ record, row: dexieToSupabase(record, config, fkUuidMaps, userId) }))
+    .filter((x): x is { record: Record<string, unknown>; row: Record<string, unknown> } => !!x.row);
 
-  for (const record of dirtyRecords.filter((r) => !isForeignRow(r, userId))) {
-    const supabaseRow = dexieToSupabase(record, config, fkUuidMaps, userId);
-    if (!supabaseRow) continue;
+  const send = (rows: Record<string, unknown>[]) =>
+    withRetry(async () => {
+      const { error } = await supabase.from(config.supabaseTable).upsert(rows, { onConflict: "id" });
+      if (error) throw new Error(error.message);
+    });
+  const markSynced = (records: Record<string, unknown>[]) => {
+    const at = new Date().toISOString();
+    return db.transaction("rw", db.table(config.dexieTable), async () => {
+      for (const r of records) await db.table(config.dexieTable).update(r.id as number, { _dirty: 0, syncedAt: at });
+    });
+  };
 
-    try {
-      await withRetry(async () => {
-        const { error } = await supabase
-          .from(config.supabaseTable)
-          .upsert(supabaseRow, { onConflict: "id" });
-
-        if (error) throw new Error(error.message);
-      });
-
-      // Mark as synced in Dexie
-      await db.table(config.dexieTable).update(record.id, {
-        _dirty: 0,
-        syncedAt: new Date().toISOString(),
-      });
-      pushed++;
-    } catch (err) {
-      console.error(`[Sync] Push failed for ${config.dexieTable}:`, err);
+  // In batches of rows with the same fields: a batch fills the fields a row
+  // lacks with nothing, so rows are only sent together when none lacks one.
+  for (const group of byShape(ready)) {
+    for (let i = 0; i < group.length; i += PUSH_BATCH) {
+      const chunk = group.slice(i, i + PUSH_BATCH);
+      try {
+        await send(chunk.map((c) => c.row));
+        await markSynced(chunk.map((c) => c.record));
+        pushed += chunk.length;
+      } catch {
+        // One row the server refuses must not hold the others: each alone.
+        for (const c of chunk) {
+          try {
+            await send([c.row]);
+            await markSynced([c.record]);
+            pushed++;
+          } catch (err) {
+            console.error(`[Sync] Push failed for ${config.dexieTable}:`, err);
+          }
+        }
+      }
     }
   }
 
   return pushed;
+}
+
+/** Rows sent together at most. */
+const PUSH_BATCH = 200;
+/** Rows a pull asks for at once (the server's own limit is 1,000). */
+const PULL_PAGE = 1000;
+
+/** Rows grouped by the exact fields they carry. */
+export function byShape<T extends { row: Record<string, unknown> }>(items: T[]): T[][] {
+  const groups = new Map<string, T[]>();
+  for (const item of items) {
+    const shape = Object.keys(item.row).filter((k) => item.row[k] !== undefined).sort().join(",");
+    groups.set(shape, [...(groups.get(shape) ?? []), item]);
+  }
+  return [...groups.values()];
 }
 
 /** Whether a local row belongs to another account than the one syncing. */
@@ -483,6 +514,7 @@ async function pullTable(
   // Build query — fetch records updated after lastPullAt.
   // For trainerVisible tables, omit the user_id filter and let RLS return
   // the caller's own rows plus client/global rows they're allowed to read.
+  const build = () => {
   let query = config.trainerVisible
     ? supabase.from(config.supabaseTable).select("*")
     : supabase.from(config.supabaseTable).select("*").eq("user_id", userId);
@@ -500,21 +532,25 @@ async function pullTable(
     // for append-only tables like queens, treatments, harvests
     query = query.gte("created_at", lastPullAt);
   }
+  return query.order(config.hasUpdatedAt ? "updated_at" : "created_at", { ascending: true });
+  };
 
   // Also pull soft-deleted records
   // (no filter on deleted_at — we want to know about deletions)
 
-  let data: Record<string, unknown>[];
+  // Page after page: the server answers 1,000 rows at most, and a first sync
+  // or a long time offline has more.
+  let data: Record<string, unknown>[] = [];
   try {
-    const result = await withRetry(async () => {
-      const res = await query.order(
-        config.hasUpdatedAt ? "updated_at" : "created_at",
-        { ascending: true }
-      );
-      if (res.error) throw new Error(res.error.message);
-      return res.data;
-    });
-    data = (result ?? []) as Record<string, unknown>[];
+    for (let from = 0; ; from += PULL_PAGE) {
+      const page = await withRetry(async () => {
+        const res = await build().range(from, from + PULL_PAGE - 1);
+        if (res.error) throw new Error(res.error.message);
+        return (res.data ?? []) as Record<string, unknown>[];
+      });
+      data = data.concat(page);
+      if (page.length < PULL_PAGE) break;
+    }
   } catch (err) {
     console.error(`[Sync] Pull failed for ${config.supabaseTable}:`, err);
     return 0;
@@ -562,7 +598,8 @@ async function pullTable(
           continue;
         }
 
-        if (localTime && remoteTime && localTime > remoteTime) {
+        // As instants: the device writes "…Z", the server "…+00:00".
+        if (localTime && remoteTime && Date.parse(String(localTime)) > Date.parse(String(remoteTime))) {
           continue; // Local is newer, skip
         }
 
@@ -833,22 +870,21 @@ function subscribeRealtime(userId: string): void {
     supabase.removeChannel(_realtimeChannel);
   }
 
-  _realtimeChannel = supabase
-    .channel("sync-changes")
-    .on(
-      "postgres_changes",
-      { event: "*", schema: "public" },
-      (payload) => {
-        // When we receive a change from another device, trigger a pull
-        // Only if the change is for our user (RLS guarantees this, but double-check)
-        const row = (payload.new || payload.old) as Record<string, unknown> | undefined;
-        if (row?.user_id === userId) {
-          // Debounce: don't pull immediately on every change
-          if (_pushTimer) return; // We're about to push, skip
-          syncAll();
-        }
-      }
-    )
+  // Only one's own rows of the synced tables: the server filters them, rather
+  // than sending every change of the schema for the device to sort out.
+  const onChange = (payload: { new?: unknown; old?: unknown }) => {
+    const row = (payload.new || payload.old) as Record<string, unknown> | undefined;
+    if (row?.user_id === userId) {
+      // Debounce: don't pull immediately on every change
+      if (_pushTimer) return; // We're about to push, skip
+      syncAll();
+    }
+  };
+  let channel = supabase.channel("sync-changes");
+  for (const config of TABLE_CONFIGS) {
+    channel = channel.on("postgres_changes", { event: "*", schema: "public", table: config.supabaseTable, filter: `user_id=eq.${userId}` }, onChange);
+  }
+  _realtimeChannel = channel
     .subscribe((status) => {
       if (status === "SUBSCRIBED") {
         console.log("[Sync] Realtime connected");

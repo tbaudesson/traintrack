@@ -1151,7 +1151,9 @@
     "faster": "+{percent} % plus rapide",
     "slower": "−{percent} %",
     "gpxCadence": "Cadence moyenne",
-    "gpxPower": "Puissance moy. · max"
+    "gpxPower": "Puissance moy. · max",
+    "gpxAlready": "Ce fichier est déjà importé : séance du {date} (« {title} »). Il ne sera pas ajouté une seconde fois.",
+    "gpxOpenExisting": "Ouvrir cette séance"
   },
   "goals": {
     "titleOther": "Objectifs",

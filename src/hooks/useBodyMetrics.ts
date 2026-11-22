@@ -6,8 +6,9 @@ import { schedulePush } from "@/lib/syncEngine";
 export function useBodyMetrics(userId?: string) {
   return useLiveQuery(async () => {
     const uid = userId ?? getCurrentUserIdSync();
-    const all = await db.bodyMetrics.filter((m) => !m.deletedAt).toArray();
-    const mine = uid ? all.filter((m) => m.userId === uid) : all;
+    const mine = uid
+      ? await db.bodyMetrics.where("userId").equals(uid).filter((m) => !m.deletedAt).toArray()
+      : await db.bodyMetrics.filter((m) => !m.deletedAt).toArray();
     return mine.sort((a, b) => (a.date < b.date ? 1 : -1));
   }, [userId]) ?? [];
 }

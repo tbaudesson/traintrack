@@ -2093,6 +2093,37 @@ await test("Progress draws the pace of each outing over six months", async () =>
   await page.getByRole("img", { name: /Allure \(\/km\).*séances sur six mois/ }).or(page.getByText(/Il faut au moins trois sorties/)).first().waitFor({ timeout: 5000 });
 });
 
+await test("a watch file already imported is not logged a second time", async () => {
+  const add = (title) =>
+    page.evaluate(async ({ user, title }) => {
+      const db = await new Promise((res, rej) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+      const now = new Date().toISOString();
+      const d = new Date();
+      const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      const out = await new Promise((res, rej) => { const tx = db.transaction("workouts", "readwrite"); const r = tx.objectStore("workouts").add({ userId: user, uuid: `e2e-dup-${Date.now()}-${Math.random()}`, date, title, kind: "cardio", sport: "run", _dirty: 0, createdAt: now, updatedAt: now }); tx.oncomplete = () => res(r.result); tx.onerror = () => rej(tx.error); });
+      db.close();
+      return out;
+    }, { user: USER, title });
+  const tcx = `<?xml version="1.0"?><TrainingCenterDatabase><Activities><Activity Sport="Running"><Id>2026-11-19T06:30:00Z</Id><Lap StartTime="x"><TotalTimeSeconds>2700</TotalTimeSeconds><DistanceMeters>9000</DistanceMeters></Lap></Activity></Activities></TrainingCenterDatabase>`;
+  const load = async (id) => {
+    await page.goto(`${BASE}/fr/log/session?id=${id}`);
+    await page.getByRole("button", { name: /Remplir depuis un fichier de montre/ }).waitFor({ timeout: 10000 });
+    await page.locator('input[type="file"][accept*=".tcx"]').first().setInputFiles({ name: "run.tcx", mimeType: "application/xml", buffer: Buffer.from(tcx) });
+    return page.getByRole("dialog");
+  };
+  const first = await add("Footing e2e");
+  let dialog = await load(first);
+  await dialog.getByRole("button", { name: "Remplir la séance" }).click();
+  await dialog.waitFor({ state: "detached", timeout: 10000 });
+  // The same file into another session: refused, with the way to the first.
+  const second = await add("Autre footing e2e");
+  dialog = await load(second);
+  await dialog.getByText(/Ce fichier est déjà importé : séance du .* \(« Footing e2e »\)/).waitFor({ timeout: 5000 });
+  expect(await dialog.getByRole("button", { name: "Remplir la séance" }).isDisabled(), "the duplicate can still be saved");
+  await dialog.getByRole("link", { name: "Ouvrir cette séance" }).click();
+  await page.waitForURL(new RegExp(`id=${first}$`), { timeout: 10000 });
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });

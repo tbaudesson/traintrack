@@ -7,8 +7,8 @@ const server: Record<string, Record<string, unknown>[]> = {};
 vi.mock("./supabase", () => ({
   supabase: {
     from: (table: string) => ({
-      upsert: async (row: Record<string, unknown>) => {
-        upserts.push({ table, row });
+      upsert: async (rows: Record<string, unknown> | Record<string, unknown>[]) => {
+        for (const row of Array.isArray(rows) ? rows : [rows]) upserts.push({ table, row });
         return { error: null };
       },
       select: () => ({
@@ -61,5 +61,17 @@ describe("rows held by another account", () => {
     await pushDirty();
     expect(upserts).toEqual([]);
     expect((await db.programs.where("uuid").equals("gone").first())?._dirty).toBe(0);
+  });
+});
+
+describe("sending rows in batches", () => {
+  it("only groups rows carrying the same fields", async () => {
+    const { byShape } = await import("./syncEngine");
+    const groups = byShape([
+      { row: { id: "a", name: "x", note: undefined } },
+      { row: { id: "b", name: "y" } },
+      { row: { id: "c", name: "z", note: "n" } },
+    ]);
+    expect(groups.map((g) => g.map((x) => x.row.id))).toEqual([["a", "b"], ["c"]]);
   });
 });

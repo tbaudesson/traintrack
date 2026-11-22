@@ -18,8 +18,9 @@ export function useWorkoutSets(workoutId: number | undefined) {
 export function useAllWorkoutSets(userId?: string) {
   return useLiveQuery(async () => {
     const uid = userId ?? getCurrentUserIdSync();
-    const all = await db.workoutSets.filter((s) => !s.deletedAt && !s.isWarmup).toArray();
-    return uid ? all.filter((s) => s.userId === uid) : all;
+    return uid
+      ? db.workoutSets.where("userId").equals(uid).filter((s) => !s.deletedAt && !s.isWarmup).toArray()
+      : db.workoutSets.filter((s) => !s.deletedAt && !s.isWarmup).toArray();
   }, [userId]) ?? [];
 }
 

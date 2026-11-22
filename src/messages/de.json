@@ -1151,7 +1151,9 @@
     "faster": "+{percent} % schneller",
     "slower": "−{percent} %",
     "gpxCadence": "Durchschnittliche Kadenz",
-    "gpxPower": "Leistung Ø · max"
+    "gpxPower": "Leistung Ø · max",
+    "gpxAlready": "Diese Datei ist bereits importiert: Einheit vom {date} („{title}“). Sie wird nicht doppelt hinzugefügt.",
+    "gpxOpenExisting": "Diese Einheit öffnen"
   },
   "goals": {
     "titleOther": "Ziele",
