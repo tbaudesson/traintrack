@@ -21,6 +21,7 @@ import { usePainReports } from "@/hooks/usePain";
 import { recentPainOn } from "@/lib/pain";
 import { useInjuryGuidance } from "@/hooks/useInjuryGuidance";
 import { ExercisePicker } from "@/components/domain/ExercisePicker";
+import { BigTimer } from "@/components/domain/BigTimer";
 import { SessionFeedback } from "@/components/domain/SessionFeedback";
 import { PlanVsDone } from "@/components/domain/PlanVsDone";
 import { ReuseSessionDialog } from "@/components/domain/ReuseSessionDialog";
@@ -62,7 +63,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, MoreHorizontal, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight, TrendingDown, Equal, Gauge, BatteryLow, Bandage, PersonStanding, CopyPlus, Ban } from "lucide-react";
+import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, MoreHorizontal, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight, TrendingDown, Equal, Gauge, BatteryLow, Bandage, PersonStanding, CopyPlus, Ban, Maximize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { IntervalWorkoutView } from "@/components/domain/IntervalWorkoutView";
@@ -131,6 +132,26 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
   // A past one, opened from the history, keeps it.
   useSessionFocus(!!workout && workout.date === localDate() && !summary);
   const [rest, setRest] = useState<number | null>(null);
+  // The rest's whole length, for the ring: its seconds when it began, plus what was added.
+  const [restTotal, setRestTotal] = useState<number | null>(null);
+  // The clocks full screen (a big ring), or shrunk to a bar: the athlete's choice, kept on the device.
+  const [timerFull, setTimerFull] = useState(true);
+  useEffect(() => {
+    try {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reads the device's storage, only on the client
+      if (localStorage.getItem("traintrack.timerView") === "compact") setTimerFull(false);
+    } catch {
+      // No storage: full screen.
+    }
+  }, []);
+  const chooseTimerView = (full: boolean) => {
+    setTimerFull(full);
+    try {
+      localStorage.setItem("traintrack.timerView", full ? "full" : "compact");
+    } catch {
+      // Private window: for this visit only.
+    }
+  };
   const [editMeta, setEditMeta] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
   const [dateDraft, setDateDraft] = useState("");
@@ -436,7 +457,9 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
     if (timerRef.current) clearInterval(timerRef.current);
     // Against the clock rather than counting ticks: a locked phone skips ticks.
     restEndsAt.current = endsAt;
-    setRest(Math.max(1, Math.ceil((endsAt - timestampIn(0)) / 1000)));
+    const total = Math.max(1, Math.ceil((endsAt - timestampIn(0)) / 1000));
+    setRest(total);
+    setRestTotal(total);
     saveRestEnd(workoutId, endsAt);
     let lastBeep = 0;
     timerRef.current = setInterval(() => {
@@ -590,6 +613,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
     restEndsAt.current += seconds * 1000;
     saveRestEnd(workoutId, restEndsAt.current);
     setRest((r) => (r === null ? r : r + seconds));
+    setRestTotal((r) => (r === null ? r : r + seconds));
     if (restPrefs.notify) scheduleRestEnd(restEndsAt.current, t("restOverTitle"), t("restOverBody"));
   }
 
@@ -1443,7 +1467,54 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
         {workout && <SessionFeedback workout={workout} />}
       </SessionSummary>
 
-      {effort && (
+      {/* The clock full screen: a big ring, the time large enough to read from the floor. */}
+      {effort && timerFull && !guided && (
+        <BigTimer
+          tone="effort"
+          label={t("effortLabel")}
+          step={t("effortOfSet", { set: effort.setNumber })}
+          seconds={effort.goal ? Math.max(0, effort.goal - effort.seconds) : effort.seconds}
+          progress={effort.goal ? Math.max(0, effort.goal - effort.seconds) / effort.goal : (effort.seconds % 60) / 60}
+          detail={(() => {
+            const set = sets?.find((x) => x.id === effort.setId);
+            return set ? xl(exMap.get(set.exerciseId)?.name) : null;
+          })()}
+          minimizeLabel={t("timerShrink")}
+          onMinimize={() => chooseTimerView(false)}
+        >
+          <Button variant="outline" className="h-14 rounded-full text-base" onClick={cancelEffort}>
+            <X className="mr-1 h-5 w-5" aria-hidden="true" />
+            {tc("cancel")}
+          </Button>
+          <Button className="h-14 rounded-full text-base" onClick={finishEffort}>
+            <Check className="mr-1 h-5 w-5" aria-hidden="true" />
+            {t("finishSet")}
+          </Button>
+        </BigTimer>
+      )}
+      {rest !== null && timerFull && !guided && (() => {
+        const upNext = sets?.find((x) => x.id === currentSetId);
+        return (
+          <BigTimer
+            tone="rest"
+            label={t("restLabel")}
+            seconds={rest}
+            progress={restTotal ? rest / restTotal : 1}
+            detail={upNext && exMap.get(upNext.exerciseId) ? t("nextUp", { exercise: xl(exMap.get(upNext.exerciseId)?.name), n: upNext.setNumber }) : null}
+            minimizeLabel={t("timerShrink")}
+            onMinimize={() => chooseTimerView(false)}
+          >
+            <Button variant="outline" className="h-14 rounded-full text-base" onClick={() => extendRest(30)}>
+              +30 s
+            </Button>
+            <Button className="h-14 rounded-full text-base" onClick={stopRest}>
+              {t("skipRest")}
+            </Button>
+          </BigTimer>
+        );
+      })()}
+
+      {effort && (!timerFull || guided) && (
         <div role="timer" aria-label={t("effortLabel")} className={cn("t-effort-timer fixed left-1/2 z-[55] flex -translate-x-1/2 items-center gap-2 rounded-full bg-success-text py-1 pr-1 pl-4 whitespace-nowrap text-background shadow-lg", barOffset)}>
           <Timer className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span className="text-sm font-medium">{t("effortOfSet", { set: effort.setNumber })}</span>
@@ -1457,6 +1528,11 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
           <button onClick={finishEffort} className="flex h-10 items-center rounded-full px-2 text-sm font-semibold">
             {t("finishSet")}
           </button>
+          {!guided && (
+            <button onClick={() => chooseTimerView(true)} aria-label={t("timerGrow")} className="flex size-10 items-center justify-center opacity-80 hover:opacity-100">
+              <Maximize2 className="h-4 w-4" aria-hidden="true" />
+            </button>
+          )}
           <button onClick={cancelEffort} aria-label={tc("cancel")} className="flex size-10 items-center justify-center opacity-80 hover:opacity-100">
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
@@ -1464,7 +1540,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
       )}
 
       {/* Rest timer */}
-      {rest !== null && (() => {
+      {rest !== null && (!timerFull || guided) && (() => {
         // During the rest, what comes next: the set to do now, by its exercise and number.
         const upNext = sets?.find((x) => x.id === currentSetId);
         return (
@@ -1478,6 +1554,11 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
               <button onClick={() => extendRest(30)} className="flex h-10 items-center rounded-full px-2 text-sm font-semibold">
                 +30 s
               </button>
+              {!guided && (
+                <button onClick={() => chooseTimerView(true)} aria-label={t("timerGrow")} className="flex size-10 items-center justify-center opacity-80 hover:opacity-100">
+                  <Maximize2 className="h-4 w-4" aria-hidden="true" />
+                </button>
+              )}
               <button onClick={stopRest} aria-label={tc("close")} className="flex size-10 items-center justify-center opacity-80 hover:opacity-100">
                 <X className="h-4 w-4" aria-hidden="true" />
               </button>

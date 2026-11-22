@@ -1542,7 +1542,9 @@ await test("timed sets follow each other by themselves: count down, rest, next s
   const effort = page.getByRole("timer", { name: "Effort" });
   await effort.waitFor({ timeout: 5000 });
   expect(/0:0[1-3]/.test(await effort.innerText()), `not counting down from 3 s: ${await effort.innerText()}`);
+  await page.screenshot({ path: join(ARTIFACTS, "big-timer-effort.png") });
   await page.getByRole("timer", { name: "Repos" }).waitFor({ timeout: 8000 });
+  await page.screenshot({ path: join(ARTIFACTS, "big-timer-rest.png") });
   await effort.getByText("Série 2", { exact: true }).waitFor({ timeout: 10000 });
   // Both held to the end: the exercise folds, its two sets of 3 seconds done.
   await page.getByText(/2 séries · 3, 3 s/).waitFor({ timeout: 10000 });
@@ -1758,7 +1760,9 @@ await test("the assistant explains a proposal from the sessions done, and applie
   }, USER);
   await page.goto(`${BASE}/fr/assistant`);
   const card = page.getByRole("article", { name: "Un exercice souvent laissé de côté" }).filter({ hasText: "Programme assistant" });
-  await card.waitFor({ timeout: 10000 });
+  await card.first().waitFor({ timeout: 10000 });
+  const found = await card.allInnerTexts();
+  expect(found.length === 1, `more than one proposal: ${JSON.stringify(found)}`);
   await card.getByText(/pas fait lors de 2 des 3 dernières séances/).waitFor({ timeout: 5000 });
   await card.getByText(/Proposition :/).waitFor({ timeout: 5000 });
   // The AI is optional: without a key it offers to add one, and sends nothing.

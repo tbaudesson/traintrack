@@ -394,7 +394,10 @@
     "doneSummaryTimed": "{sets, plural, one {# Satz} other {# Sätze}} · {reps} s",
     "cancelledNote": "Einheit abgesagt: bleibt im Verlauf, zählt nirgends, ihr Tag ist noch zu machen.",
     "restore": "Wiederherstellen",
-    "cancelSession": "Einheit absagen"
+    "cancelSession": "Einheit absagen",
+    "timerShrink": "Timer verkleinern",
+    "timerGrow": "Timer vergrößern",
+    "skipRest": "Pause überspringen"
   },
   "progress": {
     "title": "Fortschritt",

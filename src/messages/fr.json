@@ -394,7 +394,10 @@
     "doneSummaryTimed": "{sets, plural, one {# série} other {# séries}} · {reps} s",
     "cancelledNote": "Séance annulée : gardée dans l’historique, elle ne compte nulle part et son jour reste à faire.",
     "restore": "Rétablir",
-    "cancelSession": "Annuler la séance"
+    "cancelSession": "Annuler la séance",
+    "timerShrink": "Réduire le chrono",
+    "timerGrow": "Agrandir le chrono",
+    "skipRest": "Passer le repos"
   },
   "progress": {
     "title": "Progrès",

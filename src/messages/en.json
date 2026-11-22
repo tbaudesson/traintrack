@@ -394,7 +394,10 @@
     "doneSummaryTimed": "{sets, plural, one {# set} other {# sets}} · {reps} s",
     "cancelledNote": "Session called off: kept in the history, counted nowhere, its day still to do.",
     "restore": "Bring back",
-    "cancelSession": "Call off the session"
+    "cancelSession": "Call off the session",
+    "timerShrink": "Shrink the timer",
+    "timerGrow": "Enlarge the timer",
+    "skipRest": "Skip the rest"
   },
   "progress": {
     "title": "Progress",

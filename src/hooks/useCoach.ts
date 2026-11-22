@@ -49,6 +49,9 @@ export function useCoach() {
   useEffect(() => setIgnored(readIgnored()), []);
 
   const all = useMemo(() => {
+    // The library and the sets still loading (read as empty lists): nothing to say yet, rather than
+    // every exercise looking skipped for an instant.
+    if (!exercises.length || (workouts.length > 0 && !sets.length)) return [];
     const schedule = scheduleSessions({ planned, workouts, from: localDateIn(-28), to: localDateIn(-1), today });
     return coachProposals({
       today,
