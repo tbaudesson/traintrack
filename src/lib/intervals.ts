@@ -1,4 +1,5 @@
 import type { MuscleGroup } from "@/db";
+import { MUSCLE_GROUPS } from "@/lib/muscles";
 import { injuryWarning, type Injury, type InjuryRules } from "./injuries";
 
 /** What the session works: the belly, the whole body, or the legs and glutes. */
@@ -59,7 +60,7 @@ export interface TimedGuidance {
 
 export const TIMED_KEY = "timed_sessions";
 
-const MUSCLES: MuscleGroup[] = ["chest", "back", "legs", "shoulders", "arms", "core", "full_body", "other"];
+const MUSCLES = MUSCLE_GROUPS;
 const num = (v: unknown, lo: number, hi: number) => typeof v === "number" && Number.isInteger(v) && v >= lo && v <= hi;
 export const validPattern = (p: unknown): p is string => {
   if (typeof p !== "string" || !/^\d{1,3}-\d{1,3}$/.test(p)) return false;

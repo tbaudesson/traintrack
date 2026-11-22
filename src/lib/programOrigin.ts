@@ -23,6 +23,16 @@ export function programOrigin(
   return "mine";
 }
 
+/**
+ * Whether this device's user may change a program. The server only lets the
+ * account that holds a row write it, so a program a coach gave a client (held
+ * by the coach) is read-only to the client: a change would never be accepted,
+ * and the row would stay stuck waiting to be sent. Rows not yet tied to an
+ * account, and every row when signed out, are the device's own.
+ */
+export const canEditProgram = (program: Pick<Program, "userId">, me: string | null | undefined) =>
+  !me || !program.userId || program.userId === me;
+
 /** What "Customise" renames a ready-made program to: it is no longer the ready-made one. */
 export const customisedName = (name: string, suffix: string) => `${name} (${suffix})`;
 

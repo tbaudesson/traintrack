@@ -44,6 +44,33 @@ export function clearApiKey(): void {
   window.localStorage.removeItem(KEY_STORAGE);
 }
 
+// The athlete's explicit agreement to send their data to Anthropic, asked once
+// on this device before the first request (the summary sent to the assistant
+// includes health data: injuries, pain, readiness). Withdrawn from Settings.
+const CONSENT_STORAGE = "traintrack.aiConsent";
+
+/** When the athlete agreed (ISO date), or null: nothing is sent without it. */
+export function getAiConsent(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(CONSENT_STORAGE);
+  } catch {
+    return null;
+  }
+}
+
+export function giveAiConsent(): void {
+  window.localStorage.setItem(CONSENT_STORAGE, new Date().toISOString());
+}
+
+export function withdrawAiConsent(): void {
+  window.localStorage.removeItem(CONSENT_STORAGE);
+}
+
+function requireConsent(): void {
+  if (!getAiConsent()) throw new Error("AI_NO_CONSENT");
+}
+
 export interface GenerateProgramInput {
   goal: string;
   daysPerWeek: number;
@@ -102,6 +129,7 @@ export async function generateProgram(
   input: GenerateProgramInput,
   apiKey: string
 ): Promise<GeneratedProgram> {
+  requireConsent();
   const prompt = `You are an expert strength & conditioning coach. Design a structured weekly training program.
 
 Athlete details:
@@ -154,6 +182,7 @@ export async function askCoach(input: {
   question: string;
   onText: (snapshot: string) => void;
 }): Promise<string> {
+  requireConsent();
   const language = input.locale === "fr" ? "French" : input.locale === "de" ? "German" : "English";
   const system = `You are the training assistant of TrainTrack, a multi-sport training app. The athlete asks about their own training. Answer in ${language}, briefly (a few short paragraphs or a short list), for someone who is not a sports scientist.
 

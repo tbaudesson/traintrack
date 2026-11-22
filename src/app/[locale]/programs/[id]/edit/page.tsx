@@ -24,7 +24,7 @@ import {
 import { Trash2, Save, Loader2, UserCheck, Users, CalendarDays } from "lucide-react";
 import { nextMonday, programWeek } from "@/lib/programWeek";
 import { localDate } from "@/lib/dates";
-import { programOrigin } from "@/lib/programOrigin";
+import { canEditProgram, programOrigin } from "@/lib/programOrigin";
 import { useReadyMadeNames } from "@/lib/templateService";
 import { getCurrentUserIdSync } from "@/db";
 
@@ -39,7 +39,7 @@ export default function ProgramEditorPage() {
   const origin = program ? programOrigin(program, getCurrentUserIdSync(), readyMade) : null;
   // Only one's own programs are edited here; the others are followed as they are.
   useEffect(() => {
-    if (program && origin !== "mine") router.replace(`/programs/${programId}`);
+    if (program && (origin !== "mine" || !canEditProgram(program, getCurrentUserIdSync()))) router.replace(`/programs/${programId}`);
   }, [program, origin, router, programId]);
   const { clients } = useClients();
   // A team program has no single athlete: no injury to flag.

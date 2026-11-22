@@ -1,27 +1,29 @@
 import db from "@/db";
 import { localDate } from "@/lib/dates";
 
-/**
- * GDPR data portability (Art. 20): export all of the user's local data as JSON.
- */
-export async function exportJSON(): Promise<string> {
-  const [athleteProfiles, exercises, programs, workouts, workoutSets, bodyMetrics, readinessCheckins, nutritionEntries, workoutNotes] =
-    await Promise.all([
-      db.athleteProfiles.filter((r) => !r.deletedAt).toArray(),
-      db.exercises.filter((r) => !r.deletedAt && r.isCustom).toArray(),
-      db.programs.filter((r) => !r.deletedAt).toArray(),
-      db.workouts.filter((r) => !r.deletedAt).toArray(),
-      db.workoutSets.filter((r) => !r.deletedAt).toArray(),
-      db.bodyMetrics.filter((r) => !r.deletedAt).toArray(),
-      db.readinessCheckins.filter((r) => !r.deletedAt).toArray(),
-      db.nutritionEntries.filter((r) => !r.deletedAt).toArray(),
-      db.workoutNotes.filter((r) => !r.deletedAt).toArray(),
-    ]);
+type Owned = { userId?: string | null; deletedAt?: string | null };
 
-  const data = {
-    app: "TrainTrack",
-    version: 2,
-    exportedAt: new Date().toISOString(),
+/**
+ * Whether a row is the signed-in person's own data. A coach's device also holds
+ * their clients' rows (synced for coaching), which are not theirs to export.
+ * Rows not yet tied to an account (created before signing in) are this
+ * person's. Signed out, everything on the device is theirs.
+ */
+export function isOwnRow(row: Owned, userId: string | null | undefined): boolean {
+  if (row.deletedAt) return false;
+  if (!userId) return true;
+  return !row.userId || row.userId === userId;
+}
+
+/**
+ * GDPR data portability (Art. 20): export the signed-in person's data as JSON
+ * — their own rows only, never their clients'. A program a coach assigned to
+ * them is included (it is their plan); a message is included when they sent or
+ * received it.
+ */
+export async function exportJSON(userId?: string | null): Promise<string> {
+  const own = <T extends Owned>(rows: T[]) => rows.filter((r) => isOwnRow(r, userId));
+  const [
     athleteProfiles,
     exercises,
     programs,
@@ -31,6 +33,62 @@ export async function exportJSON(): Promise<string> {
     readinessCheckins,
     nutritionEntries,
     workoutNotes,
+    hydrationLogs,
+    messages,
+    healthMetrics,
+    competitionResults,
+    horses,
+    horseSessions,
+  ] = await Promise.all([
+    db.athleteProfiles.toArray().then(own),
+    db.exercises.toArray().then((rows) => own(rows).filter((r) => r.isCustom)),
+    db.programs
+      .toArray()
+      .then((rows) => rows.filter((r) => !r.deletedAt && (isOwnRow(r, userId) || (!!userId && r.assignedToUserId === userId)))),
+    db.workouts.toArray().then(own),
+    db.workoutSets.toArray().then(own),
+    db.bodyMetrics.toArray().then(own),
+    db.readinessCheckins.toArray().then(own),
+    db.nutritionEntries.toArray().then(own),
+    db.workoutNotes.toArray().then(own),
+    db.hydrationLogs.toArray().then(own),
+    db.messages
+      .toArray()
+      .then((rows) => rows.filter((r) => !r.deletedAt && (isOwnRow(r, userId) || (!!userId && r.recipientId === userId)))),
+    db.healthMetrics.toArray().then(own),
+    db.competitionResults.toArray().then(own),
+    db.horses.toArray().then(own),
+    db.horseSessions.toArray().then(own),
+  ]);
+
+  // Device bookkeeping (sync state) is not personal data.
+  const strip = <T extends object>(rows: T[]) =>
+    rows.map((r) => {
+      const { _dirty, syncedAt, ...rest } = r as T & { _dirty?: number; syncedAt?: string | null };
+      void _dirty;
+      void syncedAt;
+      return rest;
+    });
+
+  const data = {
+    app: "TrainTrack",
+    version: 3,
+    exportedAt: new Date().toISOString(),
+    athleteProfiles: strip(athleteProfiles),
+    exercises: strip(exercises),
+    programs: strip(programs),
+    workouts: strip(workouts),
+    workoutSets: strip(workoutSets),
+    bodyMetrics: strip(bodyMetrics),
+    readinessCheckins: strip(readinessCheckins),
+    nutritionEntries: strip(nutritionEntries),
+    workoutNotes: strip(workoutNotes),
+    hydrationLogs: strip(hydrationLogs),
+    messages: strip(messages),
+    healthMetrics: strip(healthMetrics),
+    competitionResults: strip(competitionResults),
+    horses: strip(horses),
+    horseSessions: strip(horseSessions),
   };
 
   return JSON.stringify(data, null, 2);
@@ -49,8 +107,8 @@ export function downloadFile(content: string, filename: string, mime: string): v
   URL.revokeObjectURL(url);
 }
 
-export async function downloadJSONBackup(): Promise<void> {
-  const json = await exportJSON();
+export async function downloadJSONBackup(userId?: string | null): Promise<void> {
+  const json = await exportJSON(userId);
   const date = localDate();
   downloadFile(json, `traintrack-backup-${date}.json`, "application/json");
 }
@@ -102,8 +160,8 @@ export function sessionsCsv(
 
 export async function downloadSessionsCsv(userId: string | null | undefined): Promise<void> {
   const [workouts, sets, exercises] = await Promise.all([
-    db.workouts.filter((w) => !w.deletedAt && (!userId || w.userId === userId)).toArray(),
-    db.workoutSets.filter((s) => !s.deletedAt && (!userId || s.userId === userId)).toArray(),
+    db.workouts.filter((w) => isOwnRow(w, userId)).toArray(),
+    db.workoutSets.filter((s) => isOwnRow(s, userId)).toArray(),
     db.exercises.toArray(),
   ]);
   const names = new Map(exercises.map((e) => [e.id, e.name]));

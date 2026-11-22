@@ -15,6 +15,7 @@ import { applyChange, coachProposals, type CoachProposal } from "@/lib/coach";
 import { isAvoided } from "@/lib/injuries";
 import { scheduleSessions } from "@/lib/schedule";
 import { localDate, localDateIn } from "@/lib/dates";
+import { canEditProgram } from "@/lib/programOrigin";
 
 const IGNORED_KEY = "traintrack.coach.ignored";
 
@@ -55,7 +56,8 @@ export function useCoach() {
     const schedule = scheduleSessions({ planned, workouts, from: localDateIn(-28), to: localDateIn(-1), today });
     return coachProposals({
       today,
-      programs,
+      // A coach's program is changed by the coach, not proposed changes here.
+      programs: programs.filter((p) => canEditProgram(p, user?.id)),
       workouts,
       sets,
       exercises: exercises.filter((e) => !e.isCustom || e.userId === user?.id),

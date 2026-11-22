@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "TrainTrack — Bodybuilding Coaching",
-  description: "Plan, log and track strength training — for athletes and their coaches.",
+  title: "TrainTrack — Multisport Training",
+  description: "Plan, log and track your training in every sport — for athletes and their coaches.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

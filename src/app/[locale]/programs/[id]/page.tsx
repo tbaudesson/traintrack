@@ -17,7 +17,7 @@ import { describeTarget } from "@/lib/cardio";
 import { localDate } from "@/lib/dates";
 import { useExerciseLabel } from "@/lib/exerciseNames";
 import { planWeeks, programCategory } from "@/lib/programCategories";
-import { customisedName, programOrigin } from "@/lib/programOrigin";
+import { canEditProgram, customisedName, programOrigin } from "@/lib/programOrigin";
 import { programProgress } from "@/lib/programCards";
 import { PROGRAM_TEMPLATES } from "@/lib/programTemplates";
 import { findWorkoutProgramDay, nextDayIndex, startWorkoutFromDay } from "@/lib/startWorkout";
@@ -81,6 +81,8 @@ export default function ProgramPage() {
   const progress = programProgress(program, workouts);
   // A coach looking at a client's copy does not train it.
   const forSomeoneElse = !!program.assignedToUserId && program.assignedToUserId !== getCurrentUserIdSync();
+  // A coach's program, given to this client: followed as it is, never changed here.
+  const editable = canEditProgram(program, getCurrentUserIdSync());
   const next = days.length && !forSomeoneElse ? nextDayIndex(program, workouts, today) : null;
   const running = workouts.find((w) => w.date === today && findWorkoutProgramDay([program], w));
   const perWeek = weeks ? Math.round(days.length / weeks) : days.length;
@@ -156,7 +158,7 @@ export default function ProgramPage() {
         showBack
         actions={
           <div className="flex items-center gap-1">
-            {!forSomeoneElse && (
+            {!forSomeoneElse && editable && (
               <Button
                 size="icon-sm"
                 variant="ghost"
@@ -216,7 +218,7 @@ export default function ProgramPage() {
         )}
 
         {/* In the planning: on which days, from when. */}
-        <ProgramPlanning program={program} today={today} readOnly={origin === "coach"} />
+        <ProgramPlanning program={program} today={today} readOnly={origin === "coach" || !editable} />
 
         {/* A competition or a race to peak for: the plan ends on its week. */}
         {weeks && origin !== "coach" && (
@@ -292,15 +294,17 @@ export default function ProgramPage() {
               <Copy className="mr-1 h-4 w-4" aria-hidden="true" />
               {t("duplicate")}
             </Button>
-            <Button variant="outline" className="w-full" onClick={() => setProgramArchived(programId, !program.archivedAt)}>
-              {program.archivedAt ? <ArchiveRestore className="mr-1 h-4 w-4" aria-hidden="true" /> : <Archive className="mr-1 h-4 w-4" aria-hidden="true" />}
-              {t(program.archivedAt ? "unarchive" : "archive")}
-            </Button>
+            {editable && (
+              <Button variant="outline" className="w-full" onClick={() => setProgramArchived(programId, !program.archivedAt)}>
+                {program.archivedAt ? <ArchiveRestore className="mr-1 h-4 w-4" aria-hidden="true" /> : <Archive className="mr-1 h-4 w-4" aria-hidden="true" />}
+                {t(program.archivedAt ? "unarchive" : "archive")}
+              </Button>
+            )}
             <p className="col-span-2 text-xs text-muted-foreground">{t(program.archivedAt ? "unarchiveHint" : "duplicateHint")}</p>
           </section>
         )}
 
-        {!forSomeoneElse && <ProgramHistory program={program} />}
+        {!forSomeoneElse && editable && <ProgramHistory program={program} />}
 
         {origin === "followed" && (
           <section className="space-y-2">

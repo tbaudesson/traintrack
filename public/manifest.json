@@ -1,7 +1,7 @@
 {
-  "name": "TrainTrack — Bodybuilding Coaching",
+  "name": "TrainTrack — Multisport Training",
   "short_name": "TrainTrack",
-  "description": "Plan, log and track strength training — for athletes and their coaches.",
+  "description": "Plan, log and track your training in every sport — for athletes and their coaches.",
   "start_url": "/fr",
   "display": "standalone",
   "theme_color": "#6D28D9",

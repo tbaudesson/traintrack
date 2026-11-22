@@ -1,5 +1,6 @@
 "use client";
 
+import { MUSCLE_GROUPS } from "@/lib/muscles";
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Dumbbell, History, Sparkles } from "lucide-react";
@@ -17,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Chip, ChipRow, SearchField } from "@/components/ui/find";
 import { InjuryBadge } from "@/components/domain/InjuryBadge";
 
-const MUSCLES: MuscleGroup[] = ["chest", "back", "legs", "shoulders", "arms", "core", "full_body", "other"];
+const MUSCLES = MUSCLE_GROUPS;
 /** Results shown at once; more on demand rather than a wall of names. */
 const PAGE = 30;
 

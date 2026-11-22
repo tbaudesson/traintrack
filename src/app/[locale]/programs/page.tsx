@@ -7,7 +7,8 @@ import { usePrograms, createProgram } from "@/hooks/usePrograms";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAthleteProfile } from "@/hooks/useAthleteProfile";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
-import { getApiKey, generateProgram } from "@/lib/aiService";
+import { getAiConsent, getApiKey, generateProgram } from "@/lib/aiService";
+import { AiConsent } from "@/components/domain/AiConsent";
 import { PROGRAM_TEMPLATES, type ProgramTemplate } from "@/lib/programTemplates";
 import { planWeeks, programCategory } from "@/lib/programCategories";
 import type { ProgramDay } from "@/db";
@@ -77,6 +78,7 @@ export default function ProgramsPage() {
 
   // AI generation dialog state
   const [aiOpen, setAiOpen] = useState(false);
+  const [aiConsented, setAiConsented] = useState(false);
   const [goal, setGoal] = useState("hypertrophy");
   const [daysPerWeek, setDaysPerWeek] = useState("4");
   const [experience, setExperience] = useState("intermediate");
@@ -92,6 +94,7 @@ export default function ProgramsPage() {
 
   function openAi() {
     setAiError(null);
+    setAiConsented(!!getAiConsent());
     if (profile?.goals?.[0]) setGoal(profile.goals[0]);
     if (profile?.fitnessLevel) setExperience(profile.fitnessLevel);
     setAiOpen(true);
@@ -288,13 +291,17 @@ export default function ProgramsPage() {
             {aiError && (
               <p className="rounded-md bg-destructive/10 p-2 text-sm text-destructive">{aiError}</p>
             )}
-            <Button className="w-full" onClick={handleGenerate} disabled={generating}>
-              {generating ? (
-                <><Loader2 className="mr-1 h-4 w-4 animate-spin" />{tai("generating")}</>
-              ) : (
-                <><Sparkles className="mr-1 h-4 w-4" />{tai("generateBtn")}</>
-              )}
-            </Button>
+            {aiConsented ? (
+              <Button className="w-full" onClick={handleGenerate} disabled={generating}>
+                {generating ? (
+                  <><Loader2 className="mr-1 h-4 w-4 animate-spin" />{tai("generating")}</>
+                ) : (
+                  <><Sparkles className="mr-1 h-4 w-4" />{tai("generateBtn")}</>
+                )}
+              </Button>
+            ) : (
+              <AiConsent sends="program" onAccept={() => setAiConsented(true)} />
+            )}
           </div>
         </DialogContent>
       </Dialog>

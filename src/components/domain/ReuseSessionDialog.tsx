@@ -6,6 +6,8 @@ import { ClipboardList, Plus } from "lucide-react";
 import type { Exercise, WorkoutSet } from "@/db";
 import { useRouter } from "@/i18n/navigation";
 import { createProgram, updateProgram, useTrainablePrograms } from "@/hooks/usePrograms";
+import { useAuth } from "@/contexts/AuthContext";
+import { canEditProgram } from "@/lib/programOrigin";
 import { useWorkouts } from "@/hooks/useWorkouts";
 import { appendDay, byUse, dayFromWorkout, lastUsed } from "@/lib/reuse";
 import { search } from "@/lib/search";
@@ -47,7 +49,9 @@ function Body({ onDone, workoutId, title, sets, exercises }: { onDone: () => voi
   const t = useTranslations("reuse");
   const tf = useTranslations("picker");
   const router = useRouter();
-  const programs = useTrainablePrograms();
+  const { user } = useAuth();
+  // Only one's own programs take a new day: a coach's stays as the coach made it.
+  const programs = useTrainablePrograms().filter((p) => canEditProgram(p, user?.id));
   const workouts = useWorkouts();
   const [name, setName] = useState(title);
   const [query, setQuery] = useState("");

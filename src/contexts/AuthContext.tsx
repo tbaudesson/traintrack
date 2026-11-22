@@ -15,7 +15,7 @@ import { startSync, stopSync, flushAndClearLocalData, adoptLocalData } from "@/l
 import { getUserProfile, type UserProfile, type UserStatus } from "@/lib/adminService";
 import { claimPendingInvitations } from "@/lib/groupService";
 import { unsubscribeFromPush } from "@/lib/pushService";
-import { clearApiKey } from "@/lib/aiService";
+import { clearApiKey, withdrawAiConsent } from "@/lib/aiService";
 import type { User, Session } from "@supabase/supabase-js";
 
 // ─── Types ────────────────────────────────────────────────────────────
@@ -332,6 +332,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ]);
     } catch { /* an orphan subscription is cleaned up on its next 410 */ }
     clearApiKey();
+    withdrawAiConsent();
     await supabase.auth.signOut();
     await clearCachedUserId();
     setState({

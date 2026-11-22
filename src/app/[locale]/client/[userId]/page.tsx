@@ -1,5 +1,6 @@
 "use client";
 
+import { totalVolume as volumeOf } from "@/lib/performance";
 import { useMemo } from "react";
 import { useInjuryGuidance } from "@/hooks/useInjuryGuidance";
 import { useParams } from "next/navigation";
@@ -102,9 +103,7 @@ export default function ClientDetailPage() {
   const thisWeek = adherence?.weeks.at(-1);
 
   const totalVolume = useMemo(() => {
-    let v = 0;
-    for (const s of sets) if (s.completed && s.weightKg && s.reps) v += s.weightKg * s.reps;
-    return Math.round(v);
+    return Math.round(volumeOf(sets));
   }, [sets]);
 
   return (
@@ -362,11 +361,7 @@ export default function ClientDetailPage() {
                 sets={sets.filter((s) => s.workoutId === w.id)}
                 exercises={exMap}
                 planned={w.plannedDay ?? null}
-                volume={Math.round(
-                  sets
-                    .filter((s) => s.workoutId === w.id)
-                    .reduce((a, s) => a + (s.completed && s.weightKg && s.reps ? s.weightKg * s.reps : 0), 0)
-                )}
+                volume={Math.round(volumeOf(sets.filter((s) => s.workoutId === w.id)))}
               />
             ))
           )}

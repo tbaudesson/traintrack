@@ -12,6 +12,7 @@ import { percentWeights, referenceMax } from "./percent";
 import { DELOAD_LOAD, deloadSets } from "./deload";
 import { programWeek } from "./programWeek";
 import { createCustomExercise } from "@/hooks/useExercises";
+import { canEditProgram } from "./programOrigin";
 
 /** A deload load: a tenth lighter, to the plate step below. */
 export function lighter(kg: number, equipment?: Exercise["equipment"], factor: number = DELOAD_LOAD): number {
@@ -102,7 +103,7 @@ export async function startWorkoutFromDay(
   // The day's key, given now to a program from before keys (as stored, not the version passed, which may be shortened).
   let key = day.key;
   const stored = program.id ? await db.programs.get(program.id) : undefined;
-  if (stored?.id && needsKeys(stored.structure)) {
+  if (stored?.id && needsKeys(stored.structure) && canEditProgram(stored, uid)) {
     const keyed = withDayKeys(stored.structure);
     await updateProgram(stored.id, { structure: keyed });
     key = keyed[dayIndex]?.key;

@@ -2706,5 +2706,22 @@
     "errOffline": "Keine Verbindung: Die KI braucht das Netz.",
     "errRefused": "Diese Frage wurde nicht beantwortet. Formuliere sie anders.",
     "errGeneric": "Die Antwort konnte nicht abgerufen werden. Noch einmal versuchen."
+  },
+  "aiConsent": {
+    "title": "Ihre Zustimmung vor der Nutzung der KI",
+    "intro": "Um Ihnen zu antworten, sendet TrainTrack mit Ihrem Schlüssel direkt an Anthropic (Claude):",
+    "coach1": "Ihre Frage und das bisherige Gespräch;",
+    "coach2": "Ihr Sportprofil (Niveau, Ziele, Ausrüstung, Trainingstage) und Ihre Programme;",
+    "coach3": "Ihre Einheiten der letzten 8 Wochen, deren Lasten und die empfundene Anstrengung;",
+    "coach4": "Gesundheitsdaten: gemeldete Verletzungen, Schmerzen, Tagesform-Werte.",
+    "program1": "Ziel, Anzahl der Tage, Niveau und Notizen aus diesem Formular;",
+    "program2": "die Ausrüstung aus Ihrem Profil.",
+    "never": "Kein Name, keine E-Mail, keine Notizen. Nichts wird vor einer Anfrage gesendet, und Sie können diese Zustimmung jederzeit in den Einstellungen widerrufen.",
+    "privacy": "Datenschutzerklärung",
+    "accept": "Ich stimme zu",
+    "given": "Zugestimmt am {date}.",
+    "withdraw": "Zustimmung widerrufen",
+    "withdrawn": "Zustimmung widerrufen: Die KI fragt vor jedem Senden erneut.",
+    "errNoConsent": "Stimmen Sie zu, bevor Sie die KI nutzen."
   }
 }

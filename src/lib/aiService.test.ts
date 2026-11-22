@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { askCoach, MODEL } from "./aiService";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { askCoach, generateProgram, getAiConsent, giveAiConsent, MODEL, withdrawAiConsent } from "./aiService";
 
 /** An answer streamed as the Messages API streams it (server-sent events). */
 function sse(texts: string[], stopReason = "end_turn"): Response {
@@ -15,7 +15,31 @@ function sse(texts: string[], stopReason = "end_turn"): Response {
   return new Response(body, { status: 200, headers: { "content-type": "text/event-stream" } });
 }
 
+/** This device's storage, with the athlete's agreement already given. */
+beforeEach(() => {
+  const store = new Map<string, string>();
+  vi.stubGlobal("window", {
+    localStorage: { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => void store.set(k, v), removeItem: (k: string) => void store.delete(k) },
+  });
+  giveAiConsent();
+});
 afterEach(() => vi.unstubAllGlobals());
+
+describe("the athlete's agreement", () => {
+  it("is required before anything is sent", async () => {
+    withdrawAiConsent();
+    expect(getAiConsent()).toBeNull();
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+    await expect(askCoach({ apiKey: "sk-test", locale: "fr", context: "x", history: [], question: "?", onText: () => {} })).rejects.toThrow("AI_NO_CONSENT");
+    await expect(generateProgram({ goal: "force", daysPerWeek: 3, experience: "beginner", equipment: [] }, "sk-test")).rejects.toThrow("AI_NO_CONSENT");
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("is dated when given", () => {
+    expect(getAiConsent()).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+  });
+});
 
 describe("askCoach", () => {
   it("asks the current model with the data summary cached, a fallback on refusal, and streams the answer", async () => {

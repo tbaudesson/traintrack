@@ -14,7 +14,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { getApiKey, setApiKey, clearApiKey } from "@/lib/aiService";
+import { getApiKey, setApiKey, clearApiKey, getAiConsent, withdrawAiConsent } from "@/lib/aiService";
 import { forceFullResync } from "@/lib/syncEngine";
 import {
   isPushSupported, isPushConfigured, getPushSubscription, subscribeToPush, unsubscribeFromPush,
@@ -103,6 +103,7 @@ export default function SettingsPage() {
   const t = useTranslations("settings");
   const tAuth = useTranslations("auth");
   const tai = useTranslations("ai");
+  const tconsent = useTranslations("aiConsent");
   const ta11y = useTranslations("a11y");
   const ta = useTranslations("appearance");
   const tnav = useTranslations("nav");
@@ -130,6 +131,8 @@ export default function SettingsPage() {
   const [apiKeyInput, setApiKeyInput] = useState("");
   const [keyIsSet, setKeyIsSet] = useState(() => !!getApiKey());
   const [keySavedFlag, setKeySavedFlag] = useState(false);
+  const [aiConsentAt, setAiConsentAt] = useState<string | null>(() => getAiConsent());
+  const [consentWithdrawn, setConsentWithdrawn] = useState(false);
   const [textSize, setTextSize] = useState<TextSize>(() => getTextSize());
   const [mode, setMode] = useState<ThemeMode>(() => getMode());
   const [accent, setAccent] = useState<Accent>(() => getAccent());
@@ -810,6 +813,23 @@ export default function SettingsPage() {
             </Button>
             {keyIsSet && <Button variant="outline" onClick={removeKey}>{tai("clearKey")}</Button>}
           </div>
+          {aiConsentAt && (
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+              <span>{tconsent("given", { date: aiConsentAt.slice(0, 10) })}</span>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  withdrawAiConsent();
+                  setAiConsentAt(null);
+                  setConsentWithdrawn(true);
+                }}
+              >
+                {tconsent("withdraw")}
+              </Button>
+            </div>
+          )}
+          {consentWithdrawn && <p className="mt-2 text-xs text-muted-foreground" role="status">{tconsent("withdrawn")}</p>}
         </Section>
 
         <h2 className="t-settings-group t-section-heading pt-3">{t("groupData")}</h2>
@@ -833,7 +853,7 @@ export default function SettingsPage() {
         {/* Data & privacy */}
         <Section icon={Download} title={t("export")}>
           <p className="mb-3 text-xs text-muted-foreground">{t("exportDesc")}</p>
-          <Button variant="outline" onClick={() => downloadJSONBackup()} className="w-full">
+          <Button variant="outline" onClick={() => downloadJSONBackup(user?.id)} className="w-full">
             <Download className="mr-2 h-4 w-4" />
             {t("exportJSON")}
           </Button>

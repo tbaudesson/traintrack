@@ -2706,5 +2706,22 @@
     "errOffline": "No connection: the AI needs the network.",
     "errRefused": "This question got no answer. Try rephrasing it.",
     "errGeneric": "The answer could not be obtained. Try again."
+  },
+  "aiConsent": {
+    "title": "Your agreement before using the AI",
+    "intro": "To answer you, TrainTrack sends directly to Anthropic (Claude), with your key:",
+    "coach1": "your question and the conversation so far;",
+    "coach2": "your athlete profile (level, goals, equipment, training days) and your programs;",
+    "coach3": "your sessions of the last 8 weeks, their loads and the effort felt;",
+    "coach4": "health data: injuries declared, pain reported, readiness scores.",
+    "program1": "the goal, number of days, level and notes typed in this form;",
+    "program2": "the equipment in your profile.",
+    "never": "No name, email or notes. Nothing leaves before each request, and you can withdraw this agreement at any time in Settings.",
+    "privacy": "Privacy policy",
+    "accept": "I agree",
+    "given": "Agreed on {date}.",
+    "withdraw": "Withdraw my agreement",
+    "withdrawn": "Agreement withdrawn: the AI will ask again before sending anything.",
+    "errNoConsent": "Give your agreement before using the AI."
   }
 }

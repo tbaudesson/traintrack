@@ -2706,5 +2706,22 @@
     "errOffline": "Pas de connexion : l’IA a besoin du réseau.",
     "errRefused": "Cette question n’a pas reçu de réponse. Reformulez-la.",
     "errGeneric": "La réponse n’a pas pu être obtenue. Réessayez."
+  },
+  "aiConsent": {
+    "title": "Votre accord avant d'utiliser l'IA",
+    "intro": "Pour vous répondre, TrainTrack envoie directement à Anthropic (Claude), avec votre clé :",
+    "coach1": "votre question et la conversation en cours ;",
+    "coach2": "votre profil sportif (niveau, objectifs, matériel, jours d'entraînement) et vos programmes ;",
+    "coach3": "vos séances des 8 dernières semaines, leurs charges et l'effort ressenti ;",
+    "coach4": "des données de santé : blessures déclarées, douleurs signalées, scores de forme.",
+    "program1": "l'objectif, le nombre de jours, le niveau et les remarques saisis dans ce formulaire ;",
+    "program2": "le matériel de votre profil.",
+    "never": "Ni nom, ni e-mail, ni notes. Rien ne part avant chaque demande, et vous pouvez retirer cet accord à tout moment dans les Réglages.",
+    "privacy": "Politique de confidentialité",
+    "accept": "J'accepte",
+    "given": "Accord donné le {date}.",
+    "withdraw": "Retirer mon accord",
+    "withdrawn": "Accord retiré : l'IA le redemandera avant tout envoi.",
+    "errNoConsent": "Donnez votre accord avant d'utiliser l'IA."
   }
 }

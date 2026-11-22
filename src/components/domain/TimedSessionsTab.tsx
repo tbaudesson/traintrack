@@ -1,5 +1,6 @@
 "use client";
 
+import { MUSCLE_GROUPS } from "@/lib/muscles";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Check, Loader2, Plus, Timer, Trash2 } from "lucide-react";
@@ -23,7 +24,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { NumberInput, NumbersInput } from "@/components/domain/NumbersInput";
 
-const MUSCLES: MuscleGroup[] = ["chest", "back", "legs", "shoulders", "arms", "core", "full_body", "other"];
+const MUSCLES = MUSCLE_GROUPS;
 const select = "h-9 w-full rounded-md border border-input bg-background px-2 text-sm text-foreground";
 
 /**

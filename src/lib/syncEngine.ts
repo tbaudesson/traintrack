@@ -392,9 +392,16 @@ async function pushTable(
 
   if (dirtyRecords.length === 0) return 0;
 
+  // A row held by another account (a coach's program on a client's device, a
+  // client's session on a coach's) is never sent under this user's id: the
+  // server would refuse it, and it would stay waiting forever. It is put back
+  // as the server has it instead.
+  const foreign = dirtyRecords.filter((r) => isForeignRow(r, userId));
+  if (foreign.length) await restoreFromServer(config, foreign);
+
   let pushed = 0;
 
-  for (const record of dirtyRecords) {
+  for (const record of dirtyRecords.filter((r) => !isForeignRow(r, userId))) {
     const supabaseRow = dexieToSupabase(record, config, fkUuidMaps, userId);
     if (!supabaseRow) continue;
 
@@ -419,6 +426,39 @@ async function pushTable(
   }
 
   return pushed;
+}
+
+/** Whether a local row belongs to another account than the one syncing. */
+export function isForeignRow(record: { userId?: string | null }, userId: string): boolean {
+  return !!record.userId && record.userId !== userId;
+}
+
+/**
+ * Put rows back as the server holds them, dropping the local change that could
+ * not be sent. A row the server no longer shows to this user is left as it is,
+ * no longer waiting to be sent. Offline, nothing changes: tried again next time.
+ */
+async function restoreFromServer(config: TableSyncConfig, records: Record<string, unknown>[]): Promise<void> {
+  const uuids = records.map((r) => r.uuid as string).filter(Boolean);
+  let rows: Record<string, unknown>[];
+  try {
+    const { data, error } = await supabase.from(config.supabaseTable).select("*").in("id", uuids);
+    if (error) throw new Error(error.message);
+    rows = (data ?? []) as Record<string, unknown>[];
+  } catch (err) {
+    console.error(`[Sync] Could not restore ${config.dexieTable} rows held by another account:`, err);
+    return;
+  }
+  const fkIdMaps = new Map<string, Map<string, number>>();
+  for (const mapping of Object.values(config.fkMappings ?? {})) {
+    if (!fkIdMaps.has(mapping.parentDexieTable)) fkIdMaps.set(mapping.parentDexieTable, await buildUuidToIdMap(mapping.parentDexieTable));
+  }
+  const byUuid = new Map(rows.map((row) => [row.id as string, row]));
+  for (const record of records) {
+    const row = byUuid.get(record.uuid as string);
+    const restored = row ? supabaseToDexie(row, config, fkIdMaps) : null;
+    await db.table(config.dexieTable).update(record.id, restored ? { ...restored, id: record.id } : { _dirty: 0 });
+  }
 }
 
 // ─── PULL: Supabase changes → Dexie ──────────────────────────────────

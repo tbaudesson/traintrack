@@ -1,4 +1,5 @@
 import type { Workout, WorkoutSet, BodyMetric, ReadinessCheckin, NutritionEntry } from "@/db";
+import { estimateOneRepMax, totalVolume as volumeOf } from "@/lib/performance";
 
 // ─── XP model ────────────────────────────────────────────────────────
 // XP is derived deterministically from the user's logged activity.
@@ -75,10 +76,8 @@ export function computeGamification(input: GamificationInput): GamificationResul
   const { workouts, sets, bodyMetrics, readiness, nutrition } = input;
 
   const totalWorkouts = workouts.length;
-  const totalVolume = sets.reduce(
-    (a, s) => a + (s.completed && s.weightKg && s.reps ? s.weightKg * s.reps : 0),
-    0
-  );
+  // Working sets only, as everywhere: warm-ups are not counted.
+  const totalVolume = volumeOf(sets);
   const { current: currentStreak, longest: longestStreak } = computeStreaks(workouts.map((w) => w.date));
   const nutritionDays = new Set(nutrition.map((n) => n.date)).size;
 
@@ -98,8 +97,8 @@ export function computeGamification(input: GamificationInput): GamificationResul
 
   // Best estimated 1RM achieved (for PR badges)
   const bestE1rm = sets.reduce((max, s) => {
-    if (!s.weightKg || !s.reps) return max;
-    return Math.max(max, Math.round(s.weightKg * (1 + s.reps / 30)));
+    if (!s.completed || s.isWarmup || !s.weightKg || !s.reps) return max;
+    return Math.max(max, Math.round(estimateOneRepMax(s.weightKg, s.reps)));
   }, 0);
 
   const badges: Badge[] = [

@@ -1,5 +1,6 @@
 "use client";
 
+import { MUSCLE_GROUPS } from "@/lib/muscles";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Check, Loader2, PersonStanding, Plus, Trash2 } from "lucide-react";
@@ -13,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { NumberInput, NumbersInput } from "@/components/domain/NumbersInput";
 
 const LANGS = ["fr", "en", "de"] as const;
-const MUSCLES: MuscleGroup[] = ["chest", "back", "legs", "shoulders", "arms", "core", "full_body", "other"];
+const MUSCLES = MUSCLE_GROUPS;
 const empty = { fr: "", en: "", de: "" };
 
 function MuscleChecks({ value, onChange, label }: { value: MuscleGroup[]; onChange: (m: MuscleGroup[]) => void; label: string }) {

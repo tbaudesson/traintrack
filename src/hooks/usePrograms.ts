@@ -3,6 +3,7 @@ import db, { type Program, type ProgramDay } from "@/db";
 import { getCurrentUserIdSync } from "@/db";
 import { schedulePush } from "@/lib/syncEngine";
 import { reviseProgram, withDayKeys } from "@/lib/planSnapshot";
+import { canEditProgram } from "@/lib/programOrigin";
 
 /** Programs owned by, or assigned to, the current user. */
 export function usePrograms() {
@@ -90,22 +91,28 @@ export async function assignProgramToClients(
  * Save changes to a program. A new name or new days keep the version before
  * them (at most a few), and every day gets its key.
  */
-export async function updateProgram(id: number, data: Partial<Program>): Promise<void> {
+export async function updateProgram(id: number, data: Partial<Program>): Promise<boolean> {
   const now = new Date().toISOString();
   const patch: Partial<Program> = { ...data };
+  const before = await db.programs.get(id);
+  // Someone else's program (a coach's, given to this client): never changed here.
+  if (!before || !canEditProgram(before, getCurrentUserIdSync())) return false;
   if (data.structure !== undefined || data.name !== undefined) {
-    const before = await db.programs.get(id);
     if (data.structure) patch.structure = withDayKeys(data.structure);
-    const revisions = before ? reviseProgram(before, patch, now) : undefined;
+    const revisions = reviseProgram(before, patch, now);
     if (revisions) patch.revisions = revisions;
   }
   await db.programs.update(id, { ...patch, updatedAt: now, _dirty: 1 });
   schedulePush();
+  return true;
 }
 
-export async function deleteProgram(id: number): Promise<void> {
+export async function deleteProgram(id: number): Promise<boolean> {
+  const before = await db.programs.get(id);
+  if (!before || !canEditProgram(before, getCurrentUserIdSync())) return false;
   await db.programs.update(id, { deletedAt: new Date().toISOString(), _dirty: 1 });
   schedulePush();
+  return true;
 }
 
 /**

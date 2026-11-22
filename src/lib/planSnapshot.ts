@@ -1,4 +1,5 @@
 import type { Program, ProgramDay, ProgramRevision } from "@/db";
+import { bottomOfRepRange, topOfRepRange } from "./performance";
 
 /**
  * The plan kept apart from what was done. A session started from a program
@@ -98,8 +99,9 @@ export type PlanLine = {
 
 /** "8-12" → [8, 12], "10" → [10, 10]; null for "AMRAP" and the like. */
 function repRange(reps: string): [number, number] | null {
-  const m = reps.match(/^(\d+)(?:\s*-\s*(\d+))?$/);
-  return m ? [Number(m[1]), Number(m[2] ?? m[1])] : null;
+  const low = bottomOfRepRange(reps);
+  const high = topOfRepRange(reps);
+  return low !== null && high !== null ? [low, high] : null;
 }
 
 /**

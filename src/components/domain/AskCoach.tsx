@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Loader2, MessageCircleQuestion, Send, Trash2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { askCoach, getApiKey, type CoachTurn } from "@/lib/aiService";
+import { askCoach, getAiConsent, getApiKey, type CoachTurn } from "@/lib/aiService";
+import { AiConsent } from "@/components/domain/AiConsent";
 import { coachContext } from "@/lib/coachContext";
 import type { CoachProposal } from "@/lib/coach";
 import { readinessScore, useReadiness } from "@/hooks/useReadiness";
@@ -17,7 +18,7 @@ import { useExercises } from "@/hooks/useExercises";
 import { localDate } from "@/lib/dates";
 import { Button } from "@/components/ui/button";
 
-const ERRORS: Record<string, string> = { AI_BAD_KEY: "errBadKey", AI_RATE_LIMIT: "errRate", AI_OFFLINE: "errOffline", AI_REFUSED: "errRefused" };
+const ERRORS: Record<string, string> = { AI_NO_CONSENT: "errGeneric", AI_BAD_KEY: "errBadKey", AI_RATE_LIMIT: "errRate", AI_OFFLINE: "errOffline", AI_REFUSED: "errRefused" };
 
 /**
  * A question to the assistant in one's own words, answered by Claude from a
@@ -29,8 +30,13 @@ export function AskCoach({ proposals }: { proposals: CoachProposal[] }) {
   const t = useTranslations("askCoach");
   const locale = useLocale();
   const [hasKey, setHasKey] = useState(false);
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- the key lives in this device's storage
-  useEffect(() => setHasKey(!!getApiKey()), []);
+  const [consented, setConsented] = useState(false);
+  useEffect(() => {
+    // The key and the agreement live in this device's storage.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHasKey(!!getApiKey());
+    setConsented(!!getAiConsent());
+  }, []);
   const profile = useAthleteProfileOrNull();
   const programs = useTrainablePrograms();
   const workouts = useWorkouts();
@@ -96,6 +102,8 @@ export function AskCoach({ proposals }: { proposals: CoachProposal[] }) {
           {t("needKey")}{" "}
           <Link href="/settings" className="font-semibold text-accent-text underline">{t("toSettings")}</Link>
         </p>
+      ) : !consented ? (
+        <AiConsent sends="coach" onAccept={() => setConsented(true)} />
       ) : (
         <>
           {history.length > 0 && (

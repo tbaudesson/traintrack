@@ -1784,6 +1784,58 @@ await test("the assistant explains a proposal from the sessions done, and applie
   await page.getByText(/Historique des modifications \(1\)/).waitFor({ timeout: 10000 });
 });
 
+await test("the AI asks for the athlete's agreement before anything is sent", async () => {
+  const sent = [];
+  const watch = (req) => { if (req.url().includes("api.anthropic.com")) sent.push(req.url()); };
+  page.on("request", watch);
+  await page.goto(`${BASE}/fr/assistant`);
+  await page.evaluate(() => { localStorage.setItem("traintrack.anthropicApiKey", "sk-ant-e2e-not-a-key"); localStorage.removeItem("traintrack.aiConsent"); });
+  await page.reload();
+  const ask = page.locator("section", { has: page.locator("#ask-coach") });
+  await ask.getByText("Votre accord avant d'utiliser l'IA").waitFor({ timeout: 10000 });
+  await ask.getByText(/des données de santé/).waitFor({ timeout: 5000 });
+  expect(!(await ask.getByRole("textbox").count()), "a question box before the agreement");
+  await ask.getByRole("button", { name: "J'accepte" }).click();
+  await ask.getByRole("textbox").waitFor({ timeout: 5000 });
+  expect(sent.length === 0, `sent before any question: ${sent.join(", ")}`);
+  // Withdrawn from Settings, it is asked again.
+  await page.goto(`${BASE}/fr/settings`);
+  await page.getByRole("button", { name: "Retirer mon accord" }).click();
+  await page.getByText(/Accord retiré/).waitFor({ timeout: 5000 });
+  expect(await page.evaluate(() => localStorage.getItem("traintrack.aiConsent")) === null, "the agreement is still stored");
+  await page.evaluate(() => localStorage.removeItem("traintrack.anthropicApiKey"));
+  page.off("request", watch);
+});
+
+await test("a coach's program is followed as it is: nothing on it can be changed by the client", async () => {
+  const pid = await page.evaluate(async (user) => {
+    const db = await new Promise((res, rej) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+    const add = (store, row) => new Promise((res, rej) => { const tx = db.transaction(store, "readwrite"); const r = tx.objectStore(store).add(row); tx.oncomplete = () => res(r.result); tx.onerror = () => rej(tx.error); });
+    const now = new Date().toISOString();
+    const coach = "00000000-0000-4000-8000-00000000c0ac";
+    const day = { key: "e2e-c", name: "Jour coach", exercises: [{ exerciseName: "Back Squat", targetSets: 3, targetReps: "5", restSec: 120 }] };
+    const id = await add("programs", { userId: coach, ownerUserId: coach, assignedToUserId: user, uuid: `e2e-coachprog-${Date.now()}`, name: "Plan du coach", structure: [day], _dirty: 0, createdAt: now, updatedAt: now });
+    db.close();
+    return id;
+  }, USER);
+  await page.goto(`${BASE}/fr/programs/${pid}`);
+  await page.getByText("Proposé par votre coach").waitFor({ timeout: 10000 });
+  expect(!(await page.getByRole("button", { name: /favori/i }).count()), "a favourite star on a coach's program");
+  expect(!(await page.getByRole("button", { name: "Archiver" }).count()), "an archive button on a coach's program");
+  expect(!(await page.getByRole("button", { name: "Modifier" }).count()), "an edit button on a coach's program");
+  await page.getByRole("button", { name: "Dupliquer" }).waitFor({ timeout: 5000 });
+  // Its editor, opened by its address, sends back to the program.
+  await page.goto(`${BASE}/fr/programs/${pid}/edit`);
+  await page.waitForURL(new RegExp(`/fr/programs/${pid}$`), { timeout: 10000 });
+  const dirty = await page.evaluate(async (id) => {
+    const db = await new Promise((res) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); });
+    const p = await new Promise((res) => { const r = db.transaction("programs").objectStore("programs").get(id); r.onsuccess = () => res(r.result); });
+    db.close();
+    return p._dirty;
+  }, pid);
+  expect(dirty === 0, "the coach's program was changed on the client's device");
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });

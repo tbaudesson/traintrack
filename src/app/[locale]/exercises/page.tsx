@@ -1,5 +1,6 @@
 "use client";
 
+import { MUSCLE_GROUPS } from "@/lib/muscles";
 import { useMemo, useState } from "react";
 import { AreaRulesEditor } from "@/components/domain/AreaRulesEditor";
 import type { ExerciseRules } from "@/lib/injuries";
@@ -22,7 +23,6 @@ import { SectionHeading } from "@/components/ui/page-parts";
 import { useExerciseLabel, exerciseDescription } from "@/lib/exerciseNames";
 import { search as searchItems } from "@/lib/search";
 
-const MUSCLE_GROUPS: MuscleGroup[] = ["chest", "back", "legs", "shoulders", "arms", "core", "full_body", "other"];
 const EQUIPMENT: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "bodyweight", "kettlebell", "bands", "other"];
 
 export default function ExercisesPage() {

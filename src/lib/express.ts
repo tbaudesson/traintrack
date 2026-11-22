@@ -1,14 +1,8 @@
 import type { ProgramDay, ProgramExercise } from "@/db";
-import { isTimedTarget } from "./performance";
+import { targetSeconds } from "./performance";
 
 /** The time a set takes, rest aside: a timed target says it, otherwise 40 s. */
-const workSec = (e: ProgramExercise) => {
-  if (isTimedTarget(e.targetReps)) {
-    const n = Number(e.targetReps.match(/(\d+)\s*s\s*$/i)?.[1]);
-    if (Number.isFinite(n) && n > 0) return n;
-  }
-  return 40;
-};
+const workSec = (e: ProgramExercise) => targetSeconds(e.targetReps) ?? 40;
 
 /** Minutes a strength day takes: each set and its rest (none inside a superset), and 5 minutes of warm-up. */
 export function dayMinutes(day: Pick<ProgramDay, "exercises">): number {

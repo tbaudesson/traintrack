@@ -1,4 +1,5 @@
 import type { MuscleGroup } from "@/db";
+import { MUSCLE_GROUPS } from "@/lib/muscles";
 import type { PainArea } from "./pain";
 import type { InjuryLevel, InjuryRules } from "./injuries";
 
@@ -48,7 +49,7 @@ export interface MobilityGuidance {
 }
 
 export const MOBILITY_KEY = "mobility_moves";
-const MUSCLES: MuscleGroup[] = ["chest", "back", "legs", "shoulders", "arms", "core", "full_body", "other"];
+const MUSCLES = MUSCLE_GROUPS;
 const LANGS = ["en", "fr", "de"] as const;
 const num = (v: unknown, lo: number, hi: number) => typeof v === "number" && Number.isFinite(v) && v >= lo && v <= hi;
 const text = (v: unknown) => !!v && typeof v === "object" && LANGS.every((l) => typeof (v as Text)[l] === "string" && (v as Text)[l].trim().length > 0);
