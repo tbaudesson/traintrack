@@ -31,8 +31,8 @@ export function StravaSection() {
       .then((s) => alive && setStatus(s))
       .catch((e) => {
         if (!alive) return;
-        setOffline(true);
         if (e instanceof Error && e.message === "STRAVA_NOT_CONFIGURED") setError(t("notConfigured"));
+        else setOffline(true);
       });
     return () => {
       alive = false;
@@ -72,7 +72,7 @@ export function StravaSection() {
   return (
     <div className="space-y-3">
       <p className="text-xs text-muted-foreground">{t("desc")}</p>
-      {status === null && !offline && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-label={t("loading")} />}
+      {status === null && !offline && !error && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-label={t("loading")} />}
       {offline && !error && <p className="text-sm text-muted-foreground">{t("offline")}</p>}
       {status && !status.connected && (
         <button

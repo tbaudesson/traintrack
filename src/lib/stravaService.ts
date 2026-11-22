@@ -29,6 +29,8 @@ async function call<T>(body: Record<string, unknown>): Promise<T> {
   if (error) {
     // The function's own message when it gave one.
     const context = (error as { context?: Response }).context;
+    // The function not deployed yet: Strava is not set up, rather than offline.
+    if (context?.status === 404) throw new Error("STRAVA_NOT_CONFIGURED");
     const detail = context && typeof context.json === "function" ? await context.json().catch(() => null) : null;
     throw new Error(detail?.error ?? error.message ?? "STRAVA_FAILED");
   }
