@@ -37,6 +37,9 @@ describe("coachProposals", () => {
     expect(skipped.evidence).toEqual([{ key: "skipped", values: { count: 2, of: 3 } }]);
     // The same muscles, owned equipment first, nothing already in the day.
     expect(skipped.change).toEqual({ type: "replace", programId: 7, day: 0, from: "Leg Press", to: "Goblet Squat" });
+    // A copy of the squat made by the athlete does not make the library's look skipped.
+    const withCopy = coachProposals({ today, programs: [program()], workouts, sets: done, exercises: [{ id: 99, name: "Back Squat", muscleGroup: "legs", equipment: "barbell" } as never, ...exercises], owned: ["dumbbell"] });
+    expect(withCopy.filter((p) => p.kind === "skipped").map((p) => p.exercise)).toEqual(["Leg Press"]);
     // Never one the athlete has no equipment for: with bands only, nothing for the legs but removal.
     const bands = coachProposals({ today, programs: [program()], workouts, sets: done, exercises, owned: ["bands"] });
     expect(bands.find((p) => p.kind === "skipped")!.change.type).toBe("remove");

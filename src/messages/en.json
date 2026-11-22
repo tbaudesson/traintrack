@@ -830,7 +830,7 @@
   "ai": {
     "section": "AI program builder",
     "keyLabel": "Anthropic API key",
-    "keyDesc": "Stored only on this device, sent directly to Anthropic. Used to generate programs with Claude.",
+    "keyDesc": "Stored only on this device, sent straight to Anthropic. Used to generate programs and to answer your questions in the Assistant.",
     "keyPlaceholder": "sk-ant-...",
     "saveKey": "Save key",
     "clearKey": "Remove key",
@@ -2683,5 +2683,25 @@
     "dropped": "{count, plural, one {# exercise would be left out} other {# exercises would be left out}} in the short version.",
     "applyAll": "{count, plural, one {Apply the change} other {Apply the # changes}}",
     "control": "Nothing moves until you apply; each session goes back to its day from the week on the home screen."
+  },
+  "askCoach": {
+    "title": "Ask a question (AI, optional)",
+    "intro": "A question about your training, in your own words: Claude answers from your data, with the figures. It advises; the changes stay yours.",
+    "needKey": "Uses your own Anthropic API key, kept on this device.",
+    "toSettings": "Add it in Settings",
+    "placeholder": "E.g. why am I stuck on the bench press?",
+    "send": "Send the question",
+    "thinking": "Thinking",
+    "s1": "What is progressing most, and what is stuck?",
+    "s2": "Is my load this week reasonable?",
+    "s3": "How should I adapt my program to my current pain?",
+    "whatIsSent": "See what is sent",
+    "clear": "Clear the conversation",
+    "privacy": "Your question and this summary of your data (no name, email or notes) go straight to Anthropic with your key, only when you ask a question. This is not medical advice.",
+    "errBadKey": "API key refused: check it in Settings.",
+    "errRate": "Anthropic limit reached: try again in a moment.",
+    "errOffline": "No connection: the AI needs the network.",
+    "errRefused": "This question got no answer. Try rephrasing it.",
+    "errGeneric": "The answer could not be obtained. Try again."
   }
 }

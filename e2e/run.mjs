@@ -1761,6 +1761,10 @@ await test("the assistant explains a proposal from the sessions done, and applie
   await card.waitFor({ timeout: 10000 });
   await card.getByText(/pas fait lors de 2 des 3 dernières séances/).waitFor({ timeout: 5000 });
   await card.getByText(/Proposition :/).waitFor({ timeout: 5000 });
+  // The AI is optional: without a key it offers to add one, and sends nothing.
+  const ask = page.locator("section", { has: page.locator("#ask-coach") });
+  await ask.getByRole("link", { name: "L’ajouter dans les Réglages" }).waitFor({ timeout: 5000 });
+  expect(!(await ask.getByRole("textbox").count()), "a question box without a key");
   // Nothing changed before "Apply".
   const pushUps = () => page.evaluate(async (id) => {
     const db = await new Promise((res) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); });

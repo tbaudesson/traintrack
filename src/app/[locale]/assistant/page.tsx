@@ -17,6 +17,7 @@ import { localDate } from "@/lib/dates";
 import type { CoachProposal } from "@/lib/coach";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { WeekFitCard } from "@/components/domain/WeekFitCard";
+import { AskCoach } from "@/components/domain/AskCoach";
 import { SectionHeading } from "@/components/ui/page-parts";
 import { Button } from "@/components/ui/button";
 import { InsightAction, InsightCard, MoreInsights } from "@/components/domain/InsightCard";
@@ -144,6 +145,9 @@ export default function AssistantPage() {
             <p className="t-panel rounded-2xl p-4 text-sm text-muted-foreground">{t("noReading")}</p>
           )}
         </section>
+
+        {/* Optional: a question in one's own words, answered by Claude from one's data. */}
+        <AskCoach proposals={proposals} />
 
         <p className="flex items-start gap-2 text-xs text-muted-foreground">
           <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />

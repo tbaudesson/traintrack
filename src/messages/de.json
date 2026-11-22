@@ -830,7 +830,7 @@
   "ai": {
     "section": "KI-Programmgenerator",
     "keyLabel": "Anthropic API-Schlüssel",
-    "keyDesc": "Nur auf diesem Gerät gespeichert, direkt an Anthropic gesendet. Dient zur Programmerstellung mit Claude.",
+    "keyDesc": "Nur auf diesem Gerät gespeichert, direkt an Anthropic gesendet. Dient zum Erstellen von Programmen und zum Beantworten deiner Fragen im Assistenten.",
     "keyPlaceholder": "sk-ant-...",
     "saveKey": "Schlüssel speichern",
     "clearKey": "Schlüssel entfernen",
@@ -2683,5 +2683,25 @@
     "dropped": "{count, plural, one {# Übung würde weggelassen} other {# Übungen würden weggelassen}} in der Kurzversion.",
     "applyAll": "{count, plural, one {Änderung übernehmen} other {# Änderungen übernehmen}}",
     "control": "Nichts bewegt sich, bevor du übernimmst; jede Einheit lässt sich in der Woche auf dem Startbildschirm zurücklegen."
+  },
+  "askCoach": {
+    "title": "Eine Frage stellen (KI, optional)",
+    "intro": "Eine Frage zu deinem Training, in deinen Worten: Claude antwortet aus deinen Daten, mit Zahlen. Es berät; die Änderungen bleiben deine.",
+    "needKey": "Nutzt deinen eigenen Anthropic-API-Schlüssel, auf diesem Gerät gespeichert.",
+    "toSettings": "In den Einstellungen hinzufügen",
+    "placeholder": "Z. B.: Warum stagniere ich beim Bankdrücken?",
+    "send": "Frage senden",
+    "thinking": "Denkt nach",
+    "s1": "Was entwickelt sich am meisten, was stagniert?",
+    "s2": "Ist meine Belastung diese Woche vernünftig?",
+    "s3": "Wie passe ich mein Programm an meinen aktuellen Schmerz an?",
+    "whatIsSent": "Ansehen, was gesendet wird",
+    "clear": "Unterhaltung löschen",
+    "privacy": "Deine Frage und diese Zusammenfassung deiner Daten (ohne Name, E-Mail oder Notizen) gehen direkt mit deinem Schlüssel an Anthropic, nur wenn du eine Frage stellst. Dies ist keine medizinische Beratung.",
+    "errBadKey": "API-Schlüssel abgelehnt: in den Einstellungen prüfen.",
+    "errRate": "Anthropic-Limit erreicht: gleich noch einmal versuchen.",
+    "errOffline": "Keine Verbindung: Die KI braucht das Netz.",
+    "errRefused": "Diese Frage wurde nicht beantwortet. Formuliere sie anders.",
+    "errGeneric": "Die Antwort konnte nicht abgerufen werden. Noch einmal versuchen."
   }
 }

@@ -85,13 +85,17 @@ export function coachProposals(input: {
         .slice(0, LAST);
       if (sessions.length < LAST) return;
       const signature = sessions.map((w) => w.id).join(".");
-      const doneOf = (w: W, exerciseId: number | undefined) => work.filter((s) => s.workoutId === w.id && s.exerciseId === exerciseId);
+      // An exercise counts under every entry of its name: the library's and one's own copies.
+      const idsOf = (name: string) => new Set(input.exercises.filter((e) => e.name.toLowerCase() === name.toLowerCase()).map((e) => e.id));
+      const doneOf = (w: W, ids: Set<number | undefined>) => work.filter((s) => s.workoutId === w.id && ids.has(s.exerciseId));
       const dayNames = day.exercises.map((e) => e.exerciseName);
       let skippedHere = false;
 
       for (const pe of day.exercises) {
         const ex = idOf(pe.exerciseName, pe.exerciseUuid);
-        const per = sessions.map((w) => doneOf(w, ex?.id));
+        const ids = idsOf(pe.exerciseName);
+        if (ex?.id !== undefined) ids.add(ex.id);
+        const per = sessions.map((w) => doneOf(w, ids));
         const skipped = per.filter((done) => done.length === 0).length;
         if (skipped >= 2) {
           skippedHere = true;

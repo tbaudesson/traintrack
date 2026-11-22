@@ -830,7 +830,7 @@
   "ai": {
     "section": "Générateur IA de programmes",
     "keyLabel": "Clé API Anthropic",
-    "keyDesc": "Stockée uniquement sur cet appareil, envoyée directement à Anthropic. Sert à générer des programmes avec Claude.",
+    "keyDesc": "Stockée uniquement sur cet appareil, envoyée directement à Anthropic. Sert à générer des programmes et à répondre à vos questions dans l’Assistant.",
     "keyPlaceholder": "sk-ant-...",
     "saveKey": "Enregistrer la clé",
     "clearKey": "Supprimer la clé",
@@ -2683,5 +2683,25 @@
     "dropped": "{count, plural, one {# exercice serait laissé de côté} other {# exercices seraient laissés de côté}} dans la version courte.",
     "applyAll": "{count, plural, one {Appliquer le changement} other {Appliquer les # changements}}",
     "control": "Rien ne bouge tant que vous n’appliquez pas ; chaque séance se remet à son jour depuis la semaine sur l’accueil."
+  },
+  "askCoach": {
+    "title": "Poser une question (IA, optionnel)",
+    "intro": "Une question sur votre entraînement, dans vos mots : Claude répond à partir de vos données, chiffres à l’appui. Il conseille ; les changements restent les vôtres.",
+    "needKey": "Utilise votre propre clé API Anthropic, gardée sur cet appareil.",
+    "toSettings": "L’ajouter dans les Réglages",
+    "placeholder": "Ex. : pourquoi je stagne au développé couché ?",
+    "send": "Envoyer la question",
+    "thinking": "Réflexion en cours",
+    "s1": "Qu’est-ce qui progresse le plus, et qu’est-ce qui stagne ?",
+    "s2": "Ma charge de la semaine est-elle raisonnable ?",
+    "s3": "Comment adapter mon programme à ma douleur actuelle ?",
+    "whatIsSent": "Voir ce qui est envoyé",
+    "clear": "Effacer la conversation",
+    "privacy": "Votre question et ce résumé de vos données (sans nom, e-mail ni notes) partent directement chez Anthropic avec votre clé, seulement quand vous posez une question. Ce ne sont pas des conseils médicaux.",
+    "errBadKey": "Clé API refusée : vérifiez-la dans les Réglages.",
+    "errRate": "Limite Anthropic atteinte : réessayez dans un moment.",
+    "errOffline": "Pas de connexion : l’IA a besoin du réseau.",
+    "errRefused": "Cette question n’a pas reçu de réponse. Reformulez-la.",
+    "errGeneric": "La réponse n’a pas pu être obtenue. Réessayez."
   }
 }
