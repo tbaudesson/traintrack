@@ -1952,7 +1952,10 @@
     "dropped": "Laissés de côté : {names}",
     "about": "Environ {minutes} min, échauffement compris. Elle compte comme la séance prévue.",
     "start": "Commencer la version courte",
-    "notToday": "Pas aujourd'hui : déplacer la séance"
+    "notToday": "Pas aujourd'hui : déplacer la séance",
+    "blocksShortened": "{count, plural, one {Le bloc est raccourci} other {Les # blocs sont raccourcis d'autant}}",
+    "stepsDropped": "Le déroulé détaillé de la séance complète est laissé de côté : gardez l'intensité prévue.",
+    "aboutCardio": "Même intensité, moins longtemps. Elle compte comme la séance prévue."
   },
   "review": {
     "title": "Bilan du programme",

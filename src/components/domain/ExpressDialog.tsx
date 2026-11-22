@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Timer } from "lucide-react";
 import type { ProgramDay } from "@/db";
-import { dayMinutes, expressDay } from "@/lib/express";
+import { dayMinutes, expressCardio, expressDay } from "@/lib/express";
+import { describeTarget } from "@/lib/cardio";
 import { useExerciseLabel } from "@/lib/exerciseNames";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -23,8 +24,11 @@ export function ExpressDialog({
   onOpenChange,
   onStart,
   onMove,
+  cardioFull,
 }: {
   day: ProgramDay;
+  /** An endurance day: the minutes it takes (its time, or its distance at one's usual speed). */
+  cardioFull?: number | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onStart: (day: ProgramDay) => void;
@@ -33,13 +37,16 @@ export function ExpressDialog({
 }) {
   const t = useTranslations("express");
   const xl = useExerciseLabel();
-  const full = dayMinutes(day);
+  const tc = useTranslations("cardio");
+  const endurance = !!day.cardio && !!cardioFull;
+  const full = endurance ? cardioFull! : dayMinutes(day);
   const choices = CHOICES.filter((m) => m < full);
   // Twenty minutes stays the first offer when the session allows it.
   const preferred = choices.find((m) => m >= 20) ?? choices[0] ?? CHOICES[0];
   const [minutes, setMinutes] = useState(preferred);
   const shown = choices.includes(minutes) ? minutes : preferred;
-  const plan = expressDay(day, shown);
+  const plan = endurance ? { day: expressCardio(day, full, shown).day, dropped: [] as string[] } : expressDay(day, shown);
+  const stepsDropped = endurance && !!day.cardio?.steps?.length;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -64,6 +71,13 @@ export function ExpressDialog({
             </button>
           ))}
         </div>
+        {endurance && plan.day.cardio && (
+          <div className="space-y-1 rounded-xl bg-muted/50 p-3 text-sm">
+            <p className="font-semibold">{tc(`sport_${plan.day.cardio.sport}`)} · {describeTarget(plan.day.cardio)}</p>
+            {!!plan.day.cardio.blocks?.length && <p className="text-xs text-muted-foreground">{t("blocksShortened", { count: plan.day.cardio.blocks.length })}</p>}
+            {stepsDropped && <p className="text-xs text-muted-foreground">{t("stepsDropped")}</p>}
+          </div>
+        )}
         <ul className="space-y-1 text-sm">
           {plan.day.exercises.map((e, i) => (
             <li key={`${e.exerciseName}-${i}`} className="flex items-center gap-2">
@@ -80,7 +94,7 @@ export function ExpressDialog({
           ))}
         </ul>
         {plan.dropped.length > 0 && <p className="text-xs text-muted-foreground">{t("dropped", { names: plan.dropped.map(xl).join(", ") })}</p>}
-        <p className="text-xs text-muted-foreground">{t("about", { minutes: dayMinutes(plan.day) })}</p>
+        <p className="text-xs text-muted-foreground">{endurance ? t("aboutCardio") : t("about", { minutes: dayMinutes(plan.day) })}</p>
         <Button size="lg" className="w-full rounded-full" onClick={() => onStart(plan.day)}>
           {t("start")}
         </Button>

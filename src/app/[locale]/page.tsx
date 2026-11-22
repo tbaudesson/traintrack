@@ -47,7 +47,8 @@ import { scheduleSessions, scheduleWeek, sessionsPerWeek } from "@/lib/schedule"
 import { weekStreak } from "@/lib/weekStreak";
 import { MoveSessionDialog } from "@/components/domain/MoveSessionDialog";
 import { ExpressDialog } from "@/components/domain/ExpressDialog";
-import { dayMinutes } from "@/lib/express";
+import { cardioMinutes, dayMinutes, usualSpeed } from "@/lib/express";
+import { SPORT_DEFS } from "@/lib/disciplines";
 import { isTestProgram, testsDue } from "@/lib/levelTests";
 import { detectSport, kindOf } from "@/lib/activityProfile";
 import { saveSportChoice } from "@/hooks/useSportChoice";
@@ -352,7 +353,15 @@ export default function HomePage() {
   // A sport chosen that the last weeks contradict: offer the one practised.
   const sportHint = detected && prefs.sport && kindOf(detected) !== kindOf(prefs.sport) && !closedCards.includes(`sport-${detected}`) ? detected : null;
   // Pressed for time: a shorter version of a strength session not begun, when it is long enough to shorten.
-  const canExpress = hasFeature("planning") && !!session && session.date === today && !session.workoutId && !session.day.cardio && session.day.exercises.length > 1 && dayMinutes(session.day) > 25;
+  // An endurance day's length: its time, or its distance at one's usual speed in that sport.
+  const cardioFull = useMemo(() => {
+    const target = session?.day.cardio;
+    if (!target) return null;
+    return cardioMinutes(target, usualSpeed(workouts, target.sport, SPORT_DEFS[target.sport]?.minDistanceForPace ?? Infinity));
+  }, [session, workouts]);
+  const canExpress =
+    hasFeature("planning") && !!session && session.date === today && !session.workoutId &&
+    (session.day.cardio ? (cardioFull ?? 0) > 20 : session.day.exercises.length > 1 && dayMinutes(session.day) > 25);
   // No time at all today: today's planned session, not begun, can go to another day.
   const canMoveToday =
     !!profile && hasFeature("planning") && !!session && session.date === today && !session.workoutId &&
@@ -853,6 +862,7 @@ export default function HomePage() {
             <ExpressDialog
               key={`${session!.program.id}-${session!.index}`}
               day={session!.day}
+              cardioFull={cardioFull}
               open={expressOpen}
               onOpenChange={setExpressOpen}
               onStart={(shorter) => startDay(session!.program, session!.index, shorter)}

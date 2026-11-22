@@ -2222,6 +2222,41 @@ await test("the home screen: the session, what matters, the week, the progress; 
   }
 });
 
+await test("pressed for time, a run of the day has a short version too: same intensity, less time", async () => {
+  await page.evaluate(async (user) => {
+    const db = await new Promise((res, rej) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+    const now = new Date().toISOString();
+    const d = new Date();
+    const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const weekday = ((d.getDay() + 6) % 7) + 1;
+    const day = { key: "e2e-run", name: "Sortie tempo", exercises: [], cardio: { sport: "run", distanceKm: 10, durationMin: 50, intensity: "Z3", steps: ["10 min facile", "30 min Z3", "10 min facile"] } };
+    await new Promise((res, rej) => { const tx = db.transaction("programs", "readwrite"); tx.objectStore("programs").add({ userId: user, ownerUserId: user, uuid: `e2e-run-${Date.now()}`, name: "Course express e2e", structure: [day], weekdays: [weekday], startDate: today, _dirty: 0, createdAt: now, updatedAt: now }); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+    db.close();
+  }, USER);
+  await page.goto(`${BASE}/fr`);
+  const hero = heroCard();
+  const chip = hero.getByRole("group", { name: "Séances prévues ce jour-là" }).getByRole("button", { name: /Course express e2e/ });
+  await chip.or(hero.getByRole("heading", { name: "Sortie tempo" })).first().waitFor({ timeout: 10000 });
+  if (await chip.count()) await chip.click();
+  await hero.getByRole("heading", { name: "Sortie tempo" }).waitFor({ timeout: 10000 });
+  await hero.getByRole("button", { name: "Pas le temps aujourd'hui ?" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("heading", { name: "Séance express" }).waitFor({ timeout: 5000 });
+  await dialog.getByRole("button", { name: "20 min" }).click();
+  await dialog.getByText(/Course à pied · 4 km · 20 min · Z3/).waitFor({ timeout: 5000 });
+  await dialog.getByText(/déroulé détaillé de la séance complète est laissé de côté/).waitFor({ timeout: 5000 });
+  await dialog.getByRole("button", { name: "Commencer la version courte" }).click();
+  await page.waitForURL(/\/fr\/log\/session\?id=\d+/, { timeout: 10000 });
+  const planned = await page.evaluate(async () => {
+    const id = Number(new URL(location.href).searchParams.get("id"));
+    const db = await new Promise((res) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); });
+    const w = await new Promise((res) => { const r = db.transaction("workouts").objectStore("workouts").get(id); r.onsuccess = () => res(r.result); });
+    db.close();
+    return w.plannedDay?.cardio;
+  });
+  expect(planned?.durationMin === 20 && planned?.distanceKm === 4 && planned?.intensity === "Z3" && !planned?.steps, `planned ${JSON.stringify(planned)}`);
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });

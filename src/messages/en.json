@@ -1952,7 +1952,10 @@
     "dropped": "Left out: {names}",
     "about": "About {minutes} min, warm-up included. It counts as the planned session.",
     "start": "Start the short version",
-    "notToday": "Not today: move the session"
+    "notToday": "Not today: move the session",
+    "blocksShortened": "{count, plural, one {The block is shortened} other {The # blocks are shortened alike}}",
+    "stepsDropped": "The full session's step-by-step is left out: keep the intensity planned.",
+    "aboutCardio": "Same intensity, less time. It counts as the planned session."
   },
   "review": {
     "title": "Program review",

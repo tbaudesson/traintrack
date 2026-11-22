@@ -1952,7 +1952,10 @@
     "dropped": "Weggelassen: {names}",
     "about": "Etwa {minutes} Min., Aufwärmen inklusive. Sie zählt als geplante Einheit.",
     "start": "Kurzversion starten",
-    "notToday": "Nicht heute: Einheit verschieben"
+    "notToday": "Nicht heute: Einheit verschieben",
+    "blocksShortened": "{count, plural, one {Der Block wird gekürzt} other {Die # Blöcke werden gleichmäßig gekürzt}}",
+    "stepsDropped": "Der genaue Ablauf der ganzen Einheit entfällt: Halte die geplante Intensität.",
+    "aboutCardio": "Gleiche Intensität, weniger Zeit. Sie zählt als die geplante Einheit."
   },
   "review": {
     "title": "Bilanz des Programms",
