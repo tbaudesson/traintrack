@@ -121,9 +121,14 @@ export async function startWorkoutFromDay(
   });
   if (day.cardio) return id;
   const groups = programGroups(day.exercises.map((pe) => !!pe.supersetWithNext));
+  // The library as the device holds it, read now: the list a screen passes may
+  // still be loading (empty), and every exercise would then become a copy.
+  const library = (await db.exercises.toArray()).filter((e) => !e.deletedAt);
+  const known = new Set(library.map((e) => e.id));
+  const pool = [...library, ...exercises.filter((e) => !known.has(e.id))];
   for (const [index, pe] of day.exercises.entries()) {
-    // Resolve the exercise by uuid or name; create a custom one if missing
-    const ex = findExercise(exercises, pe.exerciseName, pe.exerciseUuid);
+    // Resolve the exercise by uuid or name; a custom one only when none has that name.
+    const ex = findExercise(pool, pe.exerciseName, pe.exerciseUuid);
     let exerciseId = ex?.id;
     if (!exerciseId) {
       exerciseId = await createCustomExercise({ name: pe.exerciseName, muscleGroup: "other" });
