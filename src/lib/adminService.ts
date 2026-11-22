@@ -161,6 +161,23 @@ export async function adminSetExerciseInjuryRules(exerciseUuid: string, rules: R
   if (error) throw new Error(error.message);
 }
 
+/** Admin: the level, movements, secondary muscles, key points, mistakes and parent of any exercise (migration 076). */
+export async function adminSetExerciseDetails(
+  exerciseUuid: string,
+  d: { level: string | null; movements: string[]; secondaryMuscles: string[]; cues: Record<string, string[]>; mistakes: Record<string, string[]>; variantOf: string | null }
+): Promise<void> {
+  const { error } = await supabase.rpc("admin_set_exercise_details", {
+    p_uuid: exerciseUuid,
+    p_level: d.level ?? "",
+    p_movements: d.movements,
+    p_secondary: d.secondaryMuscles,
+    p_cues: d.cues,
+    p_mistakes: d.mistakes,
+    p_variant_of: d.variantOf ?? "",
+  });
+  if (error) throw new Error(error.message);
+}
+
 /** Admin: add an exercise to the shared library; returns its id. */
 export async function adminCreateLibraryExercise(e: {
   name: string;

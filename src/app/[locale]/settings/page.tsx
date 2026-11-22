@@ -11,6 +11,8 @@ import { downloadJSONBackup, downloadSessionsCsv } from "@/lib/exportService";
 import { HistoryImport } from "@/components/domain/HistoryImport";
 import { saveSportChoice } from "@/hooks/useSportChoice";
 import { InjuryAreasPicker } from "@/components/domain/InjuryAreas";
+import { RestrictionsEditor } from "@/components/domain/RestrictionsEditor";
+import { Ban } from "lucide-react";
 import db from "@/db";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -102,7 +104,7 @@ function Section({ id, icon: Icon, title, action, children }: {
 
 /** Where each section is: the menu opens Settings on one of them (?section=…). */
 const SECTION_GROUP: Record<string, SettingsGroupId> = {
-  level: "training", plan: "training", injuries: "training", rest: "training",
+  level: "training", plan: "training", injuries: "training", restrictions: "training", rest: "training",
   sport: "personal", appearance: "personal", a11y: "personal", language: "personal", navigation: "personal",
   notifications: "alerts", ai: "alerts",
   resync: "data", import: "data", export: "data",
@@ -152,6 +154,7 @@ function SettingsContent() {
   const tAuth = useTranslations("auth");
   const tai = useTranslations("ai");
   const tconsent = useTranslations("aiConsent");
+  const trs = useTranslations("restrictions");
   const target = useSearchParams().get("section");
   const [openGroups, setOpenGroups] = useState<Set<SettingsGroupId>>(() => new Set(target && SECTION_GROUP[target] ? [SECTION_GROUP[target]] : []));
   const toggleGroup = (id: SettingsGroupId) =>
@@ -494,6 +497,13 @@ function SettingsContent() {
           <Section id="injuries" icon={Bandage} title={tinj("title")}>
             <p className="mb-2 text-xs text-muted-foreground">{tinj("settingsHint")}</p>
             <InjuryAreasPicker />
+          </Section>
+        )}
+
+        {/* What one rules out besides an injury: a muscle, a movement, an exercise. */}
+        {athlete && (
+          <Section id="restrictions" icon={Ban} title={trs("title")}>
+            <RestrictionsEditor />
           </Section>
         )}
 

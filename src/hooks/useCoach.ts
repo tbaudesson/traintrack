@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAthleteProfileOrNull, useInjuries } from "@/hooks/useAthleteProfile";
+import { useAthleteProfileOrNull } from "@/hooks/useAthleteProfile";
 import { useExercises } from "@/hooks/useExercises";
 import { updateProgram, useTrainablePrograms } from "@/hooks/usePrograms";
 import { useWorkouts } from "@/hooks/useWorkouts";
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
-import { useInjuryRules } from "@/hooks/useInjuryRules";
+import { useAvoidedAreas, useInjuryRules } from "@/hooks/useInjuryRules";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
 import { useSessionOfTheDay } from "@/hooks/useSessionOfTheDay";
 import { useProgramTemplates } from "@/lib/templateService";
@@ -40,7 +40,7 @@ export function useCoach() {
   const sets = useAllWorkoutSets();
   const exercises = useExercises();
   const profile = useAthleteProfileOrNull();
-  const injuries = useInjuries();
+  const avoided = useAvoidedAreas();
   const rules = useInjuryRules();
   const prefs = useAppPrefs();
   const catalogue = useProgramTemplates();
@@ -62,11 +62,11 @@ export function useCoach() {
       sets,
       exercises: exercises.filter((e) => !e.isCustom || e.userId === user?.id),
       owned: profile?.equipment ?? [],
-      avoid: (name) => isAvoided(rules, name, injuries),
+      avoid: (name) => isAvoided(rules, name, avoided),
       schedule,
       trainingDays: profile?.trainingDays ?? [],
     });
-  }, [planned, workouts, today, programs, sets, exercises, user?.id, profile, rules, injuries]);
+  }, [planned, workouts, today, programs, sets, exercises, user?.id, profile, rules, avoided]);
   const proposals = all.filter((p) => !ignored.includes(p.id));
 
   function ignore(p: CoachProposal) {

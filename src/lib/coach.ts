@@ -1,4 +1,5 @@
 import type { Equipment, Exercise, Program, ProgramDay, Workout, WorkoutSet } from "@/db";
+import { findExercise } from "./exerciseMatch";
 import { findWorkoutProgramDay } from "./startWorkout";
 import { substitutes } from "./substitutes";
 import { weekdayOf, type ScheduledSession } from "./schedule";
@@ -70,7 +71,7 @@ export function coachProposals(input: {
 }): CoachProposal[] {
   const out: CoachProposal[] = [];
   const work = input.sets.filter((s) => s.completed && !s.isWarmup);
-  const idOf = (name: string, uuid?: string) => input.exercises.find((e) => (uuid && e.uuid === uuid) || e.name.toLowerCase() === name.toLowerCase());
+  const idOf = (name: string, uuid?: string) => findExercise(input.exercises, name, uuid);
 
   for (const program of input.programs) {
     const programId = program.id;

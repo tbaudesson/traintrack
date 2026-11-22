@@ -1,6 +1,8 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { useAreaLabel } from "@/hooks/useAreaLabel";
+import { isRestrictionKey } from "@/lib/restrictions";
 import { useInjuryRules } from "@/hooks/useInjuryRules";
 import { AlertTriangle, Bandage } from "lucide-react";
 import { injuryWarning, type Injury } from "@/lib/injuries";
@@ -13,15 +15,14 @@ import { cn } from "@/lib/utils";
  */
 export function InjuryBadge({ exerciseName, injuries, className }: { exerciseName?: string; injuries: Injury[]; className?: string }) {
   const t = useTranslations("injuries");
-  const tp = useTranslations("pain");
-  const locale = useLocale();
+  const label = useAreaLabel();
   const warning = injuryWarning(useInjuryRules(), exerciseName, injuries);
   if (!warning) return null;
   const Icon = warning.level === "avoid" ? AlertTriangle : Bandage;
-  const areas = warning.areas.map((a) => (locale === "de" ? tp(`area_${a}`) : tp(`area_${a}`).toLowerCase())).join(", ");
+  const areas = warning.areas.map(label).join(", ");
   return (
     <span
-      title={t(`${warning.level}Hint`, { areas })}
+      title={t(`${warning.level}Hint${warning.areas.every(isRestrictionKey) ? "R" : ""}`, { areas })}
       className={cn(
         "inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
         warning.level === "avoid"

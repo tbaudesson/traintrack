@@ -1,5 +1,6 @@
 import type { Program, ProgramDay, ProgramRevision } from "@/db";
 import { bottomOfRepRange, topOfRepRange } from "./performance";
+import { findExercise } from "./exerciseMatch";
 
 /**
  * The plan kept apart from what was done. A session started from a program
@@ -110,7 +111,7 @@ function repRange(reps: string): [number, number] | null {
  */
 export function planVsDone(planned: ProgramDay, sets: SetRow[], exercises: ExerciseRow[]): PlanLine[] {
   const work = sets.filter((s) => s.completed && !s.isWarmup);
-  const idOf = (name: string, uuid?: string) => exercises.find((e) => (uuid && e.uuid === uuid) || e.name.toLowerCase() === name.toLowerCase())?.id;
+  const idOf = (name: string, uuid?: string) => findExercise(exercises, name, uuid)?.id;
   const doneOf = (id: number | undefined) => {
     const own = work.filter((s) => s.exerciseId === id);
     if (!own.length) return null;

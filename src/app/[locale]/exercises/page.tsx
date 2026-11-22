@@ -7,7 +7,8 @@ import type { ExerciseRules } from "@/lib/injuries";
 import { useLocale, useTranslations } from "next-intl";
 import { useExercises, createCustomExercise, updateExercise, deleteExercise, patchExerciseLocal } from "@/hooks/useExercises";
 import { useAuth } from "@/contexts/AuthContext";
-import { adminCreateLibraryExercise, adminSetExerciseInjuryRules, adminUpdateExerciseContent, adminUpdateExerciseI18n } from "@/lib/adminService";
+import { adminCreateLibraryExercise, adminSetExerciseDetails, adminSetExerciseInjuryRules, adminUpdateExerciseContent, adminUpdateExerciseI18n } from "@/lib/adminService";
+import { ExerciseDetails, ExerciseDetailsEditor, draftOf, listsOf, type DetailsDraft } from "@/components/domain/ExerciseDetails";
 import db from "@/db";
 import type { Exercise, MuscleGroup, Equipment } from "@/db";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -27,6 +28,8 @@ const EQUIPMENT: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "body
 
 export default function ExercisesPage() {
   const t = useTranslations("exercises");
+  const tr = useTranslations("restrictions");
+  const { isAdmin } = useAuth();
   const exercises = useExercises();
   const [search, setSearch] = useState("");
   const [adding, setAdding] = useState(false);
@@ -61,6 +64,16 @@ export default function ExercisesPage() {
       <div className="mx-auto max-w-5xl space-y-4 p-4 pb-24 md:p-6">
         {adding && <AddExerciseForm onDone={() => setAdding(false)} />}
 
+        {isAdmin && (
+          <p className="text-xs text-muted-foreground">
+            {tr("coverage", {
+              total: exercises.filter((e) => !e.isCustom).length,
+              movements: exercises.filter((e) => !e.isCustom && e.movements?.length).length,
+              cues: exercises.filter((e) => !e.isCustom && Object.keys(e.cues ?? {}).length).length,
+            })}
+          </p>
+        )}
+
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("search")} className="pl-10" />
@@ -71,7 +84,7 @@ export default function ExercisesPage() {
             <section key={g} className="space-y-1.5">
               <SectionHeading>{t(`mg_${g}`)}</SectionHeading>
               {grouped.get(g)!.map((e) => (
-                <ExerciseRow key={e.id} ex={e} />
+                <ExerciseRow key={e.id} ex={e} library={exercises} />
               ))}
             </section>
           ))}
@@ -176,7 +189,7 @@ function AddExerciseForm({ onDone }: { onDone: () => void }) {
   );
 }
 
-function ExerciseRow({ ex }: { ex: Exercise }) {
+function ExerciseRow({ ex, library }: { ex: Exercise; library: Exercise[] }) {
   const t = useTranslations("exercises");
   const tr = useTranslations("injuryRules");
   const xl = useExerciseLabel();
@@ -193,8 +206,9 @@ function ExerciseRow({ ex }: { ex: Exercise }) {
   const [descriptionFr, setDescriptionFr] = useState(ex.descriptionFr ?? "");
   const [descriptionDe, setDescriptionDe] = useState(ex.descriptionDe ?? "");
   const [injuryRules, setInjuryRules] = useState<ExerciseRules>(ex.injuryRules ?? {});
+  const [details, setDetails] = useState<DetailsDraft>(() => draftOf(ex));
   const [error, setError] = useState<string | null>(null);
-  const hasDetail = !!ex.description || !!ex.videoUrl;
+  const hasDetail = !!ex.description || !!ex.videoUrl || !!ex.movements?.length || !!ex.level;
   // Custom exercises are fully editable by their owner; admins can also curate
   // the description/video on the shared built-in library.
   const canEdit = ex.isCustom || isAdmin;
@@ -213,7 +227,16 @@ function ExerciseRow({ ex }: { ex: Exercise }) {
         await adminUpdateExerciseContent(ex.uuid, description.trim(), videoUrl.trim());
         await adminUpdateExerciseI18n(ex.uuid, { nameFr, nameDe, descriptionFr, descriptionDe });
         await adminSetExerciseInjuryRules(ex.uuid, injuryRules as Record<string, "avoid" | "caution">);
+        const cues = listsOf(details.cues);
+        const mistakes = listsOf(details.mistakes);
+        await adminSetExerciseDetails(ex.uuid, { level: details.level, movements: details.movements, secondaryMuscles: details.secondaryMuscles, cues, mistakes, variantOf: details.variantOf });
         await patchExerciseLocal(ex.id!, {
+          level: details.level,
+          movements: details.movements.length ? details.movements : null,
+          secondaryMuscles: details.secondaryMuscles.length ? details.secondaryMuscles : null,
+          cues: Object.keys(cues).length ? cues : null,
+          mistakes: Object.keys(mistakes).length ? mistakes : null,
+          variantOf: details.variantOf,
           injuryRules: Object.keys(injuryRules).length ? injuryRules : null,
           description: description.trim() || undefined,
           videoUrl: videoUrl.trim() || undefined,
@@ -267,6 +290,7 @@ function ExerciseRow({ ex }: { ex: Exercise }) {
                     <p className="text-xs text-muted-foreground">{tr("hint")}</p>
                   </div>
                 )}
+                {!ex.isCustom && isAdmin && <ExerciseDetailsEditor value={details} onChange={setDetails} library={library} self={ex} />}
                 {error && <p className="text-xs text-destructive">{error}</p>}
                 <div className="flex gap-2">
                   <Button size="sm" onClick={save} disabled={busy} className="flex-1">
@@ -279,6 +303,7 @@ function ExerciseRow({ ex }: { ex: Exercise }) {
               <>
                 {exerciseDescription(ex, locale) && <p className="text-sm text-muted-foreground">{exerciseDescription(ex, locale)}</p>}
                 {(demoVideo(ex.videoUrl) ?? ex.videoUrl) && <VideoEmbed url={(demoVideo(ex.videoUrl) ?? ex.videoUrl)!} />}
+                <ExerciseDetails ex={ex} library={library} />
                 <Link href={`/exercises/${ex.id}`} className="flex min-h-10 items-center gap-1.5 text-sm font-semibold text-accent-text">
                   <History className="h-4 w-4" aria-hidden="true" />
                   {t("myHistory")}

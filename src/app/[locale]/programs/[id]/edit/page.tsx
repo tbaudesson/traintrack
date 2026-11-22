@@ -1,5 +1,6 @@
 "use client";
 
+import { useAvoidedAreas } from "@/hooks/useInjuryRules";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -47,7 +48,9 @@ export default function ProgramEditorPage() {
   // A team program has no single athlete: no injury to flag.
   const forTeam = !!program?.groupId && !program.assignedToUserId;
   const athleteInjuries = useInjuriesOf(program?.assignedToUserId);
-  const injuries = forTeam ? [] : athleteInjuries;
+  // One's own program: injuries and one's restrictions; a client's: their injuries.
+  const ownAvoided = useAvoidedAreas();
+  const injuries = forTeam ? [] : program?.assignedToUserId ? athleteInjuries : ownAvoided;
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");

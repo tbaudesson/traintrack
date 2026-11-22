@@ -1,3 +1,4 @@
+import { findExercise } from "./exerciseMatch";
 import type { Program } from "@/db";
 import { estimateOneRepMax, isTimedTarget } from "./performance";
 import { findWorkoutProgramDay } from "./startWorkout";
@@ -33,7 +34,7 @@ export function exerciseSeries(input: { program: Program; workouts: W[]; sets: S
   const seen = new Set<number>();
   for (const day of program.structure ?? []) {
     for (const pe of day.exercises) {
-      const ex = input.exercises.find((e) => (pe.exerciseUuid && e.uuid === pe.exerciseUuid) || e.name.toLowerCase() === pe.exerciseName.toLowerCase());
+      const ex = findExercise(input.exercises, pe.exerciseName, pe.exerciseUuid);
       if (ex?.id === undefined || seen.has(ex.id)) continue;
       seen.add(ex.id);
       const done = input.sets.filter((s) => s.exerciseId === ex.id && s.completed && !s.isWarmup && dates.has(s.workoutId) && (s.reps ?? 0) > 0);

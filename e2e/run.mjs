@@ -147,7 +147,13 @@ for (const line of readFileSync("supabase/migrations/064_exercise_content.sql", 
   row.descriptionDe ??= pick("description_de");
   row.videoUrl ??= pick("video_url") ?? undefined;
 }
-const libraryRows = [...library.values()].map((e) => ({ ...e, injuryRules: exerciseRules[e.name] ?? null }));
+// Each exercise's level, movements and secondary muscles, as migration 076 fills them.
+const exerciseDetails = Object.fromEntries(
+  [...readFileSync("supabase/migrations/076_exercise_details_and_restrictions.sql", "utf8").matchAll(/SET movements = '(.+?)'::jsonb, level = '(\w+)', secondary_muscles = '(.+?)'::jsonb, updated_at = now\(\) WHERE user_id IS NULL AND name = '((?:[^']|'')+)'/g)]
+    .map((m) => [m[4].replace(/''/g, "'"), { movements: JSON.parse(m[1]), level: m[2], secondaryMuscles: JSON.parse(m[3]) }])
+);
+if (Object.keys(exerciseDetails).length !== 141) throw new Error(`076: ${Object.keys(exerciseDetails).length} exercises described`);
+const libraryRows = [...library.values()].map((e) => ({ ...e, injuryRules: exerciseRules[e.name] ?? null, ...(exerciseDetails[e.name] ?? {}) }));
 
 // A signed-in user as the app caches it, a profile, and the exercise library.
 await page.evaluate(async ({ user, libraryRows }) => {
@@ -2005,6 +2011,47 @@ await test("a goal of any sport: 10 km under 50 min, followed in Progress and on
   page.once("dialog", (d) => d.accept());
   await page.getByRole("button", { name: "Supprimer l'objectif" }).first().click();
   await page.getByText("Course à pied : 10 km").waitFor({ state: "detached", timeout: 5000 });
+});
+
+await test("a movement ruled out is flagged, and its exercise replaced only when asked", async () => {
+  // "No arms overhead", from Settings.
+  await page.goto(`${BASE}/fr/settings?section=restrictions`);
+  await page.getByRole("button", { name: "Ajouter une restriction" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("button", { name: "Bras au-dessus de la tête" }).click();
+  await dialog.getByRole("button", { name: "Enregistrer" }).click();
+  await dialog.waitFor({ state: "detached", timeout: 5000 });
+  await page.getByText(/Bras au-dessus de la tête · À éviter/).waitFor({ timeout: 5000 });
+
+  // A session with an overhead press: a replacement is proposed, nothing changed before the tap.
+  const wid = await page.evaluate(async (user) => {
+    const db = await new Promise((res, rej) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+    const all = (store) => new Promise((res) => { const r = db.transaction(store).objectStore(store).getAll(); r.onsuccess = () => res(r.result); });
+    const add = (store, row) => new Promise((res, rej) => { const tx = db.transaction(store, "readwrite"); const r = tx.objectStore(store).add(row); tx.oncomplete = () => res(r.result); tx.onerror = () => rej(tx.error); });
+    const ohp = (await all("exercises")).find((e) => e.name === "Overhead Press" && !e.isCustom);
+    const now = new Date().toISOString();
+    const d = new Date();
+    const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const w = await add("workouts", { userId: user, uuid: `e2e-ohp-${Date.now()}`, date, kind: "strength", title: "Épaules e2e", _dirty: 0, createdAt: now, updatedAt: now });
+    for (const n of [1, 2, 3]) await add("workoutSets", { userId: user, uuid: `e2e-ohp-s${n}-${Date.now()}`, workoutId: w, exerciseId: ohp.id, setNumber: n, reps: 8, completed: false, _dirty: 0, createdAt: now, updatedAt: now });
+    db.close();
+    return w;
+  }, USER);
+  await page.goto(`${BASE}/fr/log/session?id=${wid}`);
+  const banner = page.locator("section", { has: page.locator("#to-adapt") });
+  await banner.waitFor({ timeout: 10000 });
+  await page.getByText(/Exclu par vos restrictions \(bras au-dessus de la tête\)/).first().waitFor({ timeout: 5000 });
+  const replace = banner.getByRole("button", { name: /^Remplacer Développé militaire par / });
+  const label = await replace.innerText();
+  await replace.click();
+  await banner.waitFor({ state: "detached", timeout: 5000 });
+  const to = label.replace(/^Remplacer Développé militaire par /, "").trim();
+  await page.getByText(to, { exact: true }).first().waitFor({ timeout: 5000 });
+
+  // Removed again: as before.
+  await page.goto(`${BASE}/fr/settings?section=restrictions`);
+  await page.getByRole("button", { name: /Retirer la restriction/ }).click();
+  await page.getByText("Aucune restriction.").waitFor({ timeout: 5000 });
 });
 
 await test("no page threw an error", async () => {

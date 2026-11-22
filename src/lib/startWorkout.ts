@@ -13,6 +13,7 @@ import { DELOAD_LOAD, deloadSets } from "./deload";
 import { programWeek } from "./programWeek";
 import { createCustomExercise } from "@/hooks/useExercises";
 import { canEditProgram } from "./programOrigin";
+import { findExercise } from "./exerciseMatch";
 
 /** A deload load: a tenth lighter, to the plate step below. */
 export function lighter(kg: number, equipment?: Exercise["equipment"], factor: number = DELOAD_LOAD): number {
@@ -122,9 +123,7 @@ export async function startWorkoutFromDay(
   const groups = programGroups(day.exercises.map((pe) => !!pe.supersetWithNext));
   for (const [index, pe] of day.exercises.entries()) {
     // Resolve the exercise by uuid or name; create a custom one if missing
-    const ex = exercises.find(
-      (e) => (pe.exerciseUuid && e.uuid === pe.exerciseUuid) || e.name.toLowerCase() === pe.exerciseName.toLowerCase()
-    );
+    const ex = findExercise(exercises, pe.exerciseName, pe.exerciseUuid);
     let exerciseId = ex?.id;
     if (!exerciseId) {
       exerciseId = await createCustomExercise({ name: pe.exerciseName, muscleGroup: "other" });

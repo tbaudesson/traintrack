@@ -90,6 +90,8 @@ export interface AthleteProfile extends SyncFields {
   favoriteSport?: string | null;
   /** The sport practised alongside (migration 074). */
   secondSport?: string | null;
+  /** Muscles, movements or exercises ruled out (migration 076). */
+  restrictions?: Restriction[] | null;
   /** Diet, foods left out and meals a day, for the meal ideas, see lib/mealCatalog. */
   mealPrefs?: MealPrefs | null;
   /** Optional daily macro targets */
@@ -145,6 +147,29 @@ export interface NutritionEntry extends SyncFields {
   updatedAt: string;
 }
 
+export type ExerciseLevel = "beginner" | "intermediate" | "advanced";
+/** What an exercise asks of the body; one exercise may ask several (migration 076). */
+export type Movement =
+  | "squat" | "hinge" | "lunge"
+  | "push_horizontal" | "push_vertical" | "pull_horizontal" | "pull_vertical"
+  | "overhead" | "hanging" | "isolation"
+  | "core_flexion" | "core_stability" | "rotation"
+  | "jump" | "conditioning" | "mobility";
+export type LocalizedList = Partial<Record<"fr" | "en" | "de", string[]>>;
+
+/**
+ * Something the athlete rules out besides an injured joint: a muscle group, a
+ * movement or an exercise (its uuid), to avoid or to do with caution, maybe
+ * until a date (migration 076).
+ */
+export interface Restriction {
+  kind: "muscle" | "movement" | "exercise";
+  value: string;
+  level: "avoid" | "caution";
+  /** YYYY-MM-DD, the last day it applies. */
+  until?: string | null;
+}
+
 export interface Exercise extends SyncFields {
   id?: number;
   name: string;
@@ -159,6 +184,17 @@ export interface Exercise extends SyncFields {
   descriptionDe?: string | null;
   /** The areas it loads when injured ("avoid" / "caution"), edited by an admin; none for a custom one. */
   injuryRules?: Partial<Record<"shoulder" | "elbow" | "wrist" | "neck" | "upper_back" | "lower_back" | "hip" | "knee" | "ankle", "avoid" | "caution">> | null;
+  /** beginner / intermediate / advanced (migration 076). */
+  level?: ExerciseLevel | null;
+  /** What it asks of the body: squat, hinge, push, overhead, jumps... (migration 076). */
+  movements?: Movement[] | null;
+  /** The muscle groups it works besides its main one (migration 076). */
+  secondaryMuscles?: MuscleGroup[] | null;
+  /** Key points and usual faults, by language, filled by an admin (migration 076). */
+  cues?: LocalizedList | null;
+  mistakes?: LocalizedList | null;
+  /** The exercise it is a variant of (its uuid) (migration 076). */
+  variantOf?: string | null;
   /** true = user-created custom exercise; false = seeded library row */
   isCustom: boolean;
   createdAt: string;

@@ -1,7 +1,9 @@
 "use client";
 
+import { useAreaLabel } from "@/hooks/useAreaLabel";
+import { isRestrictionKey } from "@/lib/restrictions";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
-import { useInjuryRules } from "@/hooks/useInjuryRules";
+import { useAvoidedAreas, useInjuryRules } from "@/hooks/useInjuryRules";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useWorkout, useWorkouts, updateWorkout, deleteWorkout } from "@/hooks/useWorkouts";
@@ -63,7 +65,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, MoreHorizontal, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight, TrendingDown, Equal, Gauge, BatteryLow, Bandage, PersonStanding, CopyPlus, Ban, Maximize2 } from "lucide-react";
+import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, MoreHorizontal, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight, TrendingDown, Equal, Gauge, BatteryLow, Bandage, PersonStanding, CopyPlus, Ban, Maximize2, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { IntervalWorkoutView } from "@/components/domain/IntervalWorkoutView";
@@ -94,6 +96,8 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
   const [pickerOpen, setPickerOpen] = useState(false);
   const [reusing, setReusing] = useState(false);
   const [swapFor, setSwapFor] = useState<number | null>(null);
+  // Replacements proposed at the start, kept as they are when the athlete says so.
+  const [keptAsIs, setKeptAsIs] = useState<number[]>([]);
   const [painFor, setPainFor] = useState<number | null>(null);
   const [guided, setGuided] = useState(startGuided);
   const tg = useTranslations("guided");
@@ -111,6 +115,10 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
   const pains = usePainReports();
   const injuryG = useInjuryGuidance();
   const injuryRules = useInjuryRules();
+  // Injuries and one's own restrictions, for the warnings and the replacements.
+  const avoided = useAvoidedAreas();
+  const areaLabel = useAreaLabel();
+  const trs = useTranslations("restrictions");
   const { profile: account } = useAuth();
   const [openGuide, setOpenGuide] = useState<number | null>(null);
   // Exercises reopened once done, and bodyweight exercises given a load.
@@ -671,6 +679,20 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
     setSwapFor(null);
   }
 
+  /**
+   * The exercises not started yet that the athlete's injuries or restrictions
+   * rule out, each with the safest replacement doable with their equipment:
+   * proposed, never made without them.
+   */
+  const toAdapt = groups.flatMap(([exerciseId, exSets]) => {
+    const ex = exMap.get(exerciseId);
+    if (!ex || keptAsIs.includes(exerciseId) || exSets.some((s) => s.completed)) return [];
+    if (injuryWarning(injuryRules, ex.name, avoided)?.level !== "avoid") return [];
+    const options = bySafety(injuryRules, substitutes(ex, exercises.filter((e) => !groups.some(([id]) => id === e.id)), profile?.equipment), avoided);
+    const best = options.find((e) => injuryWarning(injuryRules, e.name, avoided)?.level !== "avoid");
+    return [{ ex, best }];
+  });
+
   const swapOptions =
     swapFor === null
       ? []
@@ -681,7 +703,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
             exercises.filter((e) => !groups.some(([id]) => id === e.id)),
             profile?.equipment
           ),
-          injuries
+          avoided
         );
 
   /** Delete a set in 5 s, unless undone: until then it is only hidden. */
@@ -946,9 +968,32 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
           </Button>
         )}
 
+        {toAdapt.length > 0 && workout?.userId === getCurrentUserIdSync() && (
+          <section className="space-y-2 rounded-2xl bg-rose-50 p-3 dark:bg-rose-950/30" aria-labelledby="to-adapt">
+            <h2 id="to-adapt" className="flex items-center gap-2 text-sm font-semibold text-rose-800 dark:text-rose-300">
+              <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+              {trs("bannerTitle")}
+            </h2>
+            {toAdapt.map(({ ex, best }) => (
+              <div key={ex.id} className="flex flex-wrap items-center gap-2">
+                {best ? (
+                  <Button size="sm" className="flex-1" onClick={() => swapExercise(ex.id!, best.id!)}>
+                    {trs("replaceWith", { from: xl(ex.name), to: xl(best.name) })}
+                  </Button>
+                ) : (
+                  <p className="flex-1 text-sm">{trs("noSubstitute", { name: xl(ex.name) })}</p>
+                )}
+                <Button size="sm" variant="ghost" onClick={() => setKeptAsIs((k) => [...k, ex.id!])}>
+                  {trs("keep")}
+                </Button>
+              </div>
+            ))}
+          </section>
+        )}
+
         {groups.map(([exerciseId, exSets], index) => {
           const ex = exMap.get(exerciseId);
-          const injuryWarn = injuryWarning(injuryRules, ex?.name, injuries);
+          const injuryWarn = injuryWarning(injuryRules, ex?.name, avoided);
           const comeback = returnAdjust(injuryG, injuryRules, ex?.name, injuries, workout?.date ?? localDate(), pains);
           const work = exSets.filter((s) => !s.isWarmup);
           const warmups = exSets.filter((s) => s.isWarmup);
@@ -1075,8 +1120,8 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                     )}
                   >
                     <p className="flex-1">
-                      {tinj(injuryWarn.level === "avoid" ? "avoidAdvice" : "cautionAdvice", {
-                        areas: injuryWarn.areas.map((a) => (locale === "de" ? tpain(`area_${a}`) : tpain(`area_${a}`).toLowerCase())).join(", "),
+                      {tinj(`${injuryWarn.level === "avoid" ? "avoidAdvice" : "cautionAdvice"}${injuryWarn.areas.every(isRestrictionKey) ? "R" : ""}`, {
+                        areas: injuryWarn.areas.map(areaLabel).join(", "),
                       })}
                     </p>
                     {injuryWarn.level === "avoid" && (
@@ -1648,7 +1693,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                   <Dumbbell className="h-4 w-4 shrink-0 text-accent-500" aria-hidden="true" />
                   <span className="flex min-w-0 flex-1 flex-col items-start gap-0.5">
                     {xl(e.name)}
-                    <InjuryBadge exerciseName={e.name} injuries={injuries} />
+                    <InjuryBadge exerciseName={e.name} injuries={avoided} />
                   </span>
                   {e.equipment && <span className="shrink-0 text-xs text-muted-foreground">{to(`equip_${e.equipment}`)}</span>}
                 </button>
@@ -1665,7 +1710,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
         open={pickerOpen}
         onOpenChange={setPickerOpen}
         title={t("selectExercise")}
-        injuries={injuries}
+        injuries={avoided}
         exclude={groups.map(([id]) => id)}
         onPick={(e) => e.id && addExercise(e.id)}
       />
