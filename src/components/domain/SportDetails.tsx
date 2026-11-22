@@ -6,6 +6,7 @@ import { updateWorkout } from "@/hooks/useWorkouts";
 import { updateTrainingSchedule, useAthleteProfileOrNull } from "@/hooks/useAthleteProfile";
 import { cadenceUnit, lengthsOf, POOL_LENGTHS, powerLoad, powerZone, SWIM_STROKES, swolf } from "@/lib/sportMetrics";
 import { useFormat } from "@/lib/format";
+import { metricPlace, sportDef, type MetricId } from "@/lib/disciplines";
 import { Input } from "@/components/ui/input";
 import { Chip, ChipRow } from "@/components/ui/find";
 
@@ -42,8 +43,10 @@ function NumberField({ label, unit, value, min, max, onSave }: { label: string; 
  * the pool and the strokes of a swim (and its SWOLF), the cadence on foot or
  * on a bike, the power of a ride (its zone and load against the athlete's
  * FTP). Each figure is optional and filled by a watch file when it has it.
+ * The registry says which come first ("essential") and which wait under
+ * "More details" ("advanced"); each place shows its own.
  */
-export function SportDetails({ workout, distanceM, durationSec }: { workout: Workout; distanceM: number; durationSec: number }) {
+export function SportDetails({ workout, distanceM, durationSec, place }: { workout: Workout; distanceM: number; durationSec: number; place: "essential" | "advanced" }) {
   const t = useTranslations("sportDetails");
   const { num } = useFormat();
   const profile = useAthleteProfileOrNull();
@@ -51,17 +54,36 @@ export function SportDetails({ workout, distanceM, durationSec }: { workout: Wor
   const sport = workout.sport;
   const cadence = cadenceUnit(sport);
   const ftp = profile?.ftpW ?? null;
+  const here = (m: MetricId) => metricPlace(sport, m) === place;
 
-  if (sport === "swim") {
+  const swimLines = sport === "swim" ? (() => {
     const value = swolf({ distanceM, durationSec, poolLengthM: workout.poolLengthM, strokesPerLength: workout.strokesPerLength });
     const lengths = lengthsOf(distanceM, workout.poolLengthM);
-    return (
-      <div className="space-y-3 border-t border-border pt-3">
+    return { value, lengths };
+  })() : null;
+  const load = here("avgPower") ? powerLoad(durationSec, workout.avgPowerW, ftp) : null;
+  const zone = here("avgPower") ? powerZone(workout.avgPowerW, ftp) : null;
+
+  const numbers = [
+    here("cadence") && cadence ? <NumberField key="cadence" label={t("cadence")} unit={t(`unit_${cadence}`)} value={workout.avgCadence} min={1} max={260} onSave={(n) => updateWorkout(id, { avgCadence: n })} /> : null,
+    here("avgPower") ? <NumberField key="avg" label={t("avgPower")} unit="W" value={workout.avgPowerW} min={0} max={2500} onSave={(n) => updateWorkout(id, { avgPowerW: n })} /> : null,
+    here("maxPower") ? <NumberField key="max" label={t("maxPower")} unit="W" value={workout.maxPowerW} min={0} max={3000} onSave={(n) => updateWorkout(id, { maxPowerW: n })} /> : null,
+    here("ftp") ? <NumberField key="ftp" label={t("ftp")} unit="W" value={ftp} min={30} max={700} onSave={(n) => updateTrainingSchedule({ ftpW: n })} /> : null,
+  ].filter(Boolean);
+
+  const swim = here("swimStroke") || here("pool") || (here("strokesPerLength") && !!workout.poolLengthM);
+  if (!swim && !numbers.length) return null;
+
+  return (
+    <div className="space-y-3">
+      {here("swimStroke") && (
         <ChipRow label={t("stroke")}>
           {SWIM_STROKES.map((s) => (
             <Chip key={s} on={workout.swimStroke === s} onClick={() => updateWorkout(id, { swimStroke: workout.swimStroke === s ? null : s })}>{t(`stroke_${s}`)}</Chip>
           ))}
         </ChipRow>
+      )}
+      {here("pool") && (
         <ChipRow label={t("pool")}>
           {POOL_LENGTHS.map((m) => (
             <Chip key={m} on={workout.poolLengthM === m} onClick={() => updateWorkout(id, { poolLengthM: workout.poolLengthM === m ? null : m })}>{t("poolM", { m })}</Chip>
@@ -69,42 +91,37 @@ export function SportDetails({ workout, distanceM, durationSec }: { workout: Wor
           {/* Open water is kept as a pool of 0 m: known to have no lengths. */}
           <Chip on={workout.poolLengthM === 0} onClick={() => updateWorkout(id, { poolLengthM: workout.poolLengthM === 0 ? null : 0 })}>{t("openWater")}</Chip>
         </ChipRow>
-        {!!workout.poolLengthM && (
-          <NumberField label={t("strokes")} unit={t("perLength")} value={workout.strokesPerLength} min={1} max={200} onSave={(n) => updateWorkout(id, { strokesPerLength: n })} />
-        )}
-        {(lengths || value) && (
-          <p className="text-sm font-medium">
-            {[lengths ? t("lengths", { count: lengths }) : null, value ? t("swolf", { value }) : null].filter(Boolean).join(" · ")}
-          </p>
-        )}
-        {value && <p className="text-xs text-muted-foreground">{t("swolfHint")}</p>}
-      </div>
-    );
-  }
+      )}
+      {here("strokesPerLength") && !!workout.poolLengthM && (
+        <NumberField label={t("strokes")} unit={t("perLength")} value={workout.strokesPerLength} min={1} max={200} onSave={(n) => updateWorkout(id, { strokesPerLength: n })} />
+      )}
+      {here("pool") && swimLines && (swimLines.lengths || swimLines.value) && (
+        <p className="text-sm font-medium">
+          {[swimLines.lengths ? t("lengths", { count: swimLines.lengths }) : null, swimLines.value ? t("swolf", { value: swimLines.value }) : null].filter(Boolean).join(" · ")}
+        </p>
+      )}
+      {here("pool") && swimLines?.value && <p className="text-xs text-muted-foreground">{t("swolfHint")}</p>}
 
-  if (!cadence) return null;
-  const load = sport === "bike" ? powerLoad(durationSec, workout.avgPowerW, ftp) : null;
-  const zone = sport === "bike" ? powerZone(workout.avgPowerW, ftp) : null;
-
-  return (
-    <div className="space-y-3 border-t border-border pt-3">
-      <div className="grid grid-cols-2 gap-3">
-        <NumberField label={t("cadence")} unit={t(`unit_${cadence}`)} value={workout.avgCadence} min={1} max={260} onSave={(n) => updateWorkout(id, { avgCadence: n })} />
-        {sport === "bike" && (
-          <NumberField label={t("avgPower")} unit="W" value={workout.avgPowerW} min={0} max={2500} onSave={(n) => updateWorkout(id, { avgPowerW: n })} />
-        )}
-        {sport === "bike" && (
-          <NumberField label={t("maxPower")} unit="W" value={workout.maxPowerW} min={0} max={3000} onSave={(n) => updateWorkout(id, { maxPowerW: n })} />
-        )}
-        {sport === "bike" && (
-          <NumberField label={t("ftp")} unit="W" value={ftp} min={30} max={700} onSave={(n) => updateTrainingSchedule({ ftpW: n })} />
-        )}
-      </div>
+      {numbers.length > 0 && <div className="grid grid-cols-2 gap-3">{numbers}</div>}
       {zone && load && (
         <p className="text-sm font-medium">{t("powerLine", { zone, name: t(`zone_${zone}`), intensity: num(load.intensity, 2), tss: load.tss })}</p>
       )}
-      {sport === "bike" && workout.avgPowerW && !ftp && <p className="text-xs text-muted-foreground">{t("needFtp")}</p>}
+      {here("avgPower") && workout.avgPowerW && !ftp && <p className="text-xs text-muted-foreground">{t("needFtp")}</p>}
       {load && <p className="text-xs text-muted-foreground">{t("tssHint")}</p>}
     </div>
   );
+}
+
+/** Whether something under "More details" already has a value: the section then opens by itself. */
+export function hasAdvancedValues(workout: Workout): boolean {
+  const filled: Partial<Record<MetricId, unknown>> = {
+    climb: workout.elevationGainM,
+    cadence: workout.avgCadence,
+    avgPower: workout.avgPowerW,
+    maxPower: workout.maxPowerW,
+    swimStroke: workout.swimStroke,
+    pool: workout.poolLengthM,
+    strokesPerLength: workout.strokesPerLength,
+  };
+  return (sportDef(workout.sport)?.advanced ?? []).some((m) => filled[m] !== null && filled[m] !== undefined);
 }

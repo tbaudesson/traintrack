@@ -1,25 +1,27 @@
 import type { Sport } from "@/db";
 import type { FavoriteSport } from "./appTheme";
 
-/** What the app puts first: distances, loads, repetitions, or time on the horse. */
-export type ActivityKind = "endurance" | "strength" | "bodyweight" | "vaulting";
+import { FAVORITE_DEFS, SPORT_DEFS, type ActivityKind } from "./disciplines";
 
+export type { ActivityKind };
+
+/** What the app puts first for a favourite sport (from the registry). */
 export function kindOf(sport: FavoriteSport | null | undefined): ActivityKind | null {
-  if (!sport) return null;
-  if (sport === "running" || sport === "hiking" || sport === "cycling" || sport === "swimming") return "endurance";
-  if (sport === "callisthenics") return "bodyweight";
-  if (sport === "vaulting") return "vaulting";
-  return "strength";
+  return sport ? FAVORITE_DEFS[sport]?.kind ?? null : null;
 }
 
 /** The endurance sport of a favourite sport, for its distances. */
-export const cardioSportOf = (sport: FavoriteSport | null | undefined): Sport | null =>
-  sport === "running" ? "run" : sport === "hiking" ? "hike" : sport === "cycling" ? "bike" : sport === "swimming" ? "swim" : null;
+export const cardioSportOf = (sport: FavoriteSport | null | undefined): Sport | null => {
+  const def = sport ? FAVORITE_DEFS[sport] : undefined;
+  return def?.kind === "endurance" ? def.sport : null;
+};
 
 type W = { id?: number; date: string; kind?: string; sport?: Sport | null; distanceM?: number | null; durationSec?: number | null; durationMin?: number };
 type S = { workoutId: number; completed: boolean; isWarmup?: boolean; weightKg?: number | null; reps?: number | null };
 
-const FAVORITE_OF: Partial<Record<Sport, FavoriteSport>> = { run: "running", hike: "hiking", bike: "cycling", swim: "swimming", vaulting: "vaulting" };
+const FAVORITE_OF = Object.fromEntries(
+  Object.entries(SPORT_DEFS).filter(([, d]) => d.favorite).map(([s, d]) => [s, d.favorite])
+) as Partial<Record<Sport, FavoriteSport>>;
 
 /**
  * The sport one actually practises, from the last four weeks: the one of at

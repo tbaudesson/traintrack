@@ -13,7 +13,8 @@ import { formatPace as formatKmPace, HR_ZONE_SHARE, hrZoneOf, paceAt } from "@/l
 import { planRunBlocks } from "@/lib/runWorkouts";
 import { RunGuide } from "@/components/domain/RunGuide";
 import { GpxImport } from "@/components/domain/GpxImport";
-import { SportDetails } from "@/components/domain/SportDetails";
+import { SportDetails, hasAdvancedValues } from "@/components/domain/SportDetails";
+import { metricPlace, sportDef } from "@/lib/disciplines";
 import type { CardioTarget, Workout } from "@/db";
 import { updateWorkout } from "@/hooks/useWorkouts";
 import { useDebouncedSave } from "@/hooks/useDebouncedSave";
@@ -27,6 +28,7 @@ import { IntervalPlayer, type IntervalResult, type PlayerStep } from "@/componen
 /** Log an endurance session: what was planned, then distance and time. */
 export function CardioLogger({ workout, target }: { workout: Workout; target?: CardioTarget }) {
   const t = useTranslations("cardio");
+  const tp = useTranslations("programs");
   // The countdown before the first step; without the reference yet, none.
   const readySec = useTimedGuidance()?.getReadySec ?? 0;
   const swim = workout.sport === "swim";
@@ -38,8 +40,10 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
   const [minutes, setMinutes] = useState(workout.durationSec ? String(Math.floor(workout.durationSec / 60)) : "");
   const [seconds, setSeconds] = useState(workout.durationSec ? String(workout.durationSec % 60) : "");
   const [climb, setClimb] = useState(workout.elevationGainM ? String(workout.elevationGainM) : "");
-  // The metres climbed: on foot and on a bike, and for any outing that has them.
-  const showClimb = workout.sport === "hike" || workout.sport === "run" || workout.sport === "bike" || !!workout.elevationGainM;
+  // The metres climbed: first for a hike, under "More details" on foot and on a
+  // bike (the registry says), and for any outing that already has them.
+  const climbPlace = metricPlace(workout.sport, "climb") ?? (workout.elevationGainM ? "advanced" : null);
+  const hasAdvanced = (sportDef(workout.sport)?.advanced.length ?? 0) > 0 || climbPlace === "advanced";
 
   const distanceM = (Number(distance.replace(",", ".")) || 0) * (swim ? 1 : 1000);
   const durationSec = (Number(minutes) || 0) * 60 + (Number(seconds) || 0);
@@ -67,7 +71,7 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
     updateWorkout(workout.id!, {
       distanceM: distanceM || undefined,
       durationSec: durationSec || undefined,
-      ...(showClimb ? { elevationGainM: Math.max(0, Math.round(Number(climb) || 0)) || null } : {}),
+      ...(climbPlace ? { elevationGainM: Math.max(0, Math.round(Number(climb) || 0)) || null } : {}),
     });
   // Saved as it is typed (on the device), and at once when a field is left.
   const { schedule, flush } = useDebouncedSave<null>(() => save());
@@ -204,7 +208,7 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
               <Input type="number" inputMode="numeric" min={0} max={59} value={seconds} onChange={(e) => { setSeconds(e.target.value); schedule(null); }} onBlur={() => { schedule(null); flush(); }} className="mt-1" />
             </label>
           </div>
-          {showClimb && (
+          {climbPlace === "essential" && (
             <label className="block text-sm font-medium">
               {t("climb")}
               <Input type="number" inputMode="numeric" min={0} value={climb} onChange={(e) => { setClimb(e.target.value); schedule(null); }} onBlur={() => { schedule(null); flush(); }} className="mt-1" />
@@ -235,7 +239,21 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
               {t("pace", { pace })}
             </p>
           )}
-          <SportDetails workout={workout} distanceM={distanceM} durationSec={durationSec} />
+          <SportDetails workout={workout} distanceM={distanceM} durationSec={durationSec} place="essential" />
+          {hasAdvanced && (
+            <details open={hasAdvancedValues(workout) || !!workout.elevationGainM && climbPlace === "advanced"} className="rounded-xl bg-muted/40 px-3">
+              <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold text-muted-foreground">{tp("moreDetails")}</summary>
+              <div className="space-y-3 pb-3">
+                {climbPlace === "advanced" && (
+                  <label className="block text-sm font-medium">
+              {t("climb")}
+              <Input type="number" inputMode="numeric" min={0} value={climb} onChange={(e) => { setClimb(e.target.value); schedule(null); }} onBlur={() => { schedule(null); flush(); }} className="mt-1" />
+            </label>
+                )}
+                <SportDetails workout={workout} distanceM={distanceM} durationSec={durationSec} place="advanced" />
+              </div>
+            </details>
+          )}
         </CardContent>
       </Card>
       {running && runBlocks && (

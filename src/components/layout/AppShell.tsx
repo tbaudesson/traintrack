@@ -9,6 +9,13 @@ import { BottomNav, DesktopRail } from "./BottomNav";
 import { OfflineBanner } from "./OfflineBanner";
 import { OfflineWarmup } from "./OfflineWarmup";
 import { Loader2 } from "lucide-react";
+import { useSportChoiceSync } from "@/hooks/useSportChoice";
+
+/** The favourite sport, in step with the profile (signed in only). */
+function SportChoiceSync() {
+  useSportChoiceSync();
+  return null;
+}
 
 /**
  * Main app shell:
@@ -81,6 +88,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <>
       <OfflineBanner />
       <OfflineWarmup />
+      <SportChoiceSync />
       <DesktopRail />
       <main id="main-content" className="t-app-main flex-1 overflow-y-auto pb-20">
         {children}

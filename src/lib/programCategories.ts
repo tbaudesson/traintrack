@@ -1,13 +1,16 @@
 import type { ProgramDay, Sport } from "@/db";
 import { PROGRAM_TEMPLATES, type ProgramGoal, type ProgramTemplate } from "./programTemplates";
 import type { PainArea } from "./pain";
+import { SPORT_DEFS } from "./disciplines";
 
 /** The shelves of the ready-made programs, as an athlete looks for them. */
 export type ProgramCategory = "bodybuilding" | "strength" | "fitness" | "callisthenics" | "running" | "hiking" | "swimming" | "cycling" | "vaulting" | "trx" | "injury";
 
 export const CATEGORY_ORDER: ProgramCategory[] = ["bodybuilding", "strength", "fitness", "callisthenics", "running", "hiking", "swimming", "cycling", "vaulting", "trx", "injury"];
 
-const BY_SPORT: Partial<Record<Sport, ProgramCategory>> = { run: "running", hike: "hiking", swim: "swimming", bike: "cycling", vaulting: "vaulting" };
+const BY_SPORT = Object.fromEntries(
+  Object.entries(SPORT_DEFS).filter(([, d]) => d.category).map(([s, d]) => [s, d.category])
+) as Partial<Record<Sport, ProgramCategory>>;
 
 /** Strengthening plans for a sport, filed with that sport (ids of the built-in list, without the language). */
 const BY_ID: Record<string, ProgramCategory> = {

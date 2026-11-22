@@ -33,6 +33,20 @@ function chromiumPath() {
 }
 
 const results = [];
+/** One's sport, as Settings sets it: on the device and with the profile, which the app follows (migration 074). */
+const setSportChoice = (sport) => page.evaluate(async (v) => {
+  const p = JSON.parse(localStorage.getItem("traintrack.prefs") || "{}");
+  p.sport = v; p.sport2 = null; p.allSports = false;
+  localStorage.setItem("traintrack.prefs", JSON.stringify(p));
+  const db = await new Promise((res, rej) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+  const tx = db.transaction("athleteProfiles", "readwrite");
+  const st = tx.objectStore("athleteProfiles");
+  const all = await new Promise((res) => { const r = st.getAll(); r.onsuccess = () => res(r.result); });
+  for (const row of all) st.put({ ...row, favoriteSport: v ?? "none", secondSport: null });
+  await new Promise((res) => { tx.oncomplete = res; });
+  db.close();
+}, sport);
+
 /** With E2E_ONLY=<regex>, only the matching paths run (the setup always does). */
 const only = process.env.E2E_ONLY ? new RegExp(process.env.E2E_ONLY) : null;
 async function test(name, fn) {
@@ -832,7 +846,9 @@ await test("the home screen follows the sport practised, and offers it when anot
   // Weight training chosen in Settings: the app offers the sport the weeks show.
   await page.goto(`${BASE}/fr/settings?section=sport`);
   await page.getByRole("button", { name: "Musculation", exact: true }).first().click();
+  await page.getByRole("button", { name: "Musculation", exact: true, pressed: true }).first().waitFor({ timeout: 5000 });
   await page.goto(`${BASE}/fr`);
+
   // The load rising too fast comes first; the other notes are folded under "To look at".
   await page.getByText("Charge d’entraînement").first().waitFor({ timeout: 10000 });
   const more = page.locator("details", { hasText: "À voir aussi" });
@@ -1451,7 +1467,7 @@ await test("every page has a way back, home when it was opened directly", async 
 });
 
 await test("the menu wheel brings one's sport: a runner goes straight to running", async () => {
-  const setSport = (sport) => page.evaluate((v) => { const p = JSON.parse(localStorage.getItem("traintrack.prefs") || "{}"); p.sport = v; p.sport2 = null; p.allSports = false; localStorage.setItem("traintrack.prefs", JSON.stringify(p)); }, sport);
+  const setSport = setSportChoice;
   await page.setViewportSize({ width: 1280, height: 800 });
   try {
     await page.goto(`${BASE}/fr`);
@@ -1493,7 +1509,7 @@ await test("nutrition for one's sport: carbohydrates by the kilo, and food aroun
   await store(["athleteProfiles", "profile", { calories: 2400, protein: 120 }]);
   const metric = await store(["bodyMetrics", "put", { userId: "00000000-0000-4000-8000-0000000000e2", uuid: "e2e-weight", date: today, weightKg: 60, _dirty: 0, createdAt: now, updatedAt: now }]);
   const long = await store(["workouts", "put", { userId: "00000000-0000-4000-8000-0000000000e2", uuid: "e2e-long-today", date: today, kind: "cardio", sport: "run", title: "Sortie longue", durationSec: 110 * 60, distanceM: 18000, _dirty: 0, createdAt: now, updatedAt: now }]);
-  await page.evaluate(() => { const p = JSON.parse(localStorage.getItem("traintrack.prefs") || "{}"); p.sport = "running"; localStorage.setItem("traintrack.prefs", JSON.stringify(p)); });
+  await setSportChoice("running");
   // The references as the app keeps them after reading them online once (migrations 056 and 057).
   const json = (file) => { const sql = readFileSync(`supabase/migrations/${file}`, "utf8"); return JSON.parse(sql.slice(sql.indexOf("{"), sql.lastIndexOf("}") + 1)); };
   const guidance = JSON.stringify({ ...json("056_nutrition_guidance.sql"), ...json("057_nutrition_targets_guidance.sql") });
@@ -1511,7 +1527,8 @@ await test("nutrition for one's sport: carbohydrates by the kilo, and food aroun
     await page.getByText("Autour de la séance", { exact: true }).scrollIntoViewIfNeeded();
     await page.screenshot({ path: join(ARTIFACTS, "sport-nutrition.png"), fullPage: false });
   } finally {
-    await page.evaluate(() => { const p = JSON.parse(localStorage.getItem("traintrack.prefs") || "{}"); p.sport = null; localStorage.setItem("traintrack.prefs", JSON.stringify(p)); localStorage.removeItem("traintrack.guidance.nutrition_guidance"); });
+    await setSportChoice(null);
+    await page.evaluate(() => localStorage.removeItem("traintrack.guidance.nutrition_guidance"));
     await store(["workouts", "delete", long]);
     await store(["bodyMetrics", "delete", metric]);
     await store(["athleteProfiles", "profile", undefined]);
@@ -1713,6 +1730,8 @@ await test("a watch file (TCX) fills a ride with its power, placed in the FTP's 
   await page.getByLabel("Minutes").blur();
   await page.getByRole("button", { name: "Crawl", exact: true }).click();
   await page.getByRole("button", { name: "25 m", exact: true }).click();
+  // The strokes per length wait under "More details" (the registry's advanced fields).
+  await page.getByText("Plus de détails").first().click();
   await page.getByLabel("Mouvements de bras").fill("16");
   await page.getByLabel("Mouvements de bras").blur();
   await page.getByText(/40 longueurs · SWOLF 46/).waitFor({ timeout: 5000 });
@@ -1893,6 +1912,63 @@ await test("an injury is declared from the Health page, not only in Settings", a
   await knee.click();
   await dialog.getByRole("button", { name: /^Genou/, pressed: false }).waitFor({ timeout: 5000 });
   await dialog.getByRole("button", { name: "Terminé" }).click();
+});
+
+await test("a ride asks distance, time and power first; the rest waits under More details", async () => {
+  const id = await page.evaluate(async (user) => {
+    const db = await new Promise((res, rej) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+    const add = (store, row) => new Promise((res, rej) => { const tx = db.transaction(store, "readwrite"); const r = tx.objectStore(store).add(row); tx.oncomplete = () => res(r.result); tx.onerror = () => rej(tx.error); });
+    const now = new Date().toISOString();
+    const d = new Date();
+    const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const wid = await add("workouts", { userId: user, uuid: `e2e-ride-${Date.now()}`, date, kind: "cardio", sport: "bike", title: "Vélo e2e", _dirty: 0, createdAt: now, updatedAt: now });
+    db.close();
+    return wid;
+  }, USER);
+  await page.goto(`${BASE}/fr/log/session?id=${id}`);
+  await page.getByLabel("Puissance moyenne").waitFor({ timeout: 10000 });
+  expect(!(await page.getByLabel("Puissance max").isVisible()), "max power shown before More details");
+  await page.getByText("Plus de détails").first().click();
+  await page.getByLabel("Puissance max").waitFor({ timeout: 5000 });
+
+  // When it started and what it was for: optional, kept with the session.
+  await page.getByRole("button", { name: "Modifier la séance" }).click();
+  await page.getByText("Plus de détails").first().click();
+  await page.getByLabel("Heure de début").fill("07:30");
+  await page.getByLabel("Objectif de la séance").fill("Travail au seuil");
+  await page.getByRole("button", { name: "Enregistrer" }).first().click();
+  const saved = await page.evaluate(async (wid) => {
+    const db = await new Promise((res) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); });
+    const w = await new Promise((res) => { const r = db.transaction("workouts").objectStore("workouts").get(wid); r.onsuccess = () => res(r.result); });
+    db.close();
+    return { time: w.startTime, goal: w.sessionGoal };
+  }, id);
+  expect(saved.time === "07:30" && saved.goal === "Travail au seuil", `saved ${JSON.stringify(saved)}`);
+});
+
+await test("the sport chosen goes with the profile, so other devices follow", async () => {
+  await page.goto(`${BASE}/fr/settings?section=sport`);
+  await page.getByRole("button", { name: "Tous les sports", exact: true }).click();
+  const stored = await page.evaluate(async () => {
+    const db = await new Promise((res) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); });
+    const all = await new Promise((res) => { const r = db.transaction("athleteProfiles").objectStore("athleteProfiles").getAll(); r.onsuccess = () => res(r.result); });
+    db.close();
+    return all.map((p) => p.favoriteSport);
+  });
+  expect(stored.length > 0 && stored.every((v) => v === "all"), `profile ${JSON.stringify(stored)}`);
+  // Another device's choice reaches this one through the profile.
+  await page.evaluate(async () => {
+    const db = await new Promise((res) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); });
+    const tx = db.transaction("athleteProfiles", "readwrite");
+    const st = tx.objectStore("athleteProfiles");
+    const all = await new Promise((res) => { const r = st.getAll(); r.onsuccess = () => res(r.result); });
+    for (const row of all) st.put({ ...row, favoriteSport: "swimming", secondSport: null });
+    await new Promise((res) => { tx.oncomplete = res; });
+    db.close();
+  });
+  await page.goto(`${BASE}/fr`);
+  await page.waitForFunction(() => JSON.parse(localStorage.getItem("traintrack.prefs") || "{}").sport === "swimming", null, { timeout: 10000 });
+  await setSportChoice(null);
 });
 
 await test("no page threw an error", async () => {

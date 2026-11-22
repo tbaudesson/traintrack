@@ -397,7 +397,11 @@
     "cancelSession": "Call off the session",
     "timerShrink": "Shrink the timer",
     "timerGrow": "Enlarge the timer",
-    "skipRest": "Skip the rest"
+    "skipRest": "Skip the rest",
+    "date": "Date",
+    "startTime": "Start time",
+    "sessionGoal": "Session goal",
+    "sessionGoalHint": "E.g. threshold work"
   },
   "progress": {
     "title": "Progress",

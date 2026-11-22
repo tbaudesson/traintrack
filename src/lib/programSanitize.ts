@@ -1,4 +1,4 @@
-import type { CardioTarget, ProgramDay, ProgramExercise, SpinBlock, SpinKind, Sport } from "@/db";
+import type { CardioTarget, ProgramDay, ProgramExercise, SpinBlock, SpinKind } from "@/db";
 import { SPORTS } from "./cardio";
 
 const SPIN_KINDS: SpinKind[] = ["warmup", "seated", "fast", "climb", "standing", "sprint", "recovery", "cooldown"];

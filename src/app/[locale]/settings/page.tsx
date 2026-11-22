@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { deleteMyAccount, updateMyDisplayName } from "@/lib/adminService";
 import { downloadJSONBackup, downloadSessionsCsv } from "@/lib/exportService";
 import { HistoryImport } from "@/components/domain/HistoryImport";
+import { saveSportChoice } from "@/hooks/useSportChoice";
 import { InjuryAreasPicker } from "@/components/domain/InjuryAreas";
 import db from "@/db";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -568,10 +569,10 @@ function SettingsContent() {
         <Section id="sport" icon={Medal} title={ta("sport")}>
           <p className="mb-2 text-xs text-muted-foreground">{ta("sportHint")}</p>
           <div className="mb-4 flex flex-wrap gap-2">
-            <Choice on={prefs.sport === null && !prefs.allSports} onClick={() => savePrefs({ sport: null, sport2: null, allSports: false })}>{ta("sport_none")}</Choice>
-            <Choice on={prefs.allSports} onClick={() => savePrefs({ sport: null, sport2: null, allSports: true })}>{ta("sport_all")}</Choice>
+            <Choice on={prefs.sport === null && !prefs.allSports} onClick={() => saveSportChoice({ sport: null, sport2: null, allSports: false })}>{ta("sport_none")}</Choice>
+            <Choice on={prefs.allSports} onClick={() => saveSportChoice({ sport: null, sport2: null, allSports: true })}>{ta("sport_all")}</Choice>
             {FAVORITE_SPORTS.map((sport) => (
-              <Choice key={sport} on={prefs.sport === sport} onClick={() => savePrefs({ sport, allSports: false, ...(prefs.sport2 === sport ? { sport2: null } : {}) })}>
+              <Choice key={sport} on={prefs.sport === sport} onClick={() => saveSportChoice({ sport, allSports: false, ...(prefs.sport2 === sport ? { sport2: null } : {}) })}>
                 {tcat(sport === "callisthenics" ? "cat_timed" : `cat_${sport}`)}
               </Choice>
             ))}
@@ -583,9 +584,9 @@ function SettingsContent() {
             <>
               <p className="mb-2 text-xs text-muted-foreground">{ta("sport2Hint")}</p>
               <div className="mb-4 flex flex-wrap gap-2">
-                <Choice on={prefs.sport2 === null} onClick={() => savePrefs({ sport2: null })}>{ta("sport_none")}</Choice>
+                <Choice on={prefs.sport2 === null} onClick={() => saveSportChoice({ sport2: null })}>{ta("sport_none")}</Choice>
                 {FAVORITE_SPORTS.filter((sport) => sport !== prefs.sport).map((sport) => (
-                  <Choice key={sport} on={prefs.sport2 === sport} onClick={() => savePrefs({ sport2: sport })}>
+                  <Choice key={sport} on={prefs.sport2 === sport} onClick={() => saveSportChoice({ sport2: sport })}>
                     {tcat(sport === "callisthenics" ? "cat_timed" : `cat_${sport}`)}
                   </Choice>
                 ))}

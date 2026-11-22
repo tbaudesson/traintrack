@@ -51,7 +51,7 @@ import { ExpressDialog } from "@/components/domain/ExpressDialog";
 import { dayMinutes } from "@/lib/express";
 import { isTestProgram, testsDue } from "@/lib/levelTests";
 import { detectSport, kindOf } from "@/lib/activityProfile";
-import { savePrefs } from "@/lib/appTheme";
+import { saveSportChoice } from "@/hooks/useSportChoice";
 import { downloadFile } from "@/lib/exportService";
 import { useCompetitions } from "@/hooks/useCompetitions";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -484,7 +484,7 @@ export default function HomePage() {
               title={t("sportHint", { sport: tcat(sportHint === "callisthenics" ? "cat_timed" : `cat_${sportHint}`) })}
               text={t("sportHintText")}
               action={t("sportHintAction")}
-              onAction={() => savePrefs({ sport: sportHint, sport2: prefs.sport === sportHint ? prefs.sport2 : prefs.sport })}
+              onAction={() => saveSportChoice({ sport: sportHint, sport2: prefs.sport === sportHint ? prefs.sport2 : prefs.sport })}
               onClose={() => closeCard(`sport-${sportHint}`)}
             /></Fragment> }] : []),
     ...(topRecommendation ? [{ key: "advice", node: (

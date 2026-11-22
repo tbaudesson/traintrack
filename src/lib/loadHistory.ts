@@ -1,4 +1,5 @@
 import type { Sport } from "@/db";
+import { SPORT_DEFS, type Discipline } from "./disciplines";
 import { sessionLoad } from "./trainingLoad";
 import { doneSessions } from "./doneSessions";
 
@@ -11,7 +12,7 @@ import { doneSessions } from "./doneSessions";
  * without RPE is an estimate. Pure.
  */
 
-export type Discipline = "strength" | "timed" | "run" | "swim" | "bike" | "hike" | "vaulting" | "other";
+export type { Discipline };
 /** Their fixed order: the colours follow the discipline, never its rank. */
 export const DISCIPLINES: Discipline[] = ["strength", "timed", "run", "swim", "bike", "hike", "vaulting", "other"];
 
@@ -21,8 +22,7 @@ type S = { workoutId: number; completed: boolean; isWarmup?: boolean; rpe?: numb
 export function disciplineOf(w: Pick<W, "kind" | "sport">): Discipline {
   if (w.kind === "interval") return "timed";
   if (w.kind !== "cardio") return "strength";
-  const s = w.sport;
-  return s === "run" || s === "swim" || s === "bike" || s === "hike" || s === "vaulting" ? s : "other";
+  return (w.sport && SPORT_DEFS[w.sport]?.discipline) || "other";
 }
 
 const mondayOf = (date: string) => {

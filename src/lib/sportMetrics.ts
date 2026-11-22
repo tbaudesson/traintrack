@@ -1,3 +1,6 @@
+import type { Sport } from "@/db";
+import { sportDef } from "./disciplines";
+
 /**
  * Figures proper to a sport, worked out from what was logged or imported.
  * Each says what it needs and gives nothing (null) without it: no guess is
@@ -58,4 +61,4 @@ export function powerLoad(durationSec: number | null | undefined, avgPowerW: num
 
 /** Cadence is counted in steps a minute on foot, turns a minute on a bike. */
 export const cadenceUnit = (sport: string | null | undefined): "spm" | "rpm" | null =>
-  sport === "run" || sport === "hike" ? "spm" : sport === "bike" ? "rpm" : null;
+  sportDef(sport as Sport | null | undefined)?.cadence ?? null;

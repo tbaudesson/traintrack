@@ -397,7 +397,11 @@
     "cancelSession": "Annuler la séance",
     "timerShrink": "Réduire le chrono",
     "timerGrow": "Agrandir le chrono",
-    "skipRest": "Passer le repos"
+    "skipRest": "Passer le repos",
+    "date": "Date",
+    "startTime": "Heure de début",
+    "sessionGoal": "Objectif de la séance",
+    "sessionGoalHint": "Ex. : travail au seuil"
   },
   "progress": {
     "title": "Progrès",

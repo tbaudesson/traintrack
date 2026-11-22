@@ -1,5 +1,6 @@
 "use client";
 
+import { saveSportChoice } from "@/hooks/useSportChoice";
 import { useMemo, useState } from "react";
 import { useProgramEquipment } from "@/hooks/useProgramEquipment";
 import { useInjuryRules } from "@/hooks/useInjuryRules";
@@ -9,7 +10,7 @@ import { saveAthleteProfile } from "@/hooks/useAthleteProfile";
 import { createProgram } from "@/hooks/usePrograms";
 import { useProgramTemplates } from "@/lib/templateService";
 import { defaultTrainingDays, GOAL_OF_SPORT, recommendPrograms } from "@/lib/onboarding";
-import { FAVORITE_SPORTS, savePrefs, type FavoriteSport } from "@/lib/appTheme";
+import { FAVORITE_SPORTS, type FavoriteSport } from "@/lib/appTheme";
 import { INJURY_AREAS } from "@/lib/injuries";
 import type { PainArea } from "@/lib/pain";
 import { CategoryIcon } from "@/components/domain/ProgramCatalog";
@@ -119,7 +120,7 @@ export default function OnboardingPage() {
         userId: undefined,
         deletedAt: null,
       });
-      if (sport) savePrefs({ sport });
+      if (sport) await saveSportChoice({ sport, allSports: false });
       // The program goes into the planning, on the days chosen.
       forgetJoined();
       if (chosen && !fromCoach) {

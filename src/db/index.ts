@@ -86,6 +86,10 @@ export interface AthleteProfile extends SyncFields {
   ftpW?: number | null;
   /** The days and minutes one can train this week (its Monday): the assistant fits the week to it (migration 073). */
   weekAvailability?: { monday: string; days: { weekday: number; minutes: number }[] } | null;
+  /** The favourite sport, kept with the profile so it follows the athlete: a sport, "all" or "none"; null if never chosen (migration 074). */
+  favoriteSport?: string | null;
+  /** The sport practised alongside (migration 074). */
+  secondSport?: string | null;
   /** Diet, foods left out and meals a day, for the meal ideas, see lib/mealCatalog. */
   mealPrefs?: MealPrefs | null;
   /** Optional daily macro targets */
@@ -301,6 +305,10 @@ export interface Workout extends SyncFields {
   swimStroke?: "free" | "breast" | "back" | "fly" | "mixed" | null;
   poolLengthM?: number | null;
   strokesPerLength?: number | null;
+  /** When it started, "HH:MM" local time (migration 074). */
+  startTime?: string | null;
+  /** Its goal in a sentence, e.g. "threshold work" (migration 074). */
+  sessionGoal?: string | null;
   createdAt: string;
   updatedAt: string;
 }

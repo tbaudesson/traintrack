@@ -1,13 +1,15 @@
 import type { CardioTarget, Program, ProgramDay, Sport, Workout } from "@/db";
+import { SPORT_DEFS } from "./disciplines";
 
-export const SPORTS: Sport[] = ["run", "hike", "swim", "bike", "row", "vaulting", "other"];
+/** The endurance sports, in the registry's order. */
+export const SPORTS = Object.keys(SPORT_DEFS) as Sport[];
 
 /** Sports measured in distance; vaulting is a time on the horse or the barrel only. */
-export const hasDistance = (sport: Sport | null | undefined) => sport !== "vaulting";
+export const hasDistance = (sport: Sport | null | undefined) => !sport || SPORT_DEFS[sport]?.distanceUnit !== null;
 export const DISTANCE_SPORTS: Sport[] = SPORTS.filter(hasDistance);
 
 /** Shorter than this and a pace is noise, not a performance. */
-const MIN_DISTANCE_FOR_PACE: Record<Sport, number> = { run: 1000, hike: 2000, swim: 100, bike: 5000, row: 500, vaulting: Infinity, other: Infinity };
+const MIN_DISTANCE_FOR_PACE = Object.fromEntries(SPORTS.map((s) => [s, SPORT_DEFS[s].minDistanceForPace])) as Record<Sport, number>;
 
 type CardioFields = Pick<Workout, "id" | "kind" | "sport" | "distanceM" | "durationSec"> & Partial<Pick<Workout, "elevationGainM" | "date">>;
 

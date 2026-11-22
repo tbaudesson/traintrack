@@ -76,6 +76,7 @@ import { useFormat } from "@/lib/format";
 /** A session being logged: shared by /log/session?id=… (works offline) and /log/[id]. */
 export function SessionLogger({ workoutId, startGuided = false }: { workoutId: number; startGuided?: boolean }) {
   const t = useTranslations("log");
+  const tp = useTranslations("programs");
   const tc = useTranslations("common");
   const to = useTranslations("onboarding");
   const tpain = useTranslations("pain");
@@ -155,6 +156,9 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
   const [editMeta, setEditMeta] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
   const [dateDraft, setDateDraft] = useState("");
+  // "More details": when it started and what it was for, optional.
+  const [timeDraft, setTimeDraft] = useState("");
+  const [goalDraft, setGoalDraft] = useState("");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const restEndsAt = useRef(0);
   const effortRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -806,6 +810,8 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
               onClick={() => {
                 setTitleDraft(workout?.title ?? "");
                 setDateDraft(workout?.date ?? "");
+                setTimeDraft(workout?.startTime ?? "");
+                setGoalDraft(workout?.sessionGoal ?? "");
                 setEditMeta((v) => !v);
               }}
             >
@@ -823,7 +829,20 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
           <Card>
             <CardContent className="space-y-2 py-3">
               <Input value={titleDraft} onChange={(e) => setTitleDraft(e.target.value)} placeholder={t("title")} />
-              <Input type="date" value={dateDraft} onChange={(e) => setDateDraft(e.target.value)} />
+              <Input type="date" value={dateDraft} onChange={(e) => setDateDraft(e.target.value)} aria-label={t("date")} />
+              <details open={!!(workout?.startTime || workout?.sessionGoal)} className="rounded-md bg-muted/40 px-2">
+                <summary className="flex min-h-11 cursor-pointer items-center text-xs font-semibold text-muted-foreground">{tp("moreDetails")}</summary>
+                <div className="grid gap-2 pb-2 sm:grid-cols-[8rem_1fr]">
+                  <label className="text-xs text-muted-foreground">
+                    {t("startTime")}
+                    <Input type="time" value={timeDraft} onChange={(e) => setTimeDraft(e.target.value)} className="mt-0.5" />
+                  </label>
+                  <label className="text-xs text-muted-foreground">
+                    {t("sessionGoal")}
+                    <Input value={goalDraft} onChange={(e) => setGoalDraft(e.target.value)} placeholder={t("sessionGoalHint")} maxLength={200} className="mt-0.5" />
+                  </label>
+                </div>
+              </details>
               <div className="flex gap-2">
                 <Button
                   size="sm"
@@ -832,6 +851,8 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
                     await updateWorkout(workoutId, {
                       title: titleDraft.trim() || undefined,
                       date: dateDraft || workout?.date,
+                      startTime: /^([01]\d|2[0-3]):[0-5]\d$/.test(timeDraft) ? timeDraft : null,
+                      sessionGoal: goalDraft.trim().slice(0, 200) || null,
                     });
                     setEditMeta(false);
                   }}

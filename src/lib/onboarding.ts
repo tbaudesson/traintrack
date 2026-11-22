@@ -5,19 +5,12 @@ import { adaptToEquipment, type ProgramEquipmentGuide } from "./programEquipment
 import type { InjuryRules } from "./injuries";
 import type { PainArea } from "./pain";
 import type { FavoriteSport } from "./appTheme";
+import { FAVORITE_DEFS } from "./disciplines";
 
 /** The goal a sport usually comes with, chosen for the athlete who can change it. */
-export const GOAL_OF_SPORT: Record<FavoriteSport, TrainingGoal> = {
-  bodybuilding: "hypertrophy",
-  strength: "strength",
-  fitness: "fat_loss",
-  callisthenics: "general_fitness",
-  running: "endurance",
-  hiking: "endurance",
-  swimming: "endurance",
-  cycling: "endurance",
-  vaulting: "general_fitness",
-};
+export const GOAL_OF_SPORT = Object.fromEntries(
+  Object.entries(FAVORITE_DEFS).map(([sport, def]) => [sport, def.goal])
+) as Record<FavoriteSport, TrainingGoal>;
 
 /** The program goal a training goal leads to. */
 export const programGoalOf = (goal: TrainingGoal): ProgramGoal => (goal === "general_fitness" ? "general" : goal);

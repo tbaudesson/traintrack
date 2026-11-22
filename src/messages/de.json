@@ -397,7 +397,11 @@
     "cancelSession": "Einheit absagen",
     "timerShrink": "Timer verkleinern",
     "timerGrow": "Timer vergrößern",
-    "skipRest": "Pause überspringen"
+    "skipRest": "Pause überspringen",
+    "date": "Datum",
+    "startTime": "Startzeit",
+    "sessionGoal": "Ziel der Einheit",
+    "sessionGoalHint": "Z. B. Schwellentraining"
   },
   "progress": {
     "title": "Fortschritt",
