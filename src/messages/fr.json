@@ -238,7 +238,11 @@
     "lastDaysAgo": "il y a {count} jours",
     "lastEffort": "effort {rpe}/10",
     "competitionIn": "{count, plural, one {Dans # jour :} other {Dans # jours :}}",
-    "competitionToday": "Aujourd'hui :"
+    "competitionToday": "Aujourd'hui :",
+    "fullPlanning": "Planning complet",
+    "weekPlanChoose": "Choisir mes jours d'entraînement",
+    "weekCount": "{done} séances faites sur {target}",
+    "detailsShort": "Détails"
   },
   "onboarding": {
     "title": "Votre profil athlète",
@@ -2337,7 +2341,10 @@
     "title": "Prendre soin d’une blessure",
     "persistent": "{area} : douleur signalée {reports} fois en {days} jours (jusqu’à {worst}/10). Faites-vous examiner par un professionnel de santé.",
     "gentleTitle": "Mouvements doux · {area}",
-    "care": "Toujours sans douleur, arrêtez si elle apparaît. Ces mouvements entretiennent la mobilité ; ils ne remplacent pas une rééducation."
+    "care": "Toujours sans douleur, arrêtez si elle apparaît. Ces mouvements sont des suggestions générales, à valider avec un professionnel de santé ; ils ne remplacent pas une rééducation.",
+    "sectionTitle": "Blessures et restrictions",
+    "none": "Aucune blessure en cours.",
+    "restrictionsLink": "{count, plural, =0 {Mes restrictions (aucune)} one {Mes restrictions (#)} other {Mes restrictions (#)}}"
   },
   "injuryGuidance": {
     "title": "Repères du suivi des blessures",
@@ -2925,5 +2932,24 @@
     "viewOnStrava": "Voir sur Strava",
     "sectionTitle": "Strava",
     "unavailable": "Strava n'est pas disponible pour l'instant : pas encore configuré sur ce serveur, ou injoignable."
+  },
+  "homeZones": {
+    "alerts": "À savoir",
+    "moreAlerts": "{count, plural, one {+ # autre} other {+ # autres}}",
+    "painTitle": "Douleur répétée · {area}",
+    "painText": "Signalée {reports} fois en {days} jours : faites-vous examiner",
+    "injuryTitle": "Blessure en cours · {areas}",
+    "injurySince": "depuis le {date} · exercices concernés signalés",
+    "returnTitle": "Reprise progressive · {area}",
+    "returnText": "semaine {week} sur {weeks}",
+    "see": "Voir",
+    "progress": "Progression",
+    "performance": "Performance",
+    "moreOptions": "Autres options de séance",
+    "formLowTitle": "Forme basse aujourd'hui",
+    "formLowText": "La séance démarre plus légère",
+    "loadTitle": "Charge en hausse trop rapide",
+    "loadText": "Allégez ces prochains jours",
+    "competitionSoon": "{count, plural, =0 {Compétition aujourd'hui} one {Compétition dans # jour} other {Compétition dans # jours}}"
   }
 }

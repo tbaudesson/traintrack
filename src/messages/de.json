@@ -238,7 +238,11 @@
     "lastDaysAgo": "vor {count} Tagen",
     "lastEffort": "Anstrengung {rpe}/10",
     "competitionIn": "{count, plural, one {In # Tag:} other {In # Tagen:}}",
-    "competitionToday": "Heute:"
+    "competitionToday": "Heute:",
+    "fullPlanning": "Ganze Planung",
+    "weekPlanChoose": "Meine Trainingstage wählen",
+    "weekCount": "{done} von {target} Einheiten erledigt",
+    "detailsShort": "Details"
   },
   "onboarding": {
     "title": "Dein Athletenprofil",
@@ -2337,7 +2341,10 @@
     "title": "Eine Verletzung pflegen",
     "persistent": "{area}: Schmerz {reports}-mal in {days} Tagen gemeldet (bis {worst}/10). Lass dich von einer medizinischen Fachperson untersuchen.",
     "gentleTitle": "Sanfte Bewegungen · {area}",
-    "care": "Immer schmerzfrei, hör auf, wenn Schmerz auftritt. Diese Bewegungen erhalten die Beweglichkeit; sie ersetzen keine Reha."
+    "care": "Immer schmerzfrei; hör auf, wenn Schmerz auftritt. Diese Bewegungen sind allgemeine Vorschläge, mit einer Gesundheitsfachkraft abzuklären; sie ersetzen keine Reha.",
+    "sectionTitle": "Verletzungen und Einschränkungen",
+    "none": "Keine laufende Verletzung.",
+    "restrictionsLink": "{count, plural, =0 {Meine Einschränkungen (keine)} one {Meine Einschränkungen (#)} other {Meine Einschränkungen (#)}}"
   },
   "injuryGuidance": {
     "title": "Richtwerte für die Verletzungsbegleitung",
@@ -2925,5 +2932,24 @@
     "viewOnStrava": "Auf Strava ansehen",
     "sectionTitle": "Strava",
     "unavailable": "Strava ist gerade nicht verfügbar: auf diesem Server noch nicht eingerichtet oder nicht erreichbar."
+  },
+  "homeZones": {
+    "alerts": "Wichtig",
+    "moreAlerts": "{count, plural, one {+ # weitere} other {+ # weitere}}",
+    "painTitle": "Wiederkehrender Schmerz · {area}",
+    "painText": "{reports}-mal in {days} Tagen gemeldet: lass es untersuchen",
+    "injuryTitle": "Verletzung · {areas}",
+    "injurySince": "seit {date} · betroffene Übungen markiert",
+    "returnTitle": "Schrittweise Rückkehr · {area}",
+    "returnText": "Woche {week} von {weeks}",
+    "see": "Ansehen",
+    "progress": "Fortschritt",
+    "performance": "Leistung",
+    "moreOptions": "Weitere Optionen für die Einheit",
+    "formLowTitle": "Heute schwache Form",
+    "formLowText": "Die Einheit beginnt leichter",
+    "loadTitle": "Belastung steigt zu schnell",
+    "loadText": "Die nächsten Tage leichter trainieren",
+    "competitionSoon": "{count, plural, =0 {Wettkampf heute} one {Wettkampf in # Tag} other {Wettkampf in # Tagen}}"
   }
 }

@@ -46,9 +46,12 @@ export function HistoryView({ workouts, sets, planned, today }: { workouts: Work
 
   useEffect(() => {
     try {
-      const kept = localStorage.getItem(VIEW_KEY);
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- reads the device's storage, only on the client
+      // Opened from the home screen's "Full planning": the calendar, scrolled to.
+      const asked = new URLSearchParams(window.location.search).get("view");
+      const kept = asked ?? localStorage.getItem(VIEW_KEY);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reads the address and the device's storage, only on the client
       if (kept === "calendar" || kept === "year") setView(kept);
+      if (asked) requestAnimationFrame(() => document.getElementById("history-title")?.scrollIntoView({ block: "start" }));
     } catch {
       // No storage: the list.
     }

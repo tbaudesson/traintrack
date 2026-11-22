@@ -47,6 +47,13 @@ const setSportChoice = (sport) => page.evaluate(async (v) => {
   db.close();
 }, sport);
 
+/** The session card's other options, behind "⋯": change the session, the short version. */
+const sessionOption = async (name) => {
+  await page.getByRole("button", { name: "Autres options de séance" }).click();
+  await page.getByRole("menuitem", { name }).click();
+};
+const heroCard = () => page.locator("section.t-hero");
+
 /** With E2E_ONLY=<regex>, only the matching paths run (the setup always does). */
 const only = process.env.E2E_ONLY ? new RegExp(process.env.E2E_ONLY) : null;
 async function test(name, fn) {
@@ -259,7 +266,7 @@ await test("the home screen opens offline, with the offline banner", async () =>
 });
 
 await test("a ready-made program is added from the home screen", async () => {
-  await page.getByText("Changer de séance ou de programme").click();
+  await sessionOption("Changer de séance ou de programme");
   // Found by typing a few letters, accents left out, rather than scrolling a long list.
   await page.getByRole("dialog").getByPlaceholder("Chercher un programme ou une séance").fill("full body deb");
   await page.getByRole("dialog").getByText("Full Body — Débutant").first().click();
@@ -286,7 +293,8 @@ await test("the weeks ahead go to the phone's calendar", async () => {
 
 await test("a sharp rise of the training load is flagged on the home screen", async () => {
   await page.goto(`${BASE}/fr`);
-  const card = page.locator("section", { hasText: "Charge d’entraînement" });
+  // One line among what is worth knowing; the chart and its explanation in Performance.
+  const card = page.getByRole("link", { name: /Charge en hausse trop rapide/ });
   await card.getByText(/Hausse trop brutale|Hausse marquée/).waitFor({ timeout: 10000 });
   await card.scrollIntoViewIfNeeded();
   await snap("load-card");
@@ -300,7 +308,7 @@ await test("a sharp rise of the training load is flagged on the home screen", as
 
 await test("pressed for time, the session of the day has a short version", async () => {
   await page.goto(`${BASE}/fr`);
-  await page.getByRole("button", { name: /Pas le temps \? Version courte/ }).click();
+  await sessionOption(/Pas le temps \? Version courte/);
   const dialog = page.getByRole("dialog");
   await dialog.getByRole("heading", { name: "Séance express" }).waitFor({ timeout: 5000 });
   const times = dialog.getByRole("group", { name: "Temps disponible" }).getByRole("button");
@@ -435,7 +443,7 @@ await test("a program kept as a favourite, then archived out of the way", async 
   await page.getByText(/Archivés \(1\)/).waitFor({ timeout: 10000 });
   // Out of the session picker too.
   await page.goto(`${BASE}/fr`);
-  await page.getByText("Changer de séance ou de programme").click();
+  await sessionOption("Changer de séance ou de programme");
   const picker = page.getByRole("dialog");
   await picker.getByPlaceholder("Chercher un programme ou une séance").fill("pompes e2e");
   // The copy, not archived, is there; the archived original is not.
@@ -474,7 +482,7 @@ await test("the history shows as a calendar of the month, a day opening its sess
 
 await test("the session picker narrows the ready-made programs by sport, a few at a time", async () => {
   await page.goto(`${BASE}/fr`);
-  await page.getByText("Changer de séance ou de programme").click();
+  await sessionOption("Changer de séance ou de programme");
   const dialog = page.getByRole("dialog");
   const readyMade = dialog.locator("section", { has: page.locator("#picker-ready-made") });
   await readyMade.getByRole("button", { name: "Tous", exact: true }).click();
@@ -623,12 +631,12 @@ await test("two programs planned on their own days show together in the week and
   await page.getByRole("heading", { name: "Mon planning", exact: true }).waitFor({ timeout: 5000 });
   // Home: the session card names its day, and offers each session of that day.
   await page.goto(`${BASE}/fr`);
-  const hero = page.locator("section", { hasText: "Changer de séance ou de programme" });
+  const hero = heroCard();
   await hero.getByText(/Séance du jour|Prochaine séance · /).first().waitFor({ timeout: 10000 });
   // Both plans loaded first: the choices of the day are only counted once the week shows them.
-  const planned = page.locator("section", { hasText: "prochaines semaines à mon agenda" });
-  await planned.getByText("· Full Body — Débutant").first().waitFor({ timeout: 10000 });
-  await planned.getByText("· program fr").first().waitFor({ timeout: 10000 });
+  const planned = page.locator("section", { has: page.locator("#week-title") });
+  await planned.locator('[aria-label*=": prévu"]').first().waitFor({ timeout: 10000 });
+  await page.waitForTimeout(500);
   const choices = hero.getByRole("group", { name: "Séances prévues ce jour-là" }).getByRole("button");
   if ((await choices.count()) > 1) {
     const second = choices.nth(1);
@@ -637,10 +645,9 @@ await test("two programs planned on their own days show together in the week and
     const [name] = (await second.innerText()).replace("✓ ", "").split(" · ");
     await hero.getByRole("heading", { name, exact: true }).waitFor({ timeout: 5000 });
   }
-  // The week lists the sessions of both, each with its program.
-  const week = page.locator("section", { hasText: "prochaines semaines à mon agenda" });
-  await week.getByText("· Full Body — Débutant").first().waitFor({ timeout: 10000 });
-  await week.getByText("· program fr").first().waitFor({ timeout: 10000 });
+  // The week holds the sessions of both; the calendar file names each program.
+  const week = page.locator("section", { has: page.locator("#week-title") });
+  await week.locator('[aria-label*=": prévu"]').first().waitFor({ timeout: 10000 });
   await snap("week-planning");
   const exportButton = week.getByRole("button", { name: /Ajouter les 8 prochaines semaines/ });
   // Centred, away from the menu button fixed at the bottom of the screen.
@@ -694,8 +701,8 @@ await test("this week's time: the assistant fits the planned sessions to it, app
 
 await test("a session of the week moves to another day, and back", async () => {
   await page.goto(`${BASE}/fr`);
-  const week = page.locator("section", { hasText: "prochaines semaines à mon agenda" });
-  await week.getByText("Touchez un jour pour déplacer ou rattraper sa séance.").waitFor({ timeout: 10000 });
+  const week = page.locator("section", { has: page.locator("#week-title") });
+  await week.locator("button[data-date]").first().waitFor({ timeout: 10000 });
   // The week fills in as the plans load: wait until its first day holds still, then click that very day.
   const firstDay = () => week.locator("button[data-date]").first().getAttribute("data-date");
   let from = await firstDay();
@@ -773,9 +780,12 @@ await test("sign-up: sport, injuries, a program of that sport put in the plannin
   await snap("onboarding-last-step");
   await page.getByRole("button", { name: "Terminer la configuration" }).click();
   await page.waitForURL(/\/fr\/?$/, { timeout: 10000 });
-  // The program is in the planning, and the week names it.
-  await page.locator("section", { hasText: "prochaines semaines à mon agenda" }).getByText(`· ${name}`).first().waitFor({ timeout: 10000 });
-  await page.getByRole("heading", { name: "Vos premiers pas" }).waitFor({ timeout: 5000 });
+  // The program is in the planning: its page shows the days it is trained on.
+  await page.goto(`${BASE}/fr/programs`);
+  await page.getByText(name, { exact: true }).first().click();
+  await page.getByRole("heading", { name: "Mon planning", exact: true }).waitFor({ timeout: 10000 });
+  await page.goto(`${BASE}/fr`);
+  await page.getByRole("heading", { name: "Vos premiers pas" }).waitFor({ timeout: 10000 });
   // One line: the next step only, the list on demand.
   const steps = page.locator("section", { has: page.getByRole("heading", { name: "Vos premiers pas" }) });
   await steps.getByText(/^Suivant : /).waitFor({ timeout: 5000 });
@@ -809,7 +819,7 @@ await test("level tests are set up, started, and wait for a first result", async
   expect(!(await page.getByRole("button", { name: "Ouvrir le menu" }).count()), "the menu wheel is still there during the session");
   // The tests are never put forward as the session of the day.
   await page.goto(`${BASE}/fr`);
-  const hero = page.locator("section", { hasText: "Changer de séance ou de programme" });
+  const hero = heroCard();
   await hero.getByRole("heading").first().waitFor({ timeout: 10000 });
   expect(!(await hero.getByText("Tests de niveau").count()), "the tests became the session of the day");
 });
@@ -844,14 +854,14 @@ await test("running paces come from a race time, and an interval session plays a
 await test("the home screen follows the sport practised, and offers it when another is chosen", async () => {
   // Mostly runs lately: the guided intervals among the sessions.
   await page.goto(`${BASE}/fr`);
-  const overview = page.locator("section", { hasText: "Vue d’ensemble" }).or(page.locator("section", { hasText: "Vue d'ensemble" }));
+  const overview = page.locator("section", { has: page.locator("#home-progress") });
   // The week in one line: kilos of loaded sets, or the activities done; never "0 kg" or "-100 %".
   const line = /Volume [\d\s\u202f]+ kg cette semaine|\d+ activités? cette semaine|Aucune activité cette semaine/;
   await overview.getByText(line).first().waitFor({ timeout: 10000 }).catch(async () => {
     throw new Error(`no week line in the overview: ${(await overview.first().innerText().catch(() => "?")).replace(/\n/g, " | ")}`);
   });
   expect(!/(^|\s)0 kg|-100 ?%/.test(await overview.first().innerText()), "0 kg or -100 % in the overview");
-  await page.getByText("Changer de séance ou de programme").click();
+  await sessionOption("Changer de séance ou de programme");
   await page.getByRole("dialog").getByText("Fractionnés guidés").waitFor({ timeout: 5000 }).catch(() => {
     throw new Error("no guided intervals among the sessions");
   });
@@ -863,7 +873,7 @@ await test("the home screen follows the sport practised, and offers it when anot
   await page.goto(`${BASE}/fr`);
 
   // The load rising too fast comes first; the other notes are folded under "To look at".
-  await page.getByText("Charge d’entraînement").first().waitFor({ timeout: 10000 });
+  await page.getByRole("link", { name: /Charge en hausse trop rapide/ }).waitFor({ timeout: 10000 });
   const more = page.locator("details", { hasText: "À voir aussi" });
   await more.locator("summary").click();
   await page.getByText("Vous pratiquez surtout : Course à pied ?").waitFor({ timeout: 10000 });
@@ -877,8 +887,8 @@ await test("the home screen follows the sport practised, and offers it when anot
   await page.getByRole("button", { name: "Tous les sports", exact: true }).click();
   await page.getByText("Rien n’est mis en avant").waitFor({ timeout: 5000 });
   await page.goto(`${BASE}/fr`);
-  await page.locator("section", { hasText: "Vue d'ensemble" }).getByText(line).first().waitFor({ timeout: 10000 });
-  await page.getByText("Changer de séance ou de programme").click();
+  await page.locator("section", { has: page.locator("#home-progress") }).getByText(line).first().waitFor({ timeout: 10000 });
+  await sessionOption("Changer de séance ou de programme");
   const rows = page.getByRole("dialog").locator("section", { hasText: "Sans programme" });
   await rows.getByText("Séance libre").waitFor({ timeout: 5000 });
   expect(!(await rows.getByText("Fractionnés guidés").count()), "the guided intervals are put forward in all-sports mode");
@@ -1123,7 +1133,7 @@ await test("Performance opens on what stands out, with its dates and evidence", 
   await fold.getByText("Charge d’entraînement").first().waitFor({ timeout: 5000 });
   // The home screen reads the same four weeks: whatever it says, Performance says too.
   await page.goto(`${BASE}/fr`);
-  await page.getByRole("button", { name: "Changer de séance ou de programme" }).waitFor({ timeout: 10000 });
+  await page.getByRole("button", { name: "Autres options de séance" }).waitFor({ timeout: 10000 });
   const more = page.locator("details", { hasText: "À voir aussi" });
   await more.first().waitFor({ timeout: 5000 }).catch(() => {});
   if (await more.count()) await more.locator("summary").click();
@@ -1597,11 +1607,17 @@ await test("an injured knee gets gentle moves on the home screen, and a pain com
   await setProfile({ injuryAreas: [{ area: "knee", since: "2026-11-01" }] });
   try {
     await page.goto(`${BASE}/fr`);
-    // Always open, never folded with the other notes.
+    // On the home screen: one line, never folded with the other notes, leading to the care.
+    const line = page.getByRole("link", { name: /Blessure en cours · Genou/ });
+    await line.waitFor({ timeout: 10000 });
+    expect(!(await page.locator("details", { hasText: "À voir aussi" }).getByRole("link", { name: /Blessure en cours/ }).count()), "the injury is folded with the notes");
+    expect(!(await page.getByText("Mouvements doux · Genou").count()), "the gentle moves are on the home screen");
+    await line.click();
+    await page.waitForURL(/\/fr\/health/, { timeout: 10000 });
     const card = page.locator("section", { hasText: "Prendre soin d’une blessure" });
     await card.getByText("Mouvements doux · Genou").waitFor({ timeout: 10000 });
     await card.getByText("Ponts fessiers").waitFor({ timeout: 5000 });
-    expect(!(await page.locator("details", { hasText: "À voir aussi" }).locator("section", { hasText: "Prendre soin d’une blessure" }).count()), "the injury card is folded with the notes");
+    await card.getByText(/à valider avec un professionnel de santé/).waitFor({ timeout: 5000 });
     // A move to avoid for a knee is never offered.
     expect(!(await card.getByText("Étirement des quadriceps debout").count()), "a move to avoid for the knee is offered");
   } finally {
@@ -2012,6 +2028,7 @@ await test("a goal of any sport: 10 km under 50 min, followed in Progress and on
   await page.reload();
   await page.getByRole("link", { name: /Course à pied : 10 km · 50:00.*Atteint le/ }).waitFor({ timeout: 10000 });
   // The last session done, one line.
+  await page.locator("details", { hasText: "À voir aussi" }).locator("summary").click();
   await page.getByText(/Dernière séance :/).waitFor({ timeout: 5000 });
   // Cleaned up: the goal deleted from Progress.
   await page.goto(`${BASE}/fr/progress`);
@@ -2158,6 +2175,51 @@ await test("Strava: the section in Settings, a declined return, and an imported 
   const link = page.getByRole("link", { name: "Voir sur Strava" });
   await link.waitFor({ timeout: 10000 });
   expect((await link.getAttribute("href")) === "https://www.strava.com/activities/123456", "wrong Strava link");
+});
+
+await test("the home screen: the session, what matters, the week, the progress; the rest folded", async () => {
+  await page.goto(`${BASE}/fr`);
+  await heroCard().getByRole("button", { name: /Démarrer|Continuer/ }).waitFor({ timeout: 10000 });
+  await page.locator("#week-title").waitFor({ timeout: 5000 });
+  await page.getByRole("link", { name: "Planning complet" }).waitFor({ timeout: 5000 });
+  // No quick-access tiles, no injury care, no load chart on the home screen: their places are elsewhere.
+  expect(!(await page.getByText("Mouvements doux").count()), "the injury care is on the home screen");
+  expect(!(await page.getByRole("img", { name: /Charge d’entraînement par semaine/ }).count()), "a load chart is on the home screen");
+  // The other ways to train today, behind "⋯".
+  await page.getByRole("button", { name: "Autres options de séance" }).click();
+  await page.getByRole("menuitem", { name: "Changer de séance ou de programme" }).waitFor({ timeout: 5000 });
+  await page.keyboard.press("Escape");
+  await page.getByRole("menuitem").first().waitFor({ state: "detached", timeout: 5000 });
+  // Nothing wider than the phone.
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), "the home screen is wider than the phone");
+  // The full planning opens on its calendar.
+  const full = page.getByRole("link", { name: "Planning complet" });
+  await full.evaluate((el) => el.scrollIntoView({ block: "center" }));
+  await full.click();
+  await page.waitForURL(/\/fr\/log\?view=calendar/, { timeout: 10000 });
+  await page.getByRole("grid").first().waitFor({ timeout: 10000 });
+  // Each style, light and dark, on a phone and on a large screen (with E2E_SHOTS).
+  if (process.env.E2E_SHOTS) {
+    for (const style of ["classic", "dynamic", "soft", "contrast"]) {
+      for (const mode of ["light", "dark"]) {
+        await page.evaluate(({ style, mode }) => {
+          const p = JSON.parse(localStorage.getItem("traintrack.prefs") || "{}");
+          p.style = style;
+          localStorage.setItem("traintrack.prefs", JSON.stringify(p));
+          localStorage.setItem("traintrack-theme", mode);
+        }, { style, mode });
+        for (const [w, h, size] of [[390, 844, "phone"], [1280, 900, "desktop"]]) {
+          await page.setViewportSize({ width: w, height: h });
+          await page.goto(`${BASE}/fr`);
+          await heroCard().waitFor({ timeout: 10000 });
+          await page.waitForTimeout(400);
+          await page.screenshot({ path: join(ARTIFACTS, `home-${style}-${mode}-${size}.png`), fullPage: true });
+        }
+      }
+    }
+    await page.evaluate(() => { const p = JSON.parse(localStorage.getItem("traintrack.prefs") || "{}"); p.style = "classic"; localStorage.setItem("traintrack.prefs", JSON.stringify(p)); localStorage.setItem("traintrack-theme", "light"); });
+    await page.setViewportSize({ width: 390, height: 844 });
+  }
 });
 
 await test("no page threw an error", async () => {

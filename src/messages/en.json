@@ -238,7 +238,11 @@
     "lastDaysAgo": "{count} days ago",
     "lastEffort": "effort {rpe}/10",
     "competitionIn": "{count, plural, one {In # day:} other {In # days:}}",
-    "competitionToday": "Today:"
+    "competitionToday": "Today:",
+    "fullPlanning": "Full planning",
+    "weekPlanChoose": "Choose my training days",
+    "weekCount": "{done} sessions done of {target}",
+    "detailsShort": "Details"
   },
   "onboarding": {
     "title": "Your athlete profile",
@@ -2337,7 +2341,10 @@
     "title": "Looking after an injury",
     "persistent": "{area}: pain reported {reports} times in {days} days (up to {worst}/10). Have it checked by a health professional.",
     "gentleTitle": "Gentle moves · {area}",
-    "care": "Always without pain, stop if it comes. These moves keep you moving; they do not replace rehabilitation."
+    "care": "Always without pain; stop if it appears. These moves are general suggestions, to be checked with a health professional; they do not replace rehabilitation.",
+    "sectionTitle": "Injuries and restrictions",
+    "none": "No injury in progress.",
+    "restrictionsLink": "{count, plural, =0 {My restrictions (none)} one {My restrictions (#)} other {My restrictions (#)}}"
   },
   "injuryGuidance": {
     "title": "Injury follow-up references",
@@ -2925,5 +2932,24 @@
     "viewOnStrava": "View on Strava",
     "sectionTitle": "Strava",
     "unavailable": "Strava is not available for now: not set up on this server yet, or unreachable."
+  },
+  "homeZones": {
+    "alerts": "Worth knowing",
+    "moreAlerts": "{count, plural, one {+ # other} other {+ # others}}",
+    "painTitle": "Recurring pain · {area}",
+    "painText": "Reported {reports} times in {days} days: get it checked",
+    "injuryTitle": "Injury in progress · {areas}",
+    "injurySince": "since {date} · exercises concerned flagged",
+    "returnTitle": "Gradual return · {area}",
+    "returnText": "week {week} of {weeks}",
+    "see": "See",
+    "progress": "Progress",
+    "performance": "Performance",
+    "moreOptions": "Other session options",
+    "formLowTitle": "Low form today",
+    "formLowText": "The session starts lighter",
+    "loadTitle": "Load rising too fast",
+    "loadText": "Go lighter the next few days",
+    "competitionSoon": "{count, plural, =0 {Competition today} one {Competition in # day} other {Competition in # days}}"
   }
 }

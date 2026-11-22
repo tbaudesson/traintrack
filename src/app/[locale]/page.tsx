@@ -1,8 +1,10 @@
 "use client";
 
-import { CalendarClock } from "lucide-react";
+import { Activity, Award, CalendarClock, History } from "lucide-react";
 import { sessionConflicts } from "@/lib/conflicts";
-import { HomeAtAGlance } from "@/components/domain/HomeAtAGlance";
+import { AlertLine, HomeAlerts, HomeProgress, SessionMenu, useInjurySummary } from "@/components/domain/HomeZones";
+import { useGoals } from "@/hooks/useGoals";
+import { useBodyMetrics } from "@/hooks/useBodyMetrics";
 import { sessionHref } from "@/lib/routes";
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
@@ -26,12 +28,8 @@ import { homePicture } from "@/lib/appTheme";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
 import { usePainReports } from "@/hooks/usePain";
 import { useInjuryGuidance } from "@/hooks/useInjuryGuidance";
-import { InjuryCareCard } from "@/components/domain/InjuryCareCard";
-import { persistentPains } from "@/lib/injuryGuidance";
-import { activeInjuries } from "@/lib/injuries";
 import { deloadAdvice } from "@/lib/deload";
 import { trainingLoad } from "@/lib/trainingLoad";
-import { TrainingLoadCard } from "@/components/domain/TrainingLoadCard";
 import { FirstSteps } from "@/components/domain/FirstSteps";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useTeams } from "@/hooks/useTeams";
@@ -43,8 +41,6 @@ import { weekSummary } from "@/lib/weekSummary";
 import { doneSessions } from "@/lib/doneSessions";
 import { SportPicker } from "@/components/domain/SportPicker";
 import { WeekStrip } from "@/components/domain/WeekStrip";
-import { QuickAccessTiles } from "@/components/domain/QuickAccessTiles";
-import { sumMacros, useNutritionForDate } from "@/hooks/useNutrition";
 import { mondayOfDate, plannedSessions, upcomingSessions, weekPlan } from "@/lib/weekPlan";
 import { planCalendar } from "@/lib/ics";
 import { scheduleSessions, scheduleWeek, sessionsPerWeek } from "@/lib/schedule";
@@ -69,7 +65,7 @@ import { HomeInsight } from "@/components/domain/InsightCard";
 import type { ReactNode } from "react";
 import {
   type LucideIcon,
-  ArrowRight, Check, ListChecks, MessageSquare, Sparkles, Bell, ChevronRight, ClipboardList, HeartPulse, Loader2, Settings, Target, TrendingUp,
+  ArrowRight, Check, ListChecks, MessageSquare, Sparkles, Bell, ChevronRight, ClipboardList, HeartPulse, Loader2, Settings,
   Timer,
   PartyPopper,
   Gauge,
@@ -159,6 +155,8 @@ export default function HomePage() {
   const trec = useTranslations("recommend");
   const trcv = useTranslations("recovery");
   const tex = useTranslations("exercises");
+  const tz = useTranslations("homeZones");
+  const tload = useTranslations("load");
   const tm = useTranslations("more");
   const tcat = useTranslations("catalog");
   const router = useRouter();
@@ -205,7 +203,7 @@ export default function HomePage() {
   const todayReadiness = useTodayReadiness();
   const recommendations = useRecommendations();
   const { hasFeature } = useFeatureAccess();
-  const { memberships, myGroups } = useTeams();
+  const { memberships } = useTeams();
   const [now] = useState(() => Date.now());
   const [choosing, setChoosing] = useState(false);
   const [expressOpen, setExpressOpen] = useState(false);
@@ -232,6 +230,10 @@ export default function HomePage() {
   const hasTeamInvite = memberships.some((m) => m.status === "pending");
   const name = account?.display_name ?? user?.email?.split("@")[0] ?? "";
   const readyScore = todayReadiness ? readinessScore(todayReadiness) : null;
+  // The main goal (or the first), and what the goals read: the weigh-ins.
+  const goals = useGoals();
+  const mainGoal = goals.find((g) => g.priority === 1) ?? goals[0];
+  const bodyMetrics = useBodyMetrics();
 
   // The programs in the planning (given days), all shown together in the week,
   // and the session of the day they lead to.
@@ -276,8 +278,6 @@ export default function HomePage() {
   );
   // The load: on the home screen only when it rises too fast.
   const load = useMemo(() => trainingLoad({ today, workouts, sets }), [today, workouts, sets]);
-  // Dynamic's quick access shows today's calories beside the other numbers.
-  const nutritionToday = useNutritionForDate(today);
 
   // The week: done, missed, and the next sessions placed on the training days ahead.
   // With a planning, the week shown can be moved; by default the next one
@@ -436,11 +436,8 @@ export default function HomePage() {
   const progressInsight = insightOf(["records", "volumeUp", "volumeDown", "distanceUp", "distanceDown", "stagnation", "regularity"]);
   const steadyInsight = insightOf(["steady"]);
   const insightNote = (key: string, i: NonNullable<typeof painInsight>) => ({ key, node: <HomeInsight key={key} insight={i} exerciseName={exerciseName} /> });
-  // An injury in progress, or a pain coming back: health first, always open, never folded with the notes.
-  const injuryCare =
-    injuryG && (activeInjuries(profile?.injuryAreas ?? []).length > 0 || persistentPains(injuryG, pains, today).length > 0) ? (
-      <InjuryCareCard guidance={injuryG} injuries={profile?.injuryAreas ?? []} pains={pains} today={today} />
-    ) : null;
+  // An injury in progress, or a pain coming back: one line on the home screen, the care on the Health page.
+  const injuryLine = useInjurySummary(injuryG, profile?.injuryAreas ?? [], pains, today);
   // Two planned sessions working the same muscles hard less than 48 h apart, this week and next.
   const conflict = useMemo(() => {
     if (!planned.length) return null;
@@ -449,12 +446,45 @@ export default function HomePage() {
   }, [planned, workouts, today, now, exercises]);
   const conflictKey = conflict ? `conflict-${conflict.first.date}-${conflict.second.date}` : "";
 
-  const notes: { key: string; node: ReactNode }[] = [
-    ...(load && (load.zone === "caution" || load.zone === "danger") ? [{ key: "load", node: <TrainingLoadCard key="load" load={load} /> }] : []),
-    ...(lowForm !== null && lowForm < LOW_READINESS ? [{ key: "form", node: <Fragment key="form"><ReadinessBanner readiness={lowForm} keptNormal={lighterToday.keptNormal} onKeep={lighterToday.setKeptNormal} /></Fragment> }] : []),
+  // The next competition within a week: worth knowing now; later ones are on their page.
+  const competitions = useCompetitions();
+  const nextCompetition = competitions.filter((c) => !c.deletedAt && c.date >= today).sort((a, b) => a.date.localeCompare(b.date))[0];
+  const competitionIn = nextCompetition ? Math.round((Date.parse(`${nextCompetition.date}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000) : null;
+  // The last session done, for the folded notes.
+  const lastDone = useMemo(
+    () => doneSessions(workouts.filter((w) => w.date <= today), sets).sort((a, b) => b.date.localeCompare(a.date) || (b.id ?? 0) - (a.id ?? 0))[0],
+    [workouts, sets, today]
+  );
+
+  // "Worth knowing": what matters now, most pressing first; the first two show, the others behind "+ n".
+  const alerts: { key: string; node: ReactNode }[] = [
+    ...(injuryLine ? [{ key: "injury", node: <AlertLine icon={injuryLine.icon} tone={injuryLine.tone} title={injuryLine.title} text={injuryLine.text} href="/health#injuries" action={tz("see")} /> }] : []),
+    ...(lowForm !== null && lowForm < LOW_READINESS ? [{ key: "form", node: <ReadinessBanner readiness={lowForm} keptNormal={lighterToday.keptNormal} onKeep={lighterToday.setKeptNormal} /> }] : []),
+    ...(load && (load.zone === "caution" || load.zone === "danger")
+      ? [{ key: "load", node: <AlertLine icon={Activity} tone={load.zone === "danger" ? "danger" : "warn"} title={tz("loadTitle")} text={`${tload(`zone_${load.zone}`)} · ${tz("loadText")}`} href="/progress#chart-load" action={tz("see")} /> }]
+      : []),
     ...(painInsight ? [insightNote("insight-pain", painInsight)] : []),
-    ...(commentsNode ? [{ key: "comments", node: <Fragment key="comments">{commentsNode}</Fragment> }] : []),
-    ...(inviteNode ? [{ key: "invite", node: <Fragment key="invite">{inviteNode}</Fragment> }] : []),
+    ...(commentsNode ? [{ key: "comments", node: commentsNode }] : []),
+    ...(inviteNode ? [{ key: "invite", node: inviteNode }] : []),
+    ...(conflict && !closedCards.includes(conflictKey)
+      ? [{ key: "conflict", node: (
+          <AlertLine
+            icon={CalendarClock}
+            tone="warn"
+            title={trcv("conflictTitle")}
+            text={`${conflict.first.label} (${short(conflict.first.date)}) · ${conflict.second.label} (${short(conflict.second.date)}) · ${conflict.groups.map((g) => tex(`mg_${g}`).toLowerCase()).join(", ")}`}
+            href="/assistant"
+            action={tz("see")}
+          />
+        ) }]
+      : []),
+    ...(nextCompetition && competitionIn !== null && competitionIn <= 7
+      ? [{ key: "competition", node: <AlertLine icon={Award} title={tz("competitionSoon", { count: competitionIn })} text={`${nextCompetition.event} · ${short(nextCompetition.date)}`} href="/competitions" action={tz("see")} /> }]
+      : []),
+  ];
+
+  // "Also to look at", folded: the rest, each one opening its own screen.
+  const later: { key: string; node: ReactNode }[] = [
     ...(deloadShown ? [{ key: "deload", node: <DeloadCard key="deload" advice={deload} monday={thisMonday} active={deloading} hasProfile={!!profile} /> }] : []),
     ...(finishedProgram ? [{ key: "review", node: <Fragment key="review"><HomeNote
               icon={PartyPopper}
@@ -490,20 +520,8 @@ export default function HomePage() {
               action={t("testsDueAction")}
               onClose={() => closeCard(`tests-${tests.next}`)}
             /></Fragment> }] : []),
-    ...(progressInsight ? [insightNote("insight", progressInsight)] : []),
     ...(readinessNode && readyScore == null ? [{ key: "readiness", node: <Fragment key="readiness">{readinessNode}</Fragment> }] : []),
-    ...(conflict && !closedCards.includes(conflictKey) ? [{ key: "conflict", node: <Fragment key="conflict"><HomeNote
-              icon={CalendarClock}
-              title={trcv("conflictTitle")}
-              action={trcv("conflictAction")}
-              href="/assistant"
-              text={trcv("conflict", {
-                first: `${conflict.first.label} (${short(conflict.first.date)})`,
-                second: `${conflict.second.label} (${short(conflict.second.date)})`,
-                groups: conflict.groups.map((g) => tex(`mg_${g}`).toLowerCase()).join(", "),
-              })}
-              onClose={() => closeCard(conflictKey)}
-            /></Fragment> }] : []),
+    ...(progressInsight ? [insightNote("insight", progressInsight)] : []),
     ...(sportHint ? [{ key: "sport", node: <Fragment key="sport"><HomeNote
               icon={Sparkles}
               title={t("sportHint", { sport: tcat(sportHint === "callisthenics" ? "cat_timed" : `cat_${sportHint}`) })}
@@ -520,20 +538,18 @@ export default function HomePage() {
         </CardContent>
       </Card>
     ) }] : []),
+    ...(lastDone ? [{ key: "last", node: (
+      <AlertLine
+        icon={History}
+        title={t("lastSession")}
+        text={[lastDone.date === today ? t("lastToday") : short(lastDone.date), lastDone.title, lastDone.sessionRpe ? t("lastEffort", { rpe: lastDone.sessionRpe }) : null].filter(Boolean).join(" · ")}
+        href={sessionHref(lastDone.id!)}
+        action={tz("see")}
+      />
+    ) }] : []),
     ...(steadyInsight ? [insightNote("insight-steady", steadyInsight)] : []),
     ...(readinessNode && readyScore != null ? [{ key: "readiness", node: <Fragment key="readiness">{readinessNode}</Fragment> }] : []),
   ];
-  // The next sessions of the planning, over two weeks: a plan starting next Monday shows already.
-  const upcoming = useMemo(
-    () =>
-      planned.length
-        ? scheduleSessions({ planned, workouts, from: today, to: localDateIn(13, now), today })
-            .filter((x) => x.status === "planned")
-            .map((x) => ({ date: x.date, label: x.label, program: x.program.name }))
-        : undefined,
-    [planned, workouts, today, now]
-  );
-  const competitions = useCompetitions();
 
   /** The next eight weeks of sessions, and the competitions ahead, as a calendar file. */
   function exportCalendar() {
@@ -582,6 +598,8 @@ export default function HomePage() {
     () => (session ? weekGoal({ program: session.program, day: session.day, monday: weekStart, today, workouts, sets }) : null),
     [session, weekStart, today, workouts, sets]
   );
+  // Progress has something to tell from two sessions done.
+  const doneCount = useMemo(() => doneSessions(workouts, sets).length, [workouts, sets]);
   const needsOnboarding = profile !== undefined && !profile;
   // A new athlete goes straight to the guided set-up, unless they chose "later".
   useEffect(() => {
@@ -607,41 +625,34 @@ export default function HomePage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-4 pb-28 md:px-6 md:pt-6">
-      <header className="t-brand-header relative flex items-center gap-3 overflow-hidden rounded-2xl px-3 py-3 md:px-4">
-        <Image
-          src="/images/dumbbell.webp"
-          alt=""
-          width={128}
-          height={99}
-          unoptimized
-          className="pointer-events-none absolute -top-8 -right-9 -z-10 opacity-15 grayscale dark:opacity-20"
-        />
+      {/* Compact: the mark, a greeting, the bell when something waits, Settings. */}
+      <header className="t-brand-header relative flex items-center gap-2.5 overflow-hidden rounded-xl px-2.5 py-1.5 md:px-3">
         <Link
           href="/profile"
           aria-label={tm("profile")}
-          className="t-brand-mark flex size-12 shrink-0 items-center justify-center rounded-xl text-accent-text"
+          className="t-brand-mark flex size-10 shrink-0 items-center justify-center rounded-lg text-accent-text"
         >
-          <Image src="/icons/logo.png" alt="" width={34} height={34} unoptimized priority />
+          <Image src="/icons/logo.png" alt="" width={28} height={28} unoptimized priority />
         </Link>
-        <div className="min-w-0 flex-1">
-          <p className="t-wordmark" aria-hidden="true"><span>Train</span>Track</p>
-          <h1 className="truncate text-sm font-bold text-[#f7f7fb]/90">{t("greeting", { name })}</h1>
+        <div className="flex min-w-0 flex-1 items-baseline gap-2">
+          <p className="t-wordmark shrink-0 text-base" aria-hidden="true"><span>Train</span>Track</p>
+          <h1 className="truncate text-xs font-semibold text-[#f7f7fb]/80">{t("greeting", { name })}</h1>
         </div>
         {comments.length > 0 ? (
           <Link href={sessionHref(comments[0].workoutId)} aria-label={t("newComments", { count: comments.length })} className="relative flex size-11 items-center justify-center rounded-lg text-[#f7f7fb]">
-            <Bell className="size-6" aria-hidden="true" />
+            <Bell className="size-5" aria-hidden="true" />
             <span className="absolute right-2 top-2 size-2.5 rounded-full bg-accent-600 ring-2 ring-background" />
           </Link>
         ) : hasTeamInvite && (
           <Link href="/teams" aria-label={t("teamInvite")} className="relative flex size-11 items-center justify-center rounded-lg text-[#f7f7fb]">
-            <Bell className="size-6" aria-hidden="true" />
+            <Bell className="size-5" aria-hidden="true" />
             <span className="absolute right-2 top-2 size-2.5 rounded-full bg-accent-600 ring-2 ring-background" />
           </Link>
         )}
         <Link
           href="/settings"
           aria-label={tm("settings")}
-          className="t-panel flex size-11 items-center justify-center rounded-xl text-foreground"
+          className="t-panel flex size-11 items-center justify-center rounded-lg text-foreground"
         >
           <Settings className="size-5" aria-hidden="true" />
         </Link>
@@ -671,134 +682,119 @@ export default function HomePage() {
         </section>
       ) : (
         <>
-          {/* Three zones: the next thing to do and the week, then the signal of the day. */}
-          <div className="space-y-5 md:grid md:grid-cols-3 md:items-start md:gap-6 md:space-y-0">
-            <div className="space-y-5 md:col-span-2">
-              <section className="t-hero relative overflow-hidden rounded-2xl p-5 md:p-7">
-                {picture.scene ? (
-                  <>
-                    {/* A whole illustration: behind the card, faded on the side of the text. */}
-                    <Image
-                      src={picture.src}
-                      alt=""
-                      fill
-                      unoptimized
-                      className="pointer-events-none object-cover object-right opacity-90 [mask-image:linear-gradient(to_right,transparent_15%,black_70%)]"
-                    />
-                    <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-linear-to-r from-background/70 via-background/25 to-transparent" />
-                  </>
-                ) : (
+          {/*
+            Four zones: the next session, what is worth knowing, the week, the
+            progress; the rest folded. On a wide screen, the session and the week
+            on the left, the rest on the right.
+          */}
+          <div className="grid grid-cols-1 gap-4 *:min-w-0 md:grid-cols-3 md:items-start md:gap-5">
+            <section className="t-hero relative overflow-hidden rounded-2xl p-4 md:col-span-2 md:p-6">
+              {picture.scene ? (
+                <>
+                  {/* A whole illustration: behind the card, faded on the side of the text. */}
                   <Image
                     src={picture.src}
                     alt=""
-                    width={Math.round((picture.width * 209) / picture.height)}
-                    height={209}
+                    fill
                     unoptimized
-                    className="pointer-events-none absolute top-2 left-[33%] opacity-55 [mask-image:linear-gradient(to_right,transparent_8%,black_45%)] dark:opacity-50"
+                    className="pointer-events-none object-cover object-right opacity-90 [mask-image:linear-gradient(to_right,transparent_15%,black_70%)]"
                   />
-                )}
-                <div className="relative flex items-start justify-between gap-3">
-                  <div className="max-w-[60%] min-w-0">
-                    <p className="t-kicker">
-                      {session && session.date !== today
-                        ? t("nextSessionOn", { date: new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", timeZone: "UTC" }).format(new Date(`${session.date}T00:00:00Z`)) })
-                        : t("todaySession")}
-                    </p>
-                    <h2 className="t-display mt-2 line-clamp-3 text-3xl break-words sm:text-4xl md:text-5xl">{session?.day.name ?? t("freeSession")}</h2>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {session
-                        ? `${session.program.name} · ${dayDetail(session.day)}`
-                        : t("freeSessionDesc")}
-                      {sessionWeek && (
-                        <span className="mt-0.5 block text-xs font-semibold text-accent-text">
-                          {!sessionWeek.started
-                            ? t("programStarts", { date: short(session!.program.startDate!) })
-                            : sessionWeek.total
-                              ? t("programWeekOf", { week: sessionWeek.week, total: sessionWeek.total })
-                              : t("programWeek", { week: sessionWeek.week })}
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                  <ProgressRing percent={percent} />
-                </div>
-                {session && session.options.length > 1 && (
-                  <div className="relative mt-3 flex flex-wrap gap-1.5" role="group" aria-label={t("sameDay")}>
-                    {session.options.map((o) => {
-                      const on = o.program.id === session.program.id && o.index === session.index && o.workoutId === session.workoutId;
-                      return (
-                        <button
-                          key={o.key}
-                          type="button"
-                          onClick={() => setPickKey(o.key)}
-                          aria-pressed={on}
-                          className={cn(
-                            "min-h-9 rounded-full px-3 text-xs font-semibold",
-                            on ? "bg-accent-600 text-white" : "t-surface text-foreground ring-1 ring-foreground/10"
-                          )}
-                        >
-                          {o.workoutId ? "✓ " : ""}
-                          {o.program.structure[o.index]?.name} · {o.program.name}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-                <div className="relative mt-4 flex items-center justify-between gap-2">
-                  <Button onClick={start} disabled={starting} className="px-5">
-                    {starting ? (
-                      <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                    ) : (
-                      <>
-                        {session?.workoutId ? t("continue") : t("start")}
-                        <ArrowRight className="size-4" aria-hidden="true" />
-                      </>
-                    )}
-                  </Button>
-                  {session?.program.id !== undefined && (
-                    <Link
-                      href={`/programs/${session.program.id}`}
-                      className="flex h-11 items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3 text-sm font-semibold whitespace-nowrap text-white hover:bg-white/15"
-                    >
-                      <ClipboardList className="size-4" aria-hidden="true" />
-                      {t("details")}
-                    </Link>
-                  )}
-                </div>
-                {canExpress && (
-                  <button
-                    type="button"
-                    onClick={() => setExpressOpen(true)}
-                    className="relative mt-2 flex min-h-11 w-full items-center justify-center gap-1.5 rounded-full text-sm font-semibold text-accent-text ring-1 ring-accent-500/30"
-                  >
-                    <Timer className="size-4" aria-hidden="true" />
-                    {t("express")}
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => setChoosing(true)}
-                  className="relative mt-2 flex min-h-11 w-full items-center justify-center gap-1.5 text-sm font-semibold text-accent-text"
-                >
-                  <ListChecks className="size-4" aria-hidden="true" />
-                  {t("changeSession")}
-                </button>
-              </section>
-
-              {/* Dynamic: the day's numbers at a glance, as in the Performance references. */}
-              {prefs.style === "dynamic" && (
-                <QuickAccessTiles
-                  data={{
-                    week: goal && goal.target > 0 ? { done: goal.done, target: goal.target } : null,
-                    loadChange: load ? Math.round((load.ratio - 1) * 100) : null,
-                    readiness: hasFeature("readiness") ? readyScore : undefined,
-                    calories: hasFeature("nutrition") ? (nutritionToday.length ? sumMacros(nutritionToday).calories : null) : undefined,
-                    teams: new Set([...myGroups.map((g) => g.id), ...memberships.map((m) => m.group_id)]).size,
-                    challenges: hasFeature("challenges"),
-                  }}
+                  <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-linear-to-r from-background/70 via-background/25 to-transparent" />
+                </>
+              ) : (
+                <Image
+                  src={picture.src}
+                  alt=""
+                  width={Math.round((picture.width * 170) / picture.height)}
+                  height={170}
+                  unoptimized
+                  className="pointer-events-none absolute top-1 left-[36%] opacity-55 [mask-image:linear-gradient(to_right,transparent_8%,black_45%)] dark:opacity-50"
                 />
               )}
+              <div className="relative flex items-start justify-between gap-3">
+                <div className="max-w-[64%] min-w-0">
+                  <p className="t-kicker">
+                    {session && session.date !== today
+                      ? t("nextSessionOn", { date: new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", timeZone: "UTC" }).format(new Date(`${session.date}T00:00:00Z`)) })
+                      : t("todaySession")}
+                  </p>
+                  <h2 className="t-display mt-1.5 line-clamp-2 text-2xl break-words sm:text-3xl md:text-4xl">{session?.day.name ?? t("freeSession")}</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {session ? `${session.program.name} · ${dayDetail(session.day)}` : t("freeSessionDesc")}
+                    {sessionWeek && (
+                      <span className="mt-0.5 block text-xs font-semibold text-accent-text">
+                        {!sessionWeek.started
+                          ? t("programStarts", { date: short(session!.program.startDate!) })
+                          : sessionWeek.total
+                            ? t("programWeekOf", { week: sessionWeek.week, total: sessionWeek.total })
+                            : t("programWeek", { week: sessionWeek.week })}
+                      </span>
+                    )}
+                  </p>
+                </div>
+                {/* The ring only for a session under way. */}
+                {session?.workoutId && <ProgressRing percent={percent} />}
+              </div>
+              {session && session.options.length > 1 && (
+                <div className="relative mt-3 flex flex-wrap gap-1.5" role="group" aria-label={t("sameDay")}>
+                  {session.options.map((o) => {
+                    const on = o.program.id === session.program.id && o.index === session.index && o.workoutId === session.workoutId;
+                    return (
+                      <button
+                        key={o.key}
+                        type="button"
+                        onClick={() => setPickKey(o.key)}
+                        aria-pressed={on}
+                        className={cn(
+                          "min-h-9 rounded-full px-3 text-xs font-semibold",
+                          on ? "bg-accent-600 text-white" : "t-surface text-foreground ring-1 ring-foreground/10"
+                        )}
+                      >
+                        {o.workoutId ? "✓ " : ""}
+                        {o.program.structure[o.index]?.name} · {o.program.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              <div className="relative mt-3 flex items-center gap-2">
+                <Button onClick={start} disabled={starting} className="px-5">
+                  {starting ? (
+                    <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                  ) : (
+                    <>
+                      {session?.workoutId ? t("continue") : t("start")}
+                      <ArrowRight className="size-4" aria-hidden="true" />
+                    </>
+                  )}
+                </Button>
+                {session?.program.id !== undefined && (
+                  <Link
+                    href={`/programs/${session.program.id}`}
+                    className="flex h-11 items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3 text-sm font-semibold whitespace-nowrap text-white hover:bg-white/15"
+                  >
+                    <ClipboardList className="size-4" aria-hidden="true" />
+                    {t("detailsShort")}
+                  </Link>
+                )}
+                <div className="ml-auto">
+                  <SessionMenu
+                    items={[
+                      { key: "change", icon: ListChecks, label: t("changeSession"), onClick: () => setChoosing(true) },
+                      ...(canExpress ? [{ key: "express", icon: Timer, label: t("express"), onClick: () => setExpressOpen(true) }] : []),
+                    ]}
+                  />
+                </div>
+              </div>
+            </section>
 
+            {alerts.length > 0 && (
+              <div className="md:col-start-3 md:row-start-1">
+                <HomeAlerts items={alerts} />
+              </div>
+            )}
+
+            <div className="space-y-4 md:col-span-2">
               {/* A new athlete's first steps, for a month, until done or hidden. */}
               {profile && !flags.stepsClosed && Date.parse(profile.createdAt) > now - 30 * 86_400_000 && (
                 <FirstSteps
@@ -812,78 +808,41 @@ export default function HomePage() {
                   ]}
                 />
               )}
-
               <WeekStrip
+                compact
                 plan={plan}
                 planned={planned.length > 0 || (profile?.trainingDays ?? []).length > 0}
                 onExport={hasFeature("planning") ? exportCalendar : undefined}
-                upcoming={upcoming}
+                count={goal && goal.target > 0 ? { done: goal.done, target: goal.target } : null}
                 offset={planned.length ? weekOffset : undefined}
                 onOffset={(n) => setWeekChoice(Math.max(-4, Math.min(8, n)))}
                 streak={streak?.weeks}
                 movable={profile && hasFeature("planning") ? movable : undefined}
                 onPickDay={setMoveDate}
               />
-              {goal && goal.target > 0 && (
-                <section className="t-panel flex items-center gap-3 rounded-xl p-4">
-                  <Target className="size-8 shrink-0 text-accent-text" aria-hidden="true" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium">{t("weeklyGoal")}</p>
-                    <p className="truncate text-xs text-muted-foreground">{t("goalProgram", { name: session!.program.name })}</p>
-                    <div className="t-sunken mt-2 h-2.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={Math.min(goal.done, goal.target)} aria-valuemin={0} aria-valuemax={goal.target} aria-label={t("weeklyGoal")}>
-                      <div className="h-full rounded-full bg-linear-to-r from-accent-700 to-accent-400 shadow-[inset_0_1px_0_oklch(1_0_0/0.4)]" style={{ width: `${Math.min(100, (goal.done / goal.target) * 100)}%` }} />
-                    </div>
-                    {(goal.done >= goal.target || goal.others > 0) && (
-                      <p className="mt-1.5 text-xs text-muted-foreground">
-                        {goal.done >= goal.target && <span className="font-semibold text-accent-text">{t("goalReached", { beyond: goal.beyond })}</span>}
-                        {goal.done >= goal.target && goal.others > 0 && " · "}
-                        {goal.others > 0 && t("otherActivities", { count: goal.others })}
-                      </p>
-                    )}
-                  </div>
-                  <p className="shrink-0 text-right">
-                    <span className="text-lg font-semibold tabular-nums">{Math.min(goal.done, goal.target)}</span>
-                    <span className="text-muted-foreground"> / {goal.target}</span>
-                    <span className="block text-xs text-muted-foreground">{t("sessions")}</span>
-                  </p>
-                </section>
-              )}
-
-              {/* The main goal, the last session, the next competition: a line each. */}
-              <HomeAtAGlance today={today} workouts={workouts} sets={sets} exercises={exercises} competitions={competitions} />
-
-              {/* The week in one line; the details in Performance. */}
-              <section>
-                <Link href="/progress" className="t-panel flex min-h-11 items-center gap-3 rounded-xl px-4 py-3 transition-colors hover:border-accent-500/40">
-                  <TrendingUp className="size-5 shrink-0 text-accent-text" aria-hidden="true" />
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-semibold">{t("overview")}</span>
-                    <span className="block text-xs text-muted-foreground">
-                      {summary.kind === "volume"
-                        ? `${t("weekVolume", { kg: num(summary.kg, 0) })}${summary.change !== null ? ` · ${summary.change > 0 ? "+" : ""}${summary.change}% ${t("vsSameDay")}` : ""}`
-                        : t("weekActivities", { count: summary.count })}
-                    </span>
-                    {summary.kind === "activities" && <span className="block text-xs text-muted-foreground">{t("seeAnalysis")}</span>}
-                  </span>
-                  <span className="flex shrink-0 items-center gap-0.5 text-sm font-medium text-accent-text">
-                    {t("seeAll")}
-                    <ChevronRight className="size-4" aria-hidden="true" />
-                  </span>
-                </Link>
-              </section>
             </div>
 
-            <div className="space-y-3">
-              {injuryCare}
-              {/* One thing at a time: the most pressing note, the others folded under "To look at". */}
-              {notes.length > 0 && notes[0].node}
-              {notes.length > 1 && (
+            <div className="space-y-4 md:col-start-3">
+              {/* Progress in three figures, once there is something to tell. */}
+              {doneCount >= 2 && (
+                <HomeProgress
+                  goal={mainGoal}
+                  data={{ today, workouts, sets, exercises, bodyMetrics }}
+                  week={
+                    summary.kind === "volume"
+                      ? `${t("weekVolume", { kg: num(summary.kg, 0) })}${summary.change !== null ? ` · ${summary.change > 0 ? "+" : ""}${summary.change}%` : ""}`
+                      : t("weekActivities", { count: summary.count })
+                  }
+                  load={load}
+                />
+              )}
+              {later.length > 0 && (
                 <details className="t-panel rounded-xl px-4 py-1">
                   <summary className="flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold">
                     <ListChecks className="size-4 text-accent-text" aria-hidden="true" />
-                    {t("toLookAt", { count: notes.length - 1 })}
+                    {t("toLookAt", { count: later.length })}
                   </summary>
-                  <div className="space-y-3 pt-1 pb-3">{notes.slice(1).map((n) => n.node)}</div>
+                  <div className="space-y-3 pt-1 pb-3">{later.map((n) => <Fragment key={n.key}>{n.node}</Fragment>)}</div>
                 </details>
               )}
             </div>

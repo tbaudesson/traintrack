@@ -17,7 +17,7 @@ import { DeclareInjuryButton } from "@/components/domain/InjuryAreas";
  * moves to keep it moving without pain. Nothing shows without an injury or
  * a pain coming back, nor before the references have been read.
  */
-export function InjuryCareCard({ guidance, injuries, pains, today }: { guidance: InjuryGuidance; injuries: Injury[]; pains: PainReport[]; today: string }) {
+export function InjuryCareCard({ guidance, injuries, pains, today, declare = true }: { guidance: InjuryGuidance; injuries: Injury[]; pains: PainReport[]; today: string; declare?: boolean }) {
   const t = useTranslations("injuryCare");
   const tpain = useTranslations("pain");
   const locale = useLocale() as "fr" | "en" | "de";
@@ -64,7 +64,7 @@ export function InjuryCareCard({ guidance, injuries, pains, today }: { guidance:
       })}
 
       <p className="text-xs text-muted-foreground">{t("care")}</p>
-      <DeclareInjuryButton />
+      {declare && <DeclareInjuryButton />}
       <DemoDialog demo={demo} onClose={() => setDemo(null)} />
     </section>
   );
