@@ -94,6 +94,8 @@ export interface AthleteProfile extends SyncFields {
   restrictions?: Restriction[] | null;
   /** One's plan B, read by lib/planB ({"kind": "none"} when chosen to have none; migration 081). */
   planB?: unknown;
+  /** How much of the app one sees, read by lib/displayMode; null when never chosen (migration 082). */
+  displayMode?: string | null;
   /** Diet, foods left out and meals a day, for the meal ideas, see lib/mealCatalog. */
   mealPrefs?: MealPrefs | null;
   /** Optional daily macro targets */

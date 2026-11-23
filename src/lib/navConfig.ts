@@ -100,11 +100,21 @@ export function canAccessNavigation(item: Pick<NavItemDef, "feature" | "roles">,
   return !item.feature || !!access.features?.includes(item.feature);
 }
 
-export function navigationForAccess(access: NavigationAccess, sports: readonly (FavoriteSport | null | undefined)[] = []): NavigationSectionDef[] {
+/**
+ * The sections and entries one can open. `shown` leaves out the entries one's
+ * display mode keeps for later (lib/displayMode); a section left without any
+ * entry goes too.
+ */
+export function navigationForAccess(
+  access: NavigationAccess,
+  sports: readonly (FavoriteSport | null | undefined)[] = [],
+  shown: (item: NavItemDef) => boolean = () => true,
+): NavigationSectionDef[] {
   return NAVIGATION_CATALOG
     .filter((section) => canAccessNavigation(section, access))
     .map((section) => withSports(section, sports, access))
-    .map((section) => ({ ...section, children: section.children.filter((item) => canAccessNavigation(item, access)).slice(0, MAX_CHILDREN) }));
+    .map((section) => ({ ...section, children: section.children.filter((item) => canAccessNavigation(item, access) && shown(item)).slice(0, MAX_CHILDREN) }))
+    .filter((section) => section.children.length > 0);
 }
 
 /**

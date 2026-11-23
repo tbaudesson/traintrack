@@ -6,7 +6,8 @@ import { useProgramEquipment } from "@/hooks/useProgramEquipment";
 import { useInjuryRules } from "@/hooks/useInjuryRules";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import { saveAthleteProfile } from "@/hooks/useAthleteProfile";
+import { saveAthleteProfile, useAthleteProfileOrNull } from "@/hooks/useAthleteProfile";
+import { useDisplayMode } from "@/hooks/useDisplayMode";
 import { createProgram } from "@/hooks/usePrograms";
 import { useProgramTemplates } from "@/lib/templateService";
 import { defaultTrainingDays, GOAL_OF_SPORT, recommendPrograms } from "@/lib/onboarding";
@@ -24,6 +25,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Loader2, Check, ArrowLeft, ArrowRight, Sparkles, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DEFAULT_MODE, type DisplayMode } from "@/lib/displayMode";
+import { DisplayModePicker } from "@/components/domain/DisplayModePicker";
 
 const GOALS: TrainingGoal[] = ["strength", "hypertrophy", "endurance", "fat_loss", "general_fitness"];
 const LEVELS: FitnessLevel[] = ["beginner", "intermediate", "advanced"];
@@ -48,6 +51,7 @@ export default function OnboardingPage() {
   const tl = useTranslations("templates");
   const tcat = useTranslations("catalog");
   const tpain = useTranslations("pain");
+  const tdm = useTranslations("displayMode");
   const locale = useLocale();
   const router = useRouter();
   const catalogue = useProgramTemplates();
@@ -63,6 +67,12 @@ export default function OnboardingPage() {
   const [areas, setAreas] = useState<PainArea[]>([]);
   const [more, setMore] = useState(false);
   const [level, setLevel] = useState<FitnessLevel>("beginner");
+  // How much of the app to see, changed at any time in Settings: Complete for
+  // a new athlete, the mode one already has when the guide runs again.
+  const current = useDisplayMode();
+  const profile = useAthleteProfileOrNull();
+  const [pickedMode, setDisplayMode] = useState<DisplayMode | null>(null);
+  const displayMode = pickedMode ?? (profile ? current.mode : DEFAULT_MODE);
   const [sex, setSex] = useState<Sex | undefined>(undefined);
   const [heightCm, setHeightCm] = useState("");
   const [birthDate, setBirthDate] = useState("");
@@ -107,6 +117,7 @@ export default function OnboardingPage() {
       await saveAthleteProfile({
         goals: [goal],
         fitnessLevel: level,
+        displayMode,
         sex,
         heightCm: heightCm ? Number(heightCm) : undefined,
         birthDate: birthDate || undefined,
@@ -241,6 +252,11 @@ export default function OnboardingPage() {
                   </button>
                 ))}
               </div>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">{tdm("onboardingQuestion")}</p>
+              <DisplayModePicker value={displayMode} onChange={setDisplayMode} />
+              <p className="text-xs text-muted-foreground">{tdm("onboardingHint")}</p>
             </div>
             <div className="space-y-2">
               <p className="text-sm font-medium">{tw("injuries")}</p>

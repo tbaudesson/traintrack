@@ -251,6 +251,10 @@ await page.evaluate(async ({ user, libraryRows }) => {
   const m066 = readFileSync("supabase/migrations/066_program_equipment.sql", "utf8");
   const equipment = m066.slice(m066.indexOf("'program_equipment', '") + 22, m066.indexOf("')\nON CONFLICT")).replace(/''/g, "'");
   await page.evaluate((v) => localStorage.setItem("traintrack.guidance.program_equipment", v), JSON.stringify(JSON.parse(equipment)));
+  // Which display mode shows what, as migration 082 seeds it.
+  const m082 = readFileSync("supabase/migrations/082_display_modes.sql", "utf8");
+  const modes = m082.slice(m082.indexOf("'\n{") + 1, m082.indexOf("}\n'") + 1);
+  await page.evaluate((v) => localStorage.setItem("traintrack.guidance.display_modes", v), JSON.stringify(JSON.parse(modes)));
 }
 
 await context.setOffline(true);
@@ -781,6 +785,14 @@ await test("sign-up: sport, injuries, a program of that sport put in the plannin
   await snap("onboarding-last-step");
   await page.getByRole("button", { name: "Terminer la configuration" }).click();
   await page.waitForURL(/\/fr\/?$/, { timeout: 10000 });
+  // Run again, the guide keeps the display mode one has (everything, for a profile that never chose).
+  const modes = await page.evaluate(async () => {
+    const db = await new Promise((res) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); });
+    const all = await new Promise((res) => { const r = db.transaction("athleteProfiles").objectStore("athleteProfiles").getAll(); r.onsuccess = () => res(r.result); });
+    db.close();
+    return all.map((p) => p.displayMode);
+  });
+  expect(modes.length > 0 && modes.every((m) => m === "expert"), `the guide changed the display mode: ${JSON.stringify(modes)}`);
   // The program is in the planning: its page shows the days it is trained on.
   await page.goto(`${BASE}/fr/programs`);
   await page.getByText(name, { exact: true }).first().click();
@@ -2329,6 +2341,47 @@ await test("the sport followed is changed from the top of the home screen", asyn
   // Nothing wider than the phone with the new button in the header.
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), "the header is wider than the phone");
   await setSportChoice(null);
+});
+
+await test("the Essential mode keeps the extras for later, safety first, and is changed back in Settings", async () => {
+  const setMode = (mode) => page.evaluate(async (v) => {
+    const db = await new Promise((res, rej) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+    const tx = db.transaction("athleteProfiles", "readwrite");
+    const st = tx.objectStore("athleteProfiles");
+    const all = await new Promise((res) => { const r = st.getAll(); r.onsuccess = () => res(r.result); });
+    for (const row of all) st.put({ ...row, displayMode: v });
+    await new Promise((res) => { tx.oncomplete = res; });
+    db.close();
+  }, mode);
+  // As before for a profile that never chose: everything, the plan B on the card.
+  await page.goto(`${BASE}/fr`);
+  await heroCard().getByRole("button", { name: /Choisir un plan B|^Plan B :/ }).waitFor({ timeout: 10000 });
+  await setMode("essential");
+  await page.goto(`${BASE}/fr`);
+  await heroCard().getByRole("button", { name: /^Commencer|^Démarrer|^Continuer/ }).first().waitFor({ timeout: 10000 });
+  // Gone once the profile is read.
+  await heroCard().getByRole("button", { name: /Choisir un plan B|^Plan B :/ }).waitFor({ state: "detached", timeout: 5000 });
+  // The load rising too fast still says so: safety shows in every mode.
+  await page.getByRole("link", { name: /Charge en hausse trop rapide/ }).waitFor({ timeout: 10000 });
+  // Performance: the main reading and one's figures; the expert charts wait, and it says so.
+  await page.goto(`${BASE}/fr/progress`);
+  await page.getByText(/Mode Essentiel : certaines analyses sont masquées/).waitFor({ timeout: 10000 });
+  expect(!(await page.locator("#chart-load-history").count()), "the load history shows in Essential");
+  // The load calling for care keeps its chart, where the home screen's alert leads.
+  await page.locator("#chart-load").waitFor({ timeout: 5000 });
+  // Back to Expert from Settings: kept with the profile, everything shows again.
+  await page.getByRole("link", { name: "Changer" }).click();
+  await page.waitForURL(/section=display/, { timeout: 10000 });
+  const section = page.locator("#settings-display");
+  await section.getByRole("radio", { name: /Essentiel/ }).and(page.locator("[aria-checked=true]")).waitFor({ timeout: 10000 });
+  await section.scrollIntoViewIfNeeded();
+  await snap("settings-display-mode");
+  await section.getByRole("radio", { name: /Expert/ }).click();
+  await section.getByRole("radio", { name: /Expert/ }).and(page.locator("[aria-checked=true]")).waitFor({ timeout: 5000 });
+  await page.goto(`${BASE}/fr/progress`);
+  await page.locator("#chart-load-history").waitFor({ timeout: 10000 });
+  expect(!(await page.getByText(/certaines analyses sont masquées/).count()), "the hint shows in Expert");
+  await setMode(null);
 });
 
 await test("no page threw an error", async () => {

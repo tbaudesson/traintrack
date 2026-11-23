@@ -43,6 +43,8 @@ import { estimateOneRepMax } from "@/lib/performance";
 import { localDate, localDateIn } from "@/lib/dates";
 import { useExerciseLabel } from "@/lib/exerciseNames";
 import { useFormat } from "@/lib/format";
+import { useDisplayMode } from "@/hooks/useDisplayMode";
+import { DisplayModeHint } from "@/components/domain/DisplayModeHint";
 
 /** The estimated 1RM, the same everywhere in the app (performance.ts: Epley, the load itself at one rep), to 0.1 kg. */
 const oneRepMax = (weight: number, reps: number) => Math.round(estimateOneRepMax(weight, reps) * 10) / 10;
@@ -59,6 +61,8 @@ export default function ProgressPage() {
   const xl = useExerciseLabel();
   const tex = useTranslations("exercises");
   const { hasFeature } = useFeatureAccess();
+  // One's display mode keeps some readings for later; a load calling for care always shows.
+  const { shows } = useDisplayMode();
   const sets = useAllWorkoutSets();
   const workouts = useWorkouts();
   const metrics = useBodyMetrics();
@@ -199,6 +203,14 @@ export default function ProgressPage() {
 
   const hasData = scored.length > 0 || bwData.length > 0;
   const advanced = hasFeature("advanced_progress");
+  const loadShown = !!load && (shows("progressLoad") || load.zone === "caution" || load.zone === "danger");
+  const loadHistoryShown = shows("progressLoadHistory");
+  const trendShown = shows("progressEnduranceTrend") && workouts.some((w) => w.kind === "cardio");
+  const weeklyShown = hasFeature("reports") && shows("progressWeeklyReport");
+  const volumeShown = shows("progressVolume") && volumeData.length > 0;
+  const exerciseShown = advanced && shows("progressByExercise") && liftsWithData.length > 0;
+  const musclesShown = advanced && shows("progressMuscles") && muscleData.length > 0;
+  const recordsShown = advanced && shows("progressRecords") && prs.length > 0;
   const MUSCLE_COLORS = ["#4F46E5", "#16A34A", "#EA580C", "#DB2777", "#0891B2", "#CA8A04", "#7C3AED", "#64748B"];
   const METRIC_COLORS: Record<ExMetric, string> = { e1rm: "#16A34A", top: "#4F46E5", reps: "#EA580C", vol: "#0891B2" };
 
@@ -245,10 +257,10 @@ export default function ProgressPage() {
 
   // A piece of evidence opens its chart: unfolded, brought into view and focused.
   const charts: Record<InsightChart, boolean> = {
-    volume: volumeData.length > 0,
-    exercise: advanced && liftsWithData.length > 0,
-    records: advanced && prs.length > 0,
-    load: !!load,
+    volume: volumeShown,
+    exercise: exerciseShown,
+    records: recordsShown,
+    load: loadShown,
     distance: workouts.some(isCardioDone),
   };
   function showChart(chart: InsightChart, exerciseId?: number) {
@@ -275,34 +287,36 @@ export default function ProgressPage() {
             </InsightCard>
           )}
           <div className="space-y-4">
-            <MoreInsights items={reading.insights.slice(1)} exerciseName={exerciseName} />
+            {shows("progressMoreInsights") && <MoreInsights items={reading.insights.slice(1)} exerciseName={exerciseName} />}
             {/* What to change in one's programs because of all this. */}
-            <DetailRow href="/assistant" icon={Sparkles} title={t("assistantLink")} subtitle={t("assistantHint")} />
+            {shows("progressAssistant") && <DetailRow href="/assistant" icon={Sparkles} title={t("assistantLink")} subtitle={t("assistantHint")} />}
             {/* All of today's advice; the home screen shows the first one only. */}
-            <Recommendations limit={99} />
+            {shows("progressRecommendations") && <Recommendations limit={99} />}
           </div>
         </div>
 
         {/* Load and regularity: the training load (folded) and last week's report. */}
-        {(load || hasFeature("reports") || workouts.length > 0) && (
+        {(loadShown || loadHistoryShown || trendShown || weeklyShown) && (workouts.length > 0 || !!load) && (
           <section className="space-y-2">
             <h2 className="t-section-heading">{t("sectionLoad")}</h2>
-            {load && (
+            {loadShown && load && (
               <Fold id="chart-load" title={t("loadChart")}>
                 <TrainingLoadCard load={load} />
               </Fold>
             )}
             {/* The load over months, discipline by discipline, in one unit. */}
-            <Fold id="chart-load-history" title={t("loadHistory")}>
-              <LoadHistoryCard workouts={workouts} sets={sets} today={today} />
-            </Fold>
+            {loadHistoryShown && (
+              <Fold id="chart-load-history" title={t("loadHistory")}>
+                <LoadHistoryCard workouts={workouts} sets={sets} today={today} />
+              </Fold>
+            )}
             {/* The pace of each outing and the power of each ride. */}
-            {workouts.some((w) => w.kind === "cardio") && (
+            {trendShown && (
               <Fold id="chart-endurance-trend" title={t("enduranceTrend")}>
                 <EnduranceTrendCard workouts={workouts} today={today} />
               </Fold>
             )}
-            {hasFeature("reports") && (
+            {weeklyShown && (
               <WeeklyReportCard
                 workouts={workouts}
                 sets={sets}
@@ -316,9 +330,9 @@ export default function ProgressPage() {
         )}
 
         {/* Goals of every kind: a time, a distance, sessions a week, a lift, a weight. */}
-        <GoalsSection workouts={workouts} sets={sets} exercises={exercises} bodyMetrics={metrics} editable />
+        {shows("progressGoals") && <GoalsSection workouts={workouts} sets={sets} exercises={exercises} bodyMetrics={metrics} editable />}
 
-        {hasFeature("reports") && (
+        {hasFeature("reports") && shows("progressReport") && (
           <section className="space-y-2">
             <h2 className="t-section-heading">{t("sectionReport")}</h2>
             <DetailRow href="/report" icon={FileText} title={tm("open")} subtitle={tm("openHint")} />
@@ -379,13 +393,13 @@ export default function ProgressPage() {
         )}
 
         {/* The charts, folded on every screen; a piece of evidence opens its own. */}
-        {(volumeData.length > 0 || (advanced && (liftsWithData.length > 0 || muscleData.length > 0 || prs.length > 0)) || bwData.length > 0) && (
+        {(volumeShown || exerciseShown || musclesShown || recordsShown || bwData.length > 0) && (
           <section className="space-y-2">
             <div>
               <h2 className="t-section-heading">{t("sectionDetails")}</h2>
               <p className="text-sm text-muted-foreground">{t("detailsHint")}</p>
             </div>
-            {volumeData.length > 0 && (
+            {volumeShown && (
               <Fold id="chart-volume" title={t("volume")}>
                 <ChartBox>
                   <LineChart data={volumeData}>
@@ -399,7 +413,7 @@ export default function ProgressPage() {
               </Fold>
             )}
 
-            {advanced && liftsWithData.length > 0 && (
+            {exerciseShown && (
               <Fold id="chart-exercise" title={t("byExercise")}>
             <CardContent className="py-3">
               <div className="mb-2 flex items-center justify-end gap-2">
@@ -443,7 +457,7 @@ export default function ProgressPage() {
               </Fold>
             )}
 
-            {advanced && muscleData.length > 0 && (
+            {musclesShown && (
               <Fold id="chart-muscles" title={t("muscleVolume")}>
                 <ChartBox>
                   <BarChart data={muscleData} layout="vertical" margin={{ left: 8, right: 8 }}>
@@ -461,7 +475,7 @@ export default function ProgressPage() {
               </Fold>
             )}
 
-            {advanced && prs.length > 0 && (
+            {recordsShown && (
               <Fold id="chart-records" title={t("prs")}>
                 <div className="px-4 pb-3">
               <div className="space-y-1">
@@ -492,6 +506,7 @@ export default function ProgressPage() {
             )}
           </section>
         )}
+        <DisplayModeHint />
       </div>
     </>
   );

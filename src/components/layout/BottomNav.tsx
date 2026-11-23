@@ -7,6 +7,8 @@ import Image from "next/image";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { currentItemId, getNavigationPreferences, navigationForAccess, sectionForPath, type NavigationSectionId } from "@/lib/navConfig";
+import { useDisplayMode } from "@/hooks/useDisplayMode";
+import { isNavPart } from "@/lib/displayMode";
 import { GlobalNavigationWheel } from "@/components/navigation/GlobalNavigationWheel";
 import { SectionNavigationWheel } from "@/components/navigation/SectionNavigationWheel";
 import { NavigationBreadcrumb } from "@/components/navigation/NavigationBreadcrumb";
@@ -86,7 +88,9 @@ function useNavigationSections() {
   const prefs = getNavigationPreferences();
   // One's sports bring their own pages into the Training section.
   const { sport, sport2, allSports } = useAppPrefs();
-  const accessible = navigationForAccess({ role: isAdmin ? "admin" : "user", isAdmin, features: planFeatures }, allSports ? [] : [sport, sport2]);
+  // One's display mode keeps some entries for later (Settings > Display).
+  const { shows } = useDisplayMode();
+  const accessible = navigationForAccess({ role: isAdmin ? "admin" : "user", isAdmin, features: planFeatures }, allSports ? [] : [sport, sport2], (item) => !isNavPart(item.id) || shows(`nav.${item.id}`));
   return prefs.sectionOrder.map((id) => accessible.find((entry) => entry.id === id)).filter((entry): entry is NonNullable<typeof entry> => !!entry && !prefs.hiddenSections.includes(entry.id));
 }
 

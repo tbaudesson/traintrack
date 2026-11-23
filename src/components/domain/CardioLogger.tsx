@@ -15,6 +15,7 @@ import { RunGuide } from "@/components/domain/RunGuide";
 import { GpxImport } from "@/components/domain/GpxImport";
 import { SportDetails, hasAdvancedValues } from "@/components/domain/SportDetails";
 import { TrimpLine } from "@/components/domain/TrimpLine";
+import { useDisplayMode } from "@/hooks/useDisplayMode";
 import { STRAVA_ORANGE } from "@/components/domain/StravaSection";
 import { activityUrl } from "../../../supabase/functions/_shared/strava";
 import { metricPlace, sportDef } from "@/lib/disciplines";
@@ -47,7 +48,10 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
   // The metres climbed: first for a hike, under "More details" on foot and on a
   // bike (the registry says), and for any outing that already has them.
   const climbPlace = metricPlace(workout.sport, "climb") ?? (workout.elevationGainM ? "advanced" : null);
-  const hasAdvanced = (sportDef(workout.sport)?.advanced.length ?? 0) > 0 || climbPlace === "advanced";
+  // The other details wait for the Complete mode, unless some are already filled in (never hidden then).
+  const { shows } = useDisplayMode();
+  const advancedFilled = hasAdvancedValues(workout) || (!!workout.elevationGainM && climbPlace === "advanced");
+  const hasAdvanced = ((sportDef(workout.sport)?.advanced.length ?? 0) > 0 || climbPlace === "advanced") && (shows("logMoreDetails") || advancedFilled);
 
   const distanceM = (Number(distance.replace(",", ".")) || 0) * (swim ? 1 : 1000);
   const durationSec = (Number(minutes) || 0) * 60 + (Number(seconds) || 0);
@@ -252,9 +256,9 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
             </p>
           )}
           <SportDetails workout={workout} distanceM={distanceM} durationSec={durationSec} place="essential" />
-          <TrimpLine workout={workout} />
+          {shows("logTrimp") && <TrimpLine workout={workout} />}
           {hasAdvanced && (
-            <details open={hasAdvancedValues(workout) || !!workout.elevationGainM && climbPlace === "advanced"} className="rounded-xl bg-muted/40 px-3">
+            <details open={advancedFilled} className="rounded-xl bg-muted/40 px-3">
               <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold text-muted-foreground">{tp("moreDetails")}</summary>
               <div className="space-y-3 pb-3">
                 {climbPlace === "advanced" && (

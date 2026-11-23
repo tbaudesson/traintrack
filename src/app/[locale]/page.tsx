@@ -77,6 +77,7 @@ import {
 } from "lucide-react";
 import { localDate, localDateIn } from "@/lib/dates";
 import { useFormat } from "@/lib/format";
+import { useDisplayMode } from "@/hooks/useDisplayMode";
 
 
 function ProgressRing({ percent }: { percent: number }) {
@@ -209,6 +210,8 @@ export default function HomePage() {
   const todayReadiness = useTodayReadiness();
   const recommendations = useRecommendations();
   const { hasFeature } = useFeatureAccess();
+  // One's display mode keeps some parts for later; what keeps one safe always shows.
+  const { shows } = useDisplayMode();
   const { memberships } = useTeams();
   const [now] = useState(() => Date.now());
   const [choosing, setChoosing] = useState(false);
@@ -493,7 +496,7 @@ export default function HomePage() {
     ...(painInsight ? [insightNote("insight-pain", painInsight)] : []),
     ...(commentsNode ? [{ key: "comments", node: commentsNode }] : []),
     ...(inviteNode ? [{ key: "invite", node: inviteNode }] : []),
-    ...(conflict && !closedCards.includes(conflictKey)
+    ...(conflict && shows("homeConflict") && !closedCards.includes(conflictKey)
       ? [{ key: "conflict", node: (
           <AlertLine
             icon={CalendarClock}
@@ -512,7 +515,7 @@ export default function HomePage() {
 
   // "Also to look at", folded: the rest, each one opening its own screen.
   const later: { key: string; node: ReactNode }[] = [
-    ...(deloadShown ? [{ key: "deload", node: <DeloadCard key="deload" advice={deload} monday={thisMonday} active={deloading} hasProfile={!!profile} /> }] : []),
+    ...(deloadShown && shows("homeDeload") ? [{ key: "deload", node: <DeloadCard key="deload" advice={deload} monday={thisMonday} active={deloading} hasProfile={!!profile} /> }] : []),
     ...(finishedProgram ? [{ key: "review", node: <Fragment key="review"><HomeNote
               icon={PartyPopper}
               title={t("programDone", { name: finishedProgram.name })}
@@ -521,7 +524,7 @@ export default function HomePage() {
               action={t("programDoneAction")}
               onClose={() => closeCard(`review-${finishedProgram.uuid}`)}
             /></Fragment> }] : []),
-    ...(showReport ? [{ key: "report", node: <Fragment key="report"><WeeklyReportCard
+    ...(showReport && shows("homeReport") ? [{ key: "report", node: <Fragment key="report"><WeeklyReportCard
               workouts={workouts}
               sets={sets}
               exercises={exercises}
@@ -538,7 +541,7 @@ export default function HomePage() {
                 setReportClosed(lastMonday);
               }}
             /></Fragment> }] : []),
-    ...(tests?.due && !closedCards.includes(`tests-${tests.next}`) ? [{ key: "tests", node: <Fragment key="tests">
+    ...(tests?.due && shows("homeTests") && !closedCards.includes(`tests-${tests.next}`) ? [{ key: "tests", node: <Fragment key="tests">
             <HomeNote
               icon={Gauge}
               title={t("testsDue")}
@@ -548,8 +551,8 @@ export default function HomePage() {
               onClose={() => closeCard(`tests-${tests.next}`)}
             /></Fragment> }] : []),
     ...(readinessNode && readyScore == null ? [{ key: "readiness", node: <Fragment key="readiness">{readinessNode}</Fragment> }] : []),
-    ...(progressInsight ? [insightNote("insight", progressInsight)] : []),
-    ...(sportHint ? [{ key: "sport", node: <Fragment key="sport"><HomeNote
+    ...(progressInsight && shows("homeInsights") ? [insightNote("insight", progressInsight)] : []),
+    ...(sportHint && shows("homeSportHint") ? [{ key: "sport", node: <Fragment key="sport"><HomeNote
               icon={Sparkles}
               title={t("sportHint", { sport: tcat(sportHint === "callisthenics" ? "cat_timed" : `cat_${sportHint}`) })}
               text={t("sportHintText")}
@@ -557,7 +560,7 @@ export default function HomePage() {
               onAction={() => saveSportChoice({ sport: sportHint, sport2: prefs.sport === sportHint ? prefs.sport2 : prefs.sport })}
               onClose={() => closeCard(`sport-${sportHint}`)}
             /></Fragment> }] : []),
-    ...(topRecommendation ? [{ key: "advice", node: (
+    ...(topRecommendation && shows("homeAdvice") ? [{ key: "advice", node: (
       <Card key="advice">
         <CardContent className="space-y-2.5 py-4">
           <p className="text-sm font-semibold text-muted-foreground">{trec("title")}</p>
@@ -565,7 +568,7 @@ export default function HomePage() {
         </CardContent>
       </Card>
     ) }] : []),
-    ...(lastDone ? [{ key: "last", node: (
+    ...(lastDone && shows("homeLastSession") ? [{ key: "last", node: (
       <AlertLine
         icon={History}
         area={tnav("history")}
@@ -574,7 +577,7 @@ export default function HomePage() {
         href={sessionHref(lastDone.id!)}
       />
     ) }] : []),
-    ...(steadyInsight ? [insightNote("insight-steady", steadyInsight)] : []),
+    ...(steadyInsight && shows("homeInsights") ? [insightNote("insight-steady", steadyInsight)] : []),
     ...(readinessNode && readyScore != null ? [{ key: "readiness", node: <Fragment key="readiness">{readinessNode}</Fragment> }] : []),
   ];
 
@@ -827,7 +830,7 @@ export default function HomePage() {
                 </button>
               )}
               {/* One's plan B, always one tap away (or the way to choose one). */}
-              <button
+              {shows("homePlanB") && <button
                 type="button"
                 onClick={() => void startPlanB()}
                 disabled={starting}
@@ -835,7 +838,7 @@ export default function HomePage() {
               >
                 <Zap className="size-4 shrink-0" aria-hidden="true" />
                 <span className="truncate">{planBText ? tpb("start", { label: planBText }) : tpb("choose")}</span>
-              </button>
+              </button>}
             </section>
 
             {alerts.length > 0 && (
@@ -862,7 +865,7 @@ export default function HomePage() {
                 compact
                 plan={plan}
                 planned={planned.length > 0 || (profile?.trainingDays ?? []).length > 0}
-                onExport={hasFeature("planning") ? exportCalendar : undefined}
+                onExport={hasFeature("planning") && shows("homeCalendar") ? exportCalendar : undefined}
                 count={goal && goal.target > 0 ? { done: goal.done, target: goal.target } : null}
                 offset={planned.length ? weekOffset : undefined}
                 onOffset={(n) => setWeekChoice(Math.max(-4, Math.min(8, n)))}
@@ -874,7 +877,7 @@ export default function HomePage() {
 
             <div className="space-y-4 md:col-start-3">
               {/* Progress in three figures, once there is something to tell. */}
-              {doneCount >= 2 && (
+              {doneCount >= 2 && shows("homeProgress") && (
                 <HomeProgress
                   goal={mainGoal}
                   data={{ today, workouts, sets, exercises, bodyMetrics }}
@@ -883,7 +886,8 @@ export default function HomePage() {
                       ? `${t("weekVolume", { kg: num(summary.kg, 0) })}${summary.change !== null ? ` · ${summary.change > 0 ? "+" : ""}${summary.change}%` : ""}`
                       : t("weekActivities", { count: summary.count })
                   }
-                  load={load}
+                  // The load's zone for the experts, or whenever it calls for care.
+                  load={load && (shows("homeLoad") || load.zone === "caution" || load.zone === "danger") ? load : null}
                 />
               )}
               {later.length > 0 && (

@@ -14,6 +14,8 @@ import { InjuryAreasPicker } from "@/components/domain/InjuryAreas";
 import { RestrictionsEditor } from "@/components/domain/RestrictionsEditor";
 import { StravaSection } from "@/components/domain/StravaSection";
 import { PlanBEditor } from "@/components/domain/PlanBEditor";
+import { DisplayModePicker } from "@/components/domain/DisplayModePicker";
+import { saveDisplayMode, useDisplayMode } from "@/hooks/useDisplayMode";
 import { Zap } from "lucide-react";
 import { Ban } from "lucide-react";
 import db from "@/db";
@@ -49,7 +51,7 @@ import {
   Download, Shield, LogOut, Trash2, Loader2, Sparkles, Check, Type, ShieldCheck,
   Palette, LayoutGrid, Monitor, Sun, Moon, Globe, RotateCcw, User, Trophy,
   Home, Dumbbell, TrendingUp, Apple, Menu, ListChecks, ClipboardList, Users, HeartPulse,
-  Pencil, X, Bell, BellOff, KeyRound, Newspaper, Gauge, CalendarDays, CalendarPlus, FileUp, Flag, Activity, Bandage, Medal, Timer,
+  Pencil, X, Bell, BellOff, Eye, KeyRound, Newspaper, Gauge, CalendarDays, CalendarPlus, FileUp, Flag, Activity, Bandage, Medal, Timer,
   type LucideIcon,
 } from "lucide-react";
 import { localDate } from "@/lib/dates";
@@ -108,7 +110,7 @@ function Section({ id, icon: Icon, title, action, children }: {
 /** Where each section is: the menu opens Settings on one of them (?section=…). */
 const SECTION_GROUP: Record<string, SettingsGroupId> = {
   level: "training", plan: "training", planb: "training", injuries: "training", restrictions: "training", rest: "training",
-  sport: "personal", appearance: "personal", a11y: "personal", language: "personal", navigation: "personal",
+  display: "personal", sport: "personal", appearance: "personal", a11y: "personal", language: "personal", navigation: "personal",
   notifications: "alerts", ai: "alerts",
   resync: "data", strava: "data", import: "data", export: "data",
 };
@@ -160,6 +162,8 @@ function SettingsContent() {
   const trs = useTranslations("restrictions");
   const tstrava = useTranslations("strava");
   const tplanb = useTranslations("planB");
+  const tdm = useTranslations("displayMode");
+  const { mode: displayMode } = useDisplayMode();
   const target = useSearchParams().get("section");
   const [openGroups, setOpenGroups] = useState<Set<SettingsGroupId>>(() => new Set(target && SECTION_GROUP[target] ? [SECTION_GROUP[target]] : []));
   const toggleGroup = (id: SettingsGroupId) =>
@@ -584,6 +588,14 @@ function SettingsContent() {
         </SettingsGroup>
 
         <SettingsGroup id="personal" title={t("groupPersonal")} summary={t("groupPersonalSummary")} open={openGroups.has("personal")} onToggle={toggleGroup}>
+
+        {/* How much of the app one sees: kept with the profile, so it follows the athlete. */}
+        {athlete && (
+          <Section id="display" icon={Eye} title={tdm("title")}>
+            <p className="mb-3 text-xs text-muted-foreground">{tdm("settingsHint")}</p>
+            <DisplayModePicker value={displayMode} onChange={(m) => void saveDisplayMode(m)} />
+          </Section>
+        )}
 
         {/* My sport and the picture of the home screen */}
         <Section id="sport" icon={Medal} title={ta("sport")}>
