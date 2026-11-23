@@ -2312,6 +2312,25 @@ await test("a plan B chosen once is one tap away from the session card", async (
   await page.locator("#settings-planb").getByRole("button", { name: "Aucun", exact: true }).click();
 });
 
+await test("the sport followed is changed from the top of the home screen", async () => {
+  await page.goto(`${BASE}/fr`);
+  await page.getByRole("button", { name: /^Sport suivi : .*Changer de sport/ }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("button", { name: "Natation" }).click();
+  await dialog.waitFor({ state: "detached", timeout: 5000 });
+  await page.getByRole("button", { name: /^Sport suivi : Natation/ }).waitFor({ timeout: 5000 });
+  const stored = await page.evaluate(async () => {
+    const db = await new Promise((res) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); });
+    const all = await new Promise((res) => { const r = db.transaction("athleteProfiles").objectStore("athleteProfiles").getAll(); r.onsuccess = () => res(r.result); });
+    db.close();
+    return { prefs: JSON.parse(localStorage.getItem("traintrack.prefs") || "{}").sport, profile: all.map((p) => p.favoriteSport) };
+  });
+  expect(stored.prefs === "swimming" && stored.profile.every((f) => f === "swimming"), `stored ${JSON.stringify(stored)}`);
+  // Nothing wider than the phone with the new button in the header.
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), "the header is wider than the phone");
+  await setSportChoice(null);
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });

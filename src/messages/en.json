@@ -2982,5 +2982,11 @@
     "move": "Move the session",
     "moveText": "To another day of the week",
     "start": "Plan B: {label}"
+  },
+  "sportSwitch": {
+    "button": "Sport followed: {sport}. Change sport",
+    "title": "My sport",
+    "hint": "The home screen, the sessions offered and the figures follow this sport. Your programs and data do not change.",
+    "more": "Second sport and other settings"
   }
 }

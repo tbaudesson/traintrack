@@ -2982,5 +2982,11 @@
     "move": "Einheit verschieben",
     "moveText": "Auf einen anderen Tag der Woche",
     "start": "Plan B: {label}"
+  },
+  "sportSwitch": {
+    "button": "Verfolgter Sport: {sport}. Sport wechseln",
+    "title": "Mein Sport",
+    "hint": "Startseite, vorgeschlagene Einheiten und Kennzahlen folgen diesem Sport. Deine Programme und Daten bleiben unverändert.",
+    "more": "Zweiter Sport und weitere Einstellungen"
   }
 }

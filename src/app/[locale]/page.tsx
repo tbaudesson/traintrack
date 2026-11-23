@@ -2,6 +2,7 @@
 
 import { Activity, Award, CalendarClock, History, Users, Zap } from "lucide-react";
 import { NoTimeDialog, usePlanBLabel } from "@/components/domain/NoTimeDialog";
+import { SportSwitch } from "@/components/domain/SportSwitch";
 import { planBHref } from "@/lib/planB";
 import { sessionConflicts } from "@/lib/conflicts";
 import { AlertLine, HomeAlerts, HomeProgress, SessionMenu, useInjurySummary } from "@/components/domain/HomeZones";
@@ -675,6 +676,8 @@ export default function HomePage() {
             <span className="absolute right-2 top-2 size-2.5 rounded-full bg-accent-600 ring-2 ring-background" />
           </Link>
         )}
+        {/* The sport the app follows: its icon, a tap to change it. */}
+        <SportSwitch />
         <Link
           href="/settings"
           aria-label={tm("settings")}

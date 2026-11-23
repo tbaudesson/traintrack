@@ -2982,5 +2982,11 @@
     "move": "Déplacer la séance",
     "moveText": "À un autre jour de la semaine",
     "start": "Plan B : {label}"
+  },
+  "sportSwitch": {
+    "button": "Sport suivi : {sport}. Changer de sport",
+    "title": "Mon sport",
+    "hint": "L'accueil, les séances proposées et les chiffres suivent ce sport. Vos programmes et vos données ne changent pas.",
+    "more": "Deuxième sport et autres réglages"
   }
 }
