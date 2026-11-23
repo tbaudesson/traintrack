@@ -2552,7 +2552,8 @@
     "level": "Niveau",
     "allLevels": "Alle Niveaus",
     "together": "Oft zusammen damit",
-    "likeLastWeek": "Wie letzten {day}"
+    "likeLastWeek": "Wie letzten {day}",
+    "otherSports": "{count, plural, one {# Programm einer anderen Sportart} other {# Programme anderer Sportarten}} · Alle zeigen"
   },
   "reuse": {
     "title": "Diese Einheit wiederverwenden",

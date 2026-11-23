@@ -490,11 +490,12 @@ await test("the session picker narrows the ready-made programs by sport, a few a
   await sessionOption("Changer de séance ou de programme");
   const dialog = page.getByRole("dialog");
   const readyMade = dialog.locator("section", { has: page.locator("#picker-ready-made") });
-  await readyMade.getByRole("button", { name: "Tous", exact: true }).click();
+  const sports = dialog.getByRole("group", { name: "Sport" });
+  await sports.getByRole("button", { name: "Tous", exact: true }).click();
   const all = await readyMade.locator("a, button").filter({ hasText: " · " }).count();
   expect(all <= 6, `${all} ready-made programs shown at once`);
   expect(await readyMade.getByRole("button", { name: /Voir plus/ }).count(), "no way to see more");
-  await readyMade.getByRole("button", { name: "Natation", exact: true }).click();
+  await sports.getByRole("button", { name: "Natation", exact: true }).click();
   const rows = readyMade.locator("a, button").filter({ hasText: " · " });
   const n = await rows.count();
   expect(n > 0, "no swimming program");
@@ -2382,6 +2383,41 @@ await test("the Essential mode keeps the extras for later, safety first, and is 
   await page.locator("#chart-load-history").waitFor({ timeout: 10000 });
   expect(!(await page.getByText(/certaines analyses sont masquées/).count()), "the hint shows in Expert");
   await setMode(null);
+});
+
+await test("the session picker follows the sport chosen in the header: one's programs and the ready-made ones", async () => {
+  const dialog = page.getByRole("dialog");
+  const pickSport = async (name) => {
+    await page.goto(`${BASE}/fr`);
+    await page.getByRole("button", { name: /^Sport suivi : .*Changer de sport/ }).click();
+    await dialog.getByRole("button", { name, exact: true }).click();
+    await dialog.waitFor({ state: "detached", timeout: 5000 });
+  };
+  const mine = () => dialog.locator("section", { hasText: "Mes programmes" }).locator("h4");
+  await pickSport("Course à pied");
+  await sessionOption("Changer de séance ou de programme");
+  const sports = dialog.getByRole("group", { name: "Sport" });
+  await sports.getByRole("button", { name: "Course à pied", pressed: true }).waitFor({ timeout: 5000 });
+  // The ready-made programs of that sport only.
+  const readyMade = dialog.locator("section", { has: page.locator("#picker-ready-made") }).locator("a, button").filter({ hasText: " · " });
+  for (let i = 0; i < (await readyMade.count()); i++) expect((await readyMade.nth(i).innerText()).includes("Course à pied"), "another sport among the running programs");
+  // One's programs of other sports wait one tap away.
+  const running = await mine().allInnerTexts();
+  const others = dialog.getByRole("button", { name: /d’autres? sports? · Voir tous/ });
+  await others.waitFor({ timeout: 5000 });
+  await others.click();
+  await sports.getByRole("button", { name: "Tous", pressed: true }).waitFor({ timeout: 5000 });
+  expect((await mine().count()) > running.length, `no other program under "All": ${running.join(", ")}`);
+  await page.keyboard.press("Escape");
+  // Another sport followed: the picker follows it, the "All" chosen before is forgotten.
+  await pickSport("Natation");
+  await sessionOption("Changer de séance ou de programme");
+  await sports.getByRole("button", { name: "Natation", pressed: true }).waitFor({ timeout: 5000 });
+  // A search looks everywhere, whatever the sport.
+  await dialog.getByPlaceholder("Chercher un programme ou une séance").fill("full body");
+  await dialog.getByText(/Full Body/).first().waitFor({ timeout: 5000 });
+  await page.keyboard.press("Escape");
+  await setSportChoice(null);
 });
 
 await test("no page threw an error", async () => {

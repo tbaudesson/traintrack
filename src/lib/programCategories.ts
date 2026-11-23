@@ -12,6 +12,19 @@ const BY_SPORT = Object.fromEntries(
   Object.entries(SPORT_DEFS).filter(([, d]) => d.category).map(([s, d]) => [s, d.category])
 ) as Partial<Record<Sport, ProgramCategory>>;
 
+/** The shelves of a sport done as an outing (run, ride, swim…), not as sets in a gym. */
+const OUTING_SHELVES = new Set<ProgramCategory>(Object.values(BY_SPORT));
+
+/**
+ * Whether a program belongs on a shelf. One without a known sport (built from
+ * scratch) belongs on every shelf, except on an outing sport's when none of
+ * its days is an outing: sets of push-ups are not a run.
+ */
+export function onShelf(program: { structure?: ProgramDay[] }, own: ProgramCategory | null, shelf: ProgramCategory): boolean {
+  if (own) return own === shelf;
+  return !OUTING_SHELVES.has(shelf) || (program.structure ?? []).some((d) => !!d.cardio);
+}
+
 /** Strengthening plans for a sport, filed with that sport (ids of the built-in list, without the language). */
 const BY_ID: Record<string, ProgramCategory> = {
   "renfo-coureur": "running",

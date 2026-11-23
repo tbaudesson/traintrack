@@ -2552,7 +2552,8 @@
     "level": "Niveau",
     "allLevels": "Tous niveaux",
     "together": "Souvent avec ces exercices",
-    "likeLastWeek": "Comme {day} dernier"
+    "likeLastWeek": "Comme {day} dernier",
+    "otherSports": "{count, plural, one {# programme d’un autre sport} other {# programmes d’autres sports}} · Voir tous"
   },
   "reuse": {
     "title": "Réutiliser cette séance",

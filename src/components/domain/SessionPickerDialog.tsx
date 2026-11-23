@@ -16,7 +16,7 @@ import { useAthleteProfileOrNull } from "@/hooks/useAthleteProfile";
 import { search } from "@/lib/search";
 import { byUse, lastUsed } from "@/lib/reuse";
 import { practisedShelves } from "@/lib/suggest";
-import { CATEGORY_ORDER, planWeeks, programCategory, type ProgramCategory } from "@/lib/programCategories";
+import { CATEGORY_ORDER, onShelf, planWeeks, programCategory, type ProgramCategory } from "@/lib/programCategories";
 import { Button } from "@/components/ui/button";
 import { Chip, ChipRow, SearchField } from "@/components/ui/find";
 import { CategoryIcon } from "@/components/domain/ProgramCatalog";
@@ -39,9 +39,10 @@ const LEVELS: ProgramLevel[] = ["beginner", "intermediate", "advanced"];
 /**
  * "Choose a session": a day of one's programs, the last session again, a
  * session without a program (those of one's sports first), a GPX file, a new
- * program, a ready-made one. One search reaches all of it; the ready-made
- * programs are narrowed by sport and level (one's own sport first) and shown
- * a few at a time rather than as one long list.
+ * program, a ready-made one. One's programs and the ready-made ones are
+ * narrowed by sport, the sport followed at first (changed in the header, the
+ * picker follows); one search reaches everything, whatever the sport. The
+ * ready-made programs are also narrowed by level and shown a few at a time.
  */
 export function SessionPickerDialog({
   open,
@@ -94,8 +95,11 @@ export function SessionPickerDialog({
   const { starting, repeatable, likeLastWeek, startDay, startFree, repeatLast, repeat } = actions;
   const level = useAthleteProfileOrNull()?.fitnessLevel;
   const [query, setQuery] = useState("");
-  // The favourite sport's shelf when it has ready-made programs, else all of them.
-  const [sport, setSport] = useState<ProgramCategory | "all" | null>(null);
+  // The sport chosen here, for the sport followed when it was chosen: following
+  // another sport (from the header) brings the picker back to that one.
+  const followed = allSports ? "all" : favorite ?? null;
+  const [choice, setChoice] = useState<{ followed: string | null; sport: ProgramCategory | "all" } | null>(null);
+  const sport = choice?.followed === followed ? choice.sport : null;
   const [onlyLevel, setOnlyLevel] = useState<ProgramLevel | null>(null);
   const [shown, setShown] = useState(PAGE);
 
@@ -112,10 +116,12 @@ export function SessionPickerDialog({
     },
   ].sort((a, b) => a.rank - b.rank);
 
-  // Every ready-made program with its shelf, then narrowed by the search, the sport and the level.
+  // Every ready-made program and each of one's programs with its shelf, then
+  // narrowed by the search, the sport and the level.
   const withShelf = useMemo(() => templates.map((tpl) => ({ tpl, shelf: programCategory(tpl) })), [templates]);
-  const sports = CATEGORY_ORDER.filter((c) => withShelf.some((x) => x.shelf === c));
-  const ownSport = sports.find((c) => c === favorite) ?? null;
+  const programShelf = useMemo(() => new Map(programs.map((p) => [p, programCategory(p)])), [programs]);
+  const sports = CATEGORY_ORDER.filter((c) => withShelf.some((x) => x.shelf === c) || [...programShelf.values()].includes(c));
+  const ownSport = allSports ? null : sports.find((c) => c === favorite) ?? null;
   // One's sport first, then those one trains on most, then the others.
   const practised = practisedShelves(workouts, (id) => {
     const p = programs.find((x) => x.id === id);
@@ -134,14 +140,17 @@ export function SessionPickerDialog({
   );
   const levels = LEVELS.filter((l) => ofShelf.some((x) => x.tpl.level === l));
   const pick = (next: ProgramCategory | "all") => {
-    setSport(next);
+    setChoice({ followed, sport: next });
     setOnlyLevel(null);
     setShown(PAGE);
   };
 
   // The days of one's programs and the sessions without a program, narrowed by the same search.
   // Favourites first, then the last used.
-  const ordered = byUse(programs, lastUsed(workouts));
+  // A program of another sport waits under "All" (one without a known sport, see onShelf).
+  const ofSport = (p: Program) => !!q || shelf === "all" || onShelf(p, programShelf.get(p) ?? null, shelf);
+  const ordered = byUse(programs, lastUsed(workouts)).filter(ofSport);
+  const otherSports = programs.length - ordered.length;
   const days = ordered.flatMap((p) => daysToOffer(p, workouts, today).map(({ day: d, index }) => ({ p, d, index })));
   const foundDays = search(days, q, ({ p, d }) => ({ names: [d.name, p.name], others: [dayDetail(d)] }));
   const foundFree = search(freeRows, q, (r) => ({ names: [r.text[0]], others: [r.text[1]] }));
@@ -183,6 +192,16 @@ export function SessionPickerDialog({
             clearLabel={tf("clear")}
           />
 
+          {/* The sport: one's programs and the ready-made ones; the search looks everywhere. */}
+          {!q && sports.length > 1 && (
+            <ChipRow label={tf("sport")}>
+              <Chip on={shelf === "all"} onClick={() => pick("all")}>{tf("all")}</Chip>
+              {[...sports].sort((a, b) => rank(a) - rank(b)).map((c) => (
+                <Chip key={c} on={shelf === c} onClick={() => pick(c)}>{tcat(`cat_${c}`)}</Chip>
+              ))}
+            </ChipRow>
+          )}
+
           {foundDays.length > 0 && (
             <section className="space-y-3">
               <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("myPrograms")}</h3>
@@ -206,6 +225,13 @@ export function SessionPickerDialog({
                   </div>
                 ))}
             </section>
+          )}
+
+          {/* One's programs of other sports, one tap away. */}
+          {!q && otherSports > 0 && (
+            <button type="button" onClick={() => pick("all")} className="flex min-h-10 w-full items-center justify-center text-sm font-medium text-accent-text">
+              {tf("otherSports", { count: otherSports })}
+            </button>
           )}
 
           {(showRepeat || showLike || foundFree.length > 0 || !q) && (
@@ -258,23 +284,13 @@ export function SessionPickerDialog({
           {templates.length > 0 && (found.length > 0 || !q) && (
             <section className="space-y-2" aria-labelledby="picker-ready-made">
               <h3 id="picker-ready-made" className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t("readyMade")}</h3>
-              {!q && (
-                <>
-                  <ChipRow label={tf("sport")}>
-                    <Chip on={shelf === "all"} onClick={() => pick("all")}>{tf("all")}</Chip>
-                    {[...sports].sort((a, b) => rank(a) - rank(b)).map((c) => (
-                      <Chip key={c} on={shelf === c} onClick={() => pick(c)}>{tcat(`cat_${c}`)}</Chip>
-                    ))}
-                  </ChipRow>
-                  {levels.length > 1 && (
-                    <ChipRow label={tf("level")}>
-                      <Chip on={!onlyLevel} onClick={() => { setOnlyLevel(null); setShown(PAGE); }}>{tf("allLevels")}</Chip>
-                      {levels.map((l) => (
-                        <Chip key={l} on={onlyLevel === l} onClick={() => { setOnlyLevel(onlyLevel === l ? null : l); setShown(PAGE); }}>{tt(`level_${l}`)}</Chip>
-                      ))}
-                    </ChipRow>
-                  )}
-                </>
+              {!q && levels.length > 1 && (
+                <ChipRow label={tf("level")}>
+                  <Chip on={!onlyLevel} onClick={() => { setOnlyLevel(null); setShown(PAGE); }}>{tf("allLevels")}</Chip>
+                  {levels.map((l) => (
+                    <Chip key={l} on={onlyLevel === l} onClick={() => { setOnlyLevel(onlyLevel === l ? null : l); setShown(PAGE); }}>{tt(`level_${l}`)}</Chip>
+                  ))}
+                </ChipRow>
               )}
               {found.slice(0, shown).map(({ tpl, shelf: c }) => (
                 <DetailRow

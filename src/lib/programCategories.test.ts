@@ -51,3 +51,20 @@ it("files a program on its built-in shelf even when the catalogue comes from the
   const fromServer = [{ id: "5f0c2c1e-0000-4000-8000-000000000001", name: "Poids du corps", goal: "general" as const }];
   expect(programCategory({ name: "Poids du corps" }, fromServer)).toBe("callisthenics");
 });
+
+describe("a program on a sport's shelf", () => {
+  it("is on its own sport's shelf only", async () => {
+    const { onShelf } = await import("./programCategories");
+    expect(onShelf({}, "running", "running")).toBe(true);
+    expect(onShelf({}, "running", "swimming")).toBe(false);
+  });
+
+  it("built from scratch, is on every shelf but an outing sport's when it has no outing", async () => {
+    const { onShelf } = await import("./programCategories");
+    const sets = { structure: [{ name: "Pompes", exercises: [] }] };
+    const outing = { structure: [{ name: "Sortie", exercises: [], cardio: { sport: "run" as const } }] };
+    expect(onShelf(sets, null, "fitness")).toBe(true);
+    expect(onShelf(sets, null, "running")).toBe(false);
+    expect(onShelf(outing as never, null, "running")).toBe(true);
+  });
+});

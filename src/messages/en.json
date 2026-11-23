@@ -2552,7 +2552,8 @@
     "level": "Level",
     "allLevels": "All levels",
     "together": "Often done with these",
-    "likeLastWeek": "Like last {day}"
+    "likeLastWeek": "Like last {day}",
+    "otherSports": "{count, plural, one {# program of another sport} other {# programs of other sports}} · Show all"
   },
   "reuse": {
     "title": "Reuse this session",
