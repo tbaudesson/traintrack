@@ -255,6 +255,10 @@ await page.evaluate(async ({ user, libraryRows }) => {
   const m082 = readFileSync("supabase/migrations/082_display_modes.sql", "utf8");
   const modes = m082.slice(m082.indexOf("'\n{") + 1, m082.indexOf("}\n'") + 1);
   await page.evaluate((v) => localStorage.setItem("traintrack.guidance.display_modes", v), JSON.stringify(JSON.parse(modes)));
+  // The music apps, as migration 083 seeds them.
+  const m083 = readFileSync("supabase/migrations/083_music_apps.sql", "utf8");
+  const music = m083.slice(m083.indexOf("'\n[") + 1, m083.indexOf("]\n'") + 1);
+  await page.evaluate((v) => localStorage.setItem("traintrack.guidance.music_apps", v), JSON.stringify(JSON.parse(music)));
 }
 
 await context.setOffline(true);
@@ -2463,6 +2467,70 @@ await test("a timed session done ends on its recap, with Done back home and back
       await page.waitForURL(/\/fr\/log$/, { timeout: 10000 });
     }
     await page.evaluate(({ t }) => localStorage.setItem("traintrack.guidance.timed_sessions", t), kept);
+  }
+});
+
+await test("music: one's app and playlist chosen in Settings, opened from a session, or chosen there the first time", async () => {
+  // What the app opens is noted rather than opened.
+  const stub = () => page.evaluate(() => {
+    window.__opened = [];
+    window.open = (url, target) => {
+      window.__opened.push([url, target]);
+      return null;
+    };
+  });
+  const opened = () => page.evaluate(() => window.__opened);
+  const list = "https://open.spotify.com/playlist/37i9dQZF1DX76Wlfdnj7AP";
+  try {
+    await page.goto(`${BASE}/fr/settings?section=music`);
+    const section = page.locator("#settings-music");
+    await section.getByRole("button", { name: "Aucune", pressed: true }).waitFor({ timeout: 10000 });
+    await section.getByRole("button", { name: "Spotify", exact: true }).click();
+    const field = section.getByRole("textbox", { name: /Playlist/ });
+    // A link of another app is refused.
+    await field.fill("https://music.apple.com/fr/playlist/x");
+    await field.press("Enter");
+    await section.getByRole("alert").getByText("Ce lien n'est pas une playlist Spotify.").waitFor({ timeout: 5000 });
+    await field.fill(list);
+    await field.press("Enter");
+    await section.getByRole("alert").waitFor({ state: "detached", timeout: 5000 });
+    const kept = await page.evaluate(() => JSON.parse(localStorage.getItem("traintrack.prefs")).music);
+    expect(kept?.app === "spotify" && kept?.playlist === list, `kept ${JSON.stringify(kept)}`);
+    await stub();
+    await section.getByRole("button", { name: "Essayer" }).click();
+    expect(JSON.stringify(await opened()) === JSON.stringify([[list, "_blank"]]), `tried ${JSON.stringify(await opened())}`);
+
+    // In a timed session: one tap, the session goes on.
+    await page.goto(`${BASE}/fr/intervals`);
+    await page.getByRole("button", { name: /Démarrer/ }).click();
+    const player = page.getByRole("dialog");
+    await player.getByText(/Préparez-vous/).waitFor({ timeout: 5000 });
+    await stub();
+    await player.getByRole("button", { name: "Musique : ouvrir Spotify" }).click();
+    expect((await opened())[0]?.[0] === list, `opened ${JSON.stringify(await opened())}`);
+    expect(await player.isVisible(), "the session stopped when the music opened");
+    await snap("player-music");
+    await player.getByRole("button", { name: /Terminer la séance/ }).click();
+
+    // Never chosen: the app is picked right there, then opens (its web player on a computer).
+    await page.evaluate(() => {
+      const prefs = JSON.parse(localStorage.getItem("traintrack.prefs"));
+      localStorage.setItem("traintrack.prefs", JSON.stringify({ ...prefs, music: null }));
+    });
+    await page.goto(`${BASE}/fr/intervals`);
+    await page.getByRole("button", { name: /Démarrer/ }).click();
+    await player.getByText(/Préparez-vous/).waitFor({ timeout: 5000 });
+    await stub();
+    await player.getByRole("button", { name: "Musique : choisir son appli" }).click();
+    await player.getByRole("group", { name: "Musique : choisir son appli" }).getByRole("button", { name: "Deezer" }).click();
+    expect(JSON.stringify(await opened()) === JSON.stringify([["https://www.deezer.com", "_blank"]]), `opened ${JSON.stringify(await opened())}`);
+    await player.getByRole("button", { name: "Musique : ouvrir Deezer" }).waitFor({ timeout: 5000 });
+    await player.getByRole("button", { name: /Terminer la séance/ }).click();
+  } finally {
+    await page.evaluate(() => {
+      const prefs = JSON.parse(localStorage.getItem("traintrack.prefs") ?? "{}");
+      localStorage.setItem("traintrack.prefs", JSON.stringify({ ...prefs, music: null }));
+    });
   }
 });
 

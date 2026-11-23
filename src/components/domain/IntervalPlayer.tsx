@@ -12,6 +12,7 @@ import { useExerciseLabel } from "@/lib/exerciseNames";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { DemoDialog } from "@/components/domain/DemoDialog";
+import { MusicButton } from "@/components/domain/MusicButton";
 
 export interface IntervalResult {
   /** Indexes of the effort steps carried out to the end. */
@@ -236,6 +237,7 @@ export function IntervalPlayer({
         </span>
         <span className="flex items-center gap-1">
           {t("remaining", { time: clock(remaining) })}
+          <MusicButton className="-my-2" />
           {canSpeak && (
             <button
               type="button"

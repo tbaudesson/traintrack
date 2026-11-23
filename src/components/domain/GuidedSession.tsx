@@ -7,6 +7,7 @@ import { guidedCursor } from "@/lib/guided";
 import { useSessionFocus } from "@/hooks/useSessionFocus";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { MusicButton } from "@/components/domain/MusicButton";
 
 export interface GuidedStep {
   id: number;
@@ -111,6 +112,7 @@ export function GuidedSession({
         <p aria-live="polite" className="flex-1 text-sm font-medium text-muted-foreground tabular-nums">
           {t("progress", { done: completed.size, total: steps.length })}
         </p>
+        <MusicButton />
         <button type="button" onClick={onClose} aria-label={t("close")} className="flex size-11 items-center justify-center rounded-full hover:bg-muted">
           <X className="h-5 w-5" aria-hidden="true" />
         </button>

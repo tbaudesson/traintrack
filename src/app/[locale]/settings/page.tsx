@@ -15,9 +15,10 @@ import { RestrictionsEditor } from "@/components/domain/RestrictionsEditor";
 import { StravaSection } from "@/components/domain/StravaSection";
 import { PlanBEditor } from "@/components/domain/PlanBEditor";
 import { DisplayModePicker } from "@/components/domain/DisplayModePicker";
+import { MusicSettings } from "@/components/domain/MusicSettings";
 import { saveDisplayMode, useDisplayMode } from "@/hooks/useDisplayMode";
 import { Zap } from "lucide-react";
-import { Ban } from "lucide-react";
+import { Ban, Music } from "lucide-react";
 import db from "@/db";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -109,7 +110,7 @@ function Section({ id, icon: Icon, title, action, children }: {
 
 /** Where each section is: the menu opens Settings on one of them (?section=…). */
 const SECTION_GROUP: Record<string, SettingsGroupId> = {
-  level: "training", plan: "training", planb: "training", injuries: "training", restrictions: "training", rest: "training",
+  level: "training", plan: "training", planb: "training", injuries: "training", restrictions: "training", rest: "training", music: "training",
   display: "personal", sport: "personal", appearance: "personal", a11y: "personal", language: "personal", navigation: "personal",
   notifications: "alerts", ai: "alerts",
   resync: "data", strava: "data", import: "data", export: "data",
@@ -163,6 +164,7 @@ function SettingsContent() {
   const tstrava = useTranslations("strava");
   const tplanb = useTranslations("planB");
   const tdm = useTranslations("displayMode");
+  const tmusic = useTranslations("music");
   const { mode: displayMode } = useDisplayMode();
   const target = useSearchParams().get("section");
   const [openGroups, setOpenGroups] = useState<Set<SettingsGroupId>>(() => new Set(target && SECTION_GROUP[target] ? [SECTION_GROUP[target]] : []));
@@ -583,6 +585,11 @@ function SettingsContent() {
             {trest("test")}
           </Button>
           {restError && <p className="mt-1 text-xs text-destructive">{restError}</p>}
+        </Section>
+
+        {/* One's music app, opened from a session */}
+        <Section id="music" icon={Music} title={tmusic("title")}>
+          <MusicSettings />
         </Section>
 
         </SettingsGroup>

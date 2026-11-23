@@ -5,11 +5,15 @@
  * readies the voice coach, under the same rule.
  */
 import { unlockVoice } from "./voice";
+import { getPrefs } from "./appTheme";
+import { mixWithMusic } from "./music";
 
 let context: AudioContext | null = null;
 
 export function unlockAudio(): void {
   unlockVoice();
+  // One's music chosen: the beeps play over it rather than stopping it.
+  if (getPrefs().music) mixWithMusic();
   try {
     if (!context) {
       const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;

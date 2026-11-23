@@ -69,6 +69,7 @@ import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, MoreHorizontal,
 import { cn } from "@/lib/utils";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { IntervalWorkoutView } from "@/components/domain/IntervalWorkoutView";
+import { MusicButton } from "@/components/domain/MusicButton";
 import { MobilityWorkoutView } from "@/components/domain/MobilityWorkoutView";
 import { connectHeartRate, isBluetoothSupported, type HeartRateMonitor } from "@/lib/bleHeartRate";
 import { EmptyState } from "@/components/ui/page-parts";
@@ -820,6 +821,7 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
         showBack
         actions={
           <div className="flex items-center gap-1">
+            <MusicButton className="size-8" />
             {workout && !isCardio(workout) && groups.length > 0 && (
               <Button size="icon-sm" variant="ghost" aria-label={t("reuse")} onClick={() => setReusing(true)}>
                 <CopyPlus className="h-4 w-4" aria-hidden="true" />

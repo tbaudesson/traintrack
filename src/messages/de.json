@@ -979,7 +979,8 @@
     "mobility": "Aufwärmen",
     "timed": "HIIT · Intervall-Einheiten",
     "equipment": "Ausrüstung",
-    "display": "Anzeige"
+    "display": "Anzeige",
+    "music": "Musik"
   },
   "profile": {
     "title": "Profil",
@@ -3041,5 +3042,33 @@
     "part_progressRecords": "Rekorde (geschätztes 1RM)",
     "part_logMoreDetails": "Weitere Details",
     "part_logTrimp": "TRIMP-Belastung"
+  },
+  "music": {
+    "title": "Musik",
+    "open": "Musik: {app} öffnen",
+    "choose": "Musik: App wählen",
+    "chooseHint": "Die Einheit läuft währenddessen weiter. App ändern oder Playlist hinzufügen unter Einstellungen > Musik.",
+    "settingsHint": "Die Musik-Taste der Einheiten öffnet deine Musik-App, mit deiner Playlist, wenn du eine angibst; die Einheit läuft währenddessen weiter. Auf diesem Gerät gespeichert.",
+    "app": "Musik-App",
+    "none": "Keine",
+    "playlist": "Playlist (optional)",
+    "playlistHint": "In {app}: Teilen > Link zur Playlist kopieren, dann hier einfügen.",
+    "playlistInvalid": "Dieser Link ist keine {app}-Playlist.",
+    "try": "Ausprobieren",
+    "soundHint": "Auf dem iPhone mischen sich Pieptöne und Sprachcoach mit der Musik; sie folgen dann dem Stummschalter.",
+    "notLoaded": "Die Liste der Musik-Apps wurde noch nicht geladen: öffne die App einmal mit Verbindung.",
+    "adminTitle": "Musik-Apps",
+    "adminIntro": "Die Apps, die ein Athlet aus einer Einheit öffnen kann: ihre Adresse auf dem Handy („spotify:“), ihr Web-Player am Computer und wie ihre Playlist-Links beginnen, einer pro Zeile.",
+    "adminName": "Name",
+    "adminId": "Kennung (Kleinbuchstaben, Ziffern, Bindestriche)",
+    "adminAppUrl": "App-Adresse (Handy)",
+    "adminWebUrl": "Web-Player (https)",
+    "adminPrefixes": "Playlist-Links beginnen mit (https, einer pro Zeile)",
+    "adminRemove": "{app} entfernen",
+    "adminAdd": "App hinzufügen",
+    "adminInvalid": "Liste unvollständig: jede App braucht einen Namen, eine eindeutige Kennung, eine App-Adresse und https-Links.",
+    "adminMissing": "Die Liste der Musik-Apps gibt es noch nicht: Migration 083 anwenden.",
+    "adminSave": "Speichern",
+    "adminSaved": "Gespeichert"
   }
 }

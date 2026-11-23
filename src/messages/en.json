@@ -979,7 +979,8 @@
     "mobility": "Warm-ups",
     "timed": "HIIT · timed sessions",
     "equipment": "Equipment",
-    "display": "Display"
+    "display": "Display",
+    "music": "Music"
   },
   "profile": {
     "title": "Profile",
@@ -3041,5 +3042,33 @@
     "part_progressRecords": "Records (estimated 1RM)",
     "part_logMoreDetails": "More details",
     "part_logTrimp": "TRIMP load"
+  },
+  "music": {
+    "title": "Music",
+    "open": "Music: open {app}",
+    "choose": "Music: choose your app",
+    "chooseHint": "The session goes on meanwhile. Change the app or add a playlist in Settings > Music.",
+    "settingsHint": "The Music button of the sessions opens your music app, on your playlist if you give one; the session goes on meanwhile. Kept on this device.",
+    "app": "Music app",
+    "none": "None",
+    "playlist": "Playlist (optional)",
+    "playlistHint": "In {app}, Share > Copy the playlist link, then paste it here.",
+    "playlistInvalid": "This link is not a {app} playlist.",
+    "try": "Try it",
+    "soundHint": "On iPhone the beeps and the voice coach mix with the music; they then follow the silent switch.",
+    "notLoaded": "The list of music apps has not been loaded yet: open the app once with a connection.",
+    "adminTitle": "Music apps",
+    "adminIntro": "The apps an athlete can open from a session: its address on a phone (\"spotify:\"), its web player on a computer, and how its playlist links begin, one per line.",
+    "adminName": "Name",
+    "adminId": "Identifier (lowercase, digits, hyphens)",
+    "adminAppUrl": "App address (phone)",
+    "adminWebUrl": "Web player (https)",
+    "adminPrefixes": "Playlist links begin with (https, one per line)",
+    "adminRemove": "Remove {app}",
+    "adminAdd": "Add an app",
+    "adminInvalid": "Incomplete list: each app needs a name, a unique identifier, an app address and https links.",
+    "adminMissing": "The list of music apps does not exist yet: apply migration 083.",
+    "adminSave": "Save",
+    "adminSaved": "Saved"
   }
 }
