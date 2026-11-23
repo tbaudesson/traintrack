@@ -1471,7 +1471,8 @@
     "abandon": "Give up",
     "notLoaded": "Timed sessions have not been loaded yet: open the app once with a connection.",
     "factRounds": "Full rounds",
-    "factHeart": "HR avg · max"
+    "factHeart": "HR avg · max",
+    "finished": "Done"
   },
   "mobility": {
     "title": "Warm-up, stretching and yoga",

@@ -15,6 +15,12 @@ import { SyncStatus } from "./SyncStatus";
  */
 let depth = 0;
 let goingBack = false;
+let replacing = false;
+
+/** Before a page takes the place of this one in the history (router.replace): no step more to go back. */
+export function replacingPage() {
+  replacing = true;
+}
 
 interface PageHeaderProps {
   title: string;
@@ -27,8 +33,9 @@ export function PageHeader({ title, showBack = true, actions }: PageHeaderProps)
   const router = useRouter();
   const tc = useTranslations("common");
   useEffect(() => {
-    depth = goingBack ? Math.max(1, depth - 1) : depth + 1;
+    depth = goingBack ? Math.max(1, depth - 1) : replacing ? Math.max(1, depth) : depth + 1;
     goingBack = false;
+    replacing = false;
   }, []);
 
   return (

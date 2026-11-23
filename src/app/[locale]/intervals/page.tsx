@@ -31,7 +31,7 @@ import { unlockAudio } from "@/lib/beep";
 import { exerciseDescription, useExerciseLabel } from "@/lib/exerciseNames";
 import { demoVideo } from "@/lib/demoVideos";
 import { DemoButton, DemoDialog } from "@/components/domain/DemoDialog";
-import { PageHeader } from "@/components/layout/PageHeader";
+import { PageHeader, replacingPage } from "@/components/layout/PageHeader";
 import { SectionHeading } from "@/components/ui/page-parts";
 import { Button } from "@/components/ui/button";
 import { Choice, ChoiceField } from "@/components/ui/choice";
@@ -185,7 +185,9 @@ export default function IntervalsPage() {
       numbers.set(name, setNumber);
       await addWorkoutSet({ workoutId: id, exerciseId, setNumber, reps: step.seconds, restSec: rest, completed: true });
     }
-    router.push(sessionHref(id));
+    // The recap takes the timer's place: back from it leads where the session was started from.
+    replacingPage();
+    router.replace(`${sessionHref(id)}&done=1`);
   }
 
   if (!timed)

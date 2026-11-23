@@ -1471,7 +1471,8 @@
     "abandon": "Abbrechen",
     "notLoaded": "Die Intervall-Einheiten wurden noch nicht geladen: Öffne die App einmal mit Verbindung.",
     "factRounds": "Volle Runden",
-    "factHeart": "HF Ø · max"
+    "factHeart": "HF Ø · max",
+    "finished": "Fertig"
   },
   "mobility": {
     "title": "Aufwärmen, Dehnen und Yoga",

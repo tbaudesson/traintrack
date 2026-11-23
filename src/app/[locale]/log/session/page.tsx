@@ -7,8 +7,9 @@ import { SessionLogger } from "../[id]/SessionLogger";
 function ById() {
   const params = useSearchParams();
   const id = Number(params.get("id"));
-  // ?guided=1: the session opens in guided mode (a beginner's first one).
-  return id > 0 ? <SessionLogger key={id} workoutId={id} startGuided={params.get("guided") === "1"} /> : null;
+  // ?guided=1: the session opens in guided mode (a beginner's first one);
+  // ?done=1: it was just finished (its recap then shows the way out).
+  return id > 0 ? <SessionLogger key={id} workoutId={id} startGuided={params.get("guided") === "1"} justDone={params.get("done") === "1"} /> : null;
 }
 
 /**

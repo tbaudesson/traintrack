@@ -76,7 +76,7 @@ import { useExerciseLabel, exerciseDescription } from "@/lib/exerciseNames";
 import { useFormat } from "@/lib/format";
 
 /** A session being logged: shared by /log/session?id=… (works offline) and /log/[id]. */
-export function SessionLogger({ workoutId, startGuided = false }: { workoutId: number; startGuided?: boolean }) {
+export function SessionLogger({ workoutId, startGuided = false, justDone = false }: { workoutId: number; startGuided?: boolean; justDone?: boolean }) {
   const t = useTranslations("log");
   const tp = useTranslations("programs");
   const tc = useTranslations("common");
@@ -775,7 +775,7 @@ export function SessionLogger({ workoutId, startGuided = false }: { workoutId: n
     if (next) startEffort(next);
   });
 
-  if (workout?.kind === "interval") return <IntervalWorkoutView workout={workout} sets={sets ?? []} exercises={exercises} />;
+  if (workout?.kind === "interval") return <IntervalWorkoutView workout={workout} sets={sets ?? []} exercises={exercises} justDone={justDone} />;
   if (workout?.kind === "mobility") return <MobilityWorkoutView workout={workout} />;
 
   const heartRateCard =

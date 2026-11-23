@@ -3,7 +3,7 @@
 import { TrimpLine } from "@/components/domain/TrimpLine";
 import { SessionFeedback } from "@/components/domain/SessionFeedback";
 import { useTranslations } from "next-intl";
-import { RotateCcw, Timer, Trash2 } from "lucide-react";
+import { Check, RotateCcw, Timer, Trash2 } from "lucide-react";
 import type { Exercise, Workout, WorkoutSet } from "@/db";
 import { Link, useRouter } from "@/i18n/navigation";
 import { deleteWorkout } from "@/hooks/useWorkouts";
@@ -17,9 +17,9 @@ import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 /**
  * A timed session once done: how long, in which rhythm, and how many
  * intervals of each exercise. Nothing to fill in; "Do it again" opens the
- * same session in the timer.
+ * same session in the timer. Just finished, "Done" leads back home.
  */
-export function IntervalWorkoutView({ workout, sets, exercises }: { workout: Workout; sets: WorkoutSet[]; exercises: Exercise[] }) {
+export function IntervalWorkoutView({ workout, sets, exercises, justDone = false }: { workout: Workout; sets: WorkoutSet[]; exercises: Exercise[]; justDone?: boolean }) {
   const t = useTranslations("intervals");
   const xl = useExerciseLabel();
   const router = useRouter();
@@ -79,8 +79,15 @@ export function IntervalWorkoutView({ workout, sets, exercises }: { workout: Wor
           ))}
         </ul>
 
+        {justDone && (
+          <Button className="h-12 w-full rounded-full" onClick={() => router.push("/")}>
+            <Check className="mr-1 h-4 w-4" aria-hidden="true" />
+            {t("finished")}
+          </Button>
+        )}
+
         <Link href={again} className="block">
-          <Button className="h-12 w-full rounded-full">
+          <Button variant={justDone ? "outline" : "default"} className="h-12 w-full rounded-full">
             <RotateCcw className="mr-1 h-4 w-4" aria-hidden="true" />
             {t("again")}
           </Button>

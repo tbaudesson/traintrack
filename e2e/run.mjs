@@ -2420,6 +2420,52 @@ await test("the session picker follows the sport chosen in the header: one's pro
   await setSportChoice(null);
 });
 
+await test("a timed session done ends on its recap, with Done back home and back leading home too", async () => {
+  // Five seconds of effort, no rest and no countdown for the test, the reference put back after.
+  const kept = await page.evaluate(() => {
+    const t = localStorage.getItem("traintrack.guidance.timed_sessions");
+    const tt = JSON.parse(t);
+    tt.getReadySec = 0;
+    tt.patterns = [...tt.patterns, "5-0"];
+    localStorage.setItem("traintrack.guidance.timed_sessions", JSON.stringify(tt));
+    return { t, minutes: tt.minutes[0] };
+  });
+  let id = 0;
+  try {
+    await page.goto(`${BASE}/fr`);
+    await page.getByRole("button", { name: "Ouvrir le menu" }).waitFor({ timeout: 10000 });
+    await page.goto(`${BASE}/fr/intervals?focus=full&dumbbells=0&trx=0&pattern=5-0&minutes=${kept.minutes}&seed=7`);
+    await page.getByRole("button", { name: /Démarrer/ }).click();
+    const player = page.getByRole("dialog");
+    await player.getByText(/Effort/).waitFor({ timeout: 5000 });
+    // The first exercise done to the end, then the session stopped.
+    await page.waitForTimeout(6500);
+    await player.getByRole("button", { name: /Terminer la séance/ }).click();
+    await page.waitForURL(/\/fr\/log\/session\?id=\d+&done=1/, { timeout: 10000 });
+    id = Number(new URL(page.url()).searchParams.get("id"));
+    const done = page.getByRole("button", { name: "Terminé", exact: true });
+    await done.waitFor({ timeout: 10000 });
+    await snap("interval-recap-done");
+    // The timer is no longer behind the recap: back leads where the session was started from.
+    await page.getByRole("button", { name: "Retour" }).click();
+    await page.waitForURL(new RegExp(`${BASE}/fr/?$`), { timeout: 10000 });
+    await page.goForward();
+    await done.click();
+    await page.waitForURL(new RegExp(`${BASE}/fr/?$`), { timeout: 10000 });
+    // Opened again from the history: a recap, nothing more to end.
+    await page.goto(`${BASE}/fr/log/session?id=${id}`);
+    await page.getByRole("button", { name: /Refaire cette séance/ }).waitFor({ timeout: 10000 });
+    expect(!(await page.getByRole("button", { name: "Terminé", exact: true }).count()), "Done shown on a session opened from the history");
+  } finally {
+    if (id) {
+      page.once("dialog", (d) => d.accept());
+      await page.getByRole("button", { name: /Supprimer la séance/ }).click();
+      await page.waitForURL(/\/fr\/log$/, { timeout: 10000 });
+    }
+    await page.evaluate(({ t }) => localStorage.setItem("traintrack.guidance.timed_sessions", t), kept);
+  }
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });

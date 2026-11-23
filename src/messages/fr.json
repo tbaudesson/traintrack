@@ -1471,7 +1471,8 @@
     "abandon": "Abandonner",
     "notLoaded": "Les séances minutées n’ont pas encore été chargées : ouvrez l’app une fois avec une connexion.",
     "factRounds": "Tours complets",
-    "factHeart": "FC moy. · max"
+    "factHeart": "FC moy. · max",
+    "finished": "Terminé"
   },
   "mobility": {
     "title": "Échauffement, étirements et yoga",
