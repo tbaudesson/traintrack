@@ -10,7 +10,7 @@ const spotify = apps.find((a) => a.id === "spotify")!;
 
 describe("music", () => {
   it("reads the seeded apps whole, Spotify among them", () => {
-    expect(apps.map((a) => a.name)).toEqual(["Spotify", "Apple Music", "Deezer", "YouTube Music"]);
+    expect(apps.map((a) => a.name)).toEqual(["Spotify", "Apple Music", "Deezer", "YouTube Music", "Qobuz"]);
     expect(spotify.appUrl).toBe("spotify:");
   });
 

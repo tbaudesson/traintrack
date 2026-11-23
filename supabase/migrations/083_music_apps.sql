@@ -37,6 +37,13 @@ INSERT INTO app_settings (key, value) VALUES ('music_apps', '
     "appUrl": "youtubemusic://",
     "webUrl": "https://music.youtube.com",
     "playlistPrefixes": ["https://music.youtube.com/"]
+  },
+  {
+    "id": "qobuz",
+    "name": "Qobuz",
+    "appUrl": "qobuzapp://",
+    "webUrl": "https://play.qobuz.com",
+    "playlistPrefixes": ["https://open.qobuz.com/", "https://play.qobuz.com/", "https://www.qobuz.com/"]
   }
 ]
 ')
