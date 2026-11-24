@@ -2636,6 +2636,33 @@ await test("boxing rounds in the HIIT: combinations called out, a burst to end e
   }
 });
 
+await test("a link asking for boxing waits for the rounds' reference on a first visit, and falls back to a circuit without it", async () => {
+  const kept = await page.evaluate(() => {
+    const b = localStorage.getItem("traintrack.guidance.boxing_rounds");
+    localStorage.removeItem("traintrack.guidance.boxing_rounds");
+    return b;
+  });
+  // The reference read from the server, a little after the rest: only that request is answered, nothing reaches a server.
+  const settings = (route) =>
+    new Promise((resolve) => setTimeout(resolve, 1500)).then(() => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([{ key: "boxing_rounds", value: kept }]) }));
+  const isSettings = (url) => url.pathname.endsWith("/rest/v1/app_settings");
+  try {
+    await context.route(isSettings, settings);
+    await page.goto(`${BASE}/fr/intervals?focus=boxing`);
+    await page.getByRole("button", { name: "Boxe", pressed: true }).waitFor({ timeout: 10000 });
+    await page.getByText("Rounds", { exact: true }).waitFor({ timeout: 5000 });
+    await context.unroute(isSettings, settings);
+    // Never read (offline, nothing kept): a circuit, after a short wait.
+    await page.evaluate(() => localStorage.removeItem("traintrack.guidance.boxing_rounds"));
+    await page.goto(`${BASE}/fr/intervals?focus=boxing`);
+    await page.getByRole("button", { name: "Full body", pressed: true }).waitFor({ timeout: 10000 });
+    expect(!(await page.getByRole("button", { name: "Boxe" }).count()), "boxing offered without its reference");
+  } finally {
+    await context.unroute(isSettings, settings).catch(() => {});
+    await page.evaluate((b) => localStorage.setItem("traintrack.guidance.boxing_rounds", b), kept);
+  }
+});
+
 await test("no page threw an error", async () => {
   expect(errors.length === 0, errors.slice(0, 3).join(" | "));
 });

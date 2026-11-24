@@ -67,6 +67,8 @@ function initialPlan(): Partial<IntervalPlan> {
 }
 
 const middle = (list: number[]) => list[Math.floor(list.length / 2)];
+/** How long a link asking for boxing waits for the rounds' reference before falling back to a circuit. */
+const BOXING_WAIT_MS = 3000;
 
 /**
  * A plan read from a link or storage, kept to the values the app knows:
@@ -121,9 +123,19 @@ export default function IntervalsPage() {
     setLeft(loadTimedProgress<IntervalPlan>("intervals"));
   }, []);
 
+  // A link asking for boxing waits for the rounds' reference, a few seconds at
+  // most (first visit, read from the network): without it, a circuit.
+  const [boxingWaitOver, setBoxingWaitOver] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setBoxingWaitOver(true), BOXING_WAIT_MS);
+    return () => clearTimeout(id);
+  }, []);
+
   // Once the profile is read: the link, else the last plan, else the level's.
   useEffect(() => {
     if (plan || athlete === undefined || !timed) return;
+    const wanted = initialPlan();
+    if (wanted.focus === BOXING_FOCUS && !boxing && !boxingWaitOver) return;
     const fallback: IntervalPlan = {
       focus: "full",
       dumbbells: !!athlete?.equipment?.includes("dumbbell"),
@@ -134,8 +146,8 @@ export default function IntervalsPage() {
       seed: newSeed(),
     };
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reads the URL and storage, only on the client
-    setPlan(sane(initialPlan(), fallback, timed, boxing, athlete?.fitnessLevel));
-  }, [athlete, plan, timed, boxing]);
+    setPlan(sane(wanted, fallback, timed, boxing, athlete?.fitnessLevel));
+  }, [athlete, plan, timed, boxing, boxingWaitOver]);
 
   // An injury leaves out the exercises that load the injured area most.
   const injuries = useMemo(() => athlete?.injuryAreas ?? [], [athlete]);
