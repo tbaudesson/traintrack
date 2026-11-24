@@ -1,6 +1,5 @@
 import type { Sport } from "@/db";
-import type { IntervalFocus } from "./intervals";
-import { INTERVAL_FOCUSES } from "./intervals";
+import { PLAN_FOCUSES, type PlanFocus } from "./intervals";
 import { MOBILITY_MODES, type MobilityMode } from "./mobility";
 import { SPORT_DEFS } from "./disciplines";
 
@@ -11,7 +10,7 @@ import { SPORT_DEFS } from "./disciplines";
  * day of one of one's programs. Kept on this device.
  */
 export type PlanB =
-  | { kind: "timed"; focus: IntervalFocus; minutes: number }
+  | { kind: "timed"; focus: PlanFocus; minutes: number }
   | { kind: "mobility"; mode: MobilityMode; minutes: number }
   | { kind: "cardio"; sport: Sport; minutes: number }
   | { kind: "program"; programUuid: string; dayIndex: number };
@@ -28,7 +27,7 @@ export function readPlanB(raw: unknown): PlanB | null {
   const p = raw as Record<string, unknown>;
   switch (p.kind) {
     case "timed":
-      return INTERVAL_FOCUSES.includes(p.focus as IntervalFocus) && whole(p.minutes, 1, 120) ? { kind: "timed", focus: p.focus as IntervalFocus, minutes: p.minutes as number } : null;
+      return PLAN_FOCUSES.includes(p.focus as PlanFocus) && whole(p.minutes, 1, 120) ? { kind: "timed", focus: p.focus as PlanFocus, minutes: p.minutes as number } : null;
     case "mobility":
       return MOBILITY_MODES.includes(p.mode as MobilityMode) && whole(p.minutes, 1, 120) ? { kind: "mobility", mode: p.mode as MobilityMode, minutes: p.minutes as number } : null;
     case "cardio":

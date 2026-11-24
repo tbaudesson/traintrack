@@ -8,7 +8,8 @@ import { useMobilityGuidance } from "@/hooks/useMobilityGuidance";
 import { useTrainablePrograms } from "@/hooks/usePrograms";
 import { savePlanB } from "@/hooks/useSportChoice";
 import { CARDIO_MINUTES, PLAN_B_KINDS, type PlanB } from "@/lib/planB";
-import { INTERVAL_FOCUSES } from "@/lib/intervals";
+import { BOXING_FOCUS, INTERVAL_FOCUSES, PLAN_FOCUSES, type PlanFocus } from "@/lib/intervals";
+import { useBoxingGuidance } from "@/hooks/useBoxingGuidance";
 import { DISTANCE_SPORTS } from "@/lib/cardio";
 import { cn } from "@/lib/utils";
 import { modesOf, type MobilityMode } from "@/lib/mobility";
@@ -33,6 +34,10 @@ export function PlanBEditor() {
 
   const chip = (on: boolean) => cn("min-h-11 rounded-full border px-3 text-sm font-medium", on ? "border-accent-500 bg-accent-500 text-white" : "border-border hover:bg-muted");
   const timedMinutes = timed?.minutes ?? [10, 15, 20];
+  // Boxing rounds, once their reference is there, with their own lengths.
+  const boxing = useBoxingGuidance();
+  const focuses = boxing ? PLAN_FOCUSES : INTERVAL_FOCUSES;
+  const minutesOf = (f: PlanFocus) => (f === BOXING_FOCUS && boxing ? boxing.minutes : timedMinutes);
   const mobilityMinutes = (m: MobilityMode) => mobility?.minutes[m] ?? [5, 10, 15];
   // The modes the reference holds (yoga, tai-chi once their migrations are applied).
   const modes: MobilityMode[] = mobility ? modesOf(mobility) : ["warmup", "stretch"];
@@ -61,10 +66,10 @@ export function PlanBEditor() {
       {plan?.kind === "timed" && (
         <>
           <Row label={ti("focus")}>
-            {INTERVAL_FOCUSES.map((f) => <button key={f} type="button" aria-pressed={plan.focus === f} onClick={() => set({ ...plan, focus: f })} className={chip(plan.focus === f)}>{ti(`focus_${f}`)}</button>)}
+            {focuses.map((f) => <button key={f} type="button" aria-pressed={plan.focus === f} onClick={() => set({ ...plan, focus: f, minutes: minutesOf(f).includes(plan.minutes) ? plan.minutes : minutesOf(f)[Math.floor(minutesOf(f).length / 2)] })} className={chip(plan.focus === f)}>{ti(`focus_${f}`)}</button>)}
           </Row>
           <Row label={t("minutes")}>
-            {timedMinutes.map((m) => <button key={m} type="button" aria-pressed={plan.minutes === m} onClick={() => set({ ...plan, minutes: m })} className={chip(plan.minutes === m)}>{t("min", { m })}</button>)}
+            {minutesOf(plan.focus).map((m) => <button key={m} type="button" aria-pressed={plan.minutes === m} onClick={() => set({ ...plan, minutes: m })} className={chip(plan.minutes === m)}>{t("min", { m })}</button>)}
           </Row>
         </>
       )}

@@ -69,5 +69,15 @@ export function libraryFromMigrations(): Row[] {
   }
   const rules = injuryRulesFromMigrations();
   for (const row of rows.values()) row.injuryRules = rules[row.name] ?? null;
+  // The boxing combinations, each whole in one INSERT (085), their injury rules with them.
+  for (const line of sql("085_boxing.sql").split("\n").filter((l) => l.startsWith("SELECT NULL, "))) {
+    const v = values(line.slice("SELECT NULL, ".length));
+    add(v);
+    const row = rows.get(v[0]!);
+    if (row) {
+      row.videoUrl = v[8] ?? undefined;
+      row.injuryRules = v[9] ? JSON.parse(v[9]) : null;
+    }
+  }
   return [...rows.values()];
 }

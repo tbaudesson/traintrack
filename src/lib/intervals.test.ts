@@ -8,7 +8,7 @@ import {
   roundsDone,
   parseTimed,
   patternSeconds,
-  type IntervalPlan,
+  type CircuitPlan,
 } from "./intervals";
 import { libraryFromMigrations } from "./libraryFromMigrations";
 import { timedFromMigrations } from "./injuryGuidanceFromMigrations";
@@ -18,7 +18,7 @@ const G = timedFromMigrations();
 const LIBRARY = new Map(libraryFromMigrations().map((r) => [r.name, r]));
 
 
-const plan = (over: Partial<IntervalPlan> = {}): IntervalPlan => ({ focus: "full", dumbbells: false, pattern: "45-15", minutes: 20, seed: 7, ...over });
+const plan = (over: Partial<CircuitPlan> = {}): CircuitPlan => ({ focus: "full", dumbbells: false, pattern: "45-15", minutes: 20, seed: 7, ...over });
 
 describe("buildIntervalSession", () => {
   it("lasts the minutes asked, the last rest dropped", () => {

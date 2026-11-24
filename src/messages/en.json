@@ -980,7 +980,8 @@
     "timed": "HIIT · timed sessions",
     "equipment": "Equipment",
     "display": "Display",
-    "music": "Music"
+    "music": "Music",
+    "boxing": "Boxing"
   },
   "profile": {
     "title": "Profile",
@@ -1473,7 +1474,15 @@
     "notLoaded": "Timed sessions have not been loaded yet: open the app once with a connection.",
     "factRounds": "Full rounds",
     "factHeart": "HR avg · max",
-    "finished": "Done"
+    "finished": "Done",
+    "focus_boxing": "Boxing",
+    "boxingIntro": "Shadow-boxing rounds (or on a bag): a new combination every 30 seconds, called out loud, a burst to end each round, then a minute of recovery.",
+    "rounds": "Rounds",
+    "roundsHint": "Guard up, chin down, on the balls of the feet. Punch fast but loose, never locking the elbows.",
+    "roundLabel": "{round} / {rest} s",
+    "boxingSummary": "{rounds, plural, one {# round} other {# rounds}} of {round}, {rest} s of recovery · {combos} combinations of {seconds} s a round, the last one a burst",
+    "firstRound": "Round 1",
+    "roundsVary": "The combinations change from one round to the next."
   },
   "mobility": {
     "title": "Warm-up, stretching, yoga and tai chi",
@@ -3075,5 +3084,27 @@
     "adminMissing": "The list of music apps does not exist yet: apply migration 083.",
     "adminSave": "Save",
     "adminSaved": "Saved"
+  },
+  "boxingAdmin": {
+    "title": "Boxing rounds",
+    "intro": "What boxing sessions are built from: the lengths and round formats offered (\"180-60\" = a 3-minute round, 60 s of rest), the usual format by level, how long a combination lasts, the order of the kinds in a round (the burst ends it) and the combinations, which are library exercises (translated names, descriptions, videos, injury rules).",
+    "missing": "The boxing rounds reference does not exist yet: apply migration 085.",
+    "minutes": "Lengths (min)",
+    "formats": "Round formats (round seconds-rest seconds)",
+    "comboSec": "Length of a combination (s)",
+    "rhythm": "Order of the kinds in a round",
+    "rhythmHint": "attack, defense or footwork, separated by commas; the burst (finisher) ends each round.",
+    "formatForLevel": "Usual format by level",
+    "combos": "{count, plural, one {# combination} other {# combinations}}",
+    "kind_attack": "Attack",
+    "kind_defense": "Defense",
+    "kind_footwork": "Footwork",
+    "kind_finisher": "End-of-round burst",
+    "remove": "Remove {name}",
+    "add": "Add a combination",
+    "invalid": "Incomplete reference: each format must hold at least two whole combinations, each level an offered format, and there must be at least one attack.",
+    "unknown": "Not in the library: {names}",
+    "save": "Save",
+    "saved": "Saved"
   }
 }

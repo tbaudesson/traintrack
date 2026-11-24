@@ -168,6 +168,17 @@ for (const m of readFileSync("supabase/migrations/079_exercise_cues.sql", "utf8"
 }
 if (Object.keys(exerciseCues).length !== 141) throw new Error(`079: ${Object.keys(exerciseCues).length} exercises with cues`);
 const libraryRows = [...library.values()].map((e) => ({ ...e, injuryRules: exerciseRules[e.name] ?? null, ...(exerciseDetails[e.name] ?? {}), ...(exerciseCues[e.name] ?? {}) }));
+// The boxing combinations, each whole in one INSERT of migration 085.
+const m085 = readFileSync("supabase/migrations/085_boxing.sql", "utf8");
+const boxingRows = libraryRows.length;
+for (const line of m085.split("\n").filter((l) => l.startsWith("SELECT NULL, "))) {
+  const [name, muscleGroup, equipment, description, nameFr, nameDe, descriptionFr, descriptionDe, videoUrl, rules, level, movements, secondary, cues, mistakes] = sqlValues(line.slice("SELECT NULL, ".length));
+  libraryRows.push({
+    name, muscleGroup, equipment, description, nameFr, nameDe, descriptionFr, descriptionDe, videoUrl,
+    injuryRules: JSON.parse(rules), level, movements: JSON.parse(movements), secondaryMuscles: JSON.parse(secondary), cues: JSON.parse(cues), mistakes: JSON.parse(mistakes),
+  });
+}
+if (libraryRows.length - boxingRows !== 10) throw new Error("085: the boxing combinations were not read");
 
 // A signed-in user as the app caches it, a profile, and the exercise library.
 await page.evaluate(async ({ user, libraryRows }) => {
@@ -261,6 +272,9 @@ await page.evaluate(async ({ user, libraryRows }) => {
   const m082 = readFileSync("supabase/migrations/082_display_modes.sql", "utf8");
   const modes = m082.slice(m082.indexOf("'\n{") + 1, m082.indexOf("}\n'") + 1);
   await page.evaluate((v) => localStorage.setItem("traintrack.guidance.display_modes", v), JSON.stringify(JSON.parse(modes)));
+  // The boxing rounds, as migration 085 seeds them.
+  const boxingRounds = m085.slice(m085.indexOf("'boxing_rounds', '") + 18, m085.indexOf("')\nON CONFLICT"));
+  await page.evaluate((v) => localStorage.setItem("traintrack.guidance.boxing_rounds", v), JSON.stringify(JSON.parse(boxingRounds)));
   // The music apps, as migration 083 seeds them.
   const m083 = readFileSync("supabase/migrations/083_music_apps.sql", "utf8");
   const music = m083.slice(m083.indexOf("'\n[") + 1, m083.indexOf("]\n'") + 1);
@@ -2561,6 +2575,64 @@ await test("music: one's app and playlist chosen in Settings, opened from a sess
       const prefs = JSON.parse(localStorage.getItem("traintrack.prefs") ?? "{}");
       localStorage.setItem("traintrack.prefs", JSON.stringify({ ...prefs, music: null }));
     });
+  }
+});
+
+await test("boxing rounds in the HIIT: combinations called out, a burst to end each round, a rest between rounds", async () => {
+  await page.goto(`${BASE}/fr/intervals`);
+  await page.getByRole("button", { name: "Boxe", exact: true }).click();
+  await page.getByText(/Des rounds de boxe dans le vide/).waitFor({ timeout: 10000 });
+  // A beginner: two-minute rounds; no equipment to choose.
+  await page.getByRole("button", { name: "2 min / 60 s", pressed: true }).waitFor({ timeout: 5000 });
+  expect(!(await page.getByRole("group", { name: "Matériel" }).count()), "equipment offered for boxing");
+  await page.getByRole("button", { name: "15 min", exact: true }).click();
+  await page.getByText(/^5 rounds de 2 min, 60 s de récupération · 4 enchaînements de 30 s par round/).waitFor({ timeout: 5000 });
+  const round = page.locator("ol").first().locator("li");
+  expect((await round.count()) === 4, `a round of ${await round.count()} combinations`);
+  expect((await round.last().innerText()).includes("Rafale de directs"), "the round does not end with the burst");
+  await page.getByRole("button", { name: "3 min / 60 s" }).click();
+  await page.getByText(/^4 rounds de 3 min/).waitFor({ timeout: 5000 });
+  await snap("boxing");
+
+  // A short round for the test, the references put back after: boxed to the end, then stopped.
+  const kept = await page.evaluate(() => {
+    const b = localStorage.getItem("traintrack.guidance.boxing_rounds");
+    const t = localStorage.getItem("traintrack.guidance.timed_sessions");
+    const bb = JSON.parse(b);
+    Object.assign(bb, { minutes: [1], formats: ["20-10"], comboSec: 10, formatForLevel: { beginner: "20-10", intermediate: "20-10", advanced: "20-10" } });
+    const tt = JSON.parse(t);
+    tt.getReadySec = 0;
+    localStorage.setItem("traintrack.guidance.boxing_rounds", JSON.stringify(bb));
+    localStorage.setItem("traintrack.guidance.timed_sessions", JSON.stringify(tt));
+    return { b, t };
+  });
+  let id = 0;
+  try {
+    await page.goto(`${BASE}/fr/intervals?focus=boxing&pattern=20-10&minutes=1&seed=3`);
+    await page.getByText(/^2 rounds de 20 s, 10 s de récupération/).waitFor({ timeout: 10000 });
+    await page.getByRole("button", { name: /Démarrer/ }).click();
+    const player = page.getByRole("dialog");
+    await player.getByText("Effort", { exact: true }).waitFor({ timeout: 5000 });
+    await page.waitForTimeout(21500);
+    await player.getByText(/Récupération/).waitFor({ timeout: 5000 });
+    await player.getByRole("button", { name: /Terminer la séance/ }).click();
+    await page.waitForURL(/\/fr\/log\/session\?id=\d+&done=1/, { timeout: 10000 });
+    id = Number(new URL(page.url()).searchParams.get("id"));
+    await page.getByText("Boxe · 20 s / 10 s").waitFor({ timeout: 10000 });
+    await page.getByText("Tours complets").waitFor({ timeout: 5000 });
+    // What was boxed, by name: the burst among it.
+    await page.getByText("Rafale de directs").first().waitFor({ timeout: 10000 });
+    await snap("boxing-recap");
+  } finally {
+    if (id) {
+      page.once("dialog", (d) => d.accept());
+      await page.getByRole("button", { name: /Supprimer la séance/ }).click();
+      await page.waitForURL(/\/fr\/log$/, { timeout: 10000 });
+    }
+    await page.evaluate(({ b, t }) => {
+      localStorage.setItem("traintrack.guidance.boxing_rounds", b);
+      localStorage.setItem("traintrack.guidance.timed_sessions", t);
+    }, kept);
   }
 });
 

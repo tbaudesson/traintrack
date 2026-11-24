@@ -980,7 +980,8 @@
     "timed": "HIIT · séances minutées",
     "equipment": "Matériel",
     "display": "Affichage",
-    "music": "Musique"
+    "music": "Musique",
+    "boxing": "Boxe"
   },
   "profile": {
     "title": "Profil",
@@ -1473,7 +1474,15 @@
     "notLoaded": "Les séances minutées n’ont pas encore été chargées : ouvrez l’app une fois avec une connexion.",
     "factRounds": "Tours complets",
     "factHeart": "FC moy. · max",
-    "finished": "Terminé"
+    "finished": "Terminé",
+    "focus_boxing": "Boxe",
+    "boxingIntro": "Des rounds de boxe dans le vide (ou au sac) : un enchaînement toutes les 30 secondes, annoncé à voix haute, une rafale pour finir chaque round, puis une minute de récupération.",
+    "rounds": "Rounds",
+    "roundsHint": "Garde haute, menton rentré, sur la pointe des pieds. Frappez vite mais relâché, sans verrouiller les coudes.",
+    "roundLabel": "{round} / {rest} s",
+    "boxingSummary": "{rounds, plural, one {# round} other {# rounds}} de {round}, {rest} s de récupération · {combos} enchaînements de {seconds} s par round, le dernier en rafale",
+    "firstRound": "Round 1",
+    "roundsVary": "Les enchaînements changent d’un round à l’autre."
   },
   "mobility": {
     "title": "Échauffement, étirements, yoga et tai-chi",
@@ -3075,5 +3084,27 @@
     "adminMissing": "La liste des applis de musique n'existe pas encore : appliquez la migration 083.",
     "adminSave": "Enregistrer",
     "adminSaved": "Enregistré"
+  },
+  "boxingAdmin": {
+    "title": "Boxe en rounds",
+    "intro": "Ce dont les séances de boxe sont faites : les durées et formats de rounds proposés (« 180-60 » = 3 min de round, 60 s de repos), le format habituel par niveau, la durée d’un enchaînement, l’ordre des types dans un round (la rafale le termine) et les enchaînements, qui sont des exercices de la bibliothèque (noms traduits, descriptions, vidéos, règles de blessure).",
+    "missing": "La référence des rounds de boxe n’existe pas encore : appliquez la migration 085.",
+    "minutes": "Durées (min)",
+    "formats": "Formats de round (secondes de round-secondes de repos)",
+    "comboSec": "Durée d’un enchaînement (s)",
+    "rhythm": "Ordre des types dans un round",
+    "rhythmHint": "attack, defense ou footwork, séparés par des virgules ; la rafale (finisher) termine chaque round.",
+    "formatForLevel": "Format habituel par niveau",
+    "combos": "{count, plural, one {# enchaînement} other {# enchaînements}}",
+    "kind_attack": "Attaque",
+    "kind_defense": "Défense",
+    "kind_footwork": "Jeu de jambes",
+    "kind_finisher": "Rafale de fin de round",
+    "remove": "Retirer {name}",
+    "add": "Ajouter un enchaînement",
+    "invalid": "Référence incomplète : chaque format doit contenir au moins deux enchaînements entiers, chaque niveau un format proposé, et il faut au moins une attaque.",
+    "unknown": "Pas dans la bibliothèque : {names}",
+    "save": "Enregistrer",
+    "saved": "Enregistré"
   }
 }

@@ -7,7 +7,8 @@ import { Check, RotateCcw, Timer, Trash2 } from "lucide-react";
 import type { Exercise, Workout, WorkoutSet } from "@/db";
 import { Link, useRouter } from "@/i18n/navigation";
 import { deleteWorkout } from "@/hooks/useWorkouts";
-import { patternSeconds } from "@/lib/intervals";
+import { BOXING_FOCUS, patternSeconds } from "@/lib/intervals";
+import { roundLength } from "@/lib/boxing";
 import { useExerciseLabel } from "@/lib/exerciseNames";
 import { useFormat } from "@/lib/format";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -36,6 +37,8 @@ export function IntervalWorkoutView({ workout, sets, exercises, justDone = false
   const effort = [...byExercise.values()].reduce((sum, c) => sum + c.seconds, 0);
   const minutes = Math.max(1, Math.round((workout.durationSec ?? 0) / 60));
   const rhythm = plan ? patternSeconds(plan.pattern) : null;
+  // Boxing rounds: a round and its rest, each combination its own length.
+  const boxing = plan?.focus === BOXING_FOCUS;
   const again = plan
     ? `/intervals?focus=${plan.focus}&dumbbells=${plan.dumbbells ? 1 : 0}&trx=${plan.trx ? 1 : 0}&pattern=${plan.pattern}&minutes=${plan.minutes}&seed=${plan.seed}`
     : "/intervals";
@@ -63,7 +66,9 @@ export function IntervalWorkoutView({ workout, sets, exercises, justDone = false
           {workout.avgHr ? <div className="mt-3"><TrimpLine workout={workout} /></div> : null}
           {plan && rhythm && (
             <p className="mt-3 text-sm text-muted-foreground">
-              {t(`focus_${plan.focus}`)} · {plan.dumbbells ? t("dumbbells") : t("bodyweight")} · {t("patternLabel", rhythm)}
+              {boxing
+                ? `${t("focus_boxing")} · ${t("roundLabel", { round: roundLength(rhythm.work), rest: rhythm.rest })}`
+                : `${t(`focus_${plan.focus}`)} · ${plan.dumbbells ? t("dumbbells") : t("bodyweight")} · ${t("patternLabel", rhythm)}`}
             </p>
           )}
         </div>
@@ -74,7 +79,7 @@ export function IntervalWorkoutView({ workout, sets, exercises, justDone = false
           {[...byExercise.entries()].map(([exerciseId, c]) => (
             <li key={exerciseId} className="t-surface flex items-center gap-3 rounded-xl px-3 py-2.5 ring-1 ring-foreground/5">
               <span className="flex-1 text-sm font-medium">{xl(names.get(exerciseId))}</span>
-              <span className="text-xs text-muted-foreground tabular-nums">{t("timesSeconds", { count: c.count, seconds: rhythm?.work ?? Math.round(c.seconds / c.count) })}</span>
+              <span className="text-xs text-muted-foreground tabular-nums">{t("timesSeconds", { count: c.count, seconds: boxing || !rhythm ? Math.round(c.seconds / c.count) : rhythm.work })}</span>
             </li>
           ))}
         </ul>

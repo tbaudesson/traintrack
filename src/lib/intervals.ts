@@ -9,16 +9,25 @@ export const INTERVAL_FOCUSES: IntervalFocus[] = ["full", "abs", "lower"];
 /** Seconds of effort / seconds of rest, written "30-30". */
 export type IntervalPattern = string;
 
+/** Boxing rounds: combinations shadow-boxed round after round, a rest between rounds (lib/boxing). */
+export const BOXING_FOCUS = "boxing" as const;
+/** What a timed session works: a circuit's area, or boxing rounds. */
+export type PlanFocus = IntervalFocus | typeof BOXING_FOCUS;
+export const PLAN_FOCUSES: PlanFocus[] = [...INTERVAL_FOCUSES, BOXING_FOCUS];
+
 /** What a timed session was built from, kept on the workout. */
-export interface IntervalPlan {
-  focus: IntervalFocus;
+interface PlanBase {
   dumbbells: boolean;
   /** Suspension straps (TRX); absent on the plans made before them. */
   trx?: boolean;
+  /** A circuit's effort and rest ("30-30"); a boxing round and the rest after it ("180-60"). */
   pattern: IntervalPattern;
   minutes: number;
   seed: number;
 }
+export type CircuitPlan = PlanBase & { focus: IntervalFocus };
+export type BoxingPlan = PlanBase & { focus: typeof BOXING_FOCUS };
+export type IntervalPlan = CircuitPlan | BoxingPlan;
 
 export type IntervalKind = "cardio" | "strength" | "core";
 export const INTERVAL_KINDS: IntervalKind[] = ["cardio", "strength", "core"];
@@ -111,7 +120,7 @@ export const allows = (plan: Pick<IntervalPlan, "dumbbells" | "trx">, e: Pick<In
  */
 export function injuryPool(
   g: TimedGuidance,
-  plan: Pick<IntervalPlan, "focus" | "dumbbells" | "trx" | "minutes">,
+  plan: Pick<CircuitPlan, "focus" | "dumbbells" | "trx" | "minutes">,
   injuries: Pick<Injury, "area" | "healedOn">[],
   rules: InjuryRules,
   all: IntervalExercise[] = g.exercises
@@ -137,7 +146,7 @@ export function exercisesPerRound(g: Pick<TimedGuidance, "perRound">, minutes: n
 }
 
 /** A small seeded random generator, so that a plan always gives the same session. */
-function random(seed: number) {
+export function random(seed: number) {
   let s = seed >>> 0 || 1;
   return () => {
     s = (s + 0x6d2b79f5) >>> 0;
@@ -148,7 +157,7 @@ function random(seed: number) {
   };
 }
 
-function shuffle<T>(items: T[], rand: () => number): T[] {
+export function shuffle<T>(items: T[], rand: () => number): T[] {
   const out = [...items];
   for (let i = out.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));
@@ -164,7 +173,7 @@ function shuffle<T>(items: T[], rand: () => number): T[] {
  */
 export function pickRound(
   g: Pick<TimedGuidance, "rhythm">,
-  plan: Pick<IntervalPlan, "focus" | "dumbbells" | "trx">,
+  plan: Pick<CircuitPlan, "focus" | "dumbbells" | "trx">,
   count: number,
   rand: () => number,
   avoid: Set<string>,
@@ -210,7 +219,7 @@ export interface IntervalSession {
  * circuits so they do not repeat the same exercises for three quarters of an
  * hour. The last exercise ends the session: no rest after it.
  */
-export function buildIntervalSession(g: TimedGuidance, plan: IntervalPlan, pool: IntervalExercise[] = g.exercises): IntervalSession {
+export function buildIntervalSession(g: TimedGuidance, plan: CircuitPlan, pool: IntervalExercise[] = g.exercises): IntervalSession {
   const rand = random(plan.seed);
   const { work, rest } = patternSeconds(plan.pattern);
   const perRound = exercisesPerRound(g, plan.minutes);

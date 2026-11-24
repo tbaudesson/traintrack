@@ -980,7 +980,8 @@
     "timed": "HIIT · Intervall-Einheiten",
     "equipment": "Ausrüstung",
     "display": "Anzeige",
-    "music": "Musik"
+    "music": "Musik",
+    "boxing": "Boxen"
   },
   "profile": {
     "title": "Profil",
@@ -1473,7 +1474,15 @@
     "notLoaded": "Die Intervall-Einheiten wurden noch nicht geladen: Öffne die App einmal mit Verbindung.",
     "factRounds": "Volle Runden",
     "factHeart": "HF Ø · max",
-    "finished": "Fertig"
+    "finished": "Fertig",
+    "focus_boxing": "Boxen",
+    "boxingIntro": "Schattenbox-Runden (oder am Sandsack): alle 30 Sekunden eine neue Kombination, laut angesagt, ein Schlaghagel zum Rundenende, dann eine Minute Erholung.",
+    "rounds": "Runden",
+    "roundsHint": "Deckung oben, Kinn runter, auf den Fußballen. Schnell, aber locker schlagen, Ellbogen nie durchstrecken.",
+    "roundLabel": "{round} / {rest} s",
+    "boxingSummary": "{rounds, plural, one {# Runde} other {# Runden}} à {round}, {rest} s Erholung · {combos} Kombinationen à {seconds} s pro Runde, die letzte als Schlaghagel",
+    "firstRound": "Runde 1",
+    "roundsVary": "Die Kombinationen wechseln von Runde zu Runde."
   },
   "mobility": {
     "title": "Aufwärmen, Dehnen, Yoga und Tai-Chi",
@@ -3075,5 +3084,27 @@
     "adminMissing": "Die Liste der Musik-Apps gibt es noch nicht: Migration 083 anwenden.",
     "adminSave": "Speichern",
     "adminSaved": "Gespeichert"
+  },
+  "boxingAdmin": {
+    "title": "Boxrunden",
+    "intro": "Woraus Box-Einheiten bestehen: angebotene Dauern und Rundenformate („180-60“ = 3 Minuten Runde, 60 s Pause), das übliche Format je Niveau, die Dauer einer Kombination, die Reihenfolge der Arten in einer Runde (der Schlaghagel beendet sie) und die Kombinationen, Übungen der Bibliothek (übersetzte Namen, Beschreibungen, Videos, Verletzungsregeln).",
+    "missing": "Die Referenz der Boxrunden gibt es noch nicht: Migration 085 anwenden.",
+    "minutes": "Dauern (min)",
+    "formats": "Rundenformate (Rundensekunden-Pausensekunden)",
+    "comboSec": "Dauer einer Kombination (s)",
+    "rhythm": "Reihenfolge der Arten in einer Runde",
+    "rhythmHint": "attack, defense oder footwork, durch Kommas getrennt; der Schlaghagel (finisher) beendet jede Runde.",
+    "formatForLevel": "Übliches Format je Niveau",
+    "combos": "{count, plural, one {# Kombination} other {# Kombinationen}}",
+    "kind_attack": "Angriff",
+    "kind_defense": "Verteidigung",
+    "kind_footwork": "Beinarbeit",
+    "kind_finisher": "Schlaghagel zum Rundenende",
+    "remove": "{name} entfernen",
+    "add": "Kombination hinzufügen",
+    "invalid": "Referenz unvollständig: jedes Format braucht mindestens zwei ganze Kombinationen, jedes Niveau ein angebotenes Format, und es braucht mindestens einen Angriff.",
+    "unknown": "Nicht in der Bibliothek: {names}",
+    "save": "Speichern",
+    "saved": "Gespeichert"
   }
 }

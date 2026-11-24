@@ -14,6 +14,8 @@ import {
   injuryPool,
   roundsDone,
   INTERVAL_FOCUSES,
+  BOXING_FOCUS,
+  PLAN_FOCUSES,
   buildIntervalSession,
   defaultPattern,
   patternSeconds,
@@ -24,6 +26,8 @@ import {
   type TimedGuidance,
 } from "@/lib/intervals";
 import { useTimedGuidance } from "@/hooks/useTimedGuidance";
+import { useBoxingGuidance } from "@/hooks/useBoxingGuidance";
+import { boxingFormat, boxingPool, buildBoxingSession, roundLength, type BoxingGuidance } from "@/lib/boxing";
 import { useHeartRateMonitor } from "@/hooks/useHeartRateMonitor";
 import { HeartRateCard } from "@/components/domain/HeartRateCard";
 import { localDate } from "@/lib/dates";
@@ -62,15 +66,31 @@ function initialPlan(): Partial<IntervalPlan> {
   }
 }
 
-/** A plan read from a link or storage, kept to the values the app knows. */
-function sane(p: Partial<IntervalPlan>, fallback: IntervalPlan, g: TimedGuidance): IntervalPlan {
-  return {
-    focus: INTERVAL_FOCUSES.includes(p.focus as IntervalFocus) ? p.focus! : fallback.focus,
+const middle = (list: number[]) => list[Math.floor(list.length / 2)];
+
+/**
+ * A plan read from a link or storage, kept to the values the app knows:
+ * boxing rounds when their reference is there, with its formats and lengths;
+ * otherwise a circuit, with the circuits' rhythms and lengths.
+ */
+function sane(p: Partial<IntervalPlan>, fallback: IntervalPlan, g: TimedGuidance, box: BoxingGuidance | null, level?: string): IntervalPlan {
+  const base = {
     dumbbells: typeof p.dumbbells === "boolean" ? p.dumbbells : fallback.dumbbells,
     trx: typeof p.trx === "boolean" ? p.trx : fallback.trx,
-    pattern: g.patterns.includes(p.pattern as IntervalPattern) ? p.pattern! : fallback.pattern,
-    minutes: g.minutes.includes(p.minutes ?? 0) ? p.minutes! : fallback.minutes,
     seed: p.seed && p.seed > 0 ? p.seed : fallback.seed,
+  };
+  if (p.focus === BOXING_FOCUS && box)
+    return {
+      ...base,
+      focus: BOXING_FOCUS,
+      pattern: box.formats.includes(p.pattern as IntervalPattern) ? p.pattern! : boxingFormat(box, level),
+      minutes: box.minutes.includes(p.minutes ?? 0) ? p.minutes! : middle(box.minutes),
+    };
+  return {
+    ...base,
+    focus: INTERVAL_FOCUSES.includes(p.focus as IntervalFocus) ? (p.focus as IntervalFocus) : fallback.focus === BOXING_FOCUS ? "full" : fallback.focus,
+    pattern: g.patterns.includes(p.pattern as IntervalPattern) ? p.pattern! : g.patterns.includes(fallback.pattern) ? fallback.pattern : defaultPattern(g, level),
+    minutes: g.minutes.includes(p.minutes ?? 0) ? p.minutes! : g.minutes.includes(fallback.minutes) ? fallback.minutes : middle(g.minutes),
   };
 }
 
@@ -88,6 +108,7 @@ export default function IntervalsPage() {
   const athlete = useAthleteProfileOrNull();
   const exercises = useExercises();
   const timed = useTimedGuidance();
+  const boxing = useBoxingGuidance();
   const hr = useHeartRateMonitor();
   const [plan, setPlan] = useState<IntervalPlan | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -113,17 +134,26 @@ export default function IntervalsPage() {
       seed: newSeed(),
     };
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reads the URL and storage, only on the client
-    setPlan(sane(initialPlan(), fallback, timed));
-  }, [athlete, plan, timed]);
+    setPlan(sane(initialPlan(), fallback, timed, boxing, athlete?.fitnessLevel));
+  }, [athlete, plan, timed, boxing]);
 
   // An injury leaves out the exercises that load the injured area most.
   const injuries = useMemo(() => athlete?.injuryAreas ?? [], [athlete]);
   const injuryRules = useInjuryRules();
-  const { pool, leftOut, cautious } = useMemo(
-    () => (plan && timed ? injuryPool(timed, plan, injuries, injuryRules) : { pool: [], leftOut: 0, cautious: [] as string[] }),
-    [plan, timed, injuries, injuryRules]
+  // A circuit or boxing rounds, each from its own reference and with its own pool.
+  const isBoxing = plan?.focus === BOXING_FOCUS;
+  const { leftOut, cautious } = useMemo(() => {
+    if (plan?.focus === BOXING_FOCUS) return boxing ? boxingPool(boxing, injuries, injuryRules) : { leftOut: 0, cautious: [] as string[] };
+    return plan && timed ? injuryPool(timed, plan, injuries, injuryRules) : { leftOut: 0, cautious: [] as string[] };
+  }, [plan, timed, boxing, injuries, injuryRules]);
+  const build = useCallback(
+    (p: IntervalPlan) => {
+      if (p.focus === BOXING_FOCUS) return boxing ? buildBoxingSession(boxing, p, boxingPool(boxing, injuries, injuryRules).pool) : null;
+      return timed ? buildIntervalSession(timed, p, injuryPool(timed, p, injuries, injuryRules).pool) : null;
+    },
+    [timed, boxing, injuries, injuryRules]
   );
-  const session = useMemo(() => (plan && timed ? buildIntervalSession(timed, plan, pool) : null), [plan, timed, pool]);
+  const session = useMemo(() => (plan ? build(plan) : null), [plan, build]);
 
   // Each exercise with its demo: the video, and the cue in the app's language.
   const [demo, setDemo] = useState<{ name: string; video: string | null; cue?: string } | null>(null);
@@ -141,7 +171,7 @@ export default function IntervalsPage() {
 
   function change(next: Partial<IntervalPlan>) {
     if (!plan) return;
-    const updated = { ...plan, ...next, seed: next.seed ?? newSeed() };
+    const updated = { ...plan, ...next, seed: next.seed ?? newSeed() } as IntervalPlan;
     setPlan(updated);
     try {
       localStorage.setItem(SAVED, JSON.stringify({ ...updated, seed: undefined }));
@@ -200,8 +230,8 @@ export default function IntervalsPage() {
   if (!plan || !session || !withDemos) return <PageHeader title={t("title")} showBack />;
 
   // The session left half-way, rebuilt from its plan: the same one only if it has as many steps.
-  const leftPlan = left ? sane(left.progress.context, plan, timed) : null;
-  const leftSteps = leftPlan ? buildIntervalSession(timed, leftPlan, injuryPool(timed, leftPlan, injuries, injuryRules).pool).steps.length : 0;
+  const leftPlan = left ? sane(left.progress.context, plan, timed, boxing, athlete?.fitnessLevel) : null;
+  const leftSteps = leftPlan ? (build(leftPlan)?.steps.length ?? 0) : 0;
   const canResume = !!left && left.state === "resumable" && leftSteps === left.progress.stepCount;
   function takeUp(again: boolean) {
     if (!left || !leftPlan) return;
@@ -214,7 +244,16 @@ export default function IntervalsPage() {
   }
 
   const { work, rest } = patternSeconds(plan.pattern);
-  const circuits = session.rounds.length > 1 && plan.minutes >= 30 ? session.rounds.slice(0, 2) : session.rounds.slice(0, 1);
+  const circuits = !isBoxing && session.rounds.length > 1 && plan.minutes >= 30 ? session.rounds.slice(0, 2) : session.rounds.slice(0, 1);
+  const level = athlete?.fitnessLevel;
+  function chooseFocus(focus: (typeof PLAN_FOCUSES)[number]) {
+    if (!plan || !timed) return;
+    // Boxing rounds have their own formats and lengths; a circuit, its rhythms and lengths.
+    if (focus === BOXING_FOCUS) {
+      if (boxing && !isBoxing) change({ focus, pattern: boxingFormat(boxing, level), minutes: middle(boxing.minutes) });
+    } else if (isBoxing) change({ focus, pattern: defaultPattern(timed, level), minutes: middle(timed.minutes) });
+    else change({ focus });
+  }
 
   return (
     <>
@@ -256,16 +295,29 @@ export default function IntervalsPage() {
           </section>
         )}
 
-        <p className="text-sm text-muted-foreground">{t("intro")}</p>
+        <p className="text-sm text-muted-foreground">{t(isBoxing ? "boxingIntro" : "intro")}</p>
 
         <ChoiceField label={t("focus")}>
-          {INTERVAL_FOCUSES.map((focus) => (
-            <Choice key={focus} on={plan.focus === focus} onClick={() => change({ focus })}>
+          {(boxing ? PLAN_FOCUSES : INTERVAL_FOCUSES).map((focus) => (
+            <Choice key={focus} on={plan.focus === focus} onClick={() => chooseFocus(focus)}>
               {t(`focus_${focus}`)}
             </Choice>
           ))}
         </ChoiceField>
 
+        {isBoxing && boxing ? (
+          <ChoiceField label={t("rounds")} hint={t("roundsHint")}>
+            {boxing.formats.map((format) => {
+              const s = patternSeconds(format);
+              return (
+                <Choice key={format} on={plan.pattern === format} onClick={() => change({ pattern: format })}>
+                  {t("roundLabel", { round: roundLength(s.work), rest: s.rest })}
+                </Choice>
+              );
+            })}
+          </ChoiceField>
+        ) : (
+        <>
         <ChoiceField label={t("equipment")}>
           {/* The body alone, or with dumbbells, straps or both. */}
           <Choice on={!plan.dumbbells && !plan.trx} onClick={() => change({ dumbbells: false, trx: false })}>
@@ -289,9 +341,11 @@ export default function IntervalsPage() {
             );
           })}
         </ChoiceField>
+        </>
+        )}
 
         <ChoiceField label={t("duration")}>
-          {timed.minutes.map((minutes) => (
+          {(isBoxing && boxing ? boxing.minutes : timed.minutes).map((minutes) => (
             <Choice key={minutes} on={plan.minutes === minutes} onClick={() => change({ minutes })}>
               {minutes} min
             </Choice>
@@ -307,13 +361,15 @@ export default function IntervalsPage() {
             </Button>
           </div>
           <p className="text-sm text-muted-foreground">
-            {t("summary", {
-              // A last round of one or two exercises ends the session; it is not counted as a round.
-              rounds: session.rounds.filter((r) => r.length * 2 >= session.rounds[0].length).length,
-              exercises: session.rounds[0].length,
-              work,
-              rest,
-            })}
+            {isBoxing && boxing
+              ? t("boxingSummary", { rounds: session.rounds.length, round: roundLength(work), rest, combos: session.rounds[0].length, seconds: boxing.comboSec })
+              : t("summary", {
+                  // A last round of one or two exercises ends the session; it is not counted as a round.
+                  rounds: session.rounds.filter((r) => r.length * 2 >= session.rounds[0].length).length,
+                  exercises: session.rounds[0].length,
+                  work,
+                  rest,
+                })}
           </p>
           {leftOut > 0 && (
             <p className="rounded-lg bg-rose-50 p-2 text-xs text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">
@@ -326,9 +382,10 @@ export default function IntervalsPage() {
               {circuits.length > 1 && (
                 <p className="text-xs font-semibold text-muted-foreground uppercase">{t(i === 0 ? "circuitA" : "circuitB")}</p>
               )}
+              {isBoxing && <p className="text-xs font-semibold text-muted-foreground uppercase">{t("firstRound")}</p>}
               <ol className="space-y-1">
                 {round.map((e, n) => (
-                  <li key={e.name} className="flex min-h-9 items-center gap-2 text-sm">
+                  <li key={`${n}-${e.name}`} className="flex min-h-9 items-center gap-2 text-sm">
                     <span className="w-5 text-right text-xs text-muted-foreground tabular-nums">{n + 1}</span>
                     <span className="flex-1">{xl(e.name)}</span>
                     {cautious.includes(e.name) && <InjuryBadge exerciseName={e.name} injuries={injuries} />}
@@ -338,6 +395,7 @@ export default function IntervalsPage() {
                   </li>
                 ))}
               </ol>
+              {isBoxing && session.rounds.length > 1 && <p className="pt-1 text-xs text-muted-foreground">{t("roundsVary")}</p>}
             </div>
           ))}
         </section>
