@@ -243,7 +243,8 @@
     "weekPlanChoose": "Choose my training days",
     "weekCount": "{done} sessions done of {target}",
     "detailsShort": "Details",
-    "noTimeToday": "No time today?"
+    "noTimeToday": "No time today?",
+    "mobilityLink": "Stretching, yoga, tai chi"
   },
   "onboarding": {
     "title": "Your athlete profile",
@@ -762,7 +763,8 @@
     "competitions": "Competitions",
     "horses": "Horses",
     "tests": "Level tests",
-    "running": "Running"
+    "running": "Running",
+    "mobility": "Warm-up, stretching, yoga and tai chi"
   },
   "health": {
     "title": "Health & wearables",
@@ -3032,6 +3034,7 @@
     "part_homeProgress": "Performance card",
     "part_homeLoad": "Load zone (Performance card)",
     "part_homePlanB": "Plan B button",
+    "part_homeMobility": "Stretching, yoga, tai chi link",
     "part_homeCalendar": "Export to calendar",
     "part_homeConflict": "Sessions too close together",
     "part_homeDeload": "Lighter week advice",

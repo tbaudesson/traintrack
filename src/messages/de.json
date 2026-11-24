@@ -243,7 +243,8 @@
     "weekPlanChoose": "Meine Trainingstage wählen",
     "weekCount": "{done} von {target} Einheiten erledigt",
     "detailsShort": "Details",
-    "noTimeToday": "Heute keine Zeit?"
+    "noTimeToday": "Heute keine Zeit?",
+    "mobilityLink": "Dehnen, Yoga, Tai-Chi"
   },
   "onboarding": {
     "title": "Dein Athletenprofil",
@@ -762,7 +763,8 @@
     "competitions": "Turniere",
     "horses": "Pferde",
     "tests": "Leistungstests",
-    "running": "Laufen"
+    "running": "Laufen",
+    "mobility": "Aufwärmen, Dehnen, Yoga und Tai-Chi"
   },
   "health": {
     "title": "Gesundheit & Wearables",
@@ -3032,6 +3034,7 @@
     "part_homeProgress": "Leistungskarte",
     "part_homeLoad": "Belastungszone (Leistungskarte)",
     "part_homePlanB": "Plan-B-Taste",
+    "part_homeMobility": "Link Dehnen, Yoga, Tai-Chi",
     "part_homeCalendar": "Export in den Kalender",
     "part_homeConflict": "Zu dicht beieinander liegende Einheiten",
     "part_homeDeload": "Tipp für eine leichtere Woche",

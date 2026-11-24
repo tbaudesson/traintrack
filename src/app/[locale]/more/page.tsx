@@ -19,6 +19,7 @@ import {
   PawPrint,
   Gauge,
   Footprints,
+  PersonStanding,
 } from "lucide-react";
 
 export default function MorePage() {
@@ -40,6 +41,8 @@ export default function MorePage() {
     ...(hasFeature("readiness")
       ? [{ href: "/readiness", icon: HeartPulse, label: t("readiness") }]
       : []),
+    // Warm-up, stretching, yoga or tai-chi: beside any sport, high in the list.
+    { href: "/mobility", icon: PersonStanding, label: t("mobility") },
     { href: "/exercises", icon: ListChecks, label: t("exercises") },
     { href: "/programs", icon: ClipboardList, label: t("programs") },
     ...(hasFeature("level_tests") ? [{ href: "/tests", icon: Gauge, label: t("tests") }] : []),

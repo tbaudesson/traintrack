@@ -2373,6 +2373,18 @@ await test("a plan B chosen once is one tap away from the session card", async (
   await page.locator("#settings-planb").getByRole("button", { name: "Aucun", exact: true }).click();
 });
 
+await test("stretching, yoga and tai-chi are always one tap away: the session card and the Sports page", async () => {
+  await page.goto(`${BASE}/fr`);
+  const link = heroCard().getByRole("link", { name: "Étirements, yoga, tai-chi" });
+  await link.waitFor({ timeout: 10000 });
+  await snap("home-mobility");
+  await link.click();
+  await page.waitForURL(/\/fr\/mobility$/, { timeout: 10000 });
+  await page.goto(`${BASE}/fr/more`);
+  await page.getByRole("link", { name: "Échauffement, étirements, yoga et tai-chi" }).click();
+  await page.waitForURL(/\/fr\/mobility$/, { timeout: 10000 });
+});
+
 await test("the sport followed is changed from the top of the home screen", async () => {
   await page.goto(`${BASE}/fr`);
   await page.getByRole("button", { name: /^Sport suivi : .*Changer de sport/ }).click();

@@ -27,7 +27,7 @@ export const DISPLAY_PARTS = {
   // Menu entries, by their id in the navigation; Today, Profile, Settings and
   // Administration are always there (Settings is where the mode is changed).
   nav: ["programs", "exercises", "sports", "history", "import", "progress", "assistant", "readiness", "health", "nutrition", "challenges", "notifications", "layouts"],
-  home: ["homeProgress", "homeLoad", "homePlanB", "homeCalendar", "homeConflict", "homeDeload", "homeReport", "homeTests", "homeInsights", "homeAdvice", "homeSportHint", "homeLastSession"],
+  home: ["homeProgress", "homeLoad", "homePlanB", "homeMobility", "homeCalendar", "homeConflict", "homeDeload", "homeReport", "homeTests", "homeInsights", "homeAdvice", "homeSportHint", "homeLastSession"],
   progress: [
     "progressMoreInsights", "progressAssistant", "progressRecommendations", "progressLoad", "progressLoadHistory", "progressEnduranceTrend",
     "progressWeeklyReport", "progressGoals", "progressReport", "progressVolume", "progressByExercise", "progressMuscles", "progressRecords",

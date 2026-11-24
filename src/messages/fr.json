@@ -243,7 +243,8 @@
     "weekPlanChoose": "Choisir mes jours d'entraînement",
     "weekCount": "{done} séances faites sur {target}",
     "detailsShort": "Détails",
-    "noTimeToday": "Pas le temps aujourd'hui ?"
+    "noTimeToday": "Pas le temps aujourd'hui ?",
+    "mobilityLink": "Étirements, yoga, tai-chi"
   },
   "onboarding": {
     "title": "Votre profil athlète",
@@ -762,7 +763,8 @@
     "competitions": "Compétitions",
     "horses": "Chevaux",
     "tests": "Tests de niveau",
-    "running": "Course à pied"
+    "running": "Course à pied",
+    "mobility": "Échauffement, étirements, yoga et tai-chi"
   },
   "health": {
     "title": "Santé et objets connectés",
@@ -3032,6 +3034,7 @@
     "part_homeProgress": "Carte Performance",
     "part_homeLoad": "Zone de charge (carte Performance)",
     "part_homePlanB": "Bouton plan B",
+    "part_homeMobility": "Lien étirements, yoga, tai-chi",
     "part_homeCalendar": "Export vers l’agenda",
     "part_homeConflict": "Séances trop rapprochées",
     "part_homeDeload": "Conseil de semaine allégée",

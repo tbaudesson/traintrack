@@ -71,6 +71,7 @@ import {
   type LucideIcon,
   ArrowRight, Check, ListChecks, MessageSquare, Sparkles, Bell, ChevronRight, ClipboardList, HeartPulse, Loader2, Settings,
   Timer,
+  PersonStanding,
   PartyPopper,
   Gauge,
   X,
@@ -839,6 +840,16 @@ export default function HomePage() {
                 <Zap className="size-4 shrink-0" aria-hidden="true" />
                 <span className="truncate">{planBText ? tpb("start", { label: planBText }) : tpb("choose")}</span>
               </button>}
+              {/* Warm-up, stretching, yoga or tai-chi: always there, in a quiet line. */}
+              {shows("homeMobility") && (
+                <Link
+                  href="/mobility"
+                  className="relative mt-1.5 flex min-h-10 w-full items-center justify-center gap-1.5 text-xs font-medium text-white/70 hover:text-white"
+                >
+                  <PersonStanding className="size-3.5 shrink-0" aria-hidden="true" />
+                  <span className="truncate">{t("mobilityLink")}</span>
+                </Link>
+              )}
             </section>
 
             {alerts.length > 0 && (
