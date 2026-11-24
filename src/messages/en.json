@@ -1476,8 +1476,8 @@
     "finished": "Done"
   },
   "mobility": {
-    "title": "Warm-up, stretching and yoga",
-    "hint": "Before or after the session, or a yoga session",
+    "title": "Warm-up, stretching, yoga and tai chi",
+    "hint": "Before or after the session, or a yoga or tai chi session",
     "warmupTitle": "Warm-up",
     "stretchTitle": "Stretching",
     "mode": "When",
@@ -1510,7 +1510,12 @@
     "yogaDone": "Yoga session done; take your time coming back.",
     "work_yoga": "Pose",
     "mode_yoga": "Yoga: a session of its own",
-    "modeHint_yoga": "Poses held with the breath, from the opening breathing to the final relaxation. Never force."
+    "modeHint_yoga": "Poses held with the breath, from the opening breathing to the final relaxation. Never force.",
+    "taichiTitle": "Tai chi",
+    "taichiDone": "Tai chi session done: stand still a moment, the breath calm.",
+    "work_taichi": "Movement",
+    "mode_taichi": "Tai chi: a session of its own",
+    "modeHint_taichi": "The Yang 24-movement form, slowly and in its order: its first movements for a short session, the whole form for a long one. Soft knees, never force."
   },
   "injuries": {
     "title": "Injuries",
@@ -1551,10 +1556,10 @@
     "cat_cycling": "Cycling",
     "cat_vaulting": "Vaulting",
     "cat_timed": "Callisthenics",
-    "cat_mobility": "Warm-up, stretching and yoga",
+    "cat_mobility": "Warm-up, stretching, yoga and tai chi",
     "count": "{count, plural, one {# program} other {# programs}}",
     "timedHint": "Timed sessions",
-    "mobilityHint": "Before, after the session, or yoga",
+    "mobilityHint": "Before, after the session, yoga or tai chi",
     "allLevels": "All levels",
     "perWeek": "{count} sessions / wk",
     "weeks": "{count, plural, one {# week} other {# weeks}}",

@@ -261,7 +261,7 @@ export interface ProgramDay {
 
 /** A warm-up or stretching session, as kept with its workout. */
 export interface MobilityLog {
-  mode: "warmup" | "stretch" | "yoga";
+  mode: "warmup" | "stretch" | "yoga" | "taichi";
   /** The length chosen, in minutes. */
   minutes: number;
   target: "session" | "full" | "upper" | "lower";

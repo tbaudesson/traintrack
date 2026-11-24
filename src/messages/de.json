@@ -1476,8 +1476,8 @@
     "finished": "Fertig"
   },
   "mobility": {
-    "title": "Aufwärmen, Dehnen und Yoga",
-    "hint": "Vor oder nach dem Training, oder eine Yoga-Einheit",
+    "title": "Aufwärmen, Dehnen, Yoga und Tai-Chi",
+    "hint": "Vor oder nach dem Training, oder eine Yoga- oder Tai-Chi-Einheit",
     "warmupTitle": "Aufwärmen",
     "stretchTitle": "Dehnen",
     "mode": "Wann",
@@ -1510,7 +1510,12 @@
     "yogaDone": "Yoga-Einheit beendet, komm in Ruhe zurück.",
     "work_yoga": "Haltung",
     "mode_yoga": "Yoga: eine eigene Einheit",
-    "modeHint_yoga": "Haltungen im Atemrhythmus, von der Atmung am Anfang bis zur Endentspannung. Nie erzwingen."
+    "modeHint_yoga": "Haltungen im Atemrhythmus, von der Atmung am Anfang bis zur Endentspannung. Nie erzwingen.",
+    "taichiTitle": "Tai-Chi",
+    "taichiDone": "Tai-Chi-Einheit beendet: einen Moment still stehen, ruhig atmen.",
+    "work_taichi": "Bewegung",
+    "mode_taichi": "Tai-Chi: eine eigene Einheit",
+    "modeHint_taichi": "Die Yang-Form mit 24 Bewegungen, langsam und der Reihe nach: die ersten Bewegungen für eine kurze Einheit, die ganze Form für eine lange. Lockere Knie, nie erzwingen."
   },
   "injuries": {
     "title": "Aktuelle Verletzungen",
@@ -1551,10 +1556,10 @@
     "cat_cycling": "Radfahren",
     "cat_vaulting": "Voltigieren",
     "cat_timed": "Calisthenics",
-    "cat_mobility": "Aufwärmen, Dehnen und Yoga",
+    "cat_mobility": "Aufwärmen, Dehnen, Yoga und Tai-Chi",
     "count": "{count, plural, one {# Programm} other {# Programme}}",
     "timedHint": "Einheiten auf Zeit",
-    "mobilityHint": "Vor, nach dem Training oder Yoga",
+    "mobilityHint": "Vor, nach dem Training, Yoga oder Tai-Chi",
     "allLevels": "Alle Niveaus",
     "perWeek": "{count} Einheiten / Woche",
     "weeks": "{count, plural, one {# Woche} other {# Wochen}}",

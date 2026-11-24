@@ -228,17 +228,23 @@ await page.evaluate(async ({ user, libraryRows }) => {
   const check = readFileSync("supabase/migrations/063_outing_checklist.sql", "utf8");
   const checklist = check.slice(check.indexOf("["), check.lastIndexOf("]") + 1).replace(/''/g, "'");
   await page.evaluate((v) => localStorage.setItem("traintrack.guidance.outing_checklist", v), JSON.stringify(JSON.parse(checklist)));
-  // Warm-ups and timed sessions, as migration 065 seeds them, yoga added by 072 (its postures, and their injury rules).
+  // Warm-ups and timed sessions, as migration 065 seeds them, yoga and tai-chi added by 072 and 084 (their moves, and their injury rules).
   const m065 = readFileSync("supabase/migrations/065_mobility_and_timed_sessions.sql", "utf8");
-  const m072 = readFileSync("supabase/migrations/072_hiit_rounds_and_yoga.sql", "utf8");
-  const [yoga, yogaRules] = [...m072.matchAll(/FROM \(SELECT '\n([\s\S]*?)\n'::jsonb AS data\)/g)].map((m) => JSON.parse(m[1].replace(/''/g, "'")));
+  // Yoga (072) and tai-chi (084): each its part of the warm-ups and its moves' injury rules.
+  const extraModes = [["yoga", "072_hiit_rounds_and_yoga.sql"], ["taichi", "084_taichi.sql"]].map(([name, file]) => {
+    const text = readFileSync(`supabase/migrations/${file}`, "utf8");
+    const [mode, rules] = [...text.matchAll(/FROM \(SELECT '\n([\s\S]*?)\n'::jsonb AS data\) AS \w/g)].map((m) => JSON.parse(m[1].replace(/''/g, "'")));
+    return { name, mode, rules };
+  });
   for (const key of ["mobility_moves", "timed_sessions"]) {
     const start = m065.indexOf(`'${key}', '`) + key.length + 5;
     const value = JSON.parse(m065.slice(start, m065.indexOf("')\nON CONFLICT", start)).replace(/''/g, "'"));
     if (key === "mobility_moves") {
-      value.minutes.yoga = yoga.minutes;
-      value.timing.yoga = yoga.timing;
-      value.moves.push(...yoga.moves);
+      for (const { name, mode } of extraModes) {
+        value.minutes[name] = mode.minutes;
+        value.timing[name] = mode.timing;
+        value.moves.push(...mode.moves);
+      }
     }
     await page.evaluate(([k, v]) => localStorage.setItem(`traintrack.guidance.${k}`, v), [key, JSON.stringify(value)]);
   }
@@ -246,7 +252,7 @@ await page.evaluate(async ({ user, libraryRows }) => {
     const g = JSON.parse(localStorage.getItem("traintrack.guidance.injury_guidance"));
     g.mobility = { ...rules, ...g.mobility };
     localStorage.setItem("traintrack.guidance.injury_guidance", JSON.stringify(g));
-  }, yogaRules);
+  }, Object.assign({}, ...extraModes.map((a) => a.rules)));
   // What the ready-made programs need, as migration 066 seeds it.
   const m066 = readFileSync("supabase/migrations/066_program_equipment.sql", "utf8");
   const equipment = m066.slice(m066.indexOf("'program_equipment', '") + 22, m066.indexOf("')\nON CONFLICT")).replace(/''/g, "'");
@@ -602,6 +608,30 @@ await test("yoga: a session of its own, from the breathing to the final relaxati
   const count = await moves.count();
   await page.getByRole("button", { name: "25 min", exact: true }).click();
   expect((await moves.count()) > count, "a longer yoga session holds no more postures");
+});
+
+await test("tai-chi: the Yang form followed in its order, a part of it or the whole, always closed", async () => {
+  await page.goto(`${BASE}/fr/mobility`);
+  await page.getByRole("button", { name: "Tai-chi : une séance à part" }).click();
+  await page.getByRole("button", { name: "Tai-chi : une séance à part", pressed: true }).waitFor({ timeout: 10000 });
+  // A form has no muscles to aim at.
+  expect(!(await page.getByRole("group", { name: "Muscles visés" }).count()), "a target is offered for tai-chi");
+  const moves = page.locator("ol").first().locator("li");
+  await page.getByRole("button", { name: "10 min", exact: true }).click();
+  await moves.first().waitFor({ timeout: 5000 });
+  expect((await moves.first().innerText()).includes("Posture de l’arbre"), "tai-chi does not open standing");
+  expect((await moves.last().innerText()).includes("Clôture"), "tai-chi does not end with the closing");
+  expect((await moves.nth(await moves.count() - 2).innerText()).includes("Simple fouet"), "the short session does not end the form's first part");
+  await page.getByRole("button", { name: "25 min", exact: true }).click();
+  expect((await moves.count()) === 26, `the long session holds ${await moves.count()} movements, not the whole form`);
+  await snap("taichi");
+  // Played like yoga, each step a movement.
+  await page.getByRole("button", { name: /Démarrer/ }).click();
+  const player = page.getByRole("dialog");
+  await player.getByRole("button", { name: /Passer/ }).click();
+  await player.getByText("Mouvement", { exact: true }).waitFor({ timeout: 5000 });
+  await player.getByText("Posture de l’arbre").waitFor({ timeout: 5000 });
+  await player.getByRole("button", { name: /Terminer la séance/ }).click();
 });
 
 await test("the style chosen in Settings restyles the whole app", async () => {

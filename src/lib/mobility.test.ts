@@ -102,10 +102,10 @@ describe("parseMobility", () => {
 
 describe("yoga", () => {
   it("is a third mode once migration 072 brings it, with its lengths and postures", () => {
-    expect(modesOf(G)).toEqual(["warmup", "stretch", "yoga"]);
+    expect(modesOf(G)).toEqual(["warmup", "stretch", "yoga", "taichi"]);
     expect(G.moves.filter((m) => m.mode === "yoga").length).toBeGreaterThanOrEqual(15);
     // Without it, the reference still holds: warm-up and stretch only.
-    const before = { ...G, minutes: { warmup: G.minutes.warmup, stretch: G.minutes.stretch }, timing: { warmup: G.timing.warmup, stretch: G.timing.stretch }, moves: G.moves.filter((m) => m.mode !== "yoga") };
+    const before = { ...G, minutes: { warmup: G.minutes.warmup, stretch: G.minutes.stretch }, timing: { warmup: G.timing.warmup, stretch: G.timing.stretch }, moves: G.moves.filter((m) => m.mode !== "yoga" && m.mode !== "taichi") };
     const parsed = parseMobility(JSON.stringify(before));
     expect(parsed && modesOf(parsed)).toEqual(["warmup", "stretch"]);
   });
@@ -125,5 +125,44 @@ describe("yoga", () => {
     expect(MOBILITY_INJURY_RULES["yoga-down-dog"]).toMatchObject({ shoulder: "caution", wrist: "caution" });
     const knee = pickMobility(G, "yoga", 25, G.targets.full, [{ area: "knee" }], { ...MOBILITY_INJURY_RULES, "yoga-chair": { knee: "avoid" } }).map((e) => e.key);
     expect(knee).not.toContain("yoga-chair");
+  });
+});
+
+describe("tai-chi", () => {
+  const form = G.moves.filter((m) => m.mode === "taichi").map((m) => m.key);
+
+  it("is a fourth mode once migration 084 brings it: the 24 movements of the Yang form, after standing and loosening", () => {
+    expect(form.length).toBe(26);
+    expect(form.slice(0, 3)).toEqual(["taichi-standing", "taichi-loosen", "taichi-commencing"]);
+    expect(form[form.length - 1]).toBe("taichi-closing");
+    // Without it, the reference still holds, yoga and all.
+    const before = parseMobility(JSON.stringify({ ...G, minutes: { ...G.minutes, taichi: undefined }, timing: { ...G.timing, taichi: undefined }, moves: G.moves.filter((m) => m.mode !== "taichi") }));
+    expect(before && modesOf(before)).toEqual(["warmup", "stretch", "yoga"]);
+  });
+
+  it("follows the form in its order, as far as the time goes, and always closes", () => {
+    let previous = 0;
+    for (const minutes of G.minutes.taichi) {
+      const picked = pickMobility(G, "taichi", minutes, []).map((e) => e.key);
+      expect(picked[picked.length - 1], `${minutes}`).toBe("taichi-closing");
+      // The movements before the closing: the form from its start, none skipped.
+      expect(picked.slice(0, -1), `${minutes}`).toEqual(form.slice(0, picked.length - 1));
+      expect(picked.length, `${minutes}`).toBeGreaterThan(previous);
+      previous = picked.length;
+      const { totalSec } = buildMobilitySession(G, "taichi", minutes, [], "fr");
+      expect(totalSec, `${minutes}`).toBeLessThanOrEqual(minutes * 60);
+    }
+    // The longest session: the whole form.
+    expect(pickMobility(G, "taichi", Math.max(...G.minutes.taichi), [])).toHaveLength(form.length);
+    // The shortest reaches the single whip, the end of the form's first part.
+    expect(pickMobility(G, "taichi", Math.min(...G.minutes.taichi), []).map((e) => e.key)).toContain("taichi-single-whip");
+  });
+
+  it("asks for care with the knees in the low stances, and leaves out a movement to avoid", () => {
+    expect(MOBILITY_INJURY_RULES["taichi-snake-left"]).toMatchObject({ knee: "caution" });
+    expect(mobilityWarning(MOBILITY_INJURY_RULES, "taichi-wild-horse", [{ area: "knee" }])?.level).toBe("caution");
+    const picked = pickMobility(G, "taichi", 25, [], [{ area: "knee" }], { ...MOBILITY_INJURY_RULES, "taichi-right-heel": { knee: "avoid" } }).map((e) => e.key);
+    expect(picked).not.toContain("taichi-right-heel");
+    expect(picked).toContain("taichi-left-heel");
   });
 });

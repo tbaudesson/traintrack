@@ -11,8 +11,8 @@ import { CARDIO_MINUTES, PLAN_B_KINDS, type PlanB } from "@/lib/planB";
 import { INTERVAL_FOCUSES } from "@/lib/intervals";
 import { DISTANCE_SPORTS } from "@/lib/cardio";
 import { cn } from "@/lib/utils";
+import { modesOf, type MobilityMode } from "@/lib/mobility";
 
-const MODES = ["warmup", "stretch", "yoga"] as const;
 
 /**
  * One's plan B, chosen once: what the session card offers on a day without
@@ -33,7 +33,9 @@ export function PlanBEditor() {
 
   const chip = (on: boolean) => cn("min-h-11 rounded-full border px-3 text-sm font-medium", on ? "border-accent-500 bg-accent-500 text-white" : "border-border hover:bg-muted");
   const timedMinutes = timed?.minutes ?? [10, 15, 20];
-  const mobilityMinutes = (m: (typeof MODES)[number]) => mobility?.minutes[m] ?? [5, 10, 15];
+  const mobilityMinutes = (m: MobilityMode) => mobility?.minutes[m] ?? [5, 10, 15];
+  // The modes the reference holds (yoga, tai-chi once their migrations are applied).
+  const modes: MobilityMode[] = mobility ? modesOf(mobility) : ["warmup", "stretch"];
 
   // A kind chosen: its first sensible settings, changed below.
   const start = (kind: PlanB["kind"]) => {
@@ -70,7 +72,7 @@ export function PlanBEditor() {
       {plan?.kind === "mobility" && (
         <>
           <Row label={tm("mode")}>
-            {MODES.map((m) => <button key={m} type="button" aria-pressed={plan.mode === m} onClick={() => set({ ...plan, mode: m, minutes: mobilityMinutes(m).includes(plan.minutes) ? plan.minutes : mobilityMinutes(m)[0] })} className={chip(plan.mode === m)}>{tm(`mode_${m}`)}</button>)}
+            {modes.map((m) => <button key={m} type="button" aria-pressed={plan.mode === m} onClick={() => set({ ...plan, mode: m, minutes: mobilityMinutes(m).includes(plan.minutes) ? plan.minutes : mobilityMinutes(m)[0] })} className={chip(plan.mode === m)}>{tm(`mode_${m}`)}</button>)}
           </Row>
           <Row label={t("minutes")}>
             {mobilityMinutes(plan.mode).map((m) => <button key={m} type="button" aria-pressed={plan.minutes === m} onClick={() => set({ ...plan, minutes: m })} className={chip(plan.minutes === m)}>{t("min", { m })}</button>)}

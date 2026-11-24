@@ -1476,8 +1476,8 @@
     "finished": "Terminé"
   },
   "mobility": {
-    "title": "Échauffement, étirements et yoga",
-    "hint": "Avant ou après la séance, ou une séance de yoga",
+    "title": "Échauffement, étirements, yoga et tai-chi",
+    "hint": "Avant ou après la séance, ou une séance de yoga ou de tai-chi",
     "warmupTitle": "Échauffement",
     "stretchTitle": "Étirements",
     "mode": "Moment",
@@ -1510,7 +1510,12 @@
     "yogaDone": "Séance de yoga terminée, prenez le temps de revenir doucement.",
     "work_yoga": "Posture",
     "mode_yoga": "Yoga : une séance à part",
-    "modeHint_yoga": "Des postures tenues au rythme du souffle, de la respiration du début à la relaxation finale. Sans forcer."
+    "modeHint_yoga": "Des postures tenues au rythme du souffle, de la respiration du début à la relaxation finale. Sans forcer.",
+    "taichiTitle": "Tai-chi",
+    "taichiDone": "Séance de tai-chi terminée : restez un instant immobile, le souffle calme.",
+    "work_taichi": "Mouvement",
+    "mode_taichi": "Tai-chi : une séance à part",
+    "modeHint_taichi": "La forme Yang en 24 mouvements, lentement et dans l’ordre : ses premiers mouvements pour une séance courte, la forme entière pour une longue. Genoux souples, sans forcer."
   },
   "injuries": {
     "title": "Blessures en cours",
@@ -1551,10 +1556,10 @@
     "cat_cycling": "Vélo",
     "cat_vaulting": "Voltige",
     "cat_timed": "Callisthenics",
-    "cat_mobility": "Échauffement, étirements et yoga",
+    "cat_mobility": "Échauffement, étirements, yoga et tai-chi",
     "count": "{count, plural, one {# programme} other {# programmes}}",
     "timedHint": "Séances minutées",
-    "mobilityHint": "Avant, après la séance, ou du yoga",
+    "mobilityHint": "Avant, après la séance, yoga ou tai-chi",
     "allLevels": "Tous niveaux",
     "perWeek": "{count} séances / sem.",
     "weeks": "{count, plural, one {# semaine} other {# semaines}}",

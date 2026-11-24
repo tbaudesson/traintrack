@@ -7,12 +7,17 @@ import { parseMobility, type MobilityGuidance } from "./mobility";
 
 const sql = (file: string) => readFileSync(`supabase/migrations/${file}`, "utf8");
 
-/** The two JSON literals migration 072 adds: the yoga part of the warm-ups, and its postures' injury rules. */
-function yogaFromMigrations(): { yoga: { minutes: number[]; timing: object; moves: object[] }; rules: Record<string, ExerciseRules> } {
-  const text = sql("072_hiit_rounds_and_yoga.sql");
-  const blocks = [...text.matchAll(/FROM \(SELECT '\n([\s\S]*?)\n'::jsonb AS data\)/g)].map((m) => JSON.parse(m[1].replace(/''/g, "'")));
-  return { yoga: blocks[0], rules: blocks[1] };
+type ModeBlocks = { mode: { minutes: number[]; timing: object; moves: object[] }; rules: Record<string, ExerciseRules> };
+
+/** The two JSON literals a migration adding a mobility mode holds: the mode's part of the warm-ups, and its moves' injury rules. */
+function modeFromMigration(file: string): ModeBlocks {
+  const blocks = [...sql(file).matchAll(/FROM \(SELECT '\n([\s\S]*?)\n'::jsonb AS data\) AS \w/g)].map((m) => JSON.parse(m[1].replace(/''/g, "'")));
+  return { mode: blocks[0], rules: blocks[1] };
 }
+
+/** The modes added after migration 065: yoga (072) and tai-chi (084). */
+const ADDED_MODES = { yoga: "072_hiit_rounds_and_yoga.sql", taichi: "084_taichi.sql" } as const;
+const addedModes = () => Object.entries(ADDED_MODES).map(([name, file]) => ({ name, ...modeFromMigration(file) }));
 
 /**
  * For the tests only: the injury references as migrations 058 and 059 leave
@@ -24,8 +29,8 @@ export function injuryGuidanceFromMigrations(): InjuryGuidance {
   const rules = sql("059_exercise_injury_rules.sql");
   const tail = rules.slice(rules.indexOf("UPDATE app_settings"));
   const added = JSON.parse(tail.slice(tail.indexOf("{"), tail.lastIndexOf("}") + 1));
-  // Migration 072 adds the yoga postures' rules to the mobility ones.
-  added.mobility = { ...yogaFromMigrations().rules, ...added.mobility };
+  // Migrations 072 and 084 add the yoga postures' and tai-chi movements' rules to the mobility ones.
+  for (const { rules } of addedModes()) added.mobility = { ...rules, ...added.mobility };
   const g = parseInjuryGuidance(JSON.stringify({ ...base, ...added }), mobilityFromMigrations().moves.map((e) => e.key));
   if (!g) throw new Error("The injury references of migrations 058 and 059 do not hold together");
   return g;
@@ -45,10 +50,14 @@ export function mobilityFromMigrations(): MobilityGuidance {
   const text = sql("065_mobility_and_timed_sessions.sql");
   const block = text.slice(text.indexOf("'mobility_moves', '") + 19, text.indexOf("')\nON CONFLICT"));
   const seeded = JSON.parse(block.replace(/''/g, "'"));
-  // Migration 072 adds yoga: its lengths, holds and postures.
-  const { yoga } = yogaFromMigrations();
-  const g = parseMobility(JSON.stringify({ ...seeded, minutes: { ...seeded.minutes, yoga: yoga.minutes }, timing: { ...seeded.timing, yoga: yoga.timing }, moves: [...seeded.moves, ...yoga.moves] }));
-  if (!g) throw new Error("The warm-ups of migrations 065 and 072 do not hold together");
+  // Migrations 072 and 084 add yoga and tai-chi: their lengths, holds and moves.
+  for (const { name, mode } of addedModes()) {
+    seeded.minutes[name] = mode.minutes;
+    seeded.timing[name] = mode.timing;
+    seeded.moves.push(...mode.moves);
+  }
+  const g = parseMobility(JSON.stringify(seeded));
+  if (!g) throw new Error("The warm-ups of migrations 065, 072 and 084 do not hold together");
   return g;
 }
 

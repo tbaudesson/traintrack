@@ -18,6 +18,8 @@ import { useExercises } from "@/hooks/useExercises";
 import { useInjuries } from "@/hooks/useAthleteProfile";
 import {
   buildMobilitySession,
+  followsForm,
+  MOBILITY_MODES,
   mobilityWarning,
   modesOf,
   sessionMuscles,
@@ -42,7 +44,7 @@ function fromLink(): { mode: MobilityMode; workoutId?: number; minutes?: number 
     const asked = params.get("mode");
     // One's plan B asks for a length too; a length the references do not offer is set right after.
     const minutes = Number(params.get("minutes"));
-    return { mode: asked === "stretch" || asked === "yoga" ? asked : "warmup", workoutId: id > 0 ? id : undefined, minutes: minutes > 0 ? minutes : undefined };
+    return { mode: MOBILITY_MODES.includes(asked as MobilityMode) ? (asked as MobilityMode) : "warmup", workoutId: id > 0 ? id : undefined, minutes: minutes > 0 ? minutes : undefined };
   } catch {
     return { mode: "warmup" };
   }
@@ -165,7 +167,8 @@ export default function MobilityPage() {
         </ChoiceField>
         <p className="-mt-3 text-xs text-muted-foreground">{t(`modeHint_${mode}`)}</p>
 
-        <ChoiceField label={t("target")}>
+        {/* A form is followed in its order: no muscles to aim at. */}
+        {!followsForm(mode) && <ChoiceField label={t("target")}>
           {link.workoutId && (
             <Choice on={target === "session"} onClick={() => setTarget("session")}>
               {t("target_session")}
@@ -176,7 +179,7 @@ export default function MobilityPage() {
               {t(`target_${m}`)}
             </Choice>
           ))}
-        </ChoiceField>
+        </ChoiceField>}
 
         <ChoiceField label={t("duration")}>
           {(mobility?.minutes[mode] ?? []).map((m) => (

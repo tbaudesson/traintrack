@@ -6,11 +6,14 @@ import type { InjuryLevel, InjuryRules } from "./injuries";
 /**
  * Before a session (moving, to warm up), after (holding, to stretch), or a
  * session of its own: yoga, postures held with the breath, opening with its
- * first posture and closing with its last (the final relaxation).
+ * first posture and closing with its last (the final relaxation); tai-chi,
+ * a form followed in its order, from its opening to its closing.
  */
-export type MobilityMode = "warmup" | "stretch" | "yoga";
-export const MOBILITY_MODES: MobilityMode[] = ["warmup", "stretch", "yoga"];
-/** The modes every reference has; yoga comes with migration 072. */
+export type MobilityMode = "warmup" | "stretch" | "yoga" | "taichi";
+export const MOBILITY_MODES: MobilityMode[] = ["warmup", "stretch", "yoga", "taichi"];
+/** A form learnt and done in its order: the first movements for a short session, the whole of it for a long one; no muscles to aim at. */
+export const followsForm = (mode: MobilityMode) => mode === "taichi";
+/** The modes every reference has; yoga comes with migration 072, tai-chi with 084. */
 const REQUIRED_MODES: MobilityMode[] = ["warmup", "stretch"];
 
 /** The modes a reference holds, in their order: yoga only once it has its postures. */
@@ -64,7 +67,7 @@ export function parseMobility(raw: string | null | undefined): MobilityGuidance 
     return null;
   }
   if (!g?.minutes || !g.timing || !g.targets || !Array.isArray(g.moves)) return null;
-  // Warm-up and stretch always; yoga too once any part of it is there.
+  // Warm-up and stretch always; yoga and tai-chi too once any part of them is there.
   const present = MOBILITY_MODES.filter((m) => REQUIRED_MODES.includes(m) || g.minutes[m] !== undefined || g.timing[m] !== undefined || g.moves.some((x) => x?.mode === m));
   for (const mode of present) {
     const t = g.timing[mode];
@@ -142,19 +145,25 @@ export function pickMobility(
   // Moves that load an injured area too much are left out.
   const all = g.moves.filter((e) => e.mode === mode && mobilityWarning(rules, e.key, injuries)?.level !== "avoid");
   const budget = minutes * 60;
-  const ranked = [...all].sort((a, b) => relevance(b, muscles) - relevance(a, muscles));
+  const inOrder = followsForm(mode);
+  const ranked = inOrder ? all : [...all].sort((a, b) => relevance(b, muscles) - relevance(a, muscles));
   const chosen = new Set<MobilityExercise>();
   let total = 0;
-  // A warm-up starts with its first move; a yoga session opens with its first
-  // posture and closes with its last.
-  const fixed = mode === "warmup" ? [all[0]] : mode === "yoga" ? [all[0], all[all.length - 1]] : [];
+  // A warm-up starts with its first move; a yoga or tai-chi session opens with
+  // its first posture and closes with its last.
+  const fixed = mode === "warmup" ? [all[0]] : mode === "yoga" || inOrder ? [all[0], all[all.length - 1]] : [];
   for (const e of fixed) {
     if (!e || chosen.has(e)) continue;
     chosen.add(e);
     total += cost(g, e);
   }
   for (const e of ranked) {
-    if (chosen.has(e) || total + cost(g, e) > budget) continue;
+    if (chosen.has(e)) continue;
+    // A form stops where the time does: no movement skipped for a later one.
+    if (total + cost(g, e) > budget) {
+      if (inOrder) break;
+      continue;
+    }
     chosen.add(e);
     total += cost(g, e);
   }
