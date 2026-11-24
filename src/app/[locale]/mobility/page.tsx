@@ -222,7 +222,7 @@ export default function MobilityPage() {
           size="lg"
           className="h-14 w-full rounded-full text-base"
           onClick={() => {
-            unlockAudio();
+            unlockAudio({ voice: true });
             setPlaying(true);
           }}
         >

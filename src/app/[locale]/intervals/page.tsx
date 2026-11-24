@@ -247,7 +247,7 @@ export default function IntervalsPage() {
   const canResume = !!left && left.state === "resumable" && leftSteps === left.progress.stepCount;
   function takeUp(again: boolean) {
     if (!left || !leftPlan) return;
-    unlockAudio();
+    unlockAudio({ voice: true });
     setPlan(leftPlan);
     setResume(again ? { index: left.progress.index, done: left.progress.done, elapsedSec: left.progress.elapsedSec } : undefined);
     if (!again) clearTimedProgress("intervals");
@@ -419,7 +419,7 @@ export default function IntervalsPage() {
           className="h-14 w-full rounded-full text-base"
           disabled={saving}
           onClick={() => {
-            unlockAudio();
+            unlockAudio({ voice: true });
             setResume(undefined);
             setLeft(null);
             setPlaying(true);

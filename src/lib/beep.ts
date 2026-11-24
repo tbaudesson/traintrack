@@ -10,10 +10,16 @@ import { mixWithMusic } from "./music";
 
 let context: AudioContext | null = null;
 
-export function unlockAudio(): void {
-  unlockVoice();
+/**
+ * From a tap: readies the beeps and, for a session with the voice coach, the
+ * voice. The speech engine is woken only then: on an iPhone, waking it pauses
+ * the music playing in another app (a rest timer, which never speaks, leaves
+ * it alone). One's music chosen, the sounds are set to mix with it first.
+ */
+export function unlockAudio({ voice = false }: { voice?: boolean } = {}): void {
   // One's music chosen: the beeps play over it rather than stopping it.
   if (getPrefs().music) mixWithMusic();
+  if (voice && getPrefs().voice) unlockVoice();
   try {
     if (!context) {
       const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Pause, Play, PlayCircle, SkipForward, Square, Volume2, VolumeX } from "lucide-react";
 import { beep } from "@/lib/beep";
-import { speak, stepAnnouncement, stopSpeaking, voiceSupported } from "@/lib/voice";
+import { speak, stepAnnouncement, stopSpeaking, unlockVoice, voiceSupported } from "@/lib/voice";
 import { savePrefs } from "@/lib/appTheme";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
 import { useSessionFocus } from "@/hooks/useSessionFocus";
@@ -242,7 +242,9 @@ export function IntervalPlayer({
             <button
               type="button"
               onClick={() => {
+                // Turned on from this tap: the voice is allowed to speak (iOS).
                 if (voice) stopSpeaking();
+                else unlockVoice();
                 savePrefs({ voice: !voice });
               }}
               aria-pressed={voice}
