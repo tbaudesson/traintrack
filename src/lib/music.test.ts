@@ -10,7 +10,7 @@ const spotify = apps.find((a) => a.id === "spotify")!;
 
 describe("music", () => {
   it("reads the seeded apps whole, Spotify among them", () => {
-    expect(apps.map((a) => a.name)).toEqual(["Spotify", "Apple Music", "Deezer", "YouTube Music", "Qobuz"]);
+    expect(apps.map((a) => a.name)).toEqual(["Spotify", "Apple Music", "Deezer", "YouTube Music", "Qobuz", "Musi"]);
     expect(spotify.appUrl).toBe("spotify:");
   });
 
@@ -30,6 +30,8 @@ describe("music", () => {
     expect(isPlaylistOf(spotify, "https://open.spotify.com/playlist/37i9dQZF1DX76Wlfdnj7AP?si=1")).toBe(true);
     expect(isPlaylistOf(spotify, "https://music.apple.com/fr/playlist/x")).toBe(false);
     expect(isPlaylistOf(spotify, "https://open.spotify.com.evil.example/playlist")).toBe(false);
+    // A playlist as Musi shares it.
+    expect(isPlaylistOf(apps.find((x) => x.id === "musi")!, "https://feelthemusi.com/playlist/dd7jj9")).toBe(true);
   });
 
   it("opens the playlist, else the app on a phone and its web player on a computer", () => {
