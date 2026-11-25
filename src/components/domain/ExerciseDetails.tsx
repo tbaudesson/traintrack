@@ -1,7 +1,9 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import type { Exercise, ExerciseLevel, LocalizedList, Movement, MuscleGroup } from "@/db";
+import type { Exercise, ExerciseLevel, LocalizedList, Movement, Muscle, MuscleGroup } from "@/db";
+import { BodyMap } from "@/components/domain/BodyMap";
+import { MUSCLES_BY_GROUP } from "@/lib/muscleMap";
 import { LEVELS, MOVEMENTS } from "@/lib/movements";
 import { MUSCLE_GROUPS } from "@/lib/muscles";
 import { useExerciseLabel } from "@/lib/exerciseNames";
@@ -30,7 +32,10 @@ export function ExerciseDetails({ ex, library }: { ex: Exercise; library: Exerci
     ex.level ? t(`level_${ex.level}`) : null,
     ...(ex.movements ?? []).map((m) => t(`movement_${m}`)),
   ].filter(Boolean) as string[];
-  if (!tags.length && !ex.secondaryMuscles?.length && !cues.length && !mistakes.length && !parent) return null;
+  const tb = useTranslations("bodyMap");
+  const target = ex.targetMuscles ?? [];
+  const assist = ex.assistMuscles ?? [];
+  if (!tags.length && !target.length && !ex.secondaryMuscles?.length && !cues.length && !mistakes.length && !parent) return null;
   return (
     <div className="space-y-2 text-sm">
       {tags.length > 0 && (
@@ -38,8 +43,19 @@ export function ExerciseDetails({ ex, library }: { ex: Exercise; library: Exerci
           {tags.map((x) => <span key={x} className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{x}</span>)}
         </div>
       )}
-      {!!ex.secondaryMuscles?.length && (
-        <p className="text-xs text-muted-foreground">{t("secondary")} : {ex.secondaryMuscles.map((m) => te(`mg_${m}`)).join(", ")}</p>
+      {target.length > 0 ? (
+        <div className="flex items-center gap-3">
+          <BodyMap
+            load={new Map<Muscle, number>([...assist.map((m) => [m, 0.3] as const), ...target.map((m) => [m, 1] as const)])}
+            className="h-32 w-40 shrink-0 gap-0.5"
+          />
+          <div className="space-y-1 text-xs">
+            <p><span className="font-semibold">{tb("worked")} :</span> {target.map((m) => tb(`m_${m}`)).join(", ")}</p>
+            {assist.length > 0 && <p className="text-muted-foreground">{tb("workedToo")} : {assist.map((m) => tb(`m_${m}`)).join(", ")}</p>}
+          </div>
+        </div>
+      ) : (
+        !!ex.secondaryMuscles?.length && <p className="text-xs text-muted-foreground">{t("secondary")} : {ex.secondaryMuscles.map((m) => te(`mg_${m}`)).join(", ")}</p>
       )}
       {parent && <p className="text-xs text-muted-foreground">{t("variantOf")} : {xl(parent.name)}</p>}
       {cues.length > 0 && (
@@ -62,6 +78,8 @@ export interface DetailsDraft {
   level: ExerciseLevel | null;
   movements: Movement[];
   secondaryMuscles: MuscleGroup[];
+  targetMuscles: Muscle[];
+  assistMuscles: Muscle[];
   cues: Record<Lang, string>;
   mistakes: Record<Lang, string>;
   variantOf: string | null;
@@ -71,6 +89,8 @@ export const draftOf = (ex: Exercise): DetailsDraft => ({
   level: ex.level ?? null,
   movements: ex.movements ?? [],
   secondaryMuscles: ex.secondaryMuscles ?? [],
+  targetMuscles: ex.targetMuscles ?? [],
+  assistMuscles: ex.assistMuscles ?? [],
   cues: { fr: (ex.cues?.fr ?? []).join("\n"), en: (ex.cues?.en ?? []).join("\n"), de: (ex.cues?.de ?? []).join("\n") },
   mistakes: { fr: (ex.mistakes?.fr ?? []).join("\n"), en: (ex.mistakes?.en ?? []).join("\n"), de: (ex.mistakes?.de ?? []).join("\n") },
   variantOf: ex.variantOf ?? null,
@@ -89,6 +109,7 @@ export function listsOf(text: Record<Lang, string>): LocalizedList {
 /** The admin's fields for those details. */
 export function ExerciseDetailsEditor({ value, onChange, library, self }: { value: DetailsDraft; onChange: (v: DetailsDraft) => void; library: Exercise[]; self: Exercise }) {
   const t = useTranslations("restrictions");
+  const tb = useTranslations("bodyMap");
   const te = useTranslations("exercises");
   const xl = useExerciseLabel();
   const chip = (on: boolean) => cn("min-h-9 rounded-full border px-2.5 text-xs font-medium", on ? "border-accent-500 bg-accent-500 text-white" : "border-border hover:bg-muted");
@@ -123,6 +144,38 @@ export function ExerciseDetailsEditor({ value, onChange, library, self }: { valu
             <button key={g} type="button" aria-pressed={value.secondaryMuscles.includes(g)} onClick={() => onChange({ ...value, secondaryMuscles: toggle(value.secondaryMuscles, g) })} className={chip(value.secondaryMuscles.includes(g))}>
               {te(`mg_${g}`)}
             </button>
+          ))}
+        </div>
+      </div>
+      <div>
+        <p className="mb-1 text-xs">{tb("adminLabel")}</p>
+        <p className="mb-1.5 text-xs text-muted-foreground">{tb("adminHint")}</p>
+        <div className="space-y-1.5">
+          {MUSCLES_BY_GROUP.map(({ group, muscles }) => (
+            <div key={group} className="flex flex-wrap gap-1.5">
+              {muscles.map((m) => {
+                const role = value.targetMuscles.includes(m) ? "target" : value.assistMuscles.includes(m) ? "assist" : null;
+                // A tap: main, then secondary, then none.
+                const next = () => {
+                  const targetMuscles = value.targetMuscles.filter((x) => x !== m);
+                  const assistMuscles = value.assistMuscles.filter((x) => x !== m);
+                  if (!role) targetMuscles.push(m);
+                  else if (role === "target") assistMuscles.push(m);
+                  onChange({ ...value, targetMuscles: targetMuscles.slice(0, 8), assistMuscles: assistMuscles.slice(0, 10) });
+                };
+                return (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={next}
+                    aria-label={`${tb(`m_${m}`)} : ${role === "target" ? tb("adminMain") : role === "assist" ? tb("adminAlso") : tb("stateNone")}`}
+                    className={cn(chip(role === "target"), role === "assist" && "border-accent-500 bg-accent-500/15 text-accent-text")}
+                  >
+                    {tb(`m_${m}`)}
+                  </button>
+                );
+              })}
+            </div>
           ))}
         </div>
       </div>

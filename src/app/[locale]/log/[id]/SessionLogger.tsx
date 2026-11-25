@@ -67,6 +67,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, MoreHorizontal, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight, TrendingDown, Equal, Gauge, BatteryLow, Bandage, PersonStanding, CopyPlus, Ban, Maximize2, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SessionMuscles } from "@/components/domain/BodyMap";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { IntervalWorkoutView } from "@/components/domain/IntervalWorkoutView";
 import { MusicButton } from "@/components/domain/MusicButton";
@@ -89,6 +90,16 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
   const workout = useWorkout(workoutId);
   const sets = useWorkoutSets(workoutId);
   const exercises = useExercises();
+  const muscleEntries = useMemo(() => {
+    const work = sets.filter((x) => !x.isWarmup);
+    const done = work.filter((x) => x.completed);
+    const counted = new Map<number, number>();
+    for (const x of done.length ? done : work) counted.set(x.exerciseId, (counted.get(x.exerciseId) ?? 0) + 1);
+    return [...counted].flatMap(([id, amount]) => {
+      const exercise = exercises.find((e) => e.id === id);
+      return exercise ? [{ name: exercise.name, exercise, amount }] : [];
+    });
+  }, [sets, exercises]);
   const programs = usePrograms();
   const allWorkouts = useWorkouts();
   const allSets = useAllWorkoutSets();
@@ -1416,6 +1427,9 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
           );
         })}
 
+
+        {/* The muscles the session works: what is done, or what is planned before anything is. */}
+        {workout && !isCardio(workout) && <SessionMuscles entries={muscleEntries} />}
 
         <div className="pt-2">
           <WorkoutNotes workoutId={workoutId} />

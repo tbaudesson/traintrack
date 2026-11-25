@@ -7,7 +7,7 @@ import type { ExerciseRules } from "@/lib/injuries";
 import { useLocale, useTranslations } from "next-intl";
 import { useExercises, createCustomExercise, updateExercise, deleteExercise, patchExerciseLocal } from "@/hooks/useExercises";
 import { useAuth } from "@/contexts/AuthContext";
-import { adminCreateLibraryExercise, adminSetExerciseDetails, adminSetExerciseInjuryRules, adminUpdateExerciseContent, adminUpdateExerciseI18n } from "@/lib/adminService";
+import { adminCreateLibraryExercise, adminSetExerciseDetails, adminSetExerciseInjuryRules, adminSetExerciseMuscles, adminUpdateExerciseContent, adminUpdateExerciseI18n } from "@/lib/adminService";
 import { ExerciseDetails, ExerciseDetailsEditor, draftOf, listsOf, type DetailsDraft } from "@/components/domain/ExerciseDetails";
 import db from "@/db";
 import type { Exercise, MuscleGroup, Equipment } from "@/db";
@@ -16,13 +16,15 @@ import { VideoEmbed } from "@/components/domain/VideoEmbed";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Loader2, Dumbbell, ChevronDown, ChevronUp, Pencil, Trash2, Check, X, History } from "lucide-react";
+import { Plus, Search, Loader2, Dumbbell, ChevronDown, ChevronUp, Pencil, Trash2, Check, X, History, PersonStanding } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { demoVideo } from "@/lib/demoVideos";
 import { cn } from "@/lib/utils";
 import { SectionHeading } from "@/components/ui/page-parts";
 import { useExerciseLabel, exerciseDescription } from "@/lib/exerciseNames";
 import { search as searchItems } from "@/lib/search";
+import { MuscleFilter } from "@/components/domain/BodyMap";
+import { matchExercises, type MuscleRole, type MuscleSelection } from "@/lib/muscleMap";
 
 const EQUIPMENT: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "bodyweight", "kettlebell", "bands", "other"];
 
@@ -33,12 +35,19 @@ export default function ExercisesPage() {
   const exercises = useExercises();
   const [search, setSearch] = useState("");
   const [adding, setAdding] = useState(false);
+  const tb = useTranslations("bodyMap");
+  // The body map as a filter: muscles wanted, muscles ruled out.
+  const [bodyOpen, setBodyOpen] = useState(false);
+  const [selection, setSelection] = useState<MuscleSelection>({});
+  const filtering = Object.keys(selection).length > 0;
 
   // Names in every language and descriptions, accents ignored: "pompes" finds "Push-up".
   const filtered = useMemo(
     () => searchItems(exercises, search, (e) => ({ names: [e.name, e.nameFr, e.nameDe], others: [e.description, e.descriptionFr, e.descriptionDe] })),
     [exercises, search]
   );
+
+  const matched = useMemo(() => (filtering ? matchExercises(filtered, selection) : []), [filtering, filtered, selection]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, typeof filtered>();
@@ -79,6 +88,31 @@ export default function ExercisesPage() {
           <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("search")} className="pl-10" />
         </div>
 
+        <section className="t-surface rounded-2xl ring-1 ring-foreground/5">
+          <button type="button" onClick={() => setBodyOpen((v) => !v)} aria-expanded={bodyOpen} className="flex min-h-12 w-full items-center gap-2 px-4 text-left">
+            <PersonStanding className="size-4 text-accent-text" aria-hidden="true" />
+            <span className="flex-1 text-sm font-semibold">{tb("filterTitle")}</span>
+            {filtering && <span className="rounded-full bg-accent-500 px-2 py-0.5 text-xs font-semibold text-white">{Object.keys(selection).length}</span>}
+            {bodyOpen ? <ChevronUp className="size-4 text-muted-foreground" aria-hidden="true" /> : <ChevronDown className="size-4 text-muted-foreground" aria-hidden="true" />}
+          </button>
+          {bodyOpen && (
+            <div className="px-4 pb-4">
+              <MuscleFilter selection={selection} onChange={setSelection} />
+            </div>
+          )}
+        </section>
+
+        {filtering ? (
+          <section className="space-y-1.5" aria-live="polite">
+            <SectionHeading>{tb("count", { count: matched.length })}</SectionHeading>
+            {matched.length === 0 && <p className="text-sm text-muted-foreground">{tb("none")}</p>}
+            <div className="grid items-start gap-1.5 lg:grid-cols-2">
+              {matched.map(({ exercise, role }) => (
+                <ExerciseRow key={exercise.id} ex={exercise} library={exercises} role={role} />
+              ))}
+            </div>
+          </section>
+        ) : (
         <div className="grid items-start gap-5 lg:grid-cols-2">
           {MUSCLE_GROUPS.filter((g) => grouped.has(g)).map((g) => (
             <section key={g} className="space-y-1.5">
@@ -89,6 +123,7 @@ export default function ExercisesPage() {
             </section>
           ))}
         </div>
+        )}
       </div>
     </>
   );
@@ -189,8 +224,9 @@ function AddExerciseForm({ onDone }: { onDone: () => void }) {
   );
 }
 
-function ExerciseRow({ ex, library }: { ex: Exercise; library: Exercise[] }) {
+function ExerciseRow({ ex, library, role }: { ex: Exercise; library: Exercise[]; role?: MuscleRole | null }) {
   const t = useTranslations("exercises");
+  const tb = useTranslations("bodyMap");
   const tr = useTranslations("injuryRules");
   const xl = useExerciseLabel();
   const locale = useLocale();
@@ -230,7 +266,10 @@ function ExerciseRow({ ex, library }: { ex: Exercise; library: Exercise[] }) {
         const cues = listsOf(details.cues);
         const mistakes = listsOf(details.mistakes);
         await adminSetExerciseDetails(ex.uuid, { level: details.level, movements: details.movements, secondaryMuscles: details.secondaryMuscles, cues, mistakes, variantOf: details.variantOf });
+        await adminSetExerciseMuscles(ex.uuid, details.targetMuscles, details.assistMuscles);
         await patchExerciseLocal(ex.id!, {
+          targetMuscles: details.targetMuscles.length ? details.targetMuscles : null,
+          assistMuscles: details.assistMuscles.length ? details.assistMuscles : null,
           level: details.level,
           movements: details.movements.length ? details.movements : null,
           secondaryMuscles: details.secondaryMuscles.length ? details.secondaryMuscles : null,
@@ -263,6 +302,11 @@ function ExerciseRow({ ex, library }: { ex: Exercise; library: Exercise[] }) {
           <span className="flex-1 text-sm font-medium">{ex.isCustom ? ex.name : xl(ex.name)}</span>
           {ex.isCustom && (
             <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{t("custom")}</span>
+          )}
+          {role && (
+            <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", role === "target" ? "bg-accent-500/15 text-accent-text" : "bg-muted text-muted-foreground")}>
+              {role === "target" ? tb("main") : tb("also")}
+            </span>
           )}
           {(hasDetail || canEdit) && (open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />)}
         </button>

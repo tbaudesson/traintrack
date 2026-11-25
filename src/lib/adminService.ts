@@ -178,6 +178,12 @@ export async function adminSetExerciseDetails(
   if (error) throw new Error(error.message);
 }
 
+/** Admin: the muscles any exercise works, mainly and too (migration 086); empty lists clear them. */
+export async function adminSetExerciseMuscles(exerciseUuid: string, target: string[], assist: string[]): Promise<void> {
+  const { error } = await supabase.rpc("admin_set_exercise_muscles", { p_uuid: exerciseUuid, p_target: target, p_assist: assist });
+  if (error) throw new Error(error.message);
+}
+
 /** Admin: add an exercise to the shared library; returns its id. */
 export async function adminCreateLibraryExercise(e: {
   name: string;

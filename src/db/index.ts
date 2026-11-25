@@ -37,6 +37,13 @@ export type MuscleGroup =
   | "core"
   | "full_body"
   | "other";
+/** The muscles drawn on the body map, finer than the groups (migration 086); each belongs to one group. */
+export type Muscle =
+  | "chest" | "front_delts" | "side_delts" | "rear_delts"
+  | "biceps" | "triceps" | "forearms"
+  | "abs" | "obliques"
+  | "traps" | "lats" | "lower_back"
+  | "glutes" | "quads" | "hamstrings" | "adductors" | "calves";
 export type Equipment =
   | "barbell"
   | "dumbbell"
@@ -194,6 +201,9 @@ export interface Exercise extends SyncFields {
   movements?: Movement[] | null;
   /** The muscle groups it works besides its main one (migration 076). */
   secondaryMuscles?: MuscleGroup[] | null;
+  /** The muscles it works mainly, and those it works too (migration 086); none for a custom one. */
+  targetMuscles?: Muscle[] | null;
+  assistMuscles?: Muscle[] | null;
   /** Key points and usual faults, by language, filled by an admin (migration 076). */
   cues?: LocalizedList | null;
   mistakes?: LocalizedList | null;

@@ -179,6 +179,16 @@ for (const line of m085.split("\n").filter((l) => l.startsWith("SELECT NULL, "))
   });
 }
 if (libraryRows.length - boxingRows !== 10) throw new Error("085: the boxing combinations were not read");
+// The muscles each one works, as migration 086 fills them.
+let tagged = 0;
+for (const m of readFileSync("supabase/migrations/086_muscles.sql", "utf8").matchAll(/SET target_muscles = '(.+?)'::jsonb, assist_muscles = (NULL|'(.+?)'::jsonb), updated_at = now\(\) WHERE user_id IS NULL AND name = '((?:[^']|'')+)'/g)) {
+  const row = libraryRows.find((e) => e.name === m[4].replace(/''/g, "'"));
+  if (!row) continue;
+  row.targetMuscles = JSON.parse(m[1]);
+  row.assistMuscles = m[3] ? JSON.parse(m[3]) : null;
+  tagged++;
+}
+if (tagged !== libraryRows.length) throw new Error(`086: ${tagged} of ${libraryRows.length} exercises given their muscles`);
 
 // A signed-in user as the app caches it, a profile, and the exercise library.
 await page.evaluate(async ({ user, libraryRows }) => {
@@ -2217,6 +2227,41 @@ await test("an exercise's card gives its key points and usual faults in one's la
   await page.getByText("Points clés").first().waitFor({ timeout: 5000 });
   await page.getByText("Erreurs fréquentes").first().waitFor({ timeout: 5000 });
   await page.getByText("Placer la barre au-dessus du milieu des pieds").waitFor({ timeout: 5000 });
+});
+
+await test("the body map: muscles chosen or ruled out filter the library, and a session shows the muscles it works", async () => {
+  await page.goto(`${BASE}/fr/exercises`);
+  await page.getByRole("button", { name: "Filtrer par muscle" }).click();
+  const list = page.getByRole("group", { name: "Filtrer par muscle" });
+  // The hamstrings, chosen from the list: the leg curl mainly, never the leg extension.
+  await list.getByRole("button", { name: "Ischio-jambiers : non choisi" }).click();
+  await list.getByRole("button", { name: "Ischio-jambiers : choisi" }).waitFor({ timeout: 5000 });
+  const curl = page.getByRole("button", { name: /^Leg curl\s*Principal$/ });
+  await curl.waitFor({ timeout: 5000 });
+  expect(!(await page.getByRole("button", { name: /^Leg extension/ }).count()), "the leg extension came up for the hamstrings");
+  await snap("body-map-filter");
+  // The quads, tapped on the body: the squat now heads the list (hamstrings and quads both).
+  await page.locator('g[data-muscle="quads"] path').first().click();
+  await list.getByRole("button", { name: "Quadriceps : choisi" }).waitFor({ timeout: 5000 });
+  // The hamstrings ruled out with a second tap: the leg curl goes.
+  await list.getByRole("button", { name: "Ischio-jambiers : choisi" }).click();
+  await list.getByRole("button", { name: "Ischio-jambiers : exclu" }).waitFor({ timeout: 5000 });
+  await page.getByRole("button", { name: /^Leg extension\s*Principal$/ }).waitFor({ timeout: 5000 });
+  expect(!(await page.getByRole("button", { name: /^Leg curl/ }).count()), "an exercise mainly for a muscle ruled out stayed");
+  await page.getByRole("button", { name: "Tout effacer" }).click();
+  // Cleared: the whole library again, by group, the leg curl without a badge.
+  await page.getByRole("button", { name: /^Leg curl$/ }).first().waitFor({ timeout: 5000 });
+  // An exercise's card: its muscles, said and drawn.
+  await page.getByPlaceholder(/Rechercher/).fill("leg curl");
+  await page.getByRole("button", { name: /^Leg curl$/ }).first().click();
+  await page.getByText("Ischio-jambiers", { exact: false }).first().waitFor({ timeout: 5000 });
+  // A HIIT before it starts: the muscles it works, on the body.
+  await page.goto(`${BASE}/fr/intervals?focus=lower`);
+  await page.getByRole("button", { name: /^Muscles travaillés/ }).click();
+  await page.getByRole("img", { name: /^Muscles travaillés : / }).waitFor({ timeout: 5000 });
+  const said = await page.getByRole("img", { name: /^Muscles travaillés : / }).getAttribute("aria-label");
+  expect(/Quadriceps|Fessiers/.test(said), `a lower-body session said ${said}`);
+  await snap("body-map-hiit");
 });
 
 await test("Strava: the section in Settings, a declined return, and an imported session's link to Strava", async () => {

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
+import { SessionMuscles } from "@/components/domain/BodyMap";
 import { useWorkouts } from "@/hooks/useWorkouts";
 import { useBodyMetrics, addBodyMetric } from "@/hooks/useBodyMetrics";
 import { useExercises } from "@/hooks/useExercises";
@@ -60,6 +61,7 @@ export default function ProgressPage() {
   const { num, day } = useFormat();
   const xl = useExerciseLabel();
   const tex = useTranslations("exercises");
+  const tb = useTranslations("bodyMap");
   const { hasFeature } = useFeatureAccess();
   // One's display mode keeps some readings for later; a load calling for care always shows.
   const { shows } = useDisplayMode();
@@ -180,6 +182,21 @@ export default function ProgressPage() {
       .map(([mg, vol]) => ({ mg, label: tex(`mg_${mg}`), vol: Math.round(vol) }))
       .sort((a, b) => b.vol - a.vol);
   }, [scored, exercises, workoutDate, tex, now]);
+
+  // ── The muscles worked this week, on the body: each set done counted ──
+  const weekMuscles = useMemo(() => {
+    const monday = mondayOfDate(localDateIn(0, now));
+    const counted = new Map<number, number>();
+    for (const x of sets) {
+      const d = workoutDate.get(x.workoutId);
+      if (!x.completed || x.isWarmup || !d || d < monday) continue;
+      counted.set(x.exerciseId, (counted.get(x.exerciseId) ?? 0) + 1);
+    }
+    return [...counted].flatMap(([id, amount]) => {
+      const exercise = exercises.find((e) => e.id === id);
+      return exercise ? [{ name: exercise.name, exercise, amount }] : [];
+    });
+  }, [sets, exercises, workoutDate, now]);
 
   // ── Personal records (best estimated 1RM per lift) ─────────────
   const prs = useMemo(() => {
@@ -391,6 +408,8 @@ export default function ProgressPage() {
             <p className="text-sm text-muted-foreground">{t("analyticsHint")}</p>
           </div>
         )}
+
+        {shows("progressBodyMap") && weekMuscles.length > 0 && <SessionMuscles entries={weekMuscles} title={tb("weekTitle")} />}
 
         {/* The charts, folded on every screen; a piece of evidence opens its own. */}
         {(volumeShown || exerciseShown || musclesShown || recordsShown || bwData.length > 0) && (

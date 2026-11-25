@@ -18,7 +18,7 @@ function values(tuple: string): (string | null)[] {
   return out;
 }
 
-type Row = Pick<Exercise, "name" | "muscleGroup" | "equipment" | "description" | "nameFr" | "nameDe" | "descriptionFr" | "descriptionDe" | "videoUrl" | "injuryRules">;
+type Row = Pick<Exercise, "name" | "muscleGroup" | "equipment" | "description" | "nameFr" | "nameDe" | "descriptionFr" | "descriptionDe" | "videoUrl" | "injuryRules" | "targetMuscles" | "assistMuscles">;
 
 export function libraryFromMigrations(): Row[] {
   const rows = new Map<string, Row>();
@@ -78,6 +78,13 @@ export function libraryFromMigrations(): Row[] {
       row.videoUrl = v[8] ?? undefined;
       row.injuryRules = v[9] ? JSON.parse(v[9]) : null;
     }
+  }
+  // The muscles each one works (086).
+  for (const m of sql("086_muscles.sql").matchAll(/SET target_muscles = '(.+?)'::jsonb, assist_muscles = (NULL|'(.+?)'::jsonb), updated_at = now\(\) WHERE user_id IS NULL AND name = '((?:[^']|'')+)'/g)) {
+    const row = rows.get(m[4].replace(/''/g, "'"));
+    if (!row) continue;
+    row.targetMuscles = JSON.parse(m[1]);
+    row.assistMuscles = m[3] ? JSON.parse(m[3]) : null;
   }
   return [...rows.values()];
 }

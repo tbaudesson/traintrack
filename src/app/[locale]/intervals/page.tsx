@@ -40,6 +40,7 @@ import { SectionHeading } from "@/components/ui/page-parts";
 import { Button } from "@/components/ui/button";
 import { Choice, ChoiceField } from "@/components/ui/choice";
 import { IntervalPlayer, type IntervalResult } from "@/components/domain/IntervalPlayer";
+import { SessionMuscles } from "@/components/domain/BodyMap";
 import { clearTimedProgress, loadTimedProgress, saveTimedProgress, type TimedResume } from "@/lib/timedResume";
 import { InjuryBadge } from "@/components/domain/InjuryBadge";
 
@@ -411,6 +412,11 @@ export default function IntervalsPage() {
             </div>
           ))}
         </section>
+
+        {/* The muscles this session works, its seconds of effort counted. */}
+        <SessionMuscles
+          entries={session.steps.flatMap((st) => (st.type === "work" ? [{ name: st.exercise.name, muscleGroup: st.exercise.muscleGroup, amount: st.seconds }] : []))}
+        />
 
         {/* A heart-rate belt, connected before the start: its beats show while playing. */}
         <HeartRateCard hr={hr} />

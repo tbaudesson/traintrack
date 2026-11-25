@@ -30,7 +30,7 @@ export const DISPLAY_PARTS = {
   home: ["homeProgress", "homeLoad", "homePlanB", "homeMobility", "homeCalendar", "homeConflict", "homeDeload", "homeReport", "homeTests", "homeInsights", "homeAdvice", "homeSportHint", "homeLastSession"],
   progress: [
     "progressMoreInsights", "progressAssistant", "progressRecommendations", "progressLoad", "progressLoadHistory", "progressEnduranceTrend",
-    "progressWeeklyReport", "progressGoals", "progressReport", "progressVolume", "progressByExercise", "progressMuscles", "progressRecords",
+    "progressWeeklyReport", "progressGoals", "progressReport", "progressVolume", "progressByExercise", "progressMuscles", "progressBodyMap", "progressRecords",
   ],
   log: ["logMoreDetails", "logTrimp"],
 } as const;

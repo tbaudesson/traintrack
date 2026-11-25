@@ -14,6 +14,7 @@ import { useFormat } from "@/lib/format";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
+import { SessionMuscles } from "@/components/domain/BodyMap";
 
 /**
  * A timed session once done: how long, in which rhythm, and how many
@@ -26,6 +27,7 @@ export function IntervalWorkoutView({ workout, sets, exercises, justDone = false
   const router = useRouter();
   const { day } = useFormat();
   const plan = workout.intervalPlan;
+  const byId = new Map(exercises.map((e) => [e.id, e]));
   const names = new Map(exercises.map((e) => [e.id, e.name]));
   const byExercise = new Map<number, { count: number; seconds: number }>();
   for (const s of [...sets].sort((a, b) => (a.id ?? 0) - (b.id ?? 0)).filter((s) => s.completed)) {
@@ -83,6 +85,11 @@ export function IntervalWorkoutView({ workout, sets, exercises, justDone = false
             </li>
           ))}
         </ul>
+
+        <SessionMuscles
+          defaultOpen
+          entries={[...byExercise.entries()].map(([id, c]) => ({ name: names.get(id) ?? "", exercise: byId.get(id), amount: c.seconds || c.count }))}
+        />
 
         {justDone && (
           <Button className="h-12 w-full rounded-full" onClick={() => router.push("/")}>
