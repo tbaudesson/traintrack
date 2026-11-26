@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { isRecordingSupported } from "@/lib/voiceNoteService";
+import { audioSessionForRecording } from "@/lib/music";
 
 /** Minimal microphone recorder around MediaRecorder. */
 export function useAudioRecorder() {
@@ -23,6 +24,7 @@ export function useAudioRecorder() {
     setError(null);
     if (!isRecordingSupported()) { setError("UNSUPPORTED"); return; }
     try {
+      audioSessionForRecording();
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
       chunksRef.current = [];

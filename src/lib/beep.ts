@@ -12,21 +12,24 @@ let context: AudioContext | null = null;
 
 /**
  * From a tap: readies the beeps and, for a session with the voice coach, the
- * voice. The speech engine is woken only then: on an iPhone, waking it pauses
- * the music playing in another app (a rest timer, which never speaks, leaves
- * it alone). One's music chosen, the sounds are set to mix with it first.
+ * voice. The sounds are always set to mix with other audio first: on an
+ * iPhone, a page that plays sound otherwise pauses the music of another app,
+ * whether or not that music was opened from here. The speech engine is woken
+ * only for a session that speaks, as waking it can pause the music too.
  */
 export function unlockAudio({ voice = false }: { voice?: boolean } = {}): void {
-  // One's music chosen: the beeps play over it rather than stopping it.
-  if (getPrefs().music) mixWithMusic();
+  mixWithMusic();
   if (voice && getPrefs().voice) unlockVoice();
   try {
     if (!context) {
       const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (!Ctx) return;
       context = new Ctx();
+    } else if (context.state === "running") {
+      // Already unlocked: each sound played starts the audio again, so none is played for nothing.
+      return;
     }
-    if (context.state !== "running") void context.resume();
+    void context.resume();
     // A silent sound played from the tap is what really unlocks Web Audio on iOS.
     const buffer = context.createBuffer(1, 1, 22050);
     const source = context.createBufferSource();
@@ -42,6 +45,7 @@ export function unlockAudio({ voice = false }: { voice?: boolean } = {}): void {
 export function beep(kind: "tick" | "go" | "rest" = "tick"): void {
   if (!context) return;
   try {
+    mixWithMusic();
     // Suspended or interrupted by the system meanwhile (a call, the screen locked).
     if (context.state !== "running") void context.resume();
     const osc = context.createOscillator();

@@ -38,6 +38,12 @@ describe("unlockAudio", () => {
     expect(off.speak).not.toHaveBeenCalled();
   });
 
+  it("sets the sounds to mix with other audio even when no music app was chosen here (music started from its own app)", () => {
+    const { audioSession } = device({ voice: true });
+    unlockAudio();
+    expect(audioSession.type).toBe("ambient");
+  });
+
   it("sets the sounds to mix with one's music before the voice is woken", () => {
     const { speak, audioSession } = device({ voice: true, music: { app: "musi", playlist: null } });
     speak.mockImplementation(() => expect(audioSession.type).toBe("ambient"));

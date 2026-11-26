@@ -1655,7 +1655,7 @@
     "default": "Rest after a set (when the program sets none)",
     "warmup": "Rest after a warm-up set",
     "sound": "Sound",
-    "soundHint": "Beeps on the last 3 seconds and at the end. On iPhone, muted in silent mode.",
+    "soundHint": "Beeps over the last 3 seconds and at the end, over your music. On iPhone, muted in silent mode.",
     "vibrate": "Vibration",
     "vibrateHint": "At the end of the rest. On iPhone, from iOS 18.",
     "notify": "Notification",

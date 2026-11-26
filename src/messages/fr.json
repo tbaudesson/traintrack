@@ -1655,7 +1655,7 @@
     "default": "Repos après une série (quand le programme n'en fixe pas)",
     "warmup": "Repos après une série d'échauffement",
     "sound": "Son",
-    "soundHint": "Bips sur les 3 dernières secondes et à la fin. Sur iPhone, coupés en mode silencieux.",
+    "soundHint": "Bips sur les 3 dernières secondes et à la fin, par-dessus votre musique. Sur iPhone, coupés en mode silencieux.",
     "vibrate": "Vibration",
     "vibrateHint": "À la fin du repos. Sur iPhone, à partir d'iOS 18.",
     "notify": "Notification",

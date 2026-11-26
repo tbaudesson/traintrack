@@ -92,15 +92,20 @@ export function openMusic(app: MusicApp, playlist: string | null): void {
   else window.open(url, "_blank", "noopener");
 }
 
+const setAudioSession = (type: "ambient" | "auto") => {
+  try {
+    const session = (navigator as Navigator & { audioSession?: { type: string } }).audioSession;
+    if (session && session.type !== type) session.type = type;
+  } catch {
+    // Not supported: the system decides.
+  }
+};
+
 /**
  * Beeps and the voice coach over the music rather than in its place: on the
  * browsers that let a page say so (Safari), its sounds mix with the music.
  */
-export function mixWithMusic(): void {
-  try {
-    const session = (navigator as Navigator & { audioSession?: { type: string } }).audioSession;
-    if (session) session.type = "ambient";
-  } catch {
-    // Not supported: the system decides.
-  }
-}
+export const mixWithMusic = () => setAudioSession("ambient");
+
+/** Before the microphone records: the system picks the audio session again (a mixing one may not record). */
+export const audioSessionForRecording = () => setAudioSession("auto");

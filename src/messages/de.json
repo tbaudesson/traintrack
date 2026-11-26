@@ -1655,7 +1655,7 @@
     "default": "Pause nach einem Satz (wenn das Programm keine vorgibt)",
     "warmup": "Pause nach einem Aufwärmsatz",
     "sound": "Ton",
-    "soundHint": "Pieptöne in den letzten 3 Sekunden und am Ende. Auf dem iPhone im Stummmodus aus.",
+    "soundHint": "Pieptöne in den letzten 3 Sekunden und am Ende, über Ihrer Musik. Auf dem iPhone im Stummmodus aus.",
     "vibrate": "Vibration",
     "vibrateHint": "Am Ende der Pause. Auf dem iPhone ab iOS 18.",
     "notify": "Benachrichtigung",
