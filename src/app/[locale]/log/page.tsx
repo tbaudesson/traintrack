@@ -115,7 +115,7 @@ export default function TrainPage() {
                   <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                 ) : session ? (
                   <>
-                    {session.workoutId ? th("continue") : th("start")}
+                    {session.workoutId ? (workouts.find((w) => w.id === session.workoutId)?.finishedAt ? th("viewSession") : th("continue")) : th("start")}
                     <ArrowRight className="size-4" aria-hidden="true" />
                   </>
                 ) : (

@@ -43,6 +43,7 @@ import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
 export default function ProgramPage() {
   const t = useTranslations("programView");
   const tc = useTranslations("catalog");
+  const th = useTranslations("home");
   const xl = useExerciseLabel();
   const router = useRouter();
   const programId = Number(useParams().id);
@@ -204,7 +205,7 @@ export default function ProgramPage() {
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
               ) : (
                 <>
-                  {running ? t("continue") : t("start", { name: days[next].name })}
+                  {running ? (running.finishedAt ? th("viewSession") : t("continue")) : t("start", { name: days[next].name })}
                   <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
                 </>
               )}
