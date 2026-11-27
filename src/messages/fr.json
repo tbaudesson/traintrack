@@ -1641,7 +1641,8 @@
     "archive": "Archiver",
     "unarchive": "Ressortir",
     "unarchiveHint": "Ressorti, il revient dans le planning et le choix des séances tel qu’il était.",
-    "archivedNote": "Programme archivé : il n’apparaît plus dans le planning ni dans le choix des séances. Son historique est conservé."
+    "archivedNote": "Programme archivé : il n’apparaît plus dans le planning ni dans le choix des séances. Son historique est conservé.",
+    "leaveNamed": "Me désinscrire de « {name} »"
   },
   "exerciseHistory": {
     "empty": "Pas encore de séance avec cet exercice.",

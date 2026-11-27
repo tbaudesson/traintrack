@@ -1641,7 +1641,8 @@
     "archive": "Archive",
     "unarchive": "Bring back",
     "unarchiveHint": "Brought back, it returns to the planning and the session picker as it was.",
-    "archivedNote": "Archived: no longer in the planning or the session picker. Its history is kept."
+    "archivedNote": "Archived: no longer in the planning or the session picker. Its history is kept.",
+    "leaveNamed": "Unsubscribe from “{name}”"
   },
   "exerciseHistory": {
     "empty": "No session with this exercise yet.",

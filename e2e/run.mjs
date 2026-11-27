@@ -1597,6 +1597,32 @@ await test("the injury shelf offers a program per injured area, and the others t
   }
 });
 
+await test("a ready-made program followed is left from the list, with a confirmation; a coach's has no such button", async () => {
+  await page.goto(`${BASE}/fr/programs`);
+  await page.getByRole("button", { name: /TRX \(sangles\)/ }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.locator("li", { hasText: "TRX débutant" }).getByRole("button", { name: "Ajouter à mes programmes" }).click();
+  await page.waitForURL(/\/fr\/programs\/\d+$/, { timeout: 10000 });
+  await page.goto(`${BASE}/fr/programs`);
+  const followed = page.locator("section", { has: page.getByRole("heading", { name: "Programmes suivis" }) });
+  const leave = followed.getByRole("button", { name: "Me désinscrire de « TRX débutant »" });
+  await leave.waitFor({ timeout: 10000 });
+  await snap("programs-leave");
+  // Cancelled: still followed.
+  await leave.click();
+  await page.getByRole("dialog").getByRole("heading", { name: "Quitter « TRX débutant » ?" }).waitFor({ timeout: 5000 });
+  await page.getByRole("dialog").getByRole("button", { name: "Annuler" }).click();
+  await page.getByRole("dialog").waitFor({ state: "detached", timeout: 5000 });
+  expect(await followed.getByText("TRX débutant", { exact: true }).count(), "cancelling left the program");
+  // Confirmed: gone from the list.
+  await leave.click();
+  await page.getByRole("dialog").getByRole("button", { name: "Me désinscrire" }).click();
+  await followed.getByText("TRX débutant", { exact: true }).waitFor({ state: "detached", timeout: 10000 });
+  // Every other button of the section leaves a ready-made program, never a coach's.
+  const labels = await followed.getByRole("button", { name: /^Me désinscrire de/ }).evaluateAll((els) => els.map((e) => e.closest("div.flex")?.textContent ?? ""));
+  expect(labels.every((t) => !t.includes("par votre coach")), "a coach's program can be left from the list");
+});
+
 await test("TRX: a shelf of programs, and straps in the timed sessions", async () => {
   await page.goto(`${BASE}/fr/programs`);
   await page.getByRole("button", { name: /TRX \(sangles\)/ }).click();

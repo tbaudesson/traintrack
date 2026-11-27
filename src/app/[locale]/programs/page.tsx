@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import { usePrograms, createProgram } from "@/hooks/usePrograms";
+import { usePrograms, createProgram, deleteProgram } from "@/hooks/usePrograms";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAthleteProfile } from "@/hooks/useAthleteProfile";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
@@ -11,7 +11,7 @@ import { getAiConsent, getApiKey, generateProgram } from "@/lib/aiService";
 import { AiConsent } from "@/components/domain/AiConsent";
 import { PROGRAM_TEMPLATES, type ProgramTemplate } from "@/lib/programTemplates";
 import { planWeeks, programCategory } from "@/lib/programCategories";
-import type { ProgramDay } from "@/db";
+import { getCurrentUserIdSync, type ProgramDay } from "@/db";
 import { CategoryIcon, ProgramCatalog } from "@/components/domain/ProgramCatalog";
 import { QuickProgramDialog } from "@/components/domain/QuickProgramDialog";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -23,7 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, ClipboardList, Loader2, UserCheck, Sparkles, FileSpreadsheet, Archive, Star } from "lucide-react";
+import { Plus, ClipboardList, Loader2, UserCheck, Sparkles, FileSpreadsheet, Archive, Star, Trash2 } from "lucide-react";
 import { useWorkouts } from "@/hooks/useWorkouts";
 import { useFormat } from "@/lib/format";
 import { byUse, lastUsed } from "@/lib/reuse";
@@ -40,6 +40,7 @@ import { useAppPrefs } from "@/hooks/useAppPrefs";
 export default function ProgramsPage() {
   const { clients } = useClients();
   const t = useTranslations("programs");
+  const tv = useTranslations("programView");
   const tf = useTranslations("picker");
   const { day: dayLabel } = useFormat();
   const workouts = useWorkouts();
@@ -53,6 +54,8 @@ export default function ProgramsPage() {
   const profile = useAthleteProfile();
   const tc = useTranslations("catalog");
   const [busy, setBusy] = useState(false);
+  // A ready-made program being left, from its row (confirmed first).
+  const [leaving, setLeaving] = useState<{ id: number; name: string } | null>(null);
   const [importing, setImporting] = useState(false);
 
   const catalogue = useProgramTemplates();
@@ -149,12 +152,14 @@ export default function ProgramsPage() {
   }, [hasAssigned]);
   const clientName = (id?: string | null) => clients.find((c) => c.userId === id)?.displayName ?? "—";
   const readyMade = useReadyMadeNames();
+  // Who is on this device, as a program's page reads it: both say alike whether a program is followed or one's own.
+  const me = getCurrentUserIdSync();
   // Favourites, then the last used, narrowed by the search; the archived apart.
   const matching = search(byUse(mine, used), query, (p) => ({ names: [p.name], others: [p.description, describe(p).subtitle] }));
   const active = matching.filter((p) => !p.archivedAt);
   const archived = matching.filter((p) => p.archivedAt);
-  const followed = active.filter((p) => programOrigin(p, user?.id, readyMade) !== "mine");
-  const created = active.filter((p) => programOrigin(p, user?.id, readyMade) === "mine");
+  const followed = active.filter((p) => programOrigin(p, me, readyMade) !== "mine");
+  const created = active.filter((p) => programOrigin(p, me, readyMade) === "mine");
   /** "Running · 8 weeks · last session 12 Nov", a star for a favourite. */
   const rowOf = (p: (typeof mine)[number], extra?: string) => {
     const { category, subtitle } = describe(p);
@@ -213,7 +218,25 @@ export default function ProgramsPage() {
         {followed.length > 0 && (
           <section className="space-y-2">
             <SectionHeading>{t("followed")}</SectionHeading>
-            {followed.map((p) => rowOf(p, t(programOrigin(p, user?.id, readyMade) === "coach" ? "byCoach" : "readyMade")))}
+            {followed.map((p) => {
+              const coach = programOrigin(p, me, readyMade) === "coach";
+              const row = rowOf(p, t(coach ? "byCoach" : "readyMade"));
+              // A ready-made program is left from its row too; a coach's is changed by the coach.
+              if (coach || p.id === undefined) return row;
+              return (
+                <div key={p.id} className="flex items-center gap-1">
+                  <div className="min-w-0 flex-1">{row}</div>
+                  <button
+                    type="button"
+                    onClick={() => setLeaving({ id: p.id!, name: p.name })}
+                    aria-label={tv("leaveNamed", { name: p.name })}
+                    className="flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <Trash2 className="size-4" aria-hidden="true" />
+                  </button>
+                </div>
+              );
+            })}
           </section>
         )}
         {/* Programs one built: edited freely. */}
@@ -319,6 +342,26 @@ export default function ProgramsPage() {
       </Dialog>
 
       <ProgramImportDialog open={importing && hasFeature("excel_import")} onOpenChange={setImporting} />
+      <Dialog open={!!leaving} onOpenChange={(open) => !open && setLeaving(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="pr-8">{tv("leaveTitle", { name: leaving?.name ?? "" })}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">{tv("leaveText")}</p>
+          <div className="grid gap-2">
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                if (leaving) await deleteProgram(leaving.id);
+                setLeaving(null);
+              }}
+            >
+              {tv("leave")}
+            </Button>
+            <Button variant="outline" onClick={() => setLeaving(null)}>{tv("cancel")}</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

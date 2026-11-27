@@ -1641,7 +1641,8 @@
     "archive": "Archivieren",
     "unarchive": "Zurückholen",
     "unarchiveHint": "Zurückgeholt erscheint es wieder in der Planung und der Einheitenauswahl.",
-    "archivedNote": "Archiviert: nicht mehr in der Planung oder der Einheitenauswahl. Der Verlauf bleibt erhalten."
+    "archivedNote": "Archiviert: nicht mehr in der Planung oder der Einheitenauswahl. Der Verlauf bleibt erhalten.",
+    "leaveNamed": "Von „{name}“ abmelden"
   },
   "exerciseHistory": {
     "empty": "Noch keine Einheit mit dieser Übung.",
