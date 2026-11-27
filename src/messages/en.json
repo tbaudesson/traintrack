@@ -244,7 +244,8 @@
     "weekCount": "{done} sessions done of {target}",
     "detailsShort": "Details",
     "noTimeToday": "No time today?",
-    "mobilityLink": "Stretching, yoga, tai chi"
+    "mobilityLink": "Stretching, yoga, tai chi",
+    "viewSession": "View the session"
   },
   "onboarding": {
     "title": "Your athlete profile",
@@ -416,7 +417,12 @@
     "startTime": "Start time",
     "sessionGoal": "Session goal",
     "sessionGoalHint": "E.g. threshold work",
-    "historyHint": "Sessions done, by month, as a calendar or over the year"
+    "historyHint": "Sessions done, by month, as a calendar or over the year",
+    "intensity": "Intensity",
+    "intensityNormal": "Normal",
+    "intensityHint": "The program's reps and holds, rounded up. Kept for the program's next session.",
+    "finishedNote": "Session finished at {time}",
+    "reopenSession": "Reopen the session"
   },
   "progress": {
     "title": "Progress",

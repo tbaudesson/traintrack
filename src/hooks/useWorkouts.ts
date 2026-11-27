@@ -33,6 +33,7 @@ export async function createWorkout(data: {
   mobility?: MobilityLog | null;
   durationSec?: number | null;
   durationMin?: number;
+  intensityPct?: number | null;
 }): Promise<number> {
   const now = new Date().toISOString();
   const id = (await db.workouts.add({
@@ -48,6 +49,7 @@ export async function createWorkout(data: {
     ...(data.mobility ? { mobility: data.mobility } : {}),
     ...(data.durationSec != null ? { durationSec: data.durationSec } : {}),
     ...(data.durationMin != null ? { durationMin: data.durationMin } : {}),
+    ...(data.intensityPct ? { intensityPct: data.intensityPct } : {}),
     uuid: crypto.randomUUID(),
     userId: getCurrentUserIdSync(),
     _dirty: 1,

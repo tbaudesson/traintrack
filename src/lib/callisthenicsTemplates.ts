@@ -99,6 +99,7 @@ function beginnerPlan(days: string[]): ProgramDay[] {
   const lunge = ["8", "8-10", "10", "8", "10-12", "12", "12", "10"];
   const pull = ["1-3", "2-4", "3-5", "2-3", "3-6", "4-6", "5-8", "3-5"];
   const hold = ["20s", "25s", "30s", "20s", "35s", "40s", "45s", "30s"];
+  const core = ["10", "10", "12", "10", "12", "14", "16", "12"];
   return WEEKS.flatMap((week) => {
     const s = at(sets, week);
     return [
@@ -119,7 +120,7 @@ function beginnerPlan(days: string[]): ProgramDay[] {
         exercises: [
           ex("Chin-up", s, at(pull, week), 120),
           ex("Superman Hold", s, at(hold, week), 60),
-          ex("Dead Bug", s, "10", 60),
+          ex("Dead Bug", s, at(core, week), 60),
           ex("Side Plank", s, at(hold, week), 60),
           ex("Hollow Hold", s, at(hold, week), 60),
         ],

@@ -359,6 +359,10 @@ export interface Workout extends SyncFields {
   externalId?: string | null;
   /** When the activity started, as the file says (ISO) (migration 078). */
   startedAt?: string | null;
+  /** When "Finish the session" was tapped (ISO): the session is then locked until reopened (migration 087). */
+  finishedAt?: string | null;
+  /** The program's reps and holds made harder or easier for this session, in percent (migration 087). */
+  intensityPct?: number | null;
   /** SHA-256 of the file it was imported from (migration 078). */
   fileHash?: string | null;
   /** A swim: the stroke, the pool length (0 in open water) and the strokes per length (migration 071). */

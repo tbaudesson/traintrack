@@ -244,7 +244,8 @@
     "weekCount": "{done} séances faites sur {target}",
     "detailsShort": "Détails",
     "noTimeToday": "Pas le temps aujourd'hui ?",
-    "mobilityLink": "Étirements, yoga, tai-chi"
+    "mobilityLink": "Étirements, yoga, tai-chi",
+    "viewSession": "Voir la séance"
   },
   "onboarding": {
     "title": "Votre profil athlète",
@@ -416,7 +417,12 @@
     "startTime": "Heure de début",
     "sessionGoal": "Objectif de la séance",
     "sessionGoalHint": "Ex. : travail au seuil",
-    "historyHint": "Séances faites, par mois, en calendrier ou sur l'année"
+    "historyHint": "Séances faites, par mois, en calendrier ou sur l'année",
+    "intensity": "Intensité",
+    "intensityNormal": "Normale",
+    "intensityHint": "Répétitions et durées du programme, arrondies au-dessus. Reprise à la prochaine séance du programme.",
+    "finishedNote": "Séance terminée à {time}",
+    "reopenSession": "Rouvrir la séance"
   },
   "progress": {
     "title": "Progrès",

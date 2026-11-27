@@ -1140,6 +1140,62 @@ await test("each set shows what it was last time, and takes it again in one tap"
   expect(!(await page.getByRole("button", { name: "Reprendre 45 pour la série 1" }).count()), "Reuse still offered once taken");
 });
 
+await test("a program session made 20 % harder, guided only while sets are left, locked once finished, and reopened", async () => {
+  const startProgramDay = async () => {
+    await page.goto(`${BASE}/fr/log`);
+    const days = page.locator("details", { hasText: "Tous les jours de mes programmes" });
+    await days.locator("summary").click();
+    await days.getByRole("button").first().click();
+    await page.waitForURL(/\/fr\/log\/session\?id=\d+/, { timeout: 15000 });
+    return Number(new URL(page.url()).searchParams.get("id"));
+  };
+  const scale = (target, pct) => target.replace(/\d+/g, (n) => String(Math.max(1, Math.ceil(Math.round(Number(n) * (100 + pct)) / 100))));
+  const id = await startProgramDay();
+  const intensity = page.getByRole("group", { name: "Intensité" });
+  await intensity.getByRole("button", { name: "Normale", pressed: true }).waitFor({ timeout: 10000 });
+  const firstTarget = page.getByText(/^Objectif : \d+ × /).first();
+  const before = (await firstTarget.innerText()).replace(/^Objectif : \d+ × /, "").split(" · ")[0];
+  await intensity.getByRole("button", { name: "+20 %" }).click();
+  await intensity.getByRole("button", { name: "+20 %", pressed: true }).waitFor({ timeout: 5000 });
+  const after = (await page.getByText(/^Objectif : \d+ × /).first().innerText()).replace(/^Objectif : \d+ × /, "").split(" · ")[0];
+  expect(after === scale(before, 20), `the target went from ${before} to ${after}, not ${scale(before, 20)}`);
+  await page.getByRole("button", { name: "Lancer le mode guidé" }).waitFor({ timeout: 5000 });
+  await snap("session-intensity");
+
+  // Every set done: no guided mode left to start.
+  await page.evaluate(async (workoutId) => {
+    const db = await new Promise((res) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); });
+    const store = db.transaction("workoutSets", "readwrite").objectStore("workoutSets");
+    await new Promise((res) => { const r = store.getAll(); r.onsuccess = () => { for (const s of r.result) if (s.workoutId === workoutId) store.put({ ...s, completed: true, reps: s.reps ?? 10 }); res(); }; });
+    db.close();
+  }, id);
+  await page.goto(`${BASE}/fr/log/session?id=${id}`);
+  await page.getByRole("button", { name: "Terminer la séance" }).waitFor({ timeout: 10000 });
+  expect(!(await page.getByRole("button", { name: "Lancer le mode guidé" }).count()), "the guided mode is offered with every set done");
+
+  // Finished: locked, nothing to add nor to finish again, until reopened.
+  await page.getByRole("button", { name: "Terminer la séance" }).click();
+  await page.getByRole("dialog").getByRole("heading", { name: "Séance terminée" }).waitFor({ timeout: 10000 });
+  await page.goto(`${BASE}/fr/log/session?id=${id}`);
+  await page.getByRole("status").getByText(/Séance terminée à \d/).waitFor({ timeout: 10000 });
+  expect(!(await page.getByRole("button", { name: "Terminer la séance" }).count()), "a finished session can be finished again");
+  expect(!(await page.getByRole("button", { name: "Ajouter un exercice" }).count()), "a finished session takes another exercise");
+  expect(!(await page.getByRole("group", { name: "Intensité" }).count()), "the intensity of a finished session can be changed");
+  expect((await page.locator("fieldset[disabled]").count()) === 1, "the sets of a finished session are not read only");
+  expect(await page.locator("fieldset[disabled]").getByRole("button").first().isDisabled(), "a button of a finished session's sets still works");
+  expect(await page.getByRole("button", { name: "Ouvrir le menu" }).isVisible(), "the menu wheel stays hidden on a finished session");
+  await snap("session-finished");
+  await page.getByRole("button", { name: "Rouvrir la séance" }).click();
+  await page.getByRole("button", { name: "Terminer la séance" }).waitFor({ timeout: 5000 });
+  await page.getByRole("button", { name: "Terminer la séance" }).click();
+  await page.getByRole("dialog").getByRole("heading", { name: "Séance terminée" }).waitFor({ timeout: 10000 });
+
+  // The program's next session starts at the same intensity.
+  await startProgramDay();
+  await page.getByRole("group", { name: "Intensité" }).getByRole("button", { name: "+20 %", pressed: true }).waitFor({ timeout: 10000 });
+  await page.getByRole("group", { name: "Intensité" }).getByRole("button", { name: "Normale" }).click();
+});
+
 await test("an endurance outing of today hides the menu wheel too", async () => {
   await page.goto(`${BASE}/fr/log`);
   await page.getByRole("button", { name: "Sortie d'endurance" }).first().click();

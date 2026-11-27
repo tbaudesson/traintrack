@@ -796,7 +796,7 @@ export default function HomePage() {
                     <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                   ) : (
                     <>
-                      {session?.workoutId ? t("continue") : t("start")}
+                      {session?.workoutId ? (workouts.find((w) => w.id === session.workoutId)?.finishedAt ? t("viewSession") : t("continue")) : t("start")}
                       <ArrowRight className="size-4" aria-hidden="true" />
                     </>
                   )}

@@ -65,9 +65,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, MoreHorizontal, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight, TrendingDown, Equal, Gauge, BatteryLow, Bandage, PersonStanding, CopyPlus, Ban, Maximize2, AlertTriangle } from "lucide-react";
+import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, MoreHorizontal, HeartPulse, ChevronDown, Target, History, Play, TrendingUp, Trophy, Disc3, Wand2, Flame, Link2, ArrowLeftRight, TrendingDown, Equal, Gauge, BatteryLow, Bandage, PersonStanding, CopyPlus, Ban, Maximize2, AlertTriangle, Lock, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SessionMuscles } from "@/components/domain/BodyMap";
+import { Chip, ChipRow } from "@/components/ui/find";
+import { INTENSITY_STEPS, scaleDay } from "@/lib/intensity";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { IntervalWorkoutView } from "@/components/domain/IntervalWorkoutView";
 import { MusicButton } from "@/components/domain/MusicButton";
@@ -151,7 +153,9 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
   const barOffset = navHidden ? "bottom-[calc(5.5rem+env(safe-area-inset-bottom))]" : "bottom-[calc(11rem+env(safe-area-inset-bottom))]";
   // Today's session is being done: no global navigation until its summary.
   // A past one, opened from the history, keeps it.
-  useSessionFocus(!!workout && workout.date === localDate() && !summary);
+  // A session finished is locked, and the navigation comes back.
+  const finished = !!workout?.finishedAt;
+  useSessionFocus(!!workout && workout.date === localDate() && !summary && !finished);
   const [rest, setRest] = useState<number | null>(null);
   // The rest's whole length, for the ring: its seconds when it began, plus what was added.
   const [restTotal, setRestTotal] = useState<number | null>(null);
@@ -262,6 +266,7 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
       if (!saved || !isCardioDone(saved)) return router.push("/log");
       const others = allWorkouts.filter((w) => w.date <= saved.date);
       const beaten = newCardioRecords(saved, others);
+      if (!saved.finishedAt) await updateWorkout(workoutId, { finishedAt: new Date().toISOString() });
       setSummary({
         durationMin: null,
         sets: 0,
@@ -283,6 +288,8 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
 
     const durationMin = workout.durationMin ?? elapsedMinutes(workout.createdAt);
     if (durationMin !== null && !workout.durationMin) await updateWorkout(workoutId, { durationMin });
+    // Finished: locked until reopened, so it is not finished twice.
+    if (!workout.finishedAt) await updateWorkout(workoutId, { finishedAt: new Date().toISOString() });
 
     const volume = totalVolume(done);
     const earlier = allWorkouts
@@ -312,10 +319,11 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
 
   // What the program asks for, when this session was started from one.
   // The plan kept with the session when it started; the program as it is now for older sessions.
+  // At the intensity chosen for the session: its reps and holds, everywhere they show.
   const programDay = useMemo(() => {
-    if (workout?.plannedDay) return workout.plannedDay;
-    const found = findWorkoutProgramDay(programs, workout);
-    return found ? found.program.structure[found.index] : null;
+    const found = workout?.plannedDay ? null : findWorkoutProgramDay(programs, workout);
+    const day = workout?.plannedDay ?? (found ? found.program.structure[found.index] : null);
+    return day ? scaleDay(day, workout?.intensityPct) : null;
   }, [programs, workout]);
 
   // Group sets by exercise, preserving insertion order
@@ -925,7 +933,9 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
 
         {workout && isCardio(workout) && (
           <>
-            <CardioLogger key={workout.id} workout={workout} target={programDay?.cardio} />
+            <fieldset disabled={finished} className="m-0 min-w-0 border-0 p-0">
+              <CardioLogger key={workout.id} workout={workout} target={programDay?.cardio} />
+            </fieldset>
             {heartRateCard}
           </>
         )}
@@ -951,7 +961,23 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
           <EmptyState icon={Dumbbell} title={t("noExercises")} />
         )}
 
-        {workout && !isCardio(workout) && groups.length > 0 && (
+        {/* Harder or easier than the program: its reps and holds, kept for the next session of it. */}
+        {workout && !isCardio(workout) && !finished && !!programDay?.exercises.some((e) => /\d/.test(e.targetReps)) && (
+          <section className="space-y-1.5" aria-labelledby="session-intensity">
+            <p id="session-intensity" className="text-xs font-semibold text-muted-foreground">{t("intensity")}</p>
+            <ChipRow label={t("intensity")}>
+              {INTENSITY_STEPS.map((pct) => (
+                <Chip key={pct} on={(workout.intensityPct ?? 0) === pct} onClick={() => updateWorkout(workoutId, { intensityPct: pct || null })}>
+                  {pct === 0 ? t("intensityNormal") : `${pct > 0 ? "+" : "−"}${Math.abs(pct)} %`}
+                </Chip>
+              ))}
+            </ChipRow>
+            <p className="text-xs text-muted-foreground">{t("intensityHint")}</p>
+          </section>
+        )}
+
+        {/* The guided mode, while sets are left to do. */}
+        {workout && !isCardio(workout) && groups.length > 0 && !finished && sets.some((s) => !s.completed) && (
           <Button className="h-12 w-full rounded-full" onClick={() => setGuided(true)}>
             <Play className="mr-1 h-5 w-5" aria-hidden="true" />
             {tg("start")}
@@ -966,14 +992,30 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
           </div>
         )}
 
+        {/* Finished: locked, so nothing is added nor finished twice; reopened for an oversight. */}
+        {workout?.finishedAt && (
+          <div className="flex items-center justify-between gap-2 rounded-xl bg-muted p-3 text-sm" role="status">
+            <span className="flex items-center gap-2">
+              <Lock className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              {t("finishedNote", { time: new Date(workout.finishedAt).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" }) })}
+            </span>
+            <Button size="sm" variant="outline" onClick={() => updateWorkout(workoutId, { finishedAt: null })}>
+              <RotateCcw className="mr-1 size-4" aria-hidden="true" />
+              {t("reopenSession")}
+            </Button>
+          </div>
+        )}
+
         {/* How it felt, once something is done, whatever the sport. */}
         {workout && !workout.cancelledAt && (sets.some((s) => s.completed && !s.isWarmup) || isCardioDone(workout)) && <SessionFeedback workout={workout} />}
 
         {/* What was planned beside what is done, once something is done. */}
         {workout?.plannedDay && !isCardio(workout) && sets.some((s) => s.completed && !s.isWarmup) && (
-          <PlanVsDone planned={workout.plannedDay} sets={sets} exercises={exercises} />
+          <PlanVsDone planned={programDay ?? workout.plannedDay} sets={sets} exercises={exercises} />
         )}
 
+        {/* A finished session: everything in it is read only. */}
+        <fieldset disabled={finished} className="m-0 min-w-0 space-y-4 border-0 p-0 [&:disabled_button]:opacity-40">
         {prefillAll.length > 0 && groups.length > 1 && (
           <Button variant="outline" className="w-full rounded-full text-accent-text" onClick={() => applyPrefill(prefillAll)}>
             <Wand2 className="mr-1 h-4 w-4" aria-hidden="true" />
@@ -1426,7 +1468,7 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
             </Fragment>
           );
         })}
-
+        </fieldset>
 
         {/* The muscles the session works: what is done, or what is planned before anything is. */}
         {workout && !isCardio(workout) && <SessionMuscles entries={muscleEntries} />}
@@ -1437,7 +1479,7 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
       </div>
 
       {/* The session's actions, at thumb's reach: finishing first, adding an exercise next. */}
-      {!typing && !summary && workout && (
+      {!typing && !summary && workout && !finished && (
         <div
           className={cn(
             "t-session-dock fixed inset-x-0 z-50 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]",
@@ -1654,7 +1696,7 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
         );
       })()}
 
-      {guided && groups.length > 0 && (
+      {guided && groups.length > 0 && !finished && (
         <GuidedSession
           steps={guidedSteps()}
           rest={rest}

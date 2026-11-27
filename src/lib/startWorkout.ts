@@ -8,6 +8,7 @@ import { updateProgram } from "@/hooks/usePrograms";
 import { addWorkoutSet } from "@/hooks/useWorkoutSets";
 import { programGroups } from "./supersets";
 import { oneRepMaxHistory } from "./goals";
+import { lastIntensity } from "./intensity";
 import { percentWeights, referenceMax } from "./percent";
 import { DELOAD_LOAD, deloadSets } from "./deload";
 import { programWeek } from "./programWeek";
@@ -118,6 +119,8 @@ export async function startWorkoutFromDay(
     plannedDay: structuredClone({ ...day, ...(key ? { key } : {}) }),
     kind: day.cardio ? "cardio" : "strength",
     sport: day.cardio?.sport ?? null,
+    // The intensity of the program's last session, offered again.
+    intensityPct: day.cardio ? null : lastIntensity(pastWorkouts, program.id),
   });
   if (day.cardio) return id;
   const groups = programGroups(day.exercises.map((pe) => !!pe.supersetWithNext));
