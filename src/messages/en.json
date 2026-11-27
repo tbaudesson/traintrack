@@ -415,7 +415,8 @@
     "date": "Date",
     "startTime": "Start time",
     "sessionGoal": "Session goal",
-    "sessionGoalHint": "E.g. threshold work"
+    "sessionGoalHint": "E.g. threshold work",
+    "historyHint": "Sessions done, by month, as a calendar or over the year"
   },
   "progress": {
     "title": "Progress",

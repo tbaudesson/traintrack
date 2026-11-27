@@ -123,7 +123,7 @@ export function WeekStrip({
         </ol>
         <div className="flex items-center gap-1">
           {planned ? (
-            <Link href="/log?view=calendar" className="flex min-h-10 items-center gap-0.5 text-sm font-medium text-accent-text">
+            <Link href="/history?view=calendar" className="flex min-h-10 items-center gap-0.5 text-sm font-medium text-accent-text">
               {t("fullPlanning")}
               <ChevronRight className="size-4" aria-hidden="true" />
             </Link>

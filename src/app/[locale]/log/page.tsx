@@ -23,7 +23,6 @@ import { DetailRow } from "@/components/ui/detail-row";
 import { MyPrograms } from "@/components/domain/MyPrograms";
 import { SportPicker } from "@/components/domain/SportPicker";
 import { GpxImport } from "@/components/domain/GpxImport";
-import { HistoryView } from "@/components/domain/HistoryView";
 import { SessionPickerDialog, useDayDetail } from "@/components/domain/SessionPickerDialog";
 import { daysToOffer, findWorkoutProgramDay, nextDayIndex } from "@/lib/startWorkout";
 import { kindOf } from "@/lib/activityProfile";
@@ -31,14 +30,14 @@ import { useProgramTemplates } from "@/lib/templateService";
 import { PROGRAM_TEMPLATES } from "@/lib/programTemplates";
 import { localDate } from "@/lib/dates";
 import {
-  Activity, ArrowRight, Calendar, ClipboardList, Dumbbell, FileSpreadsheet, Footprints, ListChecks, Loader2, PersonStanding, Plus, RotateCcw, Timer, Upload,
+  Activity, ArrowRight, Calendar, ClipboardList, Dumbbell, FileSpreadsheet, Footprints, History, ListChecks, Loader2, PersonStanding, Plus, RotateCcw, Timer, Upload,
 } from "lucide-react";
 
 /**
  * The training hub: three ways to train first (the planned session, a free
  * one, an endurance outing), then the rest (programs, exercises, timed
- * sessions, imports), one's programs in progress, and the history. Every way
- * to start a session the app had before is still here.
+ * sessions, imports, the history on its own page), one's programs in
+ * progress. Every way to start a session the app had before is still here.
  */
 export default function TrainPage() {
   const t = useTranslations("log");
@@ -77,7 +76,7 @@ export default function TrainPage() {
     },
   });
   const { starting, repeatable, startDay, startFree, repeatLast, startCardio } = actions;
-  const { session, planned } = useSessionOfTheDay({ programs, workouts, today, profile, userId: user?.id, sport: prefs.sport, catalogue });
+  const { session } = useSessionOfTheDay({ programs, workouts, today, profile, userId: user?.id, sport: prefs.sport, catalogue });
   const trainable = programs.filter((p) => (p.structure ?? []).length > 0);
   const templates = catalogue.filter((tpl) => !programs.some((p) => p.name === tpl.name));
   const runner = prefs.sport === "running" || prefs.sport2 === "running";
@@ -190,6 +189,7 @@ export default function TrainPage() {
             <DetailRow href="/exercises" icon={Dumbbell} tone="neutral" title={tn("exercises")} />
             <DetailRow href="/intervals" icon={Timer} tone="neutral" title={ti("title")} subtitle={ti("hint")} />
             <DetailRow href="/mobility" icon={PersonStanding} tone="neutral" title={tmo("title")} subtitle={tmo("hint")} />
+            <DetailRow href="/history" icon={History} tone="neutral" title={t("history")} subtitle={t("historyHint")} />
             {hasFeature("excel_import") && <DetailRow href="/programs" icon={FileSpreadsheet} tone="neutral" title={t("importProgram")} />}
           </div>
         </section>
@@ -232,8 +232,6 @@ export default function TrainPage() {
           </details>
         )}
 
-        {/* History: by month or as a calendar, searchable. */}
-        <HistoryView workouts={workouts} sets={sets} planned={planned} today={today} />
       </div>
 
       <SportPicker open={sportOpen} onOpenChange={setSportOpen} onPick={startCardio} />

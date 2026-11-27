@@ -26,7 +26,7 @@ export const NAVIGATION_CATALOG: readonly NavigationSectionDef[] = [
       { id: "programs", href: "/programs", icon: "ClipboardList", key: "programs" },
       { id: "exercises", href: "/exercises", icon: "ListChecks", key: "exercises" },
       { id: "sports", href: "/more", icon: "Bike", key: "sports" },
-      { id: "history", href: "/log", icon: "History", key: "history" },
+      { id: "history", href: "/history", icon: "History", key: "history" },
       { id: "import", href: "/settings?section=import", icon: "FileUp", key: "import", feature: "excel_import" },
     ],
   },

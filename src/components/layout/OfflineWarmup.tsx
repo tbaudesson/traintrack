@@ -9,6 +9,7 @@ const PAGES = [
   "",
   "/log",
   "/log/session",
+  "/history",
   "/programs",
   "/progress",
   "/intervals",

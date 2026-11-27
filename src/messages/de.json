@@ -415,7 +415,8 @@
     "date": "Datum",
     "startTime": "Startzeit",
     "sessionGoal": "Ziel der Einheit",
-    "sessionGoalHint": "Z. B. Schwellentraining"
+    "sessionGoalHint": "Z. B. Schwellentraining",
+    "historyHint": "Absolvierte Einheiten, nach Monat, als Kalender oder übers Jahr"
   },
   "progress": {
     "title": "Fortschritt",

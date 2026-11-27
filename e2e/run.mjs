@@ -103,7 +103,7 @@ await page.waitForLoadState("load");
 expect(await page.evaluate(() => !!navigator.serviceWorker.controller), "the service worker never took control");
 
 // What the background warm-up does once signed in: every page and its files.
-const PAGES = ["", "/log", "/log/session", "/programs", "/progress", "/intervals", "/mobility", "/exercises", "/competitions", "/report", "/settings", "/more", "/horses", "/swim-techniques", "/outing-checklist", "/onboarding", "/readiness", "/join", "/tests", "/running"];
+const PAGES = ["", "/log", "/log/session", "/history", "/programs", "/progress", "/intervals", "/mobility", "/exercises", "/competitions", "/report", "/settings", "/more", "/horses", "/swim-techniques", "/outing-checklist", "/onboarding", "/readiness", "/join", "/tests", "/running"];
 const warmed = await page.evaluate(async (pages) => {
   const files = new Set();
   for (const p of pages) {
@@ -409,7 +409,7 @@ await test("a session done says how hard it felt, counted in the history", async
   await card.getByRole("button", { name: /^8 sur 10/ }).click();
   await card.getByRole("button", { name: /^8 sur 10/, pressed: true }).waitFor({ timeout: 5000 });
   await card.getByRole("button", { name: "Bien" }).click();
-  await page.goto(`${BASE}/fr/log`);
+  await page.goto(`${BASE}/fr/history`);
   await page.getByText(/effort 8\/10/).first().waitFor({ timeout: 10000 });
 });
 
@@ -421,7 +421,7 @@ await test("a session opened for nothing is called off, kept in the history, and
   await page.getByRole("button", { name: "Modifier la séance" }).click();
   await page.getByRole("button", { name: "Annuler la séance" }).click();
   await page.getByText(/Séance annulée/).waitFor({ timeout: 5000 });
-  await page.goto(`${BASE}/fr/log`);
+  await page.goto(`${BASE}/fr/history`);
   await page.getByText(/· annulée/).first().waitFor({ timeout: 10000 });
   await page.goto(url);
   await page.getByRole("button", { name: "Rétablir" }).click();
@@ -496,7 +496,7 @@ await test("a program kept as a favourite, then archived out of the way", async 
 });
 
 await test("the history shows as a calendar of the month, a day opening its sessions, and the year", async () => {
-  await page.goto(`${BASE}/fr/log`);
+  await page.goto(`${BASE}/fr/history`);
   const history = page.locator("section", { has: page.locator("#history-title") });
   try {
     await history.getByRole("button", { name: "Calendrier" }).click();
@@ -608,7 +608,7 @@ await test("a stretch done is kept with the suppleness felt, and followed on the
     await page.getByText("Souplesse ressentie après la séance").waitFor({ timeout: 10000 });
     await page.getByRole("button", { name: /^4 sur 5/ }).click();
     await page.getByRole("button", { name: /^4 sur 5/, pressed: true }).waitFor({ timeout: 5000 });
-    await page.goto(`${BASE}/fr/log`);
+    await page.goto(`${BASE}/fr/history`);
     await page.getByText(/souplesse 4\/5/).first().waitFor({ timeout: 10000 });
     await page.goto(`${BASE}/fr/mobility?mode=stretch`);
     await page.getByRole("heading", { name: "Votre suivi" }).waitFor({ timeout: 10000 });
@@ -722,7 +722,7 @@ await test("two programs planned on their own days show together in the week and
 });
 
 await test("the calendar shows the planning ahead: the sessions to come, each named", async () => {
-  await page.goto(`${BASE}/fr/log`);
+  await page.goto(`${BASE}/fr/history`);
   const history = page.locator("section", { has: page.locator("#history-title") });
   try {
     await history.getByRole("button", { name: "Calendrier" }).click();
@@ -1020,7 +1020,9 @@ await test("the training hub puts three ways to train first, and keeps every oth
   for (const name of ["Programmes", "Exercices", "HIIT · séance minutée"]) {
     await page.getByRole("link", { name: new RegExp(name) }).first().waitFor({ timeout: 5000 });
   }
-  await page.getByText("Historique", { exact: true }).waitFor({ timeout: 5000 });
+  // The history has its own page: a line here, not the whole list at the bottom.
+  await page.getByRole("link", { name: /^Historique/ }).waitFor({ timeout: 5000 });
+  expect(!(await page.locator("#history-title").count()), "the whole history is still at the bottom of the hub");
   await snap("train-hub");
   if (process.env.E2E_SHOTS) {
     await page.setViewportSize({ width: 1280, height: 900 });
@@ -1298,6 +1300,26 @@ await test("the menu wheel: a click opens a section, and its wheel leads to a pa
   } finally {
     await page.setViewportSize({ width: 390, height: 844 });
   }
+});
+
+await test("the menu wheel's History leads to the history alone, under its own title", async () => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  try {
+    await wheel.open();
+    const train = await wheel.centre("S’entraîner");
+    await page.mouse.click(train.x, train.y);
+    const sub = 'nav[aria-label="S’entraîner"]';
+    await page.locator(sub).waitFor({ timeout: 5000 });
+    const history = await wheel.centre("Historique", sub);
+    await page.mouse.click(history.x, history.y);
+    await page.waitForURL(/\/fr\/history$/, { timeout: 10000 });
+    await page.getByRole("heading", { name: "Historique", level: 1 }).waitFor({ timeout: 10000 });
+    await page.getByRole("button", { name: "Calendrier" }).waitFor({ timeout: 10000 });
+    expect(!(await page.getByText("Séance libre", { exact: true }).count()), "the history page shows the ways to train");
+  } finally {
+    await page.setViewportSize({ width: 390, height: 844 });
+  }
+  await snap("history-page");
 });
 
 await test("the menu wheel: dragged with the mouse, from the empty ring or from an icon, it turns, snaps, and opens nothing", async () => {
@@ -2303,7 +2325,7 @@ await test("the home screen: the session, what matters, the week, the progress; 
   const full = page.getByRole("link", { name: "Planning complet" });
   await full.evaluate((el) => el.scrollIntoView({ block: "center" }));
   await full.click();
-  await page.waitForURL(/\/fr\/log\?view=calendar/, { timeout: 10000 });
+  await page.waitForURL(/\/fr\/history\?view=calendar/, { timeout: 10000 });
   await page.getByRole("grid").first().waitFor({ timeout: 10000 });
   // Each style, light and dark, on a phone and on a large screen (with E2E_SHOTS).
   if (process.env.E2E_SHOTS) {

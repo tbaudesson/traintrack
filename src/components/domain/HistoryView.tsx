@@ -28,7 +28,20 @@ const MONTHS = 2;
  * the year month by month; a search by name, sport or date reaches all of
  * them. The view chosen is remembered on the device.
  */
-export function HistoryView({ workouts, sets, planned, today }: { workouts: Workout[]; sets: WorkoutSet[]; planned: PlannedProgram[]; today: string }) {
+export function HistoryView({
+  workouts,
+  sets,
+  planned,
+  today,
+  titled = true,
+}: {
+  workouts: Workout[];
+  sets: WorkoutSet[];
+  planned: PlannedProgram[];
+  today: string;
+  /** False on its own page, whose title already says "History": the heading is then for screen readers only. */
+  titled?: boolean;
+}) {
   const t = useTranslations("history");
   const tl = useTranslations("log");
   const tc = useTranslations("cardio");
@@ -88,8 +101,12 @@ export function HistoryView({ workouts, sets, planned, today }: { workouts: Work
 
   return (
     <section className="space-y-3" aria-labelledby="history-title">
-      <div className="flex items-center justify-between gap-2">
-        <SectionHeading id="history-title">{tl("history")}</SectionHeading>
+      <div className={titled ? "flex items-center justify-between gap-2" : "flex items-center justify-end gap-2"}>
+        {titled ? (
+          <SectionHeading id="history-title">{tl("history")}</SectionHeading>
+        ) : (
+          <h2 id="history-title" className="sr-only">{tl("history")}</h2>
+        )}
         {workouts.length > 0 && (
           <ChipRow label={t("view")}>
             <Chip on={view === "list"} onClick={() => choose("list")}>

@@ -415,7 +415,8 @@
     "date": "Date",
     "startTime": "Heure de début",
     "sessionGoal": "Objectif de la séance",
-    "sessionGoalHint": "Ex. : travail au seuil"
+    "sessionGoalHint": "Ex. : travail au seuil",
+    "historyHint": "Séances faites, par mois, en calendrier ou sur l'année"
   },
   "progress": {
     "title": "Progrès",
