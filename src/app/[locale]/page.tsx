@@ -610,6 +610,8 @@ export default function HomePage() {
     setFlag("calendar", "calendar-exported");
   }
 
+  // Today's session, finished: viewed, no longer swapped for another.
+  const sessionFinished = !!session?.workoutId && !!workouts.find((w) => w.id === session.workoutId)?.finishedAt;
   const percent = useMemo(() => {
     if (!session?.workoutId) return 0;
     const running = workouts.find((w) => w.id === session.workoutId);
@@ -796,7 +798,7 @@ export default function HomePage() {
                     <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                   ) : (
                     <>
-                      {session?.workoutId ? (workouts.find((w) => w.id === session.workoutId)?.finishedAt ? t("viewSession") : t("continue")) : t("start")}
+                      {session?.workoutId ? (sessionFinished ? t("viewSession") : t("continue")) : t("start")}
                       <ArrowRight className="size-4" aria-hidden="true" />
                     </>
                   )}
@@ -810,14 +812,15 @@ export default function HomePage() {
                     {t("detailsShort")}
                   </Link>
                 )}
-                <div className="ml-auto">
+                {/* A session finished today: no other one to swap it for. */}
+                {!sessionFinished && <div className="ml-auto">
                   <SessionMenu
                     items={[
                       { key: "change", icon: ListChecks, label: t("changeSession"), onClick: () => setChoosing(true) },
 
                     ]}
                   />
-                </div>
+                </div>}
               </div>
               {/* Pressed for time: the shorter version, one's plan B, or another day. */}
               {todayNotBegun && (

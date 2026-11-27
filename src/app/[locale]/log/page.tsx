@@ -81,6 +81,9 @@ export default function TrainPage() {
   const templates = catalogue.filter((tpl) => !programs.some((p) => p.name === tpl.name));
   const runner = prefs.sport === "running" || prefs.sport2 === "running";
 
+  // Today's session, finished: viewed, no longer swapped for another.
+  const sessionFinished = !!session?.workoutId && !!workouts.find((w) => w.id === session.workoutId)?.finishedAt;
+
   function startPlanned() {
     if (session?.workoutId) router.push(sessionHref(session.workoutId));
     else if (session) startDay(session.program, session.index);
@@ -115,14 +118,14 @@ export default function TrainPage() {
                   <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                 ) : session ? (
                   <>
-                    {session.workoutId ? (workouts.find((w) => w.id === session.workoutId)?.finishedAt ? th("viewSession") : th("continue")) : th("start")}
+                    {session.workoutId ? (sessionFinished ? th("viewSession") : th("continue")) : th("start")}
                     <ArrowRight className="size-4" aria-hidden="true" />
                   </>
                 ) : (
                   th("chooseSession")
                 )}
               </Button>
-              {session && (
+              {session && !sessionFinished && (
                 <button
                   type="button"
                   onClick={() => setChoosing(true)}
