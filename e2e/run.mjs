@@ -2635,6 +2635,57 @@ await test("music: one's app and playlist chosen in Settings, opened from a sess
   }
 });
 
+await test("on an iPhone, starting one's music from a session turns the voice coach off (it would pause the music), and it can be turned back on", async () => {
+  const prefs = () => page.evaluate(() => JSON.parse(localStorage.getItem("traintrack.prefs") ?? "{}"));
+  const setPrefs = (v) => page.evaluate((v) => localStorage.setItem("traintrack.prefs", JSON.stringify({ ...JSON.parse(localStorage.getItem("traintrack.prefs") ?? "{}"), ...v })), v);
+  const stub = () => page.evaluate(() => {
+    window.__opened = [];
+    window.open = (url, target) => {
+      window.__opened.push([url, target]);
+      return null;
+    };
+  });
+  try {
+    // The voice coach, with its warning, in Settings > Music.
+    await page.goto(`${BASE}/fr/settings?section=music`);
+    const coach = page.locator("#settings-music").getByRole("checkbox", { name: /Coach vocal/ });
+    await coach.waitFor({ timeout: 10000 });
+    expect(await coach.isChecked(), "the voice coach is off by default");
+    await page.locator("#settings-music").getByText(/Sur iPhone, la voix met votre musique en pause/).waitFor({ timeout: 5000 });
+    await setPrefs({ music: { app: "spotify", playlist: null }, voice: true });
+
+    // On a computer, the music leaves the voice as it is.
+    await page.goto(`${BASE}/fr/intervals`);
+    await page.getByRole("button", { name: /Démarrer/ }).click();
+    const player = page.getByRole("dialog");
+    await player.getByText(/Préparez-vous/).waitFor({ timeout: 5000 });
+    await stub();
+    await player.getByRole("button", { name: "Musique : ouvrir Spotify" }).click();
+    expect((await prefs()).voice === true, "the voice turned off on a computer");
+    expect(!(await player.getByText(/Coach vocal coupé/).count()), "a note on a computer");
+    await player.getByRole("button", { name: /Terminer la séance/ }).click();
+
+    // On an iPhone: the voice is turned off, a note says so.
+    await page.goto(`${BASE}/fr/intervals`);
+    await page.getByRole("button", { name: /Démarrer/ }).click();
+    await player.getByText(/Préparez-vous/).waitFor({ timeout: 5000 });
+    await stub();
+    await page.evaluate(() => Object.defineProperty(navigator, "userAgent", { value: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1" }));
+    await player.getByRole("button", { name: "Musique : ouvrir Spotify" }).click();
+    await player.getByRole("status").getByText(/Coach vocal coupé : sur iPhone, la voix mettrait votre musique en pause/).waitFor({ timeout: 5000 });
+    expect((await prefs()).voice === false, "the voice still on");
+    await player.getByRole("button", { name: "Coach vocal", pressed: false }).waitFor({ timeout: 5000 });
+    await snap("player-voice-off");
+    await player.getByRole("button", { name: "Réactiver la voix" }).click();
+    expect((await prefs()).voice === true, "the voice not back on");
+    await player.getByRole("button", { name: "Coach vocal", pressed: true }).waitFor({ timeout: 5000 });
+    expect(!(await player.getByText(/Coach vocal coupé/).count()), "the note stayed");
+    await player.getByRole("button", { name: /Terminer la séance/ }).click();
+  } finally {
+    await setPrefs({ music: null, voice: true });
+  }
+});
+
 await test("boxing rounds in the HIIT: combinations called out, a burst to end each round, a rest between rounds", async () => {
   await page.goto(`${BASE}/fr/intervals`);
   await page.getByRole("button", { name: "Boxe", exact: true }).click();

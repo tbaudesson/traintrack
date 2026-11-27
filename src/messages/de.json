@@ -3073,7 +3073,7 @@
     "playlistHint": "In {app}: Teilen > Link zur Playlist kopieren, dann hier einfügen.",
     "playlistInvalid": "Dieser Link ist keine {app}-Playlist.",
     "try": "Ausprobieren",
-    "soundHint": "Auf dem iPhone mischen sich Pieptöne und Sprachcoach mit der Musik; sie folgen dann dem Stummschalter.",
+    "soundHint": "Auf dem iPhone mischen sich die Pieptöne mit der Musik und folgen dann dem Stumm-Schalter; die Stimme des Coachs pausiert sie dagegen.",
     "notLoaded": "Die Liste der Musik-Apps wurde noch nicht geladen: öffne die App einmal mit Verbindung.",
     "adminTitle": "Musik-Apps",
     "adminIntro": "Die Apps, die ein Athlet aus einer Einheit öffnen kann: ihre Adresse auf dem Handy („spotify:“), ihr Web-Player am Computer und wie ihre Playlist-Links beginnen, einer pro Zeile.",
@@ -3087,7 +3087,12 @@
     "adminInvalid": "Liste unvollständig: jede App braucht einen Namen, eine eindeutige Kennung, eine App-Adresse und https-Links.",
     "adminMissing": "Die Liste der Musik-Apps gibt es noch nicht: Migration 083 anwenden.",
     "adminSave": "Speichern",
-    "adminSaved": "Gespeichert"
+    "adminSaved": "Gespeichert",
+    "voiceOff": "Sprachcoach aus: Auf dem iPhone würde die Stimme Ihre Musik pausieren. Die Pieptöne übernehmen.",
+    "voiceOn": "Stimme wieder einschalten",
+    "close": "Schließen",
+    "voiceCoach": "Sprachcoach",
+    "voiceCoachHint": "Sagt jede Übung der Zeit-Einheiten an (HIIT, Mobilität). Auf dem iPhone pausiert die Stimme Ihre Musik: Sie schaltet sich aus, wenn Sie die Musik aus einer Einheit starten, und die Pieptöne übernehmen."
   },
   "boxingAdmin": {
     "title": "Boxrunden",

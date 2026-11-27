@@ -3073,7 +3073,7 @@
     "playlistHint": "In {app}, Share > Copy the playlist link, then paste it here.",
     "playlistInvalid": "This link is not a {app} playlist.",
     "try": "Try it",
-    "soundHint": "On iPhone the beeps and the voice coach mix with the music; they then follow the silent switch.",
+    "soundHint": "On iPhone, the beeps mix with the music and then follow the silent switch; the coach's voice, though, pauses it.",
     "notLoaded": "The list of music apps has not been loaded yet: open the app once with a connection.",
     "adminTitle": "Music apps",
     "adminIntro": "The apps an athlete can open from a session: its address on a phone (\"spotify:\"), its web player on a computer, and how its playlist links begin, one per line.",
@@ -3087,7 +3087,12 @@
     "adminInvalid": "Incomplete list: each app needs a name, a unique identifier, an app address and https links.",
     "adminMissing": "The list of music apps does not exist yet: apply migration 083.",
     "adminSave": "Save",
-    "adminSaved": "Saved"
+    "adminSaved": "Saved",
+    "voiceOff": "Voice coach off: on iPhone, the voice would pause your music. The beeps take over.",
+    "voiceOn": "Turn the voice back on",
+    "close": "Close",
+    "voiceCoach": "Voice coach",
+    "voiceCoachHint": "Announces each exercise of timed sessions (HIIT, mobility). On iPhone, the voice pauses your music: it turns off when you start music from a session, and the beeps take over."
   },
   "boxingAdmin": {
     "title": "Boxing rounds",

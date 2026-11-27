@@ -9,6 +9,17 @@ export const voiceSupported = () => typeof window !== "undefined" && "speechSynt
 
 const LANGS: Record<string, string> = { fr: "fr-FR", en: "en-GB", de: "de-DE" };
 
+/**
+ * On an iPhone or an iPad, a page's spoken voice cannot play over another
+ * app's music: the system pauses the music for it (the beeps, though, mix).
+ */
+export function voicePausesMusic(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent ?? "";
+  // An iPad asks for the desktop site and says "Macintosh": it has a touch screen.
+  return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && (navigator.maxTouchPoints ?? 0) > 1);
+}
+
 /** Speak an empty sentence from a tap, so later sentences are allowed (iOS). */
 export function unlockVoice(): void {
   if (!voiceSupported()) return;

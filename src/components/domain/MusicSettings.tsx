@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Music } from "lucide-react";
 import { savePrefs } from "@/lib/appTheme";
 import { isPlaylistOf, mixWithMusic, openMusic } from "@/lib/music";
+import { stopSpeaking, unlockVoice, voiceSupported } from "@/lib/voice";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
 import { useMusicApps } from "@/hooks/useMusicApps";
 import { Button } from "@/components/ui/button";
@@ -91,5 +92,32 @@ export function MusicSettings() {
       )}
       <p className="text-xs text-muted-foreground">{t("soundHint")}</p>
     </div>
+  );
+}
+
+/** The voice coach of the timed sessions, on or off; on an iPhone it pauses one's music. */
+export function VoiceCoachSetting() {
+  const t = useTranslations("music");
+  const { voice } = useAppPrefs();
+  if (!voiceSupported()) return null;
+  return (
+    <label className="mb-3 flex min-h-11 items-center gap-3 text-sm">
+      <input
+        type="checkbox"
+        checked={voice}
+        onChange={(e) => {
+          const on = e.target.checked;
+          // Turned on from this tap: the voice is allowed to speak (iOS).
+          if (on) unlockVoice();
+          else stopSpeaking();
+          savePrefs({ voice: on });
+        }}
+        className="size-5 accent-accent-600"
+      />
+      <span className="flex-1">
+        {t("voiceCoach")}
+        <span className="block text-xs text-muted-foreground">{t("voiceCoachHint")}</span>
+      </span>
+    </label>
   );
 }

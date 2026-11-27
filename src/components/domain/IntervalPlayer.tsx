@@ -146,7 +146,7 @@ export function IntervalPlayer({
       // One side then the other: a beep halfway.
       if (step?.type === "work" && step.exercise.sides && secs === Math.ceil(step.seconds / 2) && lastBeep.current !== -secs) {
         lastBeep.current = -secs;
-        beep("rest");
+        beep("side");
         navigator.vibrate?.(100);
         if (voice) speak(t("voiceSwitch"), locale);
       }

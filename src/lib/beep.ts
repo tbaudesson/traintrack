@@ -41,23 +41,36 @@ export function unlockAudio({ voice = false }: { voice?: boolean } = {}): void {
   }
 }
 
-/** A beep: short and low for a countdown, long and high to start an effort. */
-export function beep(kind: "tick" | "go" | "rest" = "tick"): void {
+/**
+ * A beep: short and low for a countdown, long and high to start an effort,
+ * long and low for a rest, two short ones to change sides. Told apart by ear
+ * when the voice coach is off (one's music on an iPhone).
+ */
+export function beep(kind: "tick" | "go" | "rest" | "side" = "tick"): void {
   if (!context) return;
   try {
     mixWithMusic();
     // Suspended or interrupted by the system meanwhile (a call, the screen locked).
     if (context.state !== "running") void context.resume();
-    const osc = context.createOscillator();
-    const gain = context.createGain();
-    const length = kind === "tick" ? 0.12 : 0.4;
-    osc.frequency.value = kind === "go" ? 1320 : kind === "rest" ? 520 : 880;
-    gain.gain.setValueAtTime(0.25, context.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + length);
-    osc.connect(gain).connect(context.destination);
-    osc.start();
-    osc.stop(context.currentTime + length);
+    if (kind === "side") {
+      tone(context, 660, 0.12, 0);
+      tone(context, 660, 0.12, 0.2);
+      return;
+    }
+    tone(context, kind === "go" ? 1320 : kind === "rest" ? 520 : 880, kind === "tick" ? 0.12 : 0.4, 0);
   } catch {
     // Ignore: a missed beep is not worth an error.
   }
+}
+
+function tone(ctx: AudioContext, frequency: number, length: number, delay: number): void {
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  const at = ctx.currentTime + delay;
+  osc.frequency.value = frequency;
+  gain.gain.setValueAtTime(0.25, at);
+  gain.gain.exponentialRampToValueAtTime(0.001, at + length);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(at);
+  osc.stop(at + length);
 }

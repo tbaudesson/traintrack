@@ -15,7 +15,7 @@ import { RestrictionsEditor } from "@/components/domain/RestrictionsEditor";
 import { StravaSection } from "@/components/domain/StravaSection";
 import { PlanBEditor } from "@/components/domain/PlanBEditor";
 import { DisplayModePicker } from "@/components/domain/DisplayModePicker";
-import { MusicSettings } from "@/components/domain/MusicSettings";
+import { MusicSettings, VoiceCoachSetting } from "@/components/domain/MusicSettings";
 import { saveDisplayMode, useDisplayMode } from "@/hooks/useDisplayMode";
 import { Zap } from "lucide-react";
 import { Ban, Music } from "lucide-react";
@@ -589,6 +589,7 @@ function SettingsContent() {
 
         {/* One's music app, opened from a session */}
         <Section id="music" icon={Music} title={tmusic("title")}>
+          <VoiceCoachSetting />
           <MusicSettings />
         </Section>
 

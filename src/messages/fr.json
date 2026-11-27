@@ -3073,7 +3073,7 @@
     "playlistHint": "Dans {app}, Partager > Copier le lien de la playlist, puis collez-le ici.",
     "playlistInvalid": "Ce lien n'est pas une playlist {app}.",
     "try": "Essayer",
-    "soundHint": "Les bips et le coach vocal se mêlent à la musique sur iPhone ; ils suivent alors le bouton silencieux.",
+    "soundHint": "Sur iPhone, les bips se mêlent à la musique et suivent alors le bouton silencieux ; la voix du coach, elle, la met en pause.",
     "notLoaded": "La liste des applis de musique n'a pas encore été chargée : ouvrez l'app une fois avec une connexion.",
     "adminTitle": "Applis de musique",
     "adminIntro": "Les applis qu'un athlète peut ouvrir depuis une séance : son adresse sur téléphone (« spotify: »), son lecteur web sur ordinateur, et le début des liens de ses playlists, un par ligne.",
@@ -3087,7 +3087,12 @@
     "adminInvalid": "Liste incomplète : chaque appli a un nom, un identifiant unique, une adresse d'appli et des liens en https.",
     "adminMissing": "La liste des applis de musique n'existe pas encore : appliquez la migration 083.",
     "adminSave": "Enregistrer",
-    "adminSaved": "Enregistré"
+    "adminSaved": "Enregistré",
+    "voiceOff": "Coach vocal coupé : sur iPhone, la voix mettrait votre musique en pause. Les bips prennent le relais.",
+    "voiceOn": "Réactiver la voix",
+    "close": "Fermer",
+    "voiceCoach": "Coach vocal",
+    "voiceCoachHint": "Annonce chaque exercice des séances minutées (HIIT, mobilité). Sur iPhone, la voix met votre musique en pause : elle se coupe quand vous lancez la musique depuis une séance, et les bips prennent le relais."
   },
   "boxingAdmin": {
     "title": "Boxe en rounds",
