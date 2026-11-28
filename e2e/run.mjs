@@ -433,6 +433,13 @@ await test("an empty session takes an exercise from the library", async () => {
   await page.getByRole("button", { name: /Nouvelle séance/ }).first().click();
   await page.waitForURL(/\/fr\/log\/session\?id=\d+/, { timeout: 15000 });
   await page.getByRole("button", { name: /Ajouter un exercice/ }).click();
+  // The whole library, shown at once and scrolled with the finger (not empty then filled: an iPhone may not scroll it).
+  const list = page.getByRole("dialog").locator("[aria-live=polite]");
+  await list.getByText("Tous les exercices").waitFor({ timeout: 10000 });
+  const box = await list.boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.wheel(0, 600);
+  await page.waitForFunction(() => (document.querySelector("[role=dialog] [aria-live=polite]")?.scrollTop ?? 0) > 0, null, { timeout: 5000 });
   // The search reads the names in every language: "push" finds "Pompes".
   await page.getByRole("dialog").getByPlaceholder(/Chercher un exercice/).fill("push");
   await page.getByRole("dialog").getByText("Pompes", { exact: true }).click();

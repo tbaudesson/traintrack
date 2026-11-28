@@ -11,6 +11,11 @@ export function useExercises() {
   ) ?? [];
 }
 
+/** The library, or null while it is still being read from the device. */
+export function useExercisesOrNull() {
+  return useLiveQuery(() => db.exercises.filter((e) => !e.deletedAt).sortBy("name"), []) ?? null;
+}
+
 export function useExercise(id: number | undefined) {
   return useLiveQuery(() => (id ? db.exercises.get(id) : undefined), [id]);
 }

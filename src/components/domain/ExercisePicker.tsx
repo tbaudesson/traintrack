@@ -3,9 +3,9 @@
 import { MUSCLE_GROUPS } from "@/lib/muscles";
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Dumbbell, History, Sparkles } from "lucide-react";
+import { Dumbbell, History, Loader2, Sparkles } from "lucide-react";
 import type { Equipment, Exercise, MuscleGroup } from "@/db";
-import { useExercises } from "@/hooks/useExercises";
+import { useExercisesOrNull } from "@/hooks/useExercises";
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
 import { useWorkouts } from "@/hooks/useWorkouts";
 import { useAthleteProfileOrNull } from "@/hooks/useAthleteProfile";
@@ -46,23 +46,39 @@ export function ExercisePicker({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[85vh] flex-col gap-3 overflow-hidden">
+      <DialogContent className="flex max-h-[85dvh] flex-col gap-3 overflow-hidden">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         {/* Mounted only while open: every opening starts from a clean search. */}
-        {open && <PickerBody onPick={onPick} injuries={injuries} exclude={exclude} />}
+        {open && <PickerLoader onPick={onPick} injuries={injuries} exclude={exclude} />}
       </DialogContent>
     </Dialog>
   );
 }
 
-function PickerBody({ onPick, injuries, exclude }: { onPick: (exercise: Exercise) => void; injuries: Injury[]; exclude: number[] }) {
+/**
+ * The list is shown once the library is read, not empty then filled: on an
+ * iPhone, a list that only becomes long enough to scroll after it is shown
+ * may not scroll until something redraws it.
+ */
+function PickerLoader(props: { onPick: (exercise: Exercise) => void; injuries: Injury[]; exclude: number[] }) {
+  const exercises = useExercisesOrNull();
+  if (!exercises) {
+    return (
+      <div className="flex justify-center py-10" role="status">
+        <Loader2 className="size-5 animate-spin text-muted-foreground" aria-hidden="true" />
+      </div>
+    );
+  }
+  return <PickerBody {...props} exercises={exercises} />;
+}
+
+function PickerBody({ onPick, injuries, exclude, exercises }: { onPick: (exercise: Exercise) => void; injuries: Injury[]; exclude: number[]; exercises: Exercise[] }) {
   const t = useTranslations("picker");
   const te = useTranslations("exercises");
   const locale = useLocale();
   const xl = useExerciseLabel();
-  const exercises = useExercises();
   const sets = useAllWorkoutSets();
   const workouts = useWorkouts();
   const profile = useAthleteProfileOrNull();
@@ -141,7 +157,7 @@ function PickerBody({ onPick, injuries, exclude }: { onPick: (exercise: Exercise
         )}
       </div>
 
-      <div className="-mx-1 min-h-0 flex-1 overflow-y-auto px-1" aria-live="polite">
+      <div className="-mx-1 min-h-0 flex-1 overflow-y-auto overscroll-contain px-1" aria-live="polite">
         {!filtering && together.length > 0 && (
           <section className="mb-3">
             <h3 className="mb-1 flex items-center gap-1.5 text-xs font-semibold tracking-widest text-muted-foreground uppercase">
