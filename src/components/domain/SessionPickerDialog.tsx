@@ -27,6 +27,7 @@ import type { useStartActions } from "@/hooks/useStartActions";
 import type { Program, ProgramDay, Workout } from "@/db";
 import { useLevelName } from "@/hooks/useLevels";
 import { LEVELS } from "@/lib/levels";
+import { useTemplateCatalogue } from "@/lib/templateService";
 
 /** How a day of a program is told in a list: its cardio target, or its number of exercises. */
 export function useDayDetail() {
@@ -120,13 +121,15 @@ export function SessionPickerDialog({
   // Every ready-made program and each of one's programs with its shelf, then
   // narrowed by the search, the sport and the level.
   const withShelf = useMemo(() => templates.map((tpl) => ({ tpl, shelf: programCategory(tpl) })), [templates]);
-  const programShelf = useMemo(() => new Map(programs.map((p) => [p, programCategory(p, templates)])), [programs, templates]);
+  // One's programs are known by the whole catalogue: `templates` leaves out those already added.
+  const allTemplates = useTemplateCatalogue();
+  const programShelf = useMemo(() => new Map(programs.map((p) => [p, programCategory(p, allTemplates)])), [programs, allTemplates]);
   const sports = CATEGORY_ORDER.filter((c) => withShelf.some((x) => x.shelf === c) || [...programShelf.values()].includes(c));
   const ownSport = allSports ? null : sports.find((c) => c === favorite) ?? null;
   // One's sport first, then those one trains on most, then the others.
   const practised = practisedShelves(workouts, (id) => {
     const p = programs.find((x) => x.id === id);
-    return p ? programCategory(p, templates) : null;
+    return p ? programShelf.get(p) ?? null : null;
   });
   const rank = (c: ProgramCategory) => (c === ownSport ? -2 : practised.includes(c) ? practised.indexOf(c) - practised.length - 2 : CATEGORY_ORDER.indexOf(c));
   const shelf = sport ?? ownSport ?? "all";

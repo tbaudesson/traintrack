@@ -68,7 +68,9 @@ async function test(name, fn) {
     // What the page looked like, for the one who reads the failure.
     const shot = join(ARTIFACTS, `${results.length}-${name.replace(/[^a-z0-9]+/gi, "-").slice(0, 50)}.png`);
     await page.screenshot({ path: shot }).catch(() => {});
-    console.log(`  ✗ ${name}\n      ${e.message.split("\n")[0]}\n      at ${page.url()} — ${shot}`);
+    // E2E_VERBOSE=1: Playwright's whole call log (what it waited for), not only its first line.
+    const said = process.env.E2E_VERBOSE ? e.message.split("\n").slice(0, 30).join("\n      ") : e.message.split("\n")[0];
+    console.log(`  ✗ ${name}\n      ${said}\n      at ${page.url()} — ${shot}`);
   }
 }
 const expect = (cond, message) => {
@@ -2679,6 +2681,34 @@ await test("the session picker follows the sport chosen in the header: one's pro
     await dialog.waitFor({ state: "detached", timeout: 5000 });
   };
   const mine = () => dialog.locator("section", { hasText: "Mes programmes" }).locator("h4");
+  // A ready-made TRX program, as added from the catalogue: the catalogue no longer offers it, yet still knows its sport.
+  const trxUuid = `e2e-trx-${Date.now()}`;
+  const trxProgram = (op) =>
+    page.evaluate(async ({ user, uuid, op }) => {
+      const db = await new Promise((res, rej) => { const r = indexedDB.open("TrainTrack"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+      const now = new Date().toISOString();
+      await new Promise((res, rej) => {
+        const tx = db.transaction("programs", "readwrite");
+        const store = tx.objectStore("programs");
+        if (op === "add") {
+          store.add({ userId: user, ownerUserId: user, uuid, name: "TRX débutant", _dirty: 0, createdAt: now, updatedAt: now, structure: [{ name: "Jour TRX", exercises: [{ exerciseName: "Plank", targetSets: 2, targetReps: "30s", restSec: 30 }] }] });
+        } else {
+          const all = store.getAll();
+          all.onsuccess = () => { for (const p of all.result.filter((x) => x.uuid === uuid)) store.put({ ...p, deletedAt: now, updatedAt: now }); };
+        }
+        tx.oncomplete = res;
+        tx.onerror = () => rej(tx.error);
+      });
+      db.close();
+    }, { user: USER, uuid: trxUuid, op });
+  await trxProgram("add");
+  // Fitness followed: the TRX program is not among its programs (unknown, it would show on every indoor shelf).
+  await pickSport("Fitness et perte de poids");
+  await sessionOption("Changer de séance ou de programme");
+  await dialog.getByRole("group", { name: "Sport" }).getByRole("button", { name: "Fitness et perte de poids", pressed: true }).waitFor({ timeout: 5000 });
+  const fitness = await mine().allInnerTexts();
+  expect(!fitness.includes("TRX débutant"), `a TRX program among the fitness ones: ${fitness.join(", ")}`);
+  await page.keyboard.press("Escape");
   await pickSport("Course à pied");
   await sessionOption("Changer de séance ou de programme");
   const sports = dialog.getByRole("group", { name: "Sport" });
@@ -2688,11 +2718,12 @@ await test("the session picker follows the sport chosen in the header: one's pro
   for (let i = 0; i < (await readyMade.count()); i++) expect((await readyMade.nth(i).innerText()).includes("Course à pied"), "another sport among the running programs");
   // One's programs of other sports wait one tap away.
   const running = await mine().allInnerTexts();
-  const others = dialog.getByRole("button", { name: /d’autres? sports? · Voir tous/ });
+  const others = dialog.getByRole("button", { name: /autres? sports? · Voir tous/ });
   await others.waitFor({ timeout: 5000 });
   await others.click();
   await sports.getByRole("button", { name: "Tous", pressed: true }).waitFor({ timeout: 5000 });
   expect((await mine().count()) > running.length, `no other program under "All": ${running.join(", ")}`);
+  expect((await mine().allInnerTexts()).includes("TRX débutant"), "the ready-made program added is not under All");
   await page.keyboard.press("Escape");
   // Another sport followed: the picker follows it, the "All" chosen before is forgotten.
   await pickSport("Natation");
@@ -2703,6 +2734,7 @@ await test("the session picker follows the sport chosen in the header: one's pro
   await dialog.getByText(/Full Body/).first().waitFor({ timeout: 5000 });
   await page.keyboard.press("Escape");
   await setSportChoice(null);
+  await trxProgram("remove");
 });
 
 await test("a timed session done ends on its recap, with Done back home and back leading home too", async () => {
