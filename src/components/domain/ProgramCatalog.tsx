@@ -191,9 +191,9 @@ export function ProgramCatalog({
   };
 
   return (
-    <section className="space-y-3">
+    <section className="space-y-3" aria-labelledby="catalog-title">
       <div>
-        <h2 className="text-lg font-semibold tracking-tight">{t("title")}</h2>
+        <h2 id="catalog-title" className="text-lg font-semibold tracking-tight">{t("title")}</h2>
         <p className="text-sm text-muted-foreground">{t("howToAdd")}</p>
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

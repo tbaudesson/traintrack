@@ -16,10 +16,10 @@ import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAthleteProfile } from "@/hooks/useAthleteProfile";
-import { updateWorkout, useWorkouts } from "@/hooks/useWorkouts";
+import { useAthleteProfile, useAthleteProfileOrNull } from "@/hooks/useAthleteProfile";
+import { updateWorkout, useWorkoutsRead } from "@/hooks/useWorkouts";
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
-import { useTrainablePrograms } from "@/hooks/usePrograms";
+import { trainableOf, useProgramsRead } from "@/hooks/usePrograms";
 import { useProgramTemplates } from "@/lib/templateService";
 import { useUnreadComments } from "@/hooks/useCoachComments";
 import { useExercises } from "@/hooks/useExercises";
@@ -201,9 +201,15 @@ export default function HomePage() {
     }
     setFlags((f) => ({ ...f, [key]: true }));
   };
-  const workouts = useWorkouts();
+  const workoutsRead = useWorkoutsRead();
+  const workouts = useMemo(() => workoutsRead ?? [], [workoutsRead]);
   const sets = useAllWorkoutSets();
-  const programs = useTrainablePrograms();
+  const programsRead = useProgramsRead();
+  const programs = useMemo(() => trainableOf(programsRead ?? []), [programsRead]);
+  // Until the sessions, the programs and the planning are read, today's session is not known:
+  // the card's button waits, so it never offers a free session and then opens another under the finger.
+  const profileRead = useAthleteProfileOrNull();
+  const ready = workoutsRead !== undefined && programsRead !== undefined && profileRead !== undefined;
   const comments = useUnreadComments();
   const catalogue = useProgramTemplates();
   const prefs = useAppPrefs();
@@ -795,8 +801,8 @@ export default function HomePage() {
                 </div>
               )}
               <div className="relative mt-3 flex items-center gap-2">
-                <Button onClick={start} disabled={starting} className="px-5">
-                  {starting ? (
+                <Button onClick={start} disabled={starting || !ready} aria-busy={!ready} className="px-5">
+                  {starting || !ready ? (
                     <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                   ) : (
                     <>

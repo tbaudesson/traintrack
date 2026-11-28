@@ -85,6 +85,11 @@ await context.addInitScript(() => {
   if (window.speechSynthesis) window.speechSynthesis.speak = (u) => u.text && window.__spoken.push(u.text);
 });
 const page = await context.newPage();
+// E2E_CPU_SLOWDOWN=4: the page runs four times slower, as on a busy machine, to bring out the races.
+if (process.env.E2E_CPU_SLOWDOWN) {
+  const cdp = await context.newCDPSession(page);
+  await cdp.send("Emulation.setCPUThrottlingRate", { rate: Number(process.env.E2E_CPU_SLOWDOWN) });
+}
 const errors = [];
 /** With E2E_SHOTS=1, a picture of the screen at the key steps, in e2e/artifacts. */
 const snap = async (name) => {
@@ -422,7 +427,8 @@ await test("pressed for time, the session of the day has a short version", async
 
 await test("its first session starts, with its sets ready, at the fixed session address", async () => {
   await page.goto(`${BASE}/fr`);
-  await page.getByRole("button", { name: /Commencer/ }).first().click();
+  // The card's own button: it waits, disabled, until the session of the day is known.
+  await heroCard().getByRole("button", { name: /^Commencer/ }).click();
   await page.waitForURL(/\/fr\/log\/session\?id=\d+/, { timeout: 15000 });
   await page.getByText("Squat arrière").first().waitFor({ timeout: 15000 });
   expect((await page.getByRole("button", { name: /Lancer le mode guidé/ }).count()) === 1, "no guided mode button");
@@ -1663,7 +1669,8 @@ await test("the injury shelf offers a program per injured area, and the others t
 
 await test("a ready-made program followed is left from the list, with a confirmation; a coach's has no such button", async () => {
   await page.goto(`${BASE}/fr/programs`);
-  await page.getByRole("button", { name: /TRX \(sangles\)/ }).click();
+  // The catalogue's shelf, not a followed program's card that says "TRX (sangles)" too.
+  await page.getByRole("region", { name: "Programmes tout faits" }).getByRole("button", { name: /TRX \(sangles\)/ }).click();
   const dialog = page.getByRole("dialog");
   await dialog.locator("li", { hasText: "TRX débutant" }).getByRole("button", { name: "Ajouter à mes programmes" }).click();
   await page.waitForURL(/\/fr\/programs\/\d+$/, { timeout: 10000 });
@@ -1689,7 +1696,8 @@ await test("a ready-made program followed is left from the list, with a confirma
 
 await test("TRX: a shelf of programs, and straps in the timed sessions", async () => {
   await page.goto(`${BASE}/fr/programs`);
-  await page.getByRole("button", { name: /TRX \(sangles\)/ }).click();
+  // The catalogue's shelf, not a followed program's card that says "TRX (sangles)" too.
+  await page.getByRole("region", { name: "Programmes tout faits" }).getByRole("button", { name: /TRX \(sangles\)/ }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByText("TRX débutant").waitFor({ timeout: 5000 });
   await dialog.getByText("TRX intermédiaire").waitFor({ timeout: 5000 });
@@ -2524,6 +2532,8 @@ await test("pressed for time, a run of the day has a short version too: same int
   }, USER);
   await page.goto(`${BASE}/fr`);
   const hero = heroCard();
+  // The card is ready once the day's sessions are read: before, the sessions begun today are not there yet.
+  await hero.locator('button[aria-busy="false"]').first().waitFor({ timeout: 10000 });
   const chip = hero.getByRole("group", { name: "Séances prévues ce jour-là" }).getByRole("button", { name: /Course express e2e/ });
   await chip.or(hero.getByRole("heading", { name: "Sortie tempo" })).first().waitFor({ timeout: 10000 });
   if (await chip.count()) await chip.click();
