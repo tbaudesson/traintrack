@@ -168,12 +168,13 @@ const TABLE_CONFIGS: TableSyncConfig[] = [
     trainerVisible: true,
   },
   {
-    // A tennis coach's notebook (migrations 088, 089): one's own tennis groups,
-    // kept with the teams (a team without accounts, kind "tennis") and only
-    // those read here; the lessons; the drill library (user_id null) read by
+    // A tennis coach's notebook (migrations 088 to 090): one's own tennis
+    // groups, kept with the teams (a team without accounts, kind "tennis")
+    // and synced through a view of them only (the teams' own rules loop when
+    // read directly); the lessons; the drill library (user_id null) read by
     // everyone, like the exercises.
     dexieTable: "tennisGroups",
-    supabaseTable: "groups",
+    supabaseTable: "tennis_groups",
     jsonFields: ["slots"],
     hasUpdatedAt: true,
     pullFilter: { kind: "tennis" },
