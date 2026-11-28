@@ -165,6 +165,30 @@ const TABLE_CONFIGS: TableSyncConfig[] = [
     hasUpdatedAt: true,
     trainerVisible: true,
   },
+  {
+    // A tennis coach's notebook (migration 088): one's own groups and lessons;
+    // the drill library (user_id null) is read by everyone, like the exercises.
+    dexieTable: "tennisGroups",
+    supabaseTable: "tennis_groups",
+    jsonFields: ["slots"],
+    hasUpdatedAt: true,
+  },
+  {
+    dexieTable: "tennisDrills",
+    supabaseTable: "tennis_drills",
+    jsonFields: ["ages", "equipment"],
+    hasUpdatedAt: true,
+    trainerVisible: true,
+  },
+  {
+    dexieTable: "tennisLessons",
+    supabaseTable: "tennis_lessons",
+    jsonFields: ["plan"],
+    fkMappings: {
+      groupId: { parentDexieTable: "tennisGroups", supabaseColumn: "group_id" },
+    },
+    hasUpdatedAt: true,
+  },
 ];
 
 // Sync order: parents first, then children
@@ -185,6 +209,9 @@ const SYNC_ORDER = [
   "horses",
   "horseSessions",
   "goals",
+  "tennisGroups",
+  "tennisDrills",
+  "tennisLessons",
 ];
 
 // ─── Retry with exponential backoff ───────────────────────────────────

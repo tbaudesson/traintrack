@@ -502,6 +502,75 @@ export interface HorseSession extends SyncFields {
   updatedAt: string;
 }
 
+/** When a tennis group trains in the week: ISO day (1 Monday … 7 Sunday), "HH:MM", minutes (migration 088). */
+export interface TennisSlot {
+  day: number;
+  time: string;
+  minutes: number;
+}
+
+export type TennisAgeBand = "8-10" | "11-13" | "14-16" | "adult";
+export type TennisLevel = "beginner" | "intermediate" | "competition";
+export type TennisCategory = "warmup" | "footwork" | "forehand" | "backhand" | "serve" | "return" | "volley" | "play" | "games" | "physical" | "cooldown";
+export type TennisEquipment = "balls" | "bands" | "cones" | "hoops" | "ladder" | "medicine_ball" | "rope" | "targets";
+
+/** A tennis coach's group: never its players, only its age band and how many play (migration 088). */
+export interface TennisGroup extends SyncFields {
+  id?: number;
+  name: string;
+  ageBand?: TennisAgeBand | null;
+  level?: TennisLevel | null;
+  slots: TennisSlot[];
+  players?: number | null;
+  notes?: string | null;
+  archivedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** A tennis drill: the library's (userId null, kept by an admin) or a coach's own (migration 088). */
+export interface TennisDrill extends SyncFields {
+  id?: number;
+  name: string;
+  nameFr?: string | null;
+  nameDe?: string | null;
+  description?: string | null;
+  descriptionFr?: string | null;
+  descriptionDe?: string | null;
+  category: TennisCategory;
+  minutes: number;
+  ages: TennisAgeBand[];
+  equipment: TennisEquipment[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** A drill in a lesson, as it was planned: kept readable if the drill goes. */
+export interface TennisPlanItem {
+  /** The drill's uuid, when it came from one. */
+  drill?: string | null;
+  name: string;
+  category: TennisCategory;
+  minutes: number;
+}
+
+/** A lesson of a group on a day: planned, then given (migration 088). */
+export interface TennisLesson extends SyncFields {
+  id?: number;
+  groupId: number;
+  date: string;
+  theme?: string | null;
+  plan: TennisPlanItem[];
+  /** When it was marked given (ISO); null while planned. */
+  givenAt?: string | null;
+  present?: number | null;
+  /** How hard it was for the group, 1 (easy) to 5 (very hard). */
+  intensity?: number | null;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Message extends SyncFields {
   id?: number;
   recipientId: string;
@@ -553,6 +622,9 @@ const db = new Dexie("TrainTrack") as Dexie & {
   competitionResults: EntityTable<CompetitionResult, "id">;
   horses: EntityTable<Horse, "id">;
   horseSessions: EntityTable<HorseSession, "id">;
+  tennisGroups: EntityTable<TennisGroup, "id">;
+  tennisDrills: EntityTable<TennisDrill, "id">;
+  tennisLessons: EntityTable<TennisLesson, "id">;
   goals: EntityTable<Goal, "id">;
   formDrafts: EntityTable<FormDraft, "id">;
   syncMeta: EntityTable<SyncMeta, "tableName">;
@@ -676,6 +748,13 @@ db.version(10).stores({
   readinessCheckins: "++id, date, uuid, _dirty, userId",
   healthMetrics: "++id, date, uuid, _dirty, userId",
   nutritionEntries: "++id, date, uuid, _dirty, userId",
+});
+
+// v11: a tennis coach's groups, drills and lessons (migration 088).
+db.version(11).stores({
+  tennisGroups: "++id, uuid, _dirty, userId",
+  tennisDrills: "++id, uuid, _dirty, userId",
+  tennisLessons: "++id, groupId, date, uuid, _dirty, userId",
 });
 
 export { db };

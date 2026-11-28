@@ -20,6 +20,10 @@ const PAGES = [
   "/readiness",
   "/settings",
   "/more",
+  "/tennis",
+  "/tennis/lesson",
+  "/tennis/group",
+  "/tennis/drills",
 ];
 
 const KEY = "traintrack.warmed";

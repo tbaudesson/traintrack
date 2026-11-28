@@ -40,6 +40,9 @@ export async function exportJSON(userId?: string | null): Promise<string> {
     horses,
     horseSessions,
     goals,
+    tennisGroups,
+    tennisDrills,
+    tennisLessons,
   ] = await Promise.all([
     db.athleteProfiles.toArray().then(own),
     db.exercises.toArray().then((rows) => own(rows).filter((r) => r.isCustom)),
@@ -61,6 +64,10 @@ export async function exportJSON(userId?: string | null): Promise<string> {
     db.horses.toArray().then(own),
     db.horseSessions.toArray().then(own),
     db.goals.toArray().then(own),
+    db.tennisGroups.toArray().then(own),
+    // One's own drills, not the library's.
+    db.tennisDrills.toArray().then((rows) => own(rows).filter((r) => !!r.userId)),
+    db.tennisLessons.toArray().then(own),
   ]);
 
   // Device bookkeeping (sync state) is not personal data.
@@ -92,6 +99,9 @@ export async function exportJSON(userId?: string | null): Promise<string> {
     horses: strip(horses),
     horseSessions: strip(horseSessions),
     goals: strip(goals),
+    tennisGroups: strip(tennisGroups),
+    tennisDrills: strip(tennisDrills),
+    tennisLessons: strip(tennisLessons),
   };
 
   return JSON.stringify(data, null, 2);
