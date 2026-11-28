@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
-import { PROGRAM_TEMPLATES } from "./programTemplates";
 import { adaptToEquipment, alternativesOf, exerciseNeeds, missingEquipment, parseProgramEquipment } from "./programEquipment";
 import { injuryRulesFromMigrations, programEquipmentFromMigrations } from "./injuryGuidanceFromMigrations";
 import { libraryFromMigrations } from "./libraryFromMigrations";
+import { templatesForTests } from "./templatesForTests";
+
+const PROGRAM_TEMPLATES = templatesForTests();
 
 const INJURY_RULES = injuryRulesFromMigrations();
 const EQ = programEquipmentFromMigrations();

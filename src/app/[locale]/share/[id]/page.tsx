@@ -14,11 +14,13 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState } from "@/components/ui/page-parts";
 import { Button } from "@/components/ui/button";
 import { CategoryIcon } from "@/components/domain/ProgramCatalog";
+import { useTemplateCatalogue } from "@/lib/templateService";
 
 /** A program someone shared by link: what it holds, and a tap to add it to one's own. */
 export default function SharedProgramPage() {
   const t = useTranslations("share");
   const tc = useTranslations("catalog");
+  const allTemplates = useTemplateCatalogue();
   const xl = useExerciseLabel();
   const router = useRouter();
   const id = String(useParams().id);
@@ -63,7 +65,7 @@ export default function SharedProgramPage() {
     );
   }
 
-  const category = programCategory({ name: shared.name, structure: shared.structure });
+  const category = programCategory({ name: shared.name, structure: shared.structure }, allTemplates);
   const weeks = planWeeks(shared.structure);
 
   return (

@@ -15531,3 +15531,189 @@ INSERT INTO app_settings (key, value) VALUES ('run_workouts', '{
 }') ON CONFLICT (key) DO NOTHING;
 
 COMMIT;
+
+
+-- 098_template_shelves.sql
+-- The ready-made programs live only in program_templates (Admin > Templates):
+-- the copy the code kept (offline stand-in, and the way to know a program's
+-- shelf and the injury it is written for) goes. Each template now says it:
+--   - category: the shelf it is filed on (bodybuilding, strength, fitness,
+--     callisthenics, running, hiking, swimming, cycling, vaulting, trx,
+--     injury); none lets the app work it out from its sport and goal;
+--   - for_injury: the injured area it is written for (an id of
+--     app_settings.pain_areas), none for the others.
+-- Both are set for the 150 programs as the app filed them. A program of
+-- one's own is filed by the template of the same name, as before.
+-- Apply this file first, then the code.
+-- Plain quotes only; safe to run again (a value already set is kept).
+
+BEGIN;
+
+ALTER TABLE program_templates ADD COLUMN IF NOT EXISTS category TEXT;
+ALTER TABLE program_templates ADD COLUMN IF NOT EXISTS for_injury TEXT;
+
+ALTER TABLE program_templates DROP CONSTRAINT IF EXISTS program_templates_category_check;
+ALTER TABLE program_templates ADD CONSTRAINT program_templates_category_check
+  CHECK (category IS NULL OR category ~ '^[a-z0-9_-]{1,30}$');
+ALTER TABLE program_templates DROP CONSTRAINT IF EXISTS program_templates_for_injury_check;
+ALTER TABLE program_templates ADD CONSTRAINT program_templates_for_injury_check
+  CHECK (for_injury IS NULL OR for_injury ~ '^[a-z0-9_-]{1,30}$');
+
+UPDATE program_templates AS t
+SET category = coalesce(t.category, v.category),
+    for_injury = coalesce(t.for_injury, v.for_injury)
+FROM (VALUES
+  ('Full Body — Débutant', 'fr', 'fitness', NULL),
+  ('Force 5×5', 'fr', 'strength', NULL),
+  ('Haut / Bas du corps', 'fr', 'bodybuilding', NULL),
+  ('Poussée / Tirage / Jambes', 'fr', 'bodybuilding', NULL),
+  ('Sec et fort', 'fr', 'fitness', NULL),
+  ('Haltères à la maison', 'fr', 'fitness', NULL),
+  ('Essentiel 2 jours', 'fr', 'fitness', NULL),
+  ('Remise en forme', 'fr', 'fitness', NULL),
+  ('Force 3×5', 'fr', 'strength', NULL),
+  ('Prise de masse 5 jours', 'fr', 'bodybuilding', NULL),
+  ('Fessiers et jambes', 'fr', 'bodybuilding', NULL),
+  ('Haltères 4 jours', 'fr', 'bodybuilding', NULL),
+  ('Poids du corps', 'fr', 'callisthenics', NULL),
+  ('Sèche 4 jours', 'fr', 'fitness', NULL),
+  ('Full Body — Beginner', 'en', 'fitness', NULL),
+  ('Strength 5×5', 'en', 'strength', NULL),
+  ('Upper / Lower Split', 'en', 'bodybuilding', NULL),
+  ('Push / Pull / Legs', 'en', 'bodybuilding', NULL),
+  ('Lean & Strong', 'en', 'fitness', NULL),
+  ('Home Dumbbell', 'en', 'fitness', NULL),
+  ('2-Day Essentials', 'en', 'fitness', NULL),
+  ('Back in Shape', 'en', 'fitness', NULL),
+  ('Strength 3×5', 'en', 'strength', NULL),
+  ('5-Day Muscle Gain', 'en', 'bodybuilding', NULL),
+  ('Glutes & Legs', 'en', 'bodybuilding', NULL),
+  ('4-Day Dumbbell', 'en', 'bodybuilding', NULL),
+  ('Bodyweight', 'en', 'callisthenics', NULL),
+  ('4-Day Cut', 'en', 'fitness', NULL),
+  ('Ganzkörper — Anfänger', 'de', 'fitness', NULL),
+  ('Kraft 5×5', 'de', 'strength', NULL),
+  ('Oberkörper / Unterkörper', 'de', 'bodybuilding', NULL),
+  ('Drücken / Ziehen / Beine', 'de', 'bodybuilding', NULL),
+  ('Schlank & stark', 'de', 'fitness', NULL),
+  ('Kurzhanteln zu Hause', 'de', 'fitness', NULL),
+  ('Basis 2 Tage', 'de', 'fitness', NULL),
+  ('Wieder fit', 'de', 'fitness', NULL),
+  ('Kraft 3×5', 'de', 'strength', NULL),
+  ('Masseaufbau 5 Tage', 'de', 'bodybuilding', NULL),
+  ('Po & Beine', 'de', 'bodybuilding', NULL),
+  ('Kurzhanteln 4 Tage', 'de', 'bodybuilding', NULL),
+  ('Eigengewicht', 'de', 'callisthenics', NULL),
+  ('Definition 4 Tage', 'de', 'fitness', NULL),
+  ('Vagues de force (% du 1RM)', 'fr', 'strength', NULL),
+  ('Strength Waves (% of 1RM)', 'en', 'strength', NULL),
+  ('Kraftwellen (% vom 1RM)', 'de', 'strength', NULL),
+  ('Marathon en 16 semaines', 'fr', 'running', NULL),
+  ('Semi-marathon en 12 semaines', 'fr', 'running', NULL),
+  ('10 km en 8 semaines', 'fr', 'running', NULL),
+  ('Débuter la course : 5 km', 'fr', 'running', NULL),
+  ('Natation endurance', 'fr', 'swimming', NULL),
+  ('Vélo endurance', 'fr', 'cycling', NULL),
+  ('Renfo coureur', 'fr', 'running', NULL),
+  ('Renfo trail', 'fr', 'running', NULL),
+  ('Renfo nageur', 'fr', 'swimming', NULL),
+  ('Renfo cycliste', 'fr', 'cycling', NULL),
+  ('Marathon in 16 weeks', 'en', 'running', NULL),
+  ('Half marathon in 12 weeks', 'en', 'running', NULL),
+  ('10K in 8 weeks', 'en', 'running', NULL),
+  ('Start running: 5K', 'en', 'running', NULL),
+  ('Swimming endurance', 'en', 'swimming', NULL),
+  ('Cycling endurance', 'en', 'cycling', NULL),
+  ('Strength for runners', 'en', 'running', NULL),
+  ('Strength for trail', 'en', 'running', NULL),
+  ('Strength for swimmers', 'en', 'swimming', NULL),
+  ('Strength for cyclists', 'en', 'cycling', NULL),
+  ('Marathon in 16 Wochen', 'de', 'running', NULL),
+  ('Halbmarathon in 12 Wochen', 'de', 'running', NULL),
+  ('10 km in 8 Wochen', 'de', 'running', NULL),
+  ('Laufeinstieg: 5 km', 'de', 'running', NULL),
+  ('Schwimmausdauer', 'de', 'swimming', NULL),
+  ('Radausdauer', 'de', 'cycling', NULL),
+  ('Kraft für Läufer', 'de', 'running', NULL),
+  ('Kraft für Trail', 'de', 'running', NULL),
+  ('Kraft für Schwimmer', 'de', 'swimming', NULL),
+  ('Kraft für Radfahrer', 'de', 'cycling', NULL),
+  ('Voltige : débuter en 8 semaines', 'fr', 'vaulting', NULL),
+  ('Voltige : imposés et libre en 12 semaines', 'fr', 'vaulting', NULL),
+  ('Préparation physique du voltigeur', 'fr', 'vaulting', NULL),
+  ('Vaulting: get started in 8 weeks', 'en', 'vaulting', NULL),
+  ('Vaulting: compulsories and freestyle in 12 weeks', 'en', 'vaulting', NULL),
+  ('Conditioning for vaulters', 'en', 'vaulting', NULL),
+  ('Voltigieren: Einstieg in 8 Wochen', 'de', 'vaulting', NULL),
+  ('Voltigieren: Pflicht und Kür in 12 Wochen', 'de', 'vaulting', NULL),
+  ('Athletik für Voltigierer', 'de', 'vaulting', NULL),
+  ('Spinning débutant en 6 semaines', 'fr', 'cycling', NULL),
+  ('Spinning HIIT en 8 semaines', 'fr', 'cycling', NULL),
+  ('Spinning for beginners in 6 weeks', 'en', 'cycling', NULL),
+  ('Spinning HIIT in 8 weeks', 'en', 'cycling', NULL),
+  ('Spinning für Einsteiger in 6 Wochen', 'de', 'cycling', NULL),
+  ('Spinning-HIIT in 8 Wochen', 'de', 'cycling', NULL),
+  ('Callisthenics : débuter en 8 semaines', 'fr', 'callisthenics', NULL),
+  ('Callisthenics intermédiaire en 8 semaines', 'fr', 'callisthenics', NULL),
+  ('Callisthenics avancé', 'fr', 'callisthenics', NULL),
+  ('Callisthenics: get started in 8 weeks', 'en', 'callisthenics', NULL),
+  ('Intermediate callisthenics in 8 weeks', 'en', 'callisthenics', NULL),
+  ('Advanced callisthenics', 'en', 'callisthenics', NULL),
+  ('Calisthenics: Einstieg in 8 Wochen', 'de', 'callisthenics', NULL),
+  ('Calisthenics für Fortgeschrittene in 8 Wochen', 'de', 'callisthenics', NULL),
+  ('Calisthenics für Profis', 'de', 'callisthenics', NULL),
+  ('TRX débutant', 'fr', 'trx', NULL),
+  ('TRX intermédiaire', 'fr', 'trx', NULL),
+  ('TRX for beginners', 'en', 'trx', NULL),
+  ('Intermediate TRX', 'en', 'trx', NULL),
+  ('TRX für Einsteiger', 'de', 'trx', NULL),
+  ('TRX für Fortgeschrittene', 'de', 'trx', NULL),
+  ('Apprendre le crawl en 8 semaines', 'fr', 'swimming', NULL),
+  ('Natation forme', 'fr', 'swimming', NULL),
+  ('Vers 1 500 m et 2 km de crawl', 'fr', 'swimming', NULL),
+  ('Prépa triathlon et eau libre', 'fr', 'swimming', NULL),
+  ('Learn front crawl in 8 weeks', 'en', 'swimming', NULL),
+  ('Swim for fitness', 'en', 'swimming', NULL),
+  ('Towards 1,500 m and 2 km of front crawl', 'en', 'swimming', NULL),
+  ('Triathlon and open water prep', 'en', 'swimming', NULL),
+  ('Kraulen lernen in 8 Wochen', 'de', 'swimming', NULL),
+  ('Fitnessschwimmen', 'de', 'swimming', NULL),
+  ('Auf 1.500 m und 2 km Kraul', 'de', 'swimming', NULL),
+  ('Triathlon- und Freiwasservorbereitung', 'de', 'swimming', NULL),
+  ('Préparer un trek de plusieurs jours', 'fr', 'hiking', NULL),
+  ('Randonnée en montagne', 'fr', 'hiking', NULL),
+  ('Get ready for a multi-day trek', 'en', 'hiking', NULL),
+  ('Mountain hiking', 'en', 'hiking', NULL),
+  ('Vorbereitung auf ein mehrtägiges Trekking', 'de', 'hiking', NULL),
+  ('Bergwandern', 'de', 'hiking', NULL),
+  ('Épaule blessée : jambes et abdos', 'fr', 'injury', 'shoulder'),
+  ('Coude blessé : sans flexion des bras', 'fr', 'injury', 'elbow'),
+  ('Poignet blessé : sans barre', 'fr', 'injury', 'wrist'),
+  ('Nuque blessée : sans charge sur la nuque', 'fr', 'injury', 'neck'),
+  ('Haut du dos blessé : machines et haltères', 'fr', 'injury', 'upper_back'),
+  ('Bas du dos blessé : sans charge sur le dos', 'fr', 'injury', 'lower_back'),
+  ('Hanche blessée : haut du corps', 'fr', 'injury', 'hip'),
+  ('Genou blessé : haut du corps et hanches', 'fr', 'injury', 'knee'),
+  ('Cheville blessée : assis et allongé', 'fr', 'injury', 'ankle'),
+  ('Injured shoulder: legs and abs', 'en', 'injury', 'shoulder'),
+  ('Injured elbow: straight arms', 'en', 'injury', 'elbow'),
+  ('Injured wrist: no barbell', 'en', 'injury', 'wrist'),
+  ('Injured neck: no load on the neck', 'en', 'injury', 'neck'),
+  ('Injured upper back: machines and dumbbells', 'en', 'injury', 'upper_back'),
+  ('Injured lower back: no load on the spine', 'en', 'injury', 'lower_back'),
+  ('Injured hip: upper body', 'en', 'injury', 'hip'),
+  ('Injured knee: upper body and hips', 'en', 'injury', 'knee'),
+  ('Injured ankle: seated and lying', 'en', 'injury', 'ankle'),
+  ('Verletzte Schulter: Beine und Bauch', 'de', 'injury', 'shoulder'),
+  ('Verletzter Ellbogen: gestreckte Arme', 'de', 'injury', 'elbow'),
+  ('Verletztes Handgelenk: ohne Langhantel', 'de', 'injury', 'wrist'),
+  ('Verletzter Nacken: ohne Last auf dem Nacken', 'de', 'injury', 'neck'),
+  ('Verletzter oberer Rücken: Maschinen und Kurzhanteln', 'de', 'injury', 'upper_back'),
+  ('Verletzter unterer Rücken: ohne Last auf der Wirbelsäule', 'de', 'injury', 'lower_back'),
+  ('Verletzte Hüfte: Oberkörper', 'de', 'injury', 'hip'),
+  ('Verletztes Knie: Oberkörper und Hüfte', 'de', 'injury', 'knee'),
+  ('Verletzter Knöchel: im Sitzen und Liegen', 'de', 'injury', 'ankle')
+) AS v(name, locale, category, for_injury)
+WHERE t.name = v.name AND coalesce(t.locale, '') = v.locale;
+
+COMMIT;

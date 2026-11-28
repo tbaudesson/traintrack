@@ -26,8 +26,7 @@ import { GpxImport } from "@/components/domain/GpxImport";
 import { SessionPickerDialog, useDayDetail } from "@/components/domain/SessionPickerDialog";
 import { daysToOffer, findWorkoutProgramDay, nextDayIndex } from "@/lib/startWorkout";
 import { kindOf } from "@/lib/activityProfile";
-import { useProgramTemplates } from "@/lib/templateService";
-import { PROGRAM_TEMPLATES } from "@/lib/programTemplates";
+import { useProgramTemplates, useTemplateCatalogue } from "@/lib/templateService";
 import { localDate } from "@/lib/dates";
 import {
   Activity, ArrowRight, Calendar, ClipboardList, Dumbbell, FileSpreadsheet, Footprints, History, ListChecks, Loader2, PersonStanding, Plus, RotateCcw, Timer, Upload,
@@ -55,6 +54,8 @@ export default function TrainPage() {
   const exercises = useExercises();
   const profile = useAthleteProfile();
   const catalogue = useProgramTemplates();
+  // Every language's, to know a program by its name.
+  const allTemplates = useTemplateCatalogue();
   const prefs = useAppPrefs();
   const { hasFeature } = useFeatureAccess();
   const lighterToday = useLighterToday();
@@ -201,7 +202,7 @@ export default function TrainPage() {
         <MyPrograms
           programs={programs}
           workouts={workouts}
-          catalogue={[...catalogue, ...PROGRAM_TEMPLATES]}
+          catalogue={allTemplates}
           today={today}
           favorite={prefs.sport}
           onContinue={(program) => {

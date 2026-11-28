@@ -1,9 +1,11 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { parseSwimTechniques } from "./swimTechniques";
-import { SWIM_TEMPLATES } from "./swimTemplates";
 import { programCategory } from "./programCategories";
 import { isPlayable } from "./demoVideos";
+import { familyForTests } from "./templatesForTests";
+
+const SWIM_TEMPLATES = familyForTests("SWIM_TEMPLATES");
 
 // The sheets as migration 060 seeds them: the tests read the very data the app does.
 const sql = readFileSync("supabase/migrations/060_swimming.sql", "utf8");
@@ -67,7 +69,7 @@ describe("the swimming programs", () => {
 
 describe("the 8-week swim plan", () => {
   it("links each session to its techniques, all of them among the sheets, and migration 061 adds them the same way", async () => {
-    const { PROGRAM_TEMPLATES } = await import("./programTemplates");
+    const PROGRAM_TEMPLATES = (await import("./templatesForTests")).templatesForTests();
     const migration = readFileSync("supabase/migrations/061_swim_plan_techniques.sql", "utf8");
     const listed = JSON.parse(migration.slice(migration.indexOf("'[[") + 1, migration.indexOf("]]'") + 2));
     for (const t of PROGRAM_TEMPLATES.filter((x) => x.id.startsWith("plan-natation-8"))) {

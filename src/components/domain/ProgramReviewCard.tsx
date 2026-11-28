@@ -6,8 +6,7 @@ import { Loader2, PartyPopper, Plus, TrendingUp } from "lucide-react";
 import type { Exercise, Program, Workout, WorkoutSet } from "@/db";
 import { useRouter } from "@/i18n/navigation";
 import { createProgram } from "@/hooks/usePrograms";
-import { useProgramTemplates } from "@/lib/templateService";
-import { PROGRAM_TEMPLATES } from "@/lib/programTemplates";
+import { useProgramTemplates, useTemplateCatalogue } from "@/lib/templateService";
 import { nextPrograms, programReview, type MetricKind } from "@/lib/programReview";
 import { nextMonday } from "@/lib/programWeek";
 import { useExerciseLabel } from "@/lib/exerciseNames";
@@ -49,11 +48,12 @@ export function ProgramReviewCard({
   const metric = useMetric();
   const router = useRouter();
   const catalogue = useProgramTemplates();
+  const allTemplates = useTemplateCatalogue();
   const [adding, setAdding] = useState<string | null>(null);
   const review = useMemo(() => programReview({ program, workouts, sets, exercises, today }), [program, workouts, sets, exercises, today]);
   const next = useMemo(
-    () => (review.finished && canFollow ? nextPrograms(program, [...catalogue, ...PROGRAM_TEMPLATES.filter((x) => !catalogue.some((c) => c.name === x.name))]) : []),
-    [review.finished, canFollow, program, catalogue]
+    () => (review.finished && canFollow ? nextPrograms(program, [...catalogue, ...allTemplates.filter((x) => !catalogue.some((c) => c.name === x.name))]) : []),
+    [review.finished, canFollow, program, catalogue, allTemplates]
   );
   if (review.sessions < 2 && !review.finished) return null;
 

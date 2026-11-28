@@ -1,8 +1,10 @@
 import { describe, it, expect } from "vitest";
 import type { Workout } from "@/db";
 import { bySport, cardioBests, describeTarget, formatDistance, formatDuration, formatPace, isCardioDone, newCardioRecords } from "./cardio";
-import { ENDURANCE_TEMPLATES } from "./enduranceTemplates";
 import { speaks } from "./templateService";
+import { familyForTests } from "./templatesForTests";
+
+const ENDURANCE_TEMPLATES = familyForTests("ENDURANCE_TEMPLATES");
 
 const run = (id: number, distanceM?: number, durationSec?: number) =>
   ({ id, kind: "cardio", sport: "run", distanceM, durationSec }) as Workout;

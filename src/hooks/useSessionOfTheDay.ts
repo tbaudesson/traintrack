@@ -7,7 +7,8 @@ import { plannedPrograms, sessionChoices, type SessionChoice } from "@/lib/sched
 import { programWeek } from "@/lib/programWeek";
 import { isTestProgram } from "@/lib/levelTests";
 import { programCategory } from "@/lib/programCategories";
-import { PROGRAM_TEMPLATES, type ProgramTemplate } from "@/lib/programTemplates";
+import type { ProgramTemplate } from "@/lib/programTemplates";
+import { useTemplateCatalogue } from "@/lib/templateService";
 import type { AthleteProfile, Program, Workout } from "@/db";
 import type { AppPrefs } from "@/lib/appTheme";
 
@@ -33,6 +34,8 @@ export function useSessionOfTheDay({
   sport: AppPrefs["sport"];
   catalogue: ProgramTemplate[];
 }) {
+  // Every language's ready-made programs, to know a program by its name.
+  const allTemplates = useTemplateCatalogue();
   // The programs in the planning (given days), all shown together in the week.
   const weekStart = mondayOfDate(today);
   const planned = useMemo(
@@ -61,13 +64,13 @@ export function useSessionOfTheDay({
       .filter((p) => p.startDate && p.startDate <= today && !programWeek(p, today)?.finished)
       .sort((a, b) => b.startDate!.localeCompare(a.startDate!))[0];
     // With nothing going on, the program of one's favourite sport comes first.
-    const favorite = sport ? usable.find((p) => programCategory(p, [...catalogue, ...PROGRAM_TEMPLATES]) === sport) : undefined;
+    const favorite = sport ? usable.find((p) => programCategory(p, [...catalogue, ...allTemplates]) === sport) : undefined;
     const program =
       newest && (!lastDone || newest.startDate! > lastDone.w.date) ? newest : (lastDone?.at?.program ?? favorite ?? usable[0]);
     if (!program) return null;
     const next = nextDayIndex(program, workouts, today);
     return { program, index: next, day: program.structure[next], workoutId: undefined, date: today, options: [] as SessionChoice[] };
-  }, [programs, workouts, today, sport, catalogue, planned, pickKey]);
+  }, [programs, workouts, today, sport, catalogue, allTemplates, planned, pickKey]);
 
 
   return { planned, session, setPickKey };

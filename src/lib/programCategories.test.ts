@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { CATEGORY_ORDER, planWeeks, programCategory, shelves } from "./programCategories";
-import { PROGRAM_TEMPLATES } from "./programTemplates";
+import { templatesForTests } from "./templatesForTests";
+
+const PROGRAM_TEMPLATES = templatesForTests();
 
 const byId = (id: string) => PROGRAM_TEMPLATES.find((t) => t.id === id)!;
 
@@ -25,8 +27,8 @@ describe("programCategory", () => {
 
   it("files a program of one's own by the ready-made one it came from, else not at all", () => {
     const fromTemplate = byId("renfo-cycliste");
-    expect(programCategory({ name: fromTemplate.name, structure: fromTemplate.structure })).toBe("cycling");
-    expect(programCategory({ name: "Mon programme", structure: [{ name: "J1", exercises: [] }] })).toBeNull();
+    expect(programCategory({ name: fromTemplate.name, structure: fromTemplate.structure }, PROGRAM_TEMPLATES)).toBe("cycling");
+    expect(programCategory({ name: "Mon programme", structure: [{ name: "J1", exercises: [] }] }, PROGRAM_TEMPLATES)).toBeNull();
   });
 });
 
@@ -47,9 +49,12 @@ it("counts the weeks of a plan", () => {
   expect(planWeeks(byId("voltige-prepa").structure)).toBeNull();
 });
 
-it("files a program on its built-in shelf even when the catalogue comes from the server", () => {
-  const fromServer = [{ id: "5f0c2c1e-0000-4000-8000-000000000001", name: "Poids du corps", goal: "general" as const }];
+it("files a program on the shelf its ready-made program says, whatever its goal", () => {
+  const fromServer = [{ id: "5f0c2c1e-0000-4000-8000-000000000001", name: "Poids du corps", goal: "general" as const, category: "callisthenics" }];
   expect(programCategory({ name: "Poids du corps" }, fromServer)).toBe("callisthenics");
+  // Without a shelf said (or one the app does not know), its sport and goal tell.
+  expect(programCategory({ name: "Poids du corps" }, [{ ...fromServer[0], category: undefined }])).toBe("fitness");
+  expect(programCategory({ name: "Poids du corps" }, [{ ...fromServer[0], category: "curling" }])).toBe("fitness");
 });
 
 describe("a program on a sport's shelf", () => {

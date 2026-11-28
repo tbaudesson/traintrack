@@ -1094,7 +1094,11 @@
     "description": "Beschreibung",
     "homeFriendly": "Zu Hause machbar",
     "published": "Nutzern angeboten",
-    "loadError": "Vorlagen konnten nicht geladen werden. Wurde Migration 023 angewendet?"
+    "loadError": "Vorlagen konnten nicht geladen werden. Wurde Migration 023 angewendet?",
+    "shelf": "Regal",
+    "shelfAuto": "Nach Sportart und Ziel",
+    "forInjury": "Für eine Verletzung geschrieben",
+    "noInjury": "Keine"
   },
   "cardio": {
     "importGpx": "Uhrendatei (GPX, TCX, FIT) importieren",

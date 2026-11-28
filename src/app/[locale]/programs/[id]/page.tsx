@@ -19,9 +19,8 @@ import { useExerciseLabel } from "@/lib/exerciseNames";
 import { planWeeks, programCategory } from "@/lib/programCategories";
 import { canEditProgram, customisedName, programOrigin } from "@/lib/programOrigin";
 import { programProgress } from "@/lib/programCards";
-import { PROGRAM_TEMPLATES } from "@/lib/programTemplates";
 import { findWorkoutProgramDay, nextDayIndex, startWorkoutFromDay } from "@/lib/startWorkout";
-import { useReadyMadeNames } from "@/lib/templateService";
+import { useReadyMadeNames, useTemplateCatalogue } from "@/lib/templateService";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -53,6 +52,7 @@ export default function ProgramPage() {
   const exercises = useExercises();
   const sets = useAllWorkoutSets();
   const readyMade = useReadyMadeNames();
+  const allTemplates = useTemplateCatalogue();
   const lighterToday = useLighterToday();
   const { hasFeature } = useFeatureAccess();
   const [busy, setBusy] = useState(false);
@@ -77,7 +77,7 @@ export default function ProgramPage() {
     );
   }
 
-  const category = programCategory(program, PROGRAM_TEMPLATES);
+  const category = programCategory(program, allTemplates);
   const weeks = planWeeks(days);
   const progress = programProgress(program, workouts);
   // A coach looking at a client's copy does not train it.

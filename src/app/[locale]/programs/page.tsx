@@ -9,7 +9,7 @@ import { useAthleteProfile } from "@/hooks/useAthleteProfile";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { getAiConsent, getApiKey, generateProgram } from "@/lib/aiService";
 import { AiConsent } from "@/components/domain/AiConsent";
-import { PROGRAM_TEMPLATES, type ProgramTemplate } from "@/lib/programTemplates";
+import type { ProgramTemplate } from "@/lib/programTemplates";
 import { planWeeks, programCategory } from "@/lib/programCategories";
 import { getCurrentUserIdSync, type ProgramDay } from "@/db";
 import { CategoryIcon, ProgramCatalog } from "@/components/domain/ProgramCatalog";
@@ -33,7 +33,7 @@ import { ProgramImportDialog } from "@/components/domain/ProgramImportDialog";
 import { EmptyState, SectionHeading } from "@/components/ui/page-parts";
 import { DetailRow } from "@/components/ui/detail-row";
 import { useClients } from "@/hooks/useClients";
-import { useProgramTemplates, useReadyMadeNames } from "@/lib/templateService";
+import { useProgramTemplates, useReadyMadeNames, useTemplateCatalogue } from "@/lib/templateService";
 import { programFingerprint, programOrigin } from "@/lib/programOrigin";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
 
@@ -59,6 +59,8 @@ export default function ProgramsPage() {
   const [importing, setImporting] = useState(false);
 
   const catalogue = useProgramTemplates();
+  // Every language's, to know a program by its name.
+  const allTemplates = useTemplateCatalogue();
   const prefs = useAppPrefs();
 
   async function applyTemplate(tpl: ProgramTemplate) {
@@ -74,7 +76,7 @@ export default function ProgramsPage() {
 
   /** "Running · 8 weeks", or the number of days of a program without weeks. */
   function describe(p: { name: string; structure?: ProgramDay[] }) {
-    const category = programCategory(p, [...catalogue, ...PROGRAM_TEMPLATES]);
+    const category = programCategory(p, allTemplates);
     const weeks = planWeeks(p.structure ?? []);
     const length = weeks ? tc("weeks", { count: weeks }) : `${(p.structure ?? []).length} ${t("days")}`;
     return { category, subtitle: category ? `${tc(`cat_${category}`)} · ${length}` : length };

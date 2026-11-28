@@ -68,7 +68,7 @@ describe("programReview", () => {
 
 describe("nextPrograms", () => {
   it("offers the same kind of program, a level up first, never a lower one", async () => {
-    const { PROGRAM_TEMPLATES } = await import("./programTemplates");
+    const PROGRAM_TEMPLATES = (await import("./templatesForTests")).templatesForTests();
     const { programCategory } = await import("./programCategories");
     const { nextPrograms } = await import("./programReview");
     const beginner = PROGRAM_TEMPLATES.find((t) => t.level === "beginner" && PROGRAM_TEMPLATES.some((o) => o.level === "intermediate" && programCategory(o) === programCategory(t)))!;

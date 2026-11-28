@@ -4,6 +4,7 @@ import type { IntervalPlan } from "@/lib/intervals";
 import type { Injury } from "@/lib/injuries";
 import type { RunPaces } from "@/lib/runPaces";
 import type { MealPrefs } from "@/lib/foods";
+import type { ProgramTemplate } from "@/lib/programTemplates";
 import Dexie, { type EntityTable } from "dexie";
 
 // ─── Sync metadata mixin ─────────────────────────────────────────────
@@ -599,6 +600,8 @@ const db = new Dexie("TrainTrack") as Dexie & {
   groupLessons: EntityTable<GroupLesson, "id">;
   goals: EntityTable<Goal, "id">;
   formDrafts: EntityTable<FormDraft, "id">;
+  /** The ready-made programs, as last read from the server (program_templates): offered offline too. */
+  programTemplates: EntityTable<ProgramTemplate, "id">;
   syncMeta: EntityTable<SyncMeta, "tableName">;
   authMeta: EntityTable<AuthMeta, "key">;
 };
@@ -759,6 +762,11 @@ db.version(12)
       await tx.table("exercises").add({ ...rest, muscleGroup: unspecifiedGroup() ?? "", isCustom: true, sport: "tennis", theme: category, gear: equipment });
     }
   });
+
+// The ready-made programs, kept as read from the server (no copy of them in the code).
+db.version(13).stores({
+  programTemplates: "id, name",
+});
 
 export { db };
 

@@ -1094,7 +1094,11 @@
     "description": "Description",
     "homeFriendly": "Faisable à la maison",
     "published": "Proposé aux utilisateurs",
-    "loadError": "Impossible de charger les programmes types. La migration 023 est-elle appliquée ?"
+    "loadError": "Impossible de charger les programmes types. La migration 023 est-elle appliquée ?",
+    "shelf": "Rayon",
+    "shelfAuto": "Selon son sport et son objectif",
+    "forInjury": "Écrit pour une blessure",
+    "noInjury": "Aucune"
   },
   "cardio": {
     "importGpx": "Importer un fichier de montre (GPX, TCX, FIT)",

@@ -7,7 +7,7 @@ import { ArrowRight, Award, Bike, Plus, ChevronRight, Dumbbell, Flame, Footprint
 import type { Program, Workout } from "@/db";
 import { Link } from "@/i18n/navigation";
 import { KIND_ORDER, programKind, programProgress, type ProgramKind } from "@/lib/programCards";
-import type { ProgramGoal } from "@/lib/programTemplates";
+import type { ProgramGoal, ProgramTemplate } from "@/lib/programTemplates";
 import { programWeek } from "@/lib/programWeek";
 import { programCategory } from "@/lib/programCategories";
 import { cn } from "@/lib/utils";
@@ -42,7 +42,7 @@ export function MyPrograms({
 }: {
   programs: Program[];
   workouts: Pick<Workout, "date" | "title" | "programId" | "programDayIndex">[];
-  catalogue: { name: string; goal: ProgramGoal }[];
+  catalogue: Pick<ProgramTemplate, "name" | "goal" | "category" | "forInjury">[];
   today: string;
   /** The athlete's favourite sport: its programs come first. */
   favorite?: string | null;
@@ -59,7 +59,7 @@ export function MyPrograms({
           program,
           kind: programKind(program, catalogue),
           progress: programProgress(program, workouts),
-          mine: !!favorite && programCategory(program) === favorite,
+          mine: !!favorite && programCategory(program, catalogue) === favorite,
         }))
         .sort(
           (a, b) =>

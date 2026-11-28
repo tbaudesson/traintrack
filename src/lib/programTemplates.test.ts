@@ -1,7 +1,9 @@
 import { readFileSync } from "node:fs";
 import { describe, it, expect } from "vitest";
-import { PROGRAM_TEMPLATES } from "./programTemplates";
 import { planWeeks, programCategory } from "./programCategories";
+import { templatesForTests } from "./templatesForTests";
+
+const PROGRAM_TEMPLATES = templatesForTests();
 
 // A name missing from the library would create a stray custom exercise for
 // every user who starts the program.

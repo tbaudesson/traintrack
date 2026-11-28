@@ -204,8 +204,11 @@ const lessonExercises = [
 ];
 if (lessonExercises.filter((e) => e.sport === "tennis").length !== 35 || lessonExercises.filter((e) => e.sport === "vaulting").length !== 25) throw new Error("088/092: the lesson exercises were not read");
 
-// A signed-in user as the app caches it, a profile, and the exercise library.
-await page.evaluate(async ({ user, libraryRows, lessonExercises }) => {
+// The ready-made programs, as program_templates holds them (migration 098 applied).
+const programTemplates = JSON.parse(readFileSync("e2e/fixtures/program_templates.json", "utf8"));
+
+// A signed-in user as the app caches it, a profile, the exercise library, and the ready-made programs as read online once.
+await page.evaluate(async ({ user, libraryRows, lessonExercises, programTemplates }) => {
   const db = await new Promise((resolve, reject) => {
     const req = indexedDB.open("TrainTrack");
     req.onsuccess = () => resolve(req.result);
@@ -224,6 +227,12 @@ await page.evaluate(async ({ user, libraryRows, lessonExercises }) => {
   await put("athleteProfiles", {
     userId: user, uuid: "e2e-profile", goals: ["general_fitness"], fitnessLevel: "beginner", equipment: ["dumbbell"],
     trainingDays: [1, 3, 5], trainingTime: "18:30", _dirty: 0, createdAt: now, updatedAt: now,
+  });
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction("programTemplates", "readwrite");
+    for (const t of programTemplates) tx.objectStore("programTemplates").put(t);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
   });
   for (const [i, e] of libraryRows.entries()) {
     await put("exercises", { ...e, isCustom: false, userId: null, uuid: `e2e-ex-${i}`, _dirty: 0, createdAt: now, updatedAt: now });
@@ -247,7 +256,7 @@ await page.evaluate(async ({ user, libraryRows, lessonExercises }) => {
       durationSec: r.min * 60, distanceM: r.min * 180, _dirty: 0, createdAt: now, updatedAt: now,
     });
   }
-}, { user: USER, libraryRows, lessonExercises });
+}, { user: USER, libraryRows, lessonExercises, programTemplates });
 
 // The injury references as the app keeps them after reading them online once (migration 058).
 {

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { customisedName, programFingerprint, programOrigin } from "./programOrigin";
-import { PROGRAM_TEMPLATES } from "./programTemplates";
+import { templatesForTests } from "./templatesForTests";
+
+const PROGRAM_TEMPLATES = templatesForTests();
 
 const readyMade = new Set(["Débuter la course : 5 km"]);
 const me = "me";

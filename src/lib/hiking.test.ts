@@ -1,9 +1,11 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { HIKING_TEMPLATES } from "./hikingTemplates";
 import { programCategory } from "./programCategories";
 import { formatPace } from "./cardio";
 import { cardioSportOf, kindOf } from "./activityProfile";
+import { familyForTests } from "./templatesForTests";
+
+const HIKING_TEMPLATES = familyForTests("HIKING_TEMPLATES");
 
 describe("hiking", () => {
   it("is an endurance sport of its own, read in km/h", () => {

@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { programEquipmentFromMigrations } from "./injuryGuidanceFromMigrations";
-import { TRX_TEMPLATES } from "./trxTemplates";
 import { buildIntervalSession } from "./intervals";
 import { timedFromMigrations } from "./injuryGuidanceFromMigrations";
 
@@ -8,9 +7,12 @@ const TIMED = timedFromMigrations();
 import { missingEquipment } from "./programEquipment";
 import { programCategory } from "./programCategories";
 import { recommendPrograms } from "./onboarding";
-import { PROGRAM_TEMPLATES } from "./programTemplates";
 import { injuryRulesFromMigrations } from "./injuryGuidanceFromMigrations";
 import { libraryFromMigrations } from "./libraryFromMigrations";
+import { templatesForTests, familyForTests } from "./templatesForTests";
+
+const TRX_TEMPLATES = familyForTests("TRX_TEMPLATES");
+const PROGRAM_TEMPLATES = templatesForTests();
 
 const EQ = programEquipmentFromMigrations();
 

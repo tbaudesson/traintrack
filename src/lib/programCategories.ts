@@ -1,5 +1,5 @@
 import type { ProgramDay, Sport } from "@/db";
-import { PROGRAM_TEMPLATES, type ProgramGoal, type ProgramTemplate } from "./programTemplates";
+import type { ProgramGoal, ProgramTemplate } from "./programTemplates";
 import type { PainArea } from "./pain";
 import { SPORT_DEFS } from "./disciplines";
 
@@ -25,21 +25,6 @@ export function onShelf(program: { structure?: ProgramDay[] }, own: ProgramCateg
   return !OUTING_SHELVES.has(shelf) || (program.structure ?? []).some((d) => !!d.cardio);
 }
 
-/** Strengthening plans for a sport, filed with that sport (ids of the built-in list, without the language). */
-const BY_ID: Record<string, ProgramCategory> = {
-  "renfo-coureur": "running",
-  "renfo-trail": "running",
-  "renfo-nageur": "swimming",
-  "renfo-cycliste": "cycling",
-  "voltige-prepa": "vaulting",
-  "poids-du-corps-3": "callisthenics",
-  "callisthenics-debutant": "callisthenics",
-  "callisthenics-intermediaire": "callisthenics",
-  "callisthenics-avance": "callisthenics",
-  "trx-debutant": "trx",
-  "trx-intermediaire": "trx",
-};
-
 const BY_GOAL: Record<ProgramGoal, ProgramCategory> = {
   hypertrophy: "bodybuilding",
   strength: "strength",
@@ -56,37 +41,36 @@ function mainSport(days: ProgramDay[]): Sport | undefined {
   return [...new Set(sports)].sort((a, b) => count(b) - count(a))[0];
 }
 
+/** What the catalogue tells of a program: its shelf and the injury it is written for. */
+type Catalogue = Pick<ProgramTemplate, "name" | "goal" | "category" | "forInjury">[];
+
+const isShelf = (c: string | undefined): c is ProgramCategory => !!c && (CATEGORY_ORDER as string[]).includes(c);
+
 /**
  * The injured area a program was written for: its own mark, or that of the
- * built-in program of the same name (a catalogue row read from the server has
- * no such mark).
+ * ready-made program of the same name.
  */
-export function injuryAreaOf(program: { name: string; forInjury?: PainArea }): PainArea | null {
-  return program.forInjury ?? PROGRAM_TEMPLATES.find((t) => t.name === program.name)?.forInjury ?? null;
+export function injuryAreaOf(program: { name: string; forInjury?: PainArea }, catalogue: Catalogue = []): PainArea | null {
+  return program.forInjury ?? catalogue.find((t) => t.name === program.name)?.forInjury ?? null;
 }
 
 /**
- * The shelf of a program: the injury shelf for one written for an injury,
- * else its sport when it has sessions of one, the sport a strengthening plan
- * is for, else its goal. A program of one's own is filed
- * by the ready-made program it was made from (same name); null when it was
- * built from scratch and has no sport.
+ * The shelf of a program: the one it says (a ready-made program), else that
+ * of the ready-made program of the same name it was made from; else the
+ * injury shelf for one written for an injury, its sport when it has
+ * sessions of one, else its goal. Null when it was built from scratch and
+ * has no sport.
  */
 export function programCategory(
-  program: { name: string; structure?: ProgramDay[]; goal?: ProgramGoal; forInjury?: PainArea },
-  builtIn: Pick<ProgramTemplate, "id" | "name" | "goal">[] = PROGRAM_TEMPLATES
+  program: { name: string; structure?: ProgramDay[]; goal?: ProgramGoal; category?: string; forInjury?: PainArea },
+  catalogue: Catalogue = []
 ): ProgramCategory | null {
-  if (injuryAreaOf(program)) return "injury";
+  const known = catalogue.find((t) => t.name === program.name);
+  const said = program.category ?? known?.category;
+  if (isShelf(said)) return said;
+  if (injuryAreaOf(program, catalogue)) return "injury";
   const sport = mainSport(program.structure ?? []);
   if (sport && BY_SPORT[sport]) return BY_SPORT[sport]!;
-  const known = builtIn.find((t) => t.name === program.name);
-  // The shelf of a built-in program, by its id: a catalogue row read from the
-  // server has another id, so the built-in list of the same name is asked too.
-  const id = [...builtIn, ...PROGRAM_TEMPLATES]
-    .filter((t) => t.name === program.name)
-    .map((t) => t.id.replace(/-(en|de)$/, ""))
-    .find((i) => BY_ID[i]);
-  if (id) return BY_ID[id];
   const goal = program.goal ?? known?.goal;
   return goal ? BY_GOAL[goal] : null;
 }

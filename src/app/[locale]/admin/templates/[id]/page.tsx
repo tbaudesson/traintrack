@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Loader2, Save } from "lucide-react";
 import type { ProgramDay } from "@/db";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,9 +12,11 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import type { ProgramGoal, ProgramLevel } from "@/lib/programTemplates";
-import { getTemplate, updateTemplate, type AdminTemplate } from "@/lib/templateService";
-import { PLAN_LOCALES, type PlanLocale } from "@/lib/enduranceText";
+import { PLAN_LOCALES, type PlanLocale, type ProgramGoal, type ProgramLevel } from "@/lib/programTemplates";
+import { getTemplate, templatesChanged, updateTemplate, type AdminTemplate } from "@/lib/templateService";
+import { CATEGORY_ORDER } from "@/lib/programCategories";
+import { usePainAreas } from "@/hooks/useReferences";
+import { itemLabel } from "@/lib/references";
 
 const GOALS: ProgramGoal[] = ["strength", "hypertrophy", "endurance", "fat_loss", "general"];
 const LEVELS: ProgramLevel[] = ["beginner", "intermediate", "advanced"];
@@ -24,6 +26,9 @@ const SELECT = "mt-1 h-11 w-full rounded-lg border border-input bg-card px-3 tex
 export default function TemplateEditorPage() {
   const t = useTranslations("adminTemplates");
   const tl = useTranslations("templates");
+  const tc = useTranslations("catalog");
+  const locale = useLocale();
+  const areas = (usePainAreas() ?? []).filter((a) => !a.unspecified);
   const router = useRouter();
   const { isAdmin, loading } = useAuth();
   const id = useParams().id as string;
@@ -55,6 +60,8 @@ export default function TemplateEditorPage() {
     setError(null);
     try {
       await updateTemplate(id, { ...item, name: item.name.trim() || t("untitled"), structure: days });
+      // The devices keep the catalogue: this one reads it again at once.
+      void templatesChanged();
       router.push("/admin");
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -106,6 +113,23 @@ export default function TemplateEditorPage() {
                 {tl("level")}
                 <select value={item.level} onChange={(e) => patch({ level: e.target.value as ProgramLevel })} className={SELECT}>
                   {LEVELS.map((l) => <option key={l} value={l}>{tl(`level_${l}`)}</option>)}
+                </select>
+              </label>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block text-sm font-medium">
+                {t("shelf")}
+                <select value={item.category ?? ""} onChange={(e) => patch({ category: e.target.value || undefined })} className={SELECT}>
+                  <option value="">{t("shelfAuto")}</option>
+                  {CATEGORY_ORDER.map((c) => <option key={c} value={c}>{tc(`cat_${c}`)}</option>)}
+                </select>
+              </label>
+              <label className="block text-sm font-medium">
+                {t("forInjury")}
+                <select value={item.forInjury ?? ""} onChange={(e) => patch({ forInjury: e.target.value || undefined })} className={SELECT}>
+                  <option value="">{t("noInjury")}</option>
+                  {item.forInjury && !areas.some((a) => a.id === item.forInjury) && <option value={item.forInjury}>{item.forInjury}</option>}
+                  {areas.map((a) => <option key={a.id} value={a.id}>{itemLabel(areas, a.id, locale)}</option>)}
                 </select>
               </label>
             </div>

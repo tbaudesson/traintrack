@@ -1094,7 +1094,11 @@
     "description": "Description",
     "homeFriendly": "Can be done at home",
     "published": "Offered to users",
-    "loadError": "Could not load templates. Has migration 023 been applied?"
+    "loadError": "Could not load templates. Has migration 023 been applied?",
+    "shelf": "Shelf",
+    "shelfAuto": "From its sport and goal",
+    "forInjury": "Written for an injury",
+    "noInjury": "None"
   },
   "cardio": {
     "importGpx": "Import a watch file (GPX, TCX, FIT)",

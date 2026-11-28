@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { INJURY_TEMPLATES } from "./injuryTemplates";
 import { programLoad } from "./injuries";
 import { injuryAreasOf, parsePainAreas } from "./references";
 import { settingFromMigrations } from "./settingsFromMigrations";
@@ -7,8 +6,11 @@ import { settingFromMigrations } from "./settingsFromMigrations";
 // The areas an injury can be on, as migration 094 lists them.
 const INJURY_AREAS = injuryAreasOf(parsePainAreas(settingFromMigrations("094_pain_areas.sql", "pain_areas")));
 import { injuryAreaOf, programCategory, shelves } from "./programCategories";
-import { PROGRAM_TEMPLATES } from "./programTemplates";
 import { injuryRulesFromMigrations } from "./injuryGuidanceFromMigrations";
+import { templatesForTests, familyForTests } from "./templatesForTests";
+
+const INJURY_TEMPLATES = familyForTests("INJURY_TEMPLATES");
+const PROGRAM_TEMPLATES = templatesForTests();
 
 const INJURY_RULES = injuryRulesFromMigrations();
 
@@ -42,9 +44,10 @@ describe("programs for an injury", () => {
   it("sit on the injury shelf, also as a catalogue row read from the server", () => {
     const fr = INJURY_TEMPLATES.find((t) => t.id === "blessure-knee")!;
     expect(programCategory(fr)).toBe("injury");
+    // One's own program made from it: known by its name in the catalogue.
     const row = { name: fr.name, structure: fr.structure, goal: fr.goal };
-    expect(injuryAreaOf(row)).toBe("knee");
-    expect(programCategory(row)).toBe("injury");
+    expect(injuryAreaOf(row, PROGRAM_TEMPLATES)).toBe("knee");
+    expect(programCategory(row, PROGRAM_TEMPLATES)).toBe("injury");
     expect(shelves(PROGRAM_TEMPLATES.filter((t) => t.locale === "fr")).get("injury")).toHaveLength(9);
   });
 });

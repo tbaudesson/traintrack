@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { programEquipmentFromMigrations } from "./injuryGuidanceFromMigrations";
-import { PROGRAM_TEMPLATES } from "./programTemplates";
 import { defaultTrainingDays, recommendPrograms } from "./onboarding";
+import { templatesForTests } from "./templatesForTests";
+
+const PROGRAM_TEMPLATES = templatesForTests();
 
 const EQ = programEquipmentFromMigrations();
 

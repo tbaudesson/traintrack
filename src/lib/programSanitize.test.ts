@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { sanitizeStructure } from "./programSanitize";
-import { PROGRAM_TEMPLATES } from "./programTemplates";
+import { templatesForTests } from "./templatesForTests";
+
+const PROGRAM_TEMPLATES = templatesForTests();
 
 describe("sanitizeStructure", () => {
   it("keeps every ready-made program as it is", () => {
