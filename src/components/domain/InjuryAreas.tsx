@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { injuryAreasOf } from "@/lib/references";
+import { usePainAreaName, usePainAreas } from "@/hooks/useReferences";
 import { useTranslations } from "next-intl";
 import { Bandage } from "lucide-react";
 import { useInjuryGuidance } from "@/hooks/useInjuryGuidance";
 import { useAthleteProfile, updateTrainingSchedule } from "@/hooks/useAthleteProfile";
-import { INJURY_AREAS, injuryState, returnPhases, toggleInjury } from "@/lib/injuries";
+import { injuryState, returnPhases, toggleInjury } from "@/lib/injuries";
 import { useFormat } from "@/lib/format";
 import { localDate } from "@/lib/dates";
 import { cn } from "@/lib/utils";
@@ -19,7 +21,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
  */
 export function InjuryAreasPicker() {
   const tinj = useTranslations("injuries");
-  const tpain = useTranslations("pain");
+  const areaName = usePainAreaName();
+  const painAreas = usePainAreas();
   const { short } = useFormat();
   const athlete = useAthleteProfile();
   const guidance = useInjuryGuidance();
@@ -29,7 +32,7 @@ export function InjuryAreasPicker() {
   return (
     <div>
       <div className="flex flex-wrap gap-2">
-        {INJURY_AREAS.map((area) => {
+        {injuryAreasOf(painAreas).map((area) => {
           const injury = injuries.find((i) => i.area === area);
           const state = injuryState(guidance, injuries, area, today);
           const phase = state === "returning" ? returnPhases(guidance, [injury!], today)[0] : null;
@@ -48,7 +51,7 @@ export function InjuryAreasPicker() {
                     : "border-border text-muted-foreground hover:border-rose-300"
               )}
             >
-              {tpain(`area_${area}`)}
+              {areaName(area)}
               {state === "injured" && <span className="ml-1 text-xs font-normal opacity-90">· {tinj("since", { date: short(injury!.since) })}</span>}
               {phase && <span className="ml-1 text-xs font-normal opacity-90">· {tinj("returningChip", { week: phase.week, weeks: guidance?.return.loads.length ?? phase.week })}</span>}
             </button>

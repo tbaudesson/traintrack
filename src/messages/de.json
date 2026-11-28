@@ -1248,16 +1248,6 @@
     "disclaimer": "Dein Coach sieht diese Meldung. TrainTrack ersetzt keinen ärztlichen Rat.",
     "badge": "{area}: Schmerz {level}/10",
     "coachTitle": "Gemeldete Beschwerden (30 Tage)",
-    "area_shoulder": "Schulter",
-    "area_elbow": "Ellbogen",
-    "area_wrist": "Handgelenk",
-    "area_neck": "Nacken",
-    "area_upper_back": "Oberer Rücken",
-    "area_lower_back": "Unterer Rücken",
-    "area_hip": "Hüfte",
-    "area_knee": "Knie",
-    "area_ankle": "Knöchel",
-    "area_other": "Sonstiges",
     "reportShort": "Schmerz"
   },
   "importHistory": {
@@ -3173,7 +3163,10 @@
     "choice_restWarmups": "Pause nach einem Aufwärmsatz (Sekunden)",
     "choice_poolLengths": "Beckenlängen (Meter)",
     "choice_cardioMinutes": "Minuten einer Plan-B-Einheit",
-    "choice_intensitySteps": "Intensität einer Einheit (%)"
+    "choice_intensitySteps": "Intensität einer Einheit (%)",
+    "list_areas": "Körperbereiche",
+    "areasIntro": "Die Bereiche eines Schmerzes oder einer Verletzung, in der angebotenen Reihenfolge. Die Körperkarte markiert eine Verletzung dort, wo ihre Zeichnung das Gelenk kennt; ein neuer Bereich erscheint überall sonst.",
+    "areaUnspecified": "„Woanders“: gemeldet, nie als Verletzung erfasst"
   },
   "lessons": {
     "title": "Gruppenstunden · Trainerheft",

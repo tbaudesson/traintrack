@@ -1,6 +1,7 @@
 "use client";
 
 import { useGoalText } from "@/components/domain/GoalsSection";
+import { usePainAreaName } from "@/hooks/useReferences";
 import { useMemo, type ReactNode } from "react";
 import { useInjuryGuidance } from "@/hooks/useInjuryGuidance";
 import { useTranslations } from "next-intl";
@@ -28,7 +29,7 @@ import { useFormat } from "@/lib/format";
 export default function CoachDashboardPage() {
   const t = useTranslations("coach");
   const tt = useTranslations("teams");
-  const tpain = useTranslations("pain");
+  const areaName = usePainAreaName();
   const xl = useExerciseLabel();
   const goalText = useGoalText();
   const { num, short } = useFormat();
@@ -124,7 +125,7 @@ export default function CoachDashboardPage() {
                 return (
                   <Row key={a.userId} userId={a.userId} name={a.name} teams={a.teams}>
                     <span className={cn("text-xs font-semibold", pain.level >= severe ? "text-rose-600 dark:text-rose-400" : "text-amber-600 dark:text-amber-400")}>
-                      {tpain(`area_${pain.area}`)} {pain.level}/10 · {xl(pain.exerciseName)} · {short(pain.date)}
+                      {areaName(pain.area)} {pain.level}/10 · {xl(pain.exerciseName)} · {short(pain.date)}
                     </span>
                   </Row>
                 );

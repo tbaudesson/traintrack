@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { INJURY_TEMPLATES } from "./injuryTemplates";
-import { INJURY_AREAS, programLoad } from "./injuries";
+import { programLoad } from "./injuries";
+import { injuryAreasOf, parsePainAreas } from "./references";
+import { settingFromMigrations } from "./settingsFromMigrations";
+
+// The areas an injury can be on, as migration 094 lists them.
+const INJURY_AREAS = injuryAreasOf(parsePainAreas(settingFromMigrations("094_pain_areas.sql", "pain_areas")));
 import { injuryAreaOf, programCategory, shelves } from "./programCategories";
 import { PROGRAM_TEMPLATES } from "./programTemplates";
 import { injuryRulesFromMigrations } from "./injuryGuidanceFromMigrations";

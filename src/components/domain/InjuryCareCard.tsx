@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePainAreaName } from "@/hooks/useReferences";
 import { useLocale, useTranslations } from "next-intl";
 import { Bandage, Stethoscope } from "lucide-react";
 import type { Injury } from "@/lib/injuries";
@@ -19,14 +20,14 @@ import { DeclareInjuryButton } from "@/components/domain/InjuryAreas";
  */
 export function InjuryCareCard({ guidance, injuries, pains, today, declare = true }: { guidance: InjuryGuidance; injuries: Injury[]; pains: PainReport[]; today: string; declare?: boolean }) {
   const t = useTranslations("injuryCare");
-  const tpain = useTranslations("pain");
+  const areaName = usePainAreaName();
   const locale = useLocale() as "fr" | "en" | "de";
   const mobility = useMobilityGuidance();
   const [demo, setDemo] = useState<{ name: string; video: string | null; cue?: string } | null>(null);
   const persistent = persistentPains(guidance, pains, today);
   const injured = activeInjuries(injuries).map((i) => i.area);
   if (!persistent.length && !injured.length) return null;
-  const area = (a: string) => tpain(`area_${a}`);
+  const area = (a: string) => areaName(a);
 
   return (
     <section className="t-surface space-y-3 rounded-2xl p-4 ring-1 ring-foreground/5" aria-labelledby="injury-care-title">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
+import { usePainAreaName } from "@/hooks/useReferences";
 import { useTranslations } from "next-intl";
 import { Bandage, ChevronLeft, ChevronRight, ClipboardCheck, Trophy, X } from "lucide-react";
 import type { Exercise, Workout, WorkoutSet } from "@/db";
@@ -43,7 +44,7 @@ export function WeeklyReportCard({
 }) {
   const t = useTranslations("report");
   const tc = useTranslations("cardio");
-  const tpain = useTranslations("pain");
+  const areaName = usePainAreaName();
   const { num, short } = useFormat();
   const xl = useExerciseLabel();
   const [monday, setMonday] = useState(lastMonday);
@@ -152,7 +153,7 @@ export function WeeklyReportCard({
           {report.pains.length > 0 && (
             <p className="flex items-center gap-1.5 text-sm text-amber-700 dark:text-amber-300">
               <Bandage className="h-4 w-4 shrink-0" aria-hidden="true" />
-              {t("pains")} {report.pains.map((p) => `${tpain(`area_${p.area}`)} ${p.level}/10`).join(", ")}
+              {t("pains")} {report.pains.map((p) => `${areaName(p.area)} ${p.level}/10`).join(", ")}
             </p>
           )}
         </>

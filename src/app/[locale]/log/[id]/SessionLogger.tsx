@@ -2,7 +2,7 @@
 
 import { useAreaLabel } from "@/hooks/useAreaLabel";
 import { itemLabel, loadStep, needsNoGear } from "@/lib/references";
-import { useChoices, useEquipmentList } from "@/hooks/useReferences";
+import { useChoices, useEquipmentList, usePainAreaName } from "@/hooks/useReferences";
 import { isRestrictionKey } from "@/lib/restrictions";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useAvoidedAreas, useInjuryRules } from "@/hooks/useInjuryRules";
@@ -87,6 +87,7 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
   const tp = useTranslations("programs");
   const tc = useTranslations("common");
   const tpain = useTranslations("pain");
+  const areaName = usePainAreaName();
   const xl = useExerciseLabel();
   const locale = useLocale();
   const equipmentList = useEquipmentList();
@@ -1149,7 +1150,7 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
                   >
                     <Bandage className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                     {t(severePain ? "painSevere" : "painRecent", {
-                      area: tpain(`area_${pain.area}`),
+                      area: areaName(pain.area),
                       level: pain.level,
                       date: short(pain.date),
                     })}
@@ -1160,7 +1161,7 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
                   <p className="flex items-start gap-1.5 rounded-lg bg-amber-50 p-2 text-sm text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
                     <Bandage className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                     {tinj(comeback.load < 1 ? "returnLine" : "returnLastWeek", {
-                      area: locale === "de" ? tpain(`area_${comeback.area}`) : tpain(`area_${comeback.area}`).toLowerCase(),
+                      area: locale === "de" ? areaName(comeback.area) : areaName(comeback.area).toLowerCase(),
                       week: comeback.week,
                       weeks: injuryG?.return.loads.length ?? comeback.week,
                       percent: Math.round((1 - comeback.load) * 100),

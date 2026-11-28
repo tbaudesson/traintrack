@@ -1248,16 +1248,6 @@
     "disclaimer": "Your coach will see this report. TrainTrack does not replace medical advice.",
     "badge": "{area}: pain {level}/10",
     "coachTitle": "Pain reported (30 days)",
-    "area_shoulder": "Shoulder",
-    "area_elbow": "Elbow",
-    "area_wrist": "Wrist",
-    "area_neck": "Neck",
-    "area_upper_back": "Upper back",
-    "area_lower_back": "Lower back",
-    "area_hip": "Hip",
-    "area_knee": "Knee",
-    "area_ankle": "Ankle",
-    "area_other": "Other",
     "reportShort": "Pain"
   },
   "importHistory": {
@@ -3173,7 +3163,10 @@
     "choice_restWarmups": "Rest after a warm-up set (seconds)",
     "choice_poolLengths": "Pool lengths (metres)",
     "choice_cardioMinutes": "Minutes of a plan B outing",
-    "choice_intensitySteps": "A session's intensity (%)"
+    "choice_intensitySteps": "A session's intensity (%)",
+    "list_areas": "Body areas",
+    "areasIntro": "The areas of a pain or an injury, in the order offered. The body map marks an injury where its drawing knows the joint; an area added shows everywhere else.",
+    "areaUnspecified": "“Elsewhere”: reported, never declared as an injury"
   },
   "lessons": {
     "title": "Group lessons · coach's notebook",

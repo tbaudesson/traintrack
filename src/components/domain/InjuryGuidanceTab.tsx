@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { injuryAreasOf } from "@/lib/references";
+import { usePainAreaName, usePainAreas } from "@/hooks/useReferences";
 import { useLocale, useTranslations } from "next-intl";
 import { Bandage, Check, Loader2, Minus, Plus } from "lucide-react";
 import { getAppSettings, setAppSetting } from "@/lib/adminService";
-import { INJURY_AREAS } from "@/lib/injuries";
 import { INJURY_GUIDANCE_KEY, parseInjuryGuidance, type InjuryGuidance } from "@/lib/injuryGuidance";
 import { useMobilityGuidance } from "@/hooks/useMobilityGuidance";
 import { AreaRulesEditor } from "@/components/domain/AreaRulesEditor";
@@ -22,7 +23,8 @@ import { Input } from "@/components/ui/input";
 export function InjuryGuidanceTab() {
   const t = useTranslations("injuryGuidance");
   const ts = useTranslations("sync");
-  const tpain = useTranslations("pain");
+  const areaName = usePainAreaName();
+  const painAreas = usePainAreas();
   const locale = useLocale() as "fr" | "en" | "de";
   const [g, setG] = useState<InjuryGuidance | null>(null);
   // The moves the references may name: the warm-ups and stretches the admin keeps.
@@ -121,11 +123,11 @@ export function InjuryGuidanceTab() {
         <section className="space-y-3">
           <h3 className="text-sm font-semibold">{t("gentleTitle")}</h3>
           <p className="text-xs text-muted-foreground">{t("gentleHint")}</p>
-          {INJURY_AREAS.map((area) => {
+          {injuryAreasOf(painAreas).map((area) => {
             const chosen = g.gentle[area] ?? [];
             return (
               <div key={area} className="space-y-1">
-                <p className="text-sm font-medium">{tpain(`area_${area}`)}</p>
+                <p className="text-sm font-medium">{areaName(area)}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {moves.filter((m) => g.mobility[m.key]?.[area] !== "avoid").map((m) => {
                     const on = chosen.includes(m.key);
@@ -155,7 +157,7 @@ export function InjuryGuidanceTab() {
               <summary className="cursor-pointer text-sm">
                 {m.name[locale]}
                 <span className="ml-2 text-xs text-muted-foreground">
-                  {Object.entries(g.mobility[m.key] ?? {}).map(([a, l]) => `${tpain(`area_${a}`)} ${l === "avoid" ? "✕" : "!"}`).join(" · ")}
+                  {Object.entries(g.mobility[m.key] ?? {}).map(([a, l]) => `${areaName(a)} ${l === "avoid" ? "✕" : "!"}`).join(" · ")}
                 </span>
               </summary>
               <div className="pt-2">

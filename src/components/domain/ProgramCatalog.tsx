@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { injuryAreasOf } from "@/lib/references";
+import { usePainAreaName, usePainAreas } from "@/hooks/useReferences";
 import { useInjuryRules } from "@/hooks/useInjuryRules";
 import { useTranslations } from "next-intl";
 import {
@@ -9,7 +11,7 @@ import {
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { CATEGORY_ORDER, injuryAreaOf, planWeeks, programCategory, shelves, type ProgramCategory } from "@/lib/programCategories";
-import { activeInjuries, INJURY_AREAS, programLoad } from "@/lib/injuries";
+import { activeInjuries, programLoad } from "@/lib/injuries";
 import type { PainArea } from "@/lib/pain";
 import { useInjuries } from "@/hooks/useAthleteProfile";
 import type { ProgramLevel, ProgramTemplate } from "@/lib/programTemplates";
@@ -113,7 +115,8 @@ export function ProgramCatalog({
 }) {
   const t = useTranslations("catalog");
   const tt = useTranslations("templates");
-  const tpain = useTranslations("pain");
+  const areaName = usePainAreaName();
+  const painAreas = usePainAreas();
   const [open, setOpen] = useState<ProgramCategory | null>(null);
   const [filter, setFilter] = useState<ProgramLevel | null>(null);
   const byShelf = useMemo(() => shelves(templates, level), [templates, level]);
@@ -199,7 +202,7 @@ export function ProgramCatalog({
               key={c}
               category={c}
               label={t(`cat_${c}`)}
-              detail={c === "injury" ? (injured ? tpain(`area_${injured}`) : t("injuryHint")) : t("count", { count: byShelf.get(c)!.length })}
+              detail={c === "injury" ? (injured ? areaName(injured) : t("injuryHint")) : t("count", { count: byShelf.get(c)!.length })}
               mine={favorite === c}
               onClick={() => {
                 setFilter(null);
@@ -254,13 +257,13 @@ export function ProgramCatalog({
               {open === "injury" ? (
                 <>
                   <div role="group" aria-label={t("injuryArea")} className="flex flex-wrap gap-2">
-                    {INJURY_AREAS.map((a) => (
-                      <Choice key={a} on={area === a} onClick={() => setArea(a)}>{tpain(`area_${a}`)}</Choice>
+                    {injuryAreasOf(painAreas).map((a) => (
+                      <Choice key={a} on={area === a} onClick={() => setArea(a)}>{areaName(a)}</Choice>
                     ))}
                   </div>
                   <p className="text-xs text-muted-foreground">{t("injuryCare")}</p>
                   <ul className="space-y-2">{forArea.map((tpl) => item(tpl))}</ul>
-                  <h3 className="pt-1 text-sm font-semibold">{t("injuryOthers", { area: tpain(`area_${area}`) })}</h3>
+                  <h3 className="pt-1 text-sm font-semibold">{t("injuryOthers", { area: areaName(area) })}</h3>
                   {fitting.length ? (
                     <ul className="space-y-2">{fitting.map(({ tpl, load }) => item(tpl, load === "caution"))}</ul>
                   ) : (

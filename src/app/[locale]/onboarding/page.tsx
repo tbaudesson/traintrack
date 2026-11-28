@@ -1,7 +1,8 @@
 "use client";
 
 import { saveSportChoice } from "@/hooks/useSportChoice";
-import { useEquipmentList } from "@/hooks/useReferences";
+import { injuryAreasOf } from "@/lib/references";
+import { useEquipmentList, usePainAreaName, usePainAreas } from "@/hooks/useReferences";
 import { equipmentWith, itemLabel } from "@/lib/references";
 import { useMemo, useState } from "react";
 import { useProgramEquipment } from "@/hooks/useProgramEquipment";
@@ -14,7 +15,6 @@ import { createProgram } from "@/hooks/usePrograms";
 import { useProgramTemplates } from "@/lib/templateService";
 import { defaultTrainingDays, GOAL_OF_SPORT, recommendPrograms } from "@/lib/onboarding";
 import { FAVORITE_SPORTS, type FavoriteSport } from "@/lib/appTheme";
-import { INJURY_AREAS } from "@/lib/injuries";
 import type { PainArea } from "@/lib/pain";
 import { CategoryIcon } from "@/components/domain/ProgramCatalog";
 import { forgetJoined, joinedTeam } from "@/lib/inviteService";
@@ -49,7 +49,8 @@ export default function OnboardingPage() {
   const tw = useTranslations("wizard");
   const tl = useTranslations("templates");
   const tcat = useTranslations("catalog");
-  const tpain = useTranslations("pain");
+  const areaName = usePainAreaName();
+  const painAreas = usePainAreas();
   const tdm = useTranslations("displayMode");
   const locale = useLocale();
   const equipmentList = useEquipmentList();
@@ -262,9 +263,9 @@ export default function OnboardingPage() {
               <p className="text-sm font-medium">{tw("injuries")}</p>
               <p className="text-xs text-muted-foreground">{tw("injuriesHint")}</p>
               <div className="flex flex-wrap gap-2">
-                {INJURY_AREAS.map((a) => (
+                {injuryAreasOf(painAreas).map((a) => (
                   <button key={a} onClick={() => toggle(areas, a, setAreas)} aria-pressed={areas.includes(a)} className={chip(areas.includes(a))}>
-                    {tpain(`area_${a}`)}
+                    {areaName(a)}
                   </button>
                 ))}
               </div>

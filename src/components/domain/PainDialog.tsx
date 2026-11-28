@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { usePainAreaName, usePainAreas } from "@/hooks/useReferences";
 import { useInjuryGuidance } from "@/hooks/useInjuryGuidance";
 import { useLocale, useTranslations } from "next-intl";
 import { Bandage, Loader2 } from "lucide-react";
 import { addWorkoutNote } from "@/hooks/useWorkoutNotes";
-import { PAIN_AREAS, type PainArea } from "@/lib/pain";
+import type { PainArea } from "@/lib/pain";
 import type { Injury } from "@/lib/injuries";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,8 @@ export function PainDialog({
   onDeclareInjury?: (area: PainArea) => void;
 }) {
   const t = useTranslations("pain");
+  const areaName = usePainAreaName();
+  const painAreas = usePainAreas();
   const [area, setArea] = useState<PainArea | null>(null);
   const [level, setLevel] = useState<number | null>(null);
   const [note, setNote] = useState("");
@@ -47,7 +50,7 @@ export function PainDialog({
   const severe = useInjuryGuidance()?.pain.severe ?? Infinity;
   // A strong pain on an area not declared yet: offer to declare it as an injury.
   const canDeclare =
-    !!onDeclareInjury && !!injuries && !!area && area !== "other" && level !== null && level >= severe && !injuries.some((i) => i.area === area && !i.healedOn);
+    !!onDeclareInjury && !!injuries && !!area && !painAreas?.find((x) => x.id === area)?.unspecified && level !== null && level >= severe && !injuries.some((i) => i.area === area && !i.healedOn);
 
   async function save(replace: boolean) {
     if (!area || !level) return;
@@ -83,7 +86,7 @@ export function PainDialog({
           <fieldset className="space-y-2">
             <legend className="text-sm font-medium">{t("where")}</legend>
             <div className="flex flex-wrap gap-2">
-              {PAIN_AREAS.map((a) => (
+              {(painAreas ?? []).map(({ id: a }) => (
                 <button
                   key={a}
                   type="button"
@@ -94,7 +97,7 @@ export function PainDialog({
                     area === a ? "border-accent-600 bg-accent-600 text-white" : "border-border text-muted-foreground"
                   )}
                 >
-                  {t(`area_${a}`)}
+                  {areaName(a)}
                 </button>
               ))}
             </div>
@@ -133,7 +136,7 @@ export function PainDialog({
           {canDeclare && (
             <label className="flex items-start gap-2 text-sm">
               <input type="checkbox" checked={declare} onChange={(e) => setDeclare(e.target.checked)} className="mt-0.5 size-4 accent-rose-600" />
-              <span>{tinj("declareFromPain", { area: locale === "de" ? t(`area_${area}`) : t(`area_${area}`).toLowerCase() })}</span>
+              <span>{tinj("declareFromPain", { area: locale === "de" ? areaName(area) : areaName(area).toLowerCase() })}</span>
             </label>
           )}
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { usePainAreaName } from "@/hooks/useReferences";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useLocale, useTranslations } from "next-intl";
 import { Bandage, ChevronLeft, ChevronRight, Loader2, Medal, Printer, Send, Share2, TrendingUp, Trophy } from "lucide-react";
@@ -30,7 +31,7 @@ export function MonthlyReportView({ userId, name }: { userId?: string; name?: st
   /** "running 24 km, swimming 3 000 m": each sport its own distance. */
   const perSport = (list: SportTotals[]) =>
     list.map((x) => `${tc(`sport_${x.sport}`)} ${x.distanceM > 0 ? formatDistance(x.distanceM, x.sport) : formatDuration(x.durationSec)}`).join(", ");
-  const tpain = useTranslations("pain");
+  const areaName = usePainAreaName();
   const locale = useLocale();
   const xl = useExerciseLabel();
   const { num, day } = useFormat();
@@ -175,7 +176,7 @@ export function MonthlyReportView({ userId, name }: { userId?: string; name?: st
             <Block icon={Bandage} title={t("painsTitle", { count: r.pains.length })}>
               {r.pains.map((p, i) => (
                 <li key={i}>
-                  {day(p.date)} · {tpain(`area_${p.area}`)} {p.level}/10{p.exerciseName ? ` · ${xl(p.exerciseName)}` : ""}
+                  {day(p.date)} · {areaName(p.area)} {p.level}/10{p.exerciseName ? ` · ${xl(p.exerciseName)}` : ""}
                 </li>
               ))}
             </Block>

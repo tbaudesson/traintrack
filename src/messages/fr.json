@@ -1248,16 +1248,6 @@
     "disclaimer": "Ton coach verra ce signalement. TrainTrack ne remplace pas un avis médical.",
     "badge": "{area} : douleur {level}/10",
     "coachTitle": "Gênes signalées (30 jours)",
-    "area_shoulder": "Épaule",
-    "area_elbow": "Coude",
-    "area_wrist": "Poignet",
-    "area_neck": "Nuque",
-    "area_upper_back": "Haut du dos",
-    "area_lower_back": "Bas du dos",
-    "area_hip": "Hanche",
-    "area_knee": "Genou",
-    "area_ankle": "Cheville",
-    "area_other": "Autre",
     "reportShort": "Douleur"
   },
   "importHistory": {
@@ -3173,7 +3163,10 @@
     "choice_restWarmups": "Repos après une série d’échauffement (secondes)",
     "choice_poolLengths": "Longueurs de bassin (mètres)",
     "choice_cardioMinutes": "Durées d’une sortie du plan B (minutes)",
-    "choice_intensitySteps": "Intensité d’une séance (%)"
+    "choice_intensitySteps": "Intensité d’une séance (%)",
+    "list_areas": "Zones du corps",
+    "areasIntro": "Les zones d’une douleur ou d’une blessure, dans l’ordre proposé. La carte du corps marque une blessure là où son dessin connaît l’articulation ; une zone ajoutée apparaît partout ailleurs.",
+    "areaUnspecified": "« Ailleurs » : signalée, jamais déclarée comme blessure"
   },
   "lessons": {
     "title": "Cours collectifs · carnet de coach",

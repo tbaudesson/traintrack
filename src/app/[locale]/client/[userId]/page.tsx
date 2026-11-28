@@ -1,6 +1,7 @@
 "use client";
 
 import { useBodyMetrics } from "@/hooks/useBodyMetrics";
+import { usePainAreaName } from "@/hooks/useReferences";
 import { totalVolume as volumeOf } from "@/lib/performance";
 import { useMemo } from "react";
 import { useInjuryGuidance } from "@/hooks/useInjuryGuidance";
@@ -87,6 +88,7 @@ export default function ClientDetailPage() {
 
   const adherence = useTeamAdherence([userId])?.get(userId);
   const tpain = useTranslations("pain");
+  const areaName = usePainAreaName();
   const painHistory = usePainReports(userId);
   const injuryG = useInjuryGuidance();
   const severe = injuryG?.pain.severe ?? Infinity;
@@ -200,7 +202,7 @@ export default function ClientDetailPage() {
                       )}
                     >
                       <Bandage className="h-3.5 w-3.5" aria-hidden="true" />
-                      {tpain(`area_${i.area}`)} · {phase ? tinj("returningChip", { week: phase.week }) : tinj("since", { date: day(i.since) })}
+                      {areaName(i.area)} · {phase ? tinj("returningChip", { week: phase.week }) : tinj("since", { date: day(i.since) })}
                     </span>
                   ))}
                 </div>
@@ -226,7 +228,7 @@ export default function ClientDetailPage() {
                       >
                         {p.level}/10
                       </span>
-                      <span className="font-medium">{tpain(`area_${p.area}`)}</span>
+                      <span className="font-medium">{areaName(p.area)}</span>
                       <span className="text-muted-foreground">· {xl(p.exerciseName)} · {day(p.date)}</span>
                     </p>
                     {p.note && <p className="mt-0.5 text-xs text-muted-foreground">{p.note}</p>}

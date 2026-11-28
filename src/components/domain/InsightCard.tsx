@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { usePainAreaName } from "@/hooks/useReferences";
 import { AlertTriangle, ChevronRight, LineChart, Sparkles, TrendingUp } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useFormat } from "@/lib/format";
@@ -13,7 +14,7 @@ const ICON = { warn: AlertTriangle, good: TrendingUp, info: Sparkles } as const;
 /** The words of an insight, its numbers and dates in the reader's language. */
 export function useInsightWords(exerciseName: (id: number) => string | undefined) {
   const t = useTranslations("insights");
-  const tpain = useTranslations("pain");
+  const areaName = usePainAreaName();
   const tc = useTranslations("cardio");
   const { num, day } = useFormat();
   const xl = useExerciseLabel();
@@ -21,7 +22,7 @@ export function useInsightWords(exerciseName: (id: number) => string | undefined
     const out: Record<string, string | number> = {};
     for (const [k, v] of Object.entries(values)) {
       if (k === "date") out[k] = day(String(v));
-      else if (k === "area") out[k] = tpain(`area_${v}`);
+      else if (k === "area") out[k] = areaName(String(v));
       else if (k === "sport") out[k] = tc(`sport_${v}`);
       else if (k === "ratio") out[k] = num(Number(v), 2);
       else if (typeof v === "number" && k !== "count" && k !== "needed" && k !== "done") out[k] = num(v, Number.isInteger(v) ? 0 : 1);

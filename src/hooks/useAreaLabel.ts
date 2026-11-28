@@ -5,7 +5,7 @@ import { useExerciseLabel } from "@/lib/exerciseNames";
 import { parseRestrictionKey } from "@/lib/restrictions";
 import { groupLabel } from "@/lib/muscles";
 import { useMuscleGroups } from "@/hooks/useMuscleGroups";
-import { useMovements } from "@/hooks/useReferences";
+import { useMovements, usePainAreaName } from "@/hooks/useReferences";
 import { movementShort } from "@/lib/references";
 
 /**
@@ -13,7 +13,7 @@ import { movementShort } from "@/lib/references";
  * of the athlete's restrictions ("overhead movements", "Back Squat").
  */
 export function useAreaLabel(): (area: string) => string {
-  const tp = useTranslations("pain");
+  const areaName = usePainAreaName();
   const tr = useTranslations("restrictions");
   const groups = useMuscleGroups();
   const movementList = useMovements();
@@ -24,12 +24,12 @@ export function useAreaLabel(): (area: string) => string {
     (area: string) => {
       const r = parseRestrictionKey(area);
       const lower = (s: string) => (locale === "de" ? s : s.toLowerCase());
-      if (!r) return lower(tp(`area_${area}`));
+      if (!r) return lower(areaName(area));
       if (r.kind === "movement") return movementShort(movementList, r.value, locale);
       if (r.kind === "muscle") return lower(groupLabel(groups, r.value, locale));
       const e = exercises.find((x) => x.uuid === r.value || x.name === r.value);
       return e ? xl(e.name) : tr("anExercise");
     },
-    [tp, tr, groups, movementList, locale, exercises, xl]
+    [areaName, tr, groups, movementList, locale, exercises, xl]
   );
 }

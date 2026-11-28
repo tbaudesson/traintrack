@@ -1,6 +1,7 @@
 "use client";
 
 import { useTimedGuidance } from "@/hooks/useTimedGuidance";
+import { usePainAreaName } from "@/hooks/useReferences";
 import { useBoxingGuidance } from "@/hooks/useBoxingGuidance";
 import { useMuscleGroups } from "@/hooks/useMuscleGroups";
 import { unsortedIds, wholeBodyIds } from "@/lib/muscles";
@@ -66,7 +67,7 @@ export default function MobilityPage() {
   const muscleGroups = useMuscleGroups();
   const readySec = timed?.getReadySec ?? 0;
   const tinj = useTranslations("injuries");
-  const tpain = useTranslations("pain");
+  const areaName = usePainAreaName();
   const locale = useLocale();
   const [link, setLink] = useState<{ mode: MobilityMode; workoutId?: number; minutes?: number } | null>(null);
   const [mode, setMode] = useState<MobilityMode>("warmup");
@@ -134,7 +135,7 @@ export default function MobilityPage() {
     [mobility, mode, minutes, muscles, locale, injuries, mobilityRules, muscleGroups]
   );
   const leftOut = (mobility?.moves ?? []).filter((e) => e.mode === mode && mobilityWarning(mobilityRules, e.key, injuries)?.level === "avoid").length;
-  const areaWords = (areas: string[]) => areas.map((a) => (locale === "de" ? tpain(`area_${a}`) : tpain(`area_${a}`).toLowerCase())).join(", ");
+  const areaWords = (areas: string[]) => areas.map((a) => (locale === "de" ? areaName(a) : areaName(a).toLowerCase())).join(", ");
   const back = link?.workoutId ? sessionHref(link.workoutId) : "/";
 
   if (!link) return <PageHeader title={t("title")} showBack />;

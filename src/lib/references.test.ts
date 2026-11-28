@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { equipmentWith, itemLabel, loadStep, barOf, movementShort, needsNoGear, parseChoices, parseEquipment, parseMovements, parseSwimStrokes, skipsWarmup } from "./references";
+import { injuryAreasOf, parsePainAreas, equipmentWith, itemLabel, loadStep, barOf, movementShort, needsNoGear, parseChoices, parseEquipment, parseMovements, parseSwimStrokes, skipsWarmup } from "./references";
 import { equipmentOnDeviceForTests, settingFromMigrations } from "./settingsFromMigrations";
 import { libraryFromMigrations } from "./libraryFromMigrations";
 import { programEquipmentFromMigrations } from "./injuryGuidanceFromMigrations";
@@ -51,3 +51,14 @@ describe("the lists of migration 093", () => {
     expect(parseChoices(JSON.stringify({ ...CHOICES, poolLengths: [] }))).toBeNull();
   });
 });
+
+describe("the body's areas of migration 094", () => {
+  const AREAS = parsePainAreas(settingFromMigrations("094_pain_areas.sql", "pain_areas"))!;
+  it("name every area in three languages; the unsorted one is never an injury", () => {
+    expect(AREAS.map((a) => a.id)).toEqual(["shoulder", "elbow", "wrist", "neck", "upper_back", "lower_back", "hip", "knee", "ankle", "other"]);
+    expect(itemLabel(AREAS, "knee", "fr")).toBe("Genou");
+    expect(injuryAreasOf(AREAS)).not.toContain("other");
+    expect(parsePainAreas(JSON.stringify(AREAS.map((a) => ({ ...a, unspecified: true }))))).toBeNull();
+  });
+});
+

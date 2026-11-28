@@ -1,4 +1,7 @@
-import { INJURY_AREAS, type ExerciseRules } from "./injuries";
+import type { ExerciseRules } from "./injuries";
+
+/** An area id as kept in the references: its form (the list itself is the admin's, app settings "pain_areas"). */
+const isArea = (v: string) => /^[a-z0-9_-]{1,30}$/.test(v);
 import type { PainArea, PainReport } from "./pain";
 
 /**
@@ -53,7 +56,7 @@ export function parseInjuryGuidance(text: string | null | undefined, moves?: rea
   for (const [key, rules] of Object.entries(g.mobility)) {
     if (moves && !moves.includes(key)) return null;
     if (!rules || typeof rules !== "object") return null;
-    for (const [area, level] of Object.entries(rules)) if (!INJURY_AREAS.includes(area as PainArea) || (level !== "avoid" && level !== "caution")) return null;
+    for (const [area, level] of Object.entries(rules)) if (!isArea(area) || (level !== "avoid" && level !== "caution")) return null;
   }
   const p = g.pain;
   if (!num(p.severe, 1, 10) || !num(p.moderate, 1, 10) || p.moderate > p.severe || !num(p.moderateLoad, 0.1, 1)) return null;
@@ -65,7 +68,7 @@ export function parseInjuryGuidance(text: string | null | undefined, moves?: rea
   const s = g.persistent;
   if (!num(s.days, 1, 90) || !num(s.reports, 1, 20) || !num(s.minLevel, 1, 10)) return null;
   for (const [area, keys] of Object.entries(g.gentle)) {
-    if (!INJURY_AREAS.includes(area as PainArea) || !Array.isArray(keys)) return null;
+    if (!isArea(area) || !Array.isArray(keys)) return null;
     if (moves && !keys.every((k) => moves.includes(k))) return null;
     // A gentle move is never one to avoid for its own area.
     if (keys.some((k) => g.mobility[k]?.[area as PainArea] === "avoid")) return null;

@@ -8,6 +8,7 @@ import { usePathname, useRouter } from "@/i18n/navigation";
 import { BottomNav, DesktopRail } from "./BottomNav";
 import { OfflineBanner } from "./OfflineBanner";
 import { OfflineWarmup } from "./OfflineWarmup";
+import { ReferencesWarmup } from "./ReferencesWarmup";
 import { Loader2 } from "lucide-react";
 import { useSportChoiceSync } from "@/hooks/useSportChoice";
 import { autoSyncStrava } from "@/lib/stravaService";
@@ -92,6 +93,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <>
       <OfflineBanner />
       <OfflineWarmup />
+      <ReferencesWarmup />
       <SportChoiceSync />
       <DesktopRail />
       <main id="main-content" className="t-app-main flex-1 overflow-y-auto pb-20">

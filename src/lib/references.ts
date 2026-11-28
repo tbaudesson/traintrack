@@ -3,14 +3,16 @@
  * rather than fixed in its code: the exercises' equipment (with the roles
  * the code reads: no gear needed, no warm-up sets, unsorted, in a gym, at
  * home), the movements (with a short form for a sentence), the swim strokes,
- * and the values the choices offer (rest times, pool lengths, outing
- * minutes, a session's intensity steps).
+ * the values the choices offer (rest times, pool lengths, outing minutes, a
+ * session's intensity steps), and the body's areas a pain or an injury is
+ * on (the unsorted one, "elsewhere", is not declared as an injury).
  */
 
 export const EQUIPMENT_KEY = "equipment";
 export const MOVEMENTS_KEY = "movements";
 export const SWIM_STROKES_KEY = "swim_strokes";
 export const CHOICES_KEY = "choices";
+export const PAIN_AREAS_KEY = "pain_areas";
 
 export interface ListItem {
   /** Kept in the rows: lowercase letters, digits, "-" or "_". */
@@ -34,6 +36,11 @@ export interface EquipmentItem extends ListItem {
   stepKg: number;
   /** Its empty bar (kg), the first warm-up set; 0 without one. */
   barKg: number;
+}
+
+export interface PainAreaItem extends ListItem {
+  /** A pain "elsewhere": reported, never declared as an injury nor ruled out on an exercise. */
+  unspecified: boolean;
 }
 
 export interface MovementItem extends ListItem {
@@ -96,6 +103,12 @@ export function parseEquipment(text: string | null | undefined): EquipmentItem[]
 }
 export const parseMovements = (text: string | null | undefined) => parseList<MovementItem>(text, [], ["shortFr", "shortEn", "shortDe"]);
 export const parseSwimStrokes = (text: string | null | undefined) => parseList<ListItem>(text);
+export const parsePainAreas = (text: string | null | undefined) => {
+  const list = parseList<PainAreaItem>(text, ["unspecified"]);
+  return list && list.filter((a) => a.unspecified).length <= 1 ? list : null;
+};
+/** The areas an injury can be on: all but the unsorted one. */
+export const injuryAreasOf = (list: readonly PainAreaItem[] | null | undefined) => (list ?? []).filter((a) => !a.unspecified).map((a) => a.id);
 
 /** The values the choices offer; null when one of them is missing or out of range. */
 export function parseChoices(text: string | null | undefined): Choices | null {

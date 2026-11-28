@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { usePainAreaName } from "@/hooks/useReferences";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkoutNotes, addWorkoutNote, deleteWorkoutNote } from "@/hooks/useWorkoutNotes";
@@ -17,7 +18,7 @@ import { useExerciseLabel } from "@/lib/exerciseNames";
 /** Async notes thread on a workout — author is the athlete or their coach. */
 export function WorkoutNotes({ workoutId }: { workoutId: number }) {
   const t = useTranslations("notes");
-  const tpain = useTranslations("pain");
+  const areaName = usePainAreaName();
   const xl = useExerciseLabel();
   const { user, profile } = useAuth();
   const notes = useWorkoutNotes(workoutId);
@@ -118,7 +119,7 @@ export function WorkoutNotes({ workoutId }: { workoutId: number }) {
             )}
             {n.painArea && n.painLevel && (
               <span className="mb-1 ml-1 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
-                <Bandage className="h-2.5 w-2.5" aria-hidden="true" /> {tpain(`area_${n.painArea}`)} · {n.painLevel}/10
+                <Bandage className="h-2.5 w-2.5" aria-hidden="true" /> {areaName(n.painArea)} · {n.painLevel}/10
               </span>
             )}
             {n.body && <p className="whitespace-pre-wrap">{n.body}</p>}

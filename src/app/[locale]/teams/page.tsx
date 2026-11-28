@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePainAreaName } from "@/hooks/useReferences";
 import { useInjuryGuidance } from "@/hooks/useInjuryGuidance";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
@@ -263,6 +264,7 @@ function TeamCard({
 }) {
   const t = useTranslations("teams");
   const tpain = useTranslations("pain");
+  const areaName = usePainAreaName();
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [membersLoaded, setMembersLoaded] = useState(false);
   const loadingMembers = expanded && !membersLoaded;
@@ -408,7 +410,7 @@ function TeamCard({
                             : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
                         )}
                       >
-                        {tpain("badge", { area: tpain(`area_${painByUser.get(m.user_id)!.area}`), level: painByUser.get(m.user_id)!.level })}
+                        {tpain("badge", { area: areaName(painByUser.get(m.user_id)!.area), level: painByUser.get(m.user_id)!.level })}
                       </span>
                     )}
                     {m.status === "active" && m.user_id && started?.get(m.user_id) && !started.get(m.user_id)!.session && (

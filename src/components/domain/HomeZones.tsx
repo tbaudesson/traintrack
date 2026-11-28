@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { usePainAreaName } from "@/hooks/useReferences";
 import { useTranslations } from "next-intl";
 import { Activity, Bandage, ChevronDown, ChevronRight, Goal as GoalIcon, MoreHorizontal, Stethoscope, type LucideIcon } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -64,10 +65,10 @@ export function HomeAlerts({ items, max = 2 }: { items: { key: string; node: Rea
 /** The injury in one line: the area, where it stands, a pain that keeps coming back first. */
 export function useInjurySummary(guidance: InjuryGuidance | null, injuries: Injury[], pains: PainReport[], today: string): { title: string; text: string; tone: "danger" | "warn"; icon: LucideIcon } | null {
   const t = useTranslations("homeZones");
-  const tpain = useTranslations("pain");
+  const areaName = usePainAreaName();
   const { short } = useFormat();
   if (!guidance) return null;
-  const area = (a: string) => tpain(`area_${a}`);
+  const area = (a: string) => areaName(a);
   const persistent = persistentPains(guidance, pains, today);
   if (persistent.length) {
     return { title: t("painTitle", { area: area(persistent[0].area) }), text: t("painText", { reports: persistent[0].reports, days: guidance.persistent.days }), tone: "danger", icon: Stethoscope };

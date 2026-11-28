@@ -62,8 +62,6 @@ export function returnAdjust(
   return phases.sort((a, b) => a.load - b.load)[0] ?? null;
 }
 
-/** The areas an athlete can declare: those of the pain reports, without "other". */
-export const INJURY_AREAS: PainArea[] = ["shoulder", "elbow", "wrist", "neck", "upper_back", "lower_back", "hip", "knee", "ankle"];
 
 /** "avoid": better left out while injured. "caution": possible, lighter and without pain. */
 export type InjuryLevel = "avoid" | "caution";

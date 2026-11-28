@@ -8,7 +8,7 @@ import { LESSONS_REFERENCE_KEY, parseLessonsReference, type LessonSport, type Le
 import { BODY_MUSCLES_KEY, parseBodyMuscles, type MuscleDef } from "@/lib/muscleMap";
 import { MUSCLE_GROUPS_KEY, groupLabel, parseMuscleGroups, specificGroups, type MuscleGroupDef } from "@/lib/muscles";
 import { useMuscleGroups } from "@/hooks/useMuscleGroups";
-import { CHOICES_KEY, EQUIPMENT_KEY, MOVEMENTS_KEY, SWIM_STROKES_KEY, parseChoices, parseEquipment, parseMovements, parseSwimStrokes, type Choices, type EquipmentItem, type ListItem, type MovementItem } from "@/lib/references";
+import { CHOICES_KEY, EQUIPMENT_KEY, MOVEMENTS_KEY, PAIN_AREAS_KEY, SWIM_STROKES_KEY, parseChoices, parseEquipment, parseMovements, parsePainAreas, parseSwimStrokes, type Choices, type EquipmentItem, type ListItem, type MovementItem, type PainAreaItem } from "@/lib/references";
 import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -314,7 +314,7 @@ const ROLES = ["noGear", "noWarmup", "unspecified", "gym", "home"] as const;
  */
 export function ListsTab() {
   const t = useTranslations("references");
-  const [which, setWhich] = useState<"equipment" | "movements" | "strokes" | "choices">("equipment");
+  const [which, setWhich] = useState<"equipment" | "movements" | "areas" | "strokes" | "choices">("equipment");
   const num = (label: string, value: number, onChange: (n: number) => void, step = 0.5) => (
     <label className="flex items-center gap-2 text-xs">
       {label}
@@ -324,7 +324,7 @@ export function ListsTab() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2" role="group" aria-label={t("listsTitle")}>
-        {(["equipment", "movements", "strokes", "choices"] as const).map((k) => (
+        {(["equipment", "movements", "areas", "strokes", "choices"] as const).map((k) => (
           <Button key={k} size="sm" variant={which === k ? "default" : "outline"} aria-pressed={which === k} onClick={() => setWhich(k)}>
             {t(`list_${k}`)}
           </Button>
@@ -367,6 +367,21 @@ export function ListsTab() {
                 </label>
               ))}
             </div>
+          )}
+        />
+      )}
+      {which === "areas" && (
+        <ListTab<PainAreaItem>
+          settingKey={PAIN_AREAS_KEY}
+          parse={parsePainAreas}
+          title={t("list_areas")}
+          intro={t("areasIntro")}
+          blank={{ ...blankItem, unspecified: false }}
+          extra={(r, set) => (
+            <label className="flex min-h-9 items-center gap-2 text-xs">
+              <input type="checkbox" checked={r.unspecified} onChange={(e) => set({ unspecified: e.target.checked })} className="size-4 accent-accent-600" />
+              {t("areaUnspecified")}
+            </label>
           )}
         />
       )}

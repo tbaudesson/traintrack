@@ -1,5 +1,5 @@
-export const PAIN_AREAS = ["shoulder", "elbow", "wrist", "neck", "upper_back", "lower_back", "hip", "knee", "ankle", "other"] as const;
-export type PainArea = (typeof PAIN_AREAS)[number];
+/** An area of the body a pain or an injury is on: an id of the list the admin keeps (app settings "pain_areas", migration 094). */
+export type PainArea = string;
 
 export interface PainReport {
   date: string;
