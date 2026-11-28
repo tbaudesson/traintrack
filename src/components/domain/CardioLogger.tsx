@@ -67,12 +67,13 @@ export function CardioLogger({ workout, target }: { workout: Workout; target?: C
   const { hasFeature } = useFeatureAccess();
   const paces = run && hasFeature("running");
   const zonePace = (zone: number) => {
+    if (vma == null) return "";
     const [slow, fast] = HR_ZONE_SHARE[zone];
     return tr("paceRange", { from: formatKmPace(paceAt(vma, slow)), to: formatKmPace(paceAt(vma, fast)) });
   };
   const plannedZone = run ? hrZoneOf(target?.intensity) : null;
   // A plan's run with repeats: played with the guide, at the athlete's paces.
-  const runBlocks = target && paces ? planRunBlocks(target) : null;
+  const runBlocks = target && paces && vma != null ? planRunBlocks(target) : null;
   const [running, setRunning] = useState(false);
 
   const save = () =>

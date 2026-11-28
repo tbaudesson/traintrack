@@ -1,6 +1,7 @@
 import type { MuscleGroup } from "@/db";
 import { isGroupId } from "@/lib/muscles";
 import { injuryWarning, type Injury, type InjuryRules } from "./injuries";
+import { LEVELS } from "./levels";
 
 /** What a circuit works (the whole body, the belly, the legs…): an id of the reference's focuses. */
 export type IntervalFocus = string;
@@ -58,7 +59,8 @@ export type IntervalEquipment = string;
 /** The equipment a plan chose besides the body; a plan from before the list read from its two flags. */
 export const planGear = (plan: Pick<PlanBase, "gear" | "dumbbells" | "trx">): string[] =>
   plan.gear ?? [...(plan.dumbbells ? ["dumbbell"] : []), ...(plan.trx ? ["suspension"] : [])];
-export const FITNESS_LEVELS = ["beginner", "intermediate", "advanced"] as const;
+/** The three levels a format is chosen for (see lib/levels). */
+export const FITNESS_LEVELS = LEVELS;
 
 export interface IntervalExercise {
   /** The library's key (its translations and description live there). */

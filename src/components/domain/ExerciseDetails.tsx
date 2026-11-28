@@ -5,7 +5,7 @@ import type { Exercise, ExerciseLevel, LocalizedList, Movement, Muscle, MuscleGr
 import { BodyMap } from "@/components/domain/BodyMap";
 import { muscleName, musclesByGroup } from "@/lib/muscleMap";
 import { useBodyMuscles, useBodyRef } from "@/hooks/useBodyMuscles";
-import { LEVELS } from "@/lib/movements";
+import { LEVELS } from "@/lib/levels";
 import { itemLabel } from "@/lib/references";
 import { useMovements } from "@/hooks/useReferences";
 import { groupLabel } from "@/lib/muscles";
@@ -15,6 +15,7 @@ import { refLabel, sportOf } from "@/lib/lessonsReference";
 import { useExerciseLabel } from "@/lib/exerciseNames";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
+import { useLevelName } from "@/hooks/useLevels";
 
 type Lang = "fr" | "en" | "de";
 const LANGS: Lang[] = ["fr", "en", "de"];
@@ -28,6 +29,7 @@ export function localList(list: LocalizedList | null | undefined, locale: string
 /** What the library says of an exercise: its level, its movements, the muscles it also works, its key points and usual faults. */
 export function ExerciseDetails({ ex, library }: { ex: Exercise; library: Exercise[] }) {
   const t = useTranslations("restrictions");
+  const levelName = useLevelName();
   const movementList = useMovements();
   const locale = useLocale();
   const xl = useExerciseLabel();
@@ -35,7 +37,7 @@ export function ExerciseDetails({ ex, library }: { ex: Exercise; library: Exerci
   const mistakes = localList(ex.mistakes, locale);
   const parent = ex.variantOf ? library.find((e) => e.uuid === ex.variantOf) : undefined;
   const tags = [
-    ex.level ? t(`level_${ex.level}`) : null,
+    ex.level ? levelName(ex.level) : null,
     ...(ex.movements ?? []).map((m) => itemLabel(movementList, m, locale)),
   ].filter(Boolean) as string[];
   const tb = useTranslations("bodyMap");
@@ -136,6 +138,7 @@ export function listsOf(text: Record<Lang, string>): LocalizedList {
 /** The admin's fields for those details. */
 export function ExerciseDetailsEditor({ value, onChange, library, self }: { value: DetailsDraft; onChange: (v: DetailsDraft) => void; library: Exercise[]; self: Exercise }) {
   const t = useTranslations("restrictions");
+  const levelName = useLevelName();
   const movementList = useMovements();
   const tb = useTranslations("bodyMap");
   const locale = useLocale();
@@ -154,7 +157,7 @@ export function ExerciseDetailsEditor({ value, onChange, library, self }: { valu
         <div className="flex flex-wrap gap-1.5">
           {LEVELS.map((l) => (
             <button key={l} type="button" aria-pressed={value.level === l} onClick={() => onChange({ ...value, level: value.level === l ? null : l })} className={chip(value.level === l)}>
-              {t(`level_${l}`)}
+              {levelName(l)}
             </button>
           ))}
         </div>

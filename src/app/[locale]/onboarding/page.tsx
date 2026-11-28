@@ -29,9 +29,10 @@ import { Loader2, Check, ArrowLeft, ArrowRight, Sparkles, ChevronDown } from "lu
 import { cn } from "@/lib/utils";
 import { DEFAULT_MODE, type DisplayMode } from "@/lib/displayMode";
 import { DisplayModePicker } from "@/components/domain/DisplayModePicker";
+import { useLevelName } from "@/hooks/useLevels";
+import { LEVELS } from "@/lib/levels";
 
 const GOALS: TrainingGoal[] = ["strength", "hypertrophy", "endurance", "fat_loss", "general_fitness"];
-const LEVELS: FitnessLevel[] = ["beginner", "intermediate", "advanced"];
 const SEXES: Sex[] = ["male", "female", "other", "undisclosed"];
 const STEPS = 4;
 
@@ -46,6 +47,7 @@ const weekday = (locale: string, day: number) =>
  */
 export default function OnboardingPage() {
   const t = useTranslations("onboarding");
+  const levelName = useLevelName();
   const tw = useTranslations("wizard");
   const tl = useTranslations("templates");
   const tcat = useTranslations("catalog");
@@ -249,7 +251,7 @@ export default function OnboardingPage() {
               <div className="flex flex-wrap gap-2">
                 {LEVELS.map((l) => (
                   <button key={l} onClick={() => setLevel(l)} aria-pressed={level === l} className={chip(level === l)}>
-                    {t(`level_${l}`)}
+                    {levelName(l)}
                   </button>
                 ))}
               </div>
@@ -355,7 +357,7 @@ export default function OnboardingPage() {
                   {programId === p.id && <Check className="ml-auto h-5 w-5 text-accent-text" aria-hidden="true" />}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {tl(`goal_${p.goal}`)} · {tl(`level_${p.level}`)} · {tw("perWeek", { count: p.daysPerWeek })}
+                  {tl(`goal_${p.goal}`)} · {levelName(p.level)} · {tw("perWeek", { count: p.daysPerWeek })}
                   {i === 0 && ` · ${tw("best")}`}
                 </p>
                 <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>

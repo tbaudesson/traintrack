@@ -19,6 +19,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Choice } from "@/components/ui/choice";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useLevelName } from "@/hooks/useLevels";
+import { LEVELS } from "@/lib/levels";
 
 /** Icon and colours of each shelf, shared with the list of one's own programs. */
 export const CATEGORY_STYLE: Record<ProgramCategory | "timed" | "mobility" | "custom", { icon: LucideIcon; tone: string }> = {
@@ -115,6 +117,7 @@ export function ProgramCatalog({
 }) {
   const t = useTranslations("catalog");
   const tt = useTranslations("templates");
+  const levelName = useLevelName();
   const areaName = usePainAreaName();
   const painAreas = usePainAreas();
   const [open, setOpen] = useState<ProgramCategory | null>(null);
@@ -152,7 +155,7 @@ export function ProgramCatalog({
         <p className="font-semibold leading-tight">{tpl.name}</p>
         <p className="text-sm text-muted-foreground">{tpl.description}</p>
         <div className="flex flex-wrap gap-1">
-          <Tag>{tt(`level_${tpl.level}`)}</Tag>
+          <Tag>{levelName(tpl.level)}</Tag>
           <Tag>{t("perWeek", { count: tpl.daysPerWeek })}</Tag>
           {weeks && <Tag>{t("weeks", { count: weeks })}</Tag>}
           {tpl.homeFriendly && (
@@ -274,10 +277,10 @@ export function ProgramCatalog({
                 <>
                   <div className="flex flex-wrap gap-2">
                     <Choice on={filter === null} onClick={() => setFilter(null)}>{t("allLevels")}</Choice>
-                    {(["beginner", "intermediate", "advanced"] as ProgramLevel[])
+                    {LEVELS
                       .filter((l) => byShelf.get(open)!.some((tpl) => tpl.level === l))
                       .map((l) => (
-                        <Choice key={l} on={filter === l} onClick={() => setFilter(l)}>{tt(`level_${l}`)}</Choice>
+                        <Choice key={l} on={filter === l} onClick={() => setFilter(l)}>{levelName(l)}</Choice>
                       ))}
                   </div>
                   <ul className="space-y-2">{shown.map((tpl) => item(tpl))}</ul>

@@ -25,6 +25,8 @@ import { DetailRow } from "@/components/ui/detail-row";
 import { GpxImport } from "@/components/domain/GpxImport";
 import type { useStartActions } from "@/hooks/useStartActions";
 import type { Program, ProgramDay, Workout } from "@/db";
+import { useLevelName } from "@/hooks/useLevels";
+import { LEVELS } from "@/lib/levels";
 
 /** How a day of a program is told in a list: its cardio target, or its number of exercises. */
 export function useDayDetail() {
@@ -34,7 +36,6 @@ export function useDayDetail() {
 
 /** Ready-made programs shown at once; more on demand. */
 const PAGE = 6;
-const LEVELS: ProgramLevel[] = ["beginner", "intermediate", "advanced"];
 
 /**
  * "Choose a session": a day of one's programs, the last session again, a
@@ -87,7 +88,7 @@ export function SessionPickerDialog({
   const { hasFeature } = useFeatureAccess();
   const dayDetail = useDayDetail();
   const tcat = useTranslations("catalog");
-  const tt = useTranslations("templates");
+  const levelName = useLevelName();
   const tf = useTranslations("picker");
   const pickerTop = useRef<HTMLDivElement>(null);
   const locale = useLocale();
@@ -136,7 +137,7 @@ export function SessionPickerDialog({
     // The athlete's level first, the order of the catalogue kept otherwise.
     [...ofLevel].sort((a, b) => Number(b.tpl.level === level) - Number(a.tpl.level === level)),
     q,
-    (x) => ({ names: [x.tpl.name], others: [x.tpl.description, x.shelf ? tcat(`cat_${x.shelf}`) : null, tt(`level_${x.tpl.level}`)] })
+    (x) => ({ names: [x.tpl.name], others: [x.tpl.description, x.shelf ? tcat(`cat_${x.shelf}`) : null, levelName(x.tpl.level)] })
   );
   const levels = LEVELS.filter((l) => ofShelf.some((x) => x.tpl.level === l));
   const pick = (next: ProgramCategory | "all") => {
@@ -160,7 +161,7 @@ export function SessionPickerDialog({
   const describe = (tpl: ProgramTemplate, shelfOf: ProgramCategory | null) => {
     const weeks = planWeeks(tpl.structure);
     const length = weeks ? t("readyMadeWeeks", { count: weeks }) : t("readyMadeDays", { count: tpl.structure.length });
-    return [shelfOf ? tcat(`cat_${shelfOf}`) : null, tt(`level_${tpl.level}`), length].filter(Boolean).join(" · ");
+    return [shelfOf ? tcat(`cat_${shelfOf}`) : null, levelName(tpl.level), length].filter(Boolean).join(" · ");
   };
 
   async function buildProgram() {
@@ -288,7 +289,7 @@ export function SessionPickerDialog({
                 <ChipRow label={tf("level")}>
                   <Chip on={!onlyLevel} onClick={() => { setOnlyLevel(null); setShown(PAGE); }}>{tf("allLevels")}</Chip>
                   {levels.map((l) => (
-                    <Chip key={l} on={onlyLevel === l} onClick={() => { setOnlyLevel(onlyLevel === l ? null : l); setShown(PAGE); }}>{tt(`level_${l}`)}</Chip>
+                    <Chip key={l} on={onlyLevel === l} onClick={() => { setOnlyLevel(onlyLevel === l ? null : l); setShown(PAGE); }}>{levelName(l)}</Chip>
                   ))}
                 </ChipRow>
               )}

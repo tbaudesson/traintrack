@@ -17,15 +17,17 @@ import { getTemplate, templatesChanged, updateTemplate, type AdminTemplate } fro
 import { CATEGORY_ORDER } from "@/lib/programCategories";
 import { usePainAreas } from "@/hooks/useReferences";
 import { itemLabel } from "@/lib/references";
+import { useLevelName } from "@/hooks/useLevels";
+import { LEVELS } from "@/lib/levels";
 
 const GOALS: ProgramGoal[] = ["strength", "hypertrophy", "endurance", "fat_loss", "general"];
-const LEVELS: ProgramLevel[] = ["beginner", "intermediate", "advanced"];
 const SELECT = "mt-1 h-11 w-full rounded-lg border border-input bg-card px-3 text-base";
 
 /** Admin: edit one ready-made program. */
 export default function TemplateEditorPage() {
   const t = useTranslations("adminTemplates");
   const tl = useTranslations("templates");
+  const levelName = useLevelName();
   const tc = useTranslations("catalog");
   const locale = useLocale();
   const areas = (usePainAreas() ?? []).filter((a) => !a.unspecified);
@@ -112,7 +114,7 @@ export default function TemplateEditorPage() {
               <label className="block text-sm font-medium">
                 {tl("level")}
                 <select value={item.level} onChange={(e) => patch({ level: e.target.value as ProgramLevel })} className={SELECT}>
-                  {LEVELS.map((l) => <option key={l} value={l}>{tl(`level_${l}`)}</option>)}
+                  {LEVELS.map((l) => <option key={l} value={l}>{levelName(l)}</option>)}
                 </select>
               </label>
             </div>

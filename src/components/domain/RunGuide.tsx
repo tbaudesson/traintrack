@@ -16,6 +16,7 @@ export function useRunWords() {
   const { vma } = useRunVma();
   const name = (b: TimedRunBlock) => (b.kind === "work" && b.byDistance ? formatDistance(b.meters, "run") : formatSeconds(b.sec));
   const pace = (b: TimedRunBlock) => {
+    if (vma == null) return "";
     const [slow, fast] = zonePaces(vma, b.zone);
     return t("paceRange", { from: formatPace(slow), to: formatPace(fast) });
   };
@@ -39,7 +40,8 @@ export function RunGuide({ blocks, onEnd }: { blocks: RunBlock[]; onEnd: (result
   // The countdown before the first step; without the reference yet, none.
   const readySec = useTimedGuidance()?.getReadySec ?? 0;
   const { vma, name, pace } = useRunWords();
-  const timed = timedBlocks(blocks, vma);
+  // Without a VMA (the levels not read yet) there is no pace to play: its callers wait for one.
+  const timed = vma ? timedBlocks(blocks, vma) : [];
   const steps: PlayerStep[] = timed.map((b) => ({
     type: "work",
     exercise: { name: name(b), cue: pace(b) },

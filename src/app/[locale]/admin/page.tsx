@@ -30,7 +30,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Apple, Footprints, Utensils, Bandage, Check, ClipboardPen, Dumbbell, Eye, Mountain, Music, Swords, BicepsFlexed, PersonStanding, Timer, Waves, Trash2, Loader2, ShieldCheck, Plus, Users2, CreditCard, ClipboardList, Mail, Pencil, X, type LucideIcon } from "lucide-react";
+import { Apple, SignalHigh, Footprints, Utensils, Bandage, Check, ClipboardPen, Dumbbell, Eye, Mountain, Music, Swords, BicepsFlexed, PersonStanding, Timer, Waves, Trash2, Loader2, ShieldCheck, Plus, Users2, CreditCard, ClipboardList, Mail, Pencil, X, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TemplatesTab } from "@/components/domain/TemplatesTab";
 import { NutritionGuidanceTab } from "@/components/domain/NutritionGuidanceTab";
@@ -45,9 +45,11 @@ import { MusicAppsTab } from "@/components/domain/MusicAppsTab";
 import { BoxingRoundsTab } from "@/components/domain/BoxingRoundsTab";
 import { FoodsTab } from "@/components/domain/FoodsTab";
 import { RunWorkoutsTab } from "@/components/domain/RunWorkoutsTab";
+import { LevelsTab } from "@/components/domain/LevelsTab";
+import { TRACKING_RESET_DAYS_KEY, parseResetDays } from "@/lib/trackingReset";
 import { BodyMusclesTab, LessonsReferenceTab, ListsTab, MuscleGroupsTab } from "@/components/domain/ReferenceTabs";
 
-type Tab = "users" | "invitations" | "plans" | "templates" | "equipment" | "nutrition" | "foods" | "running" | "injuries" | "mobility" | "timed" | "swimming" | "hiking" | "boxing" | "lessons" | "lists" | "muscleGroups" | "bodyMap" | "display" | "music" | "gdpr";
+type Tab = "users" | "invitations" | "plans" | "templates" | "equipment" | "nutrition" | "foods" | "running" | "injuries" | "mobility" | "timed" | "swimming" | "hiking" | "boxing" | "lessons" | "lists" | "levels" | "muscleGroups" | "bodyMap" | "display" | "music" | "gdpr";
 
 const TABS: { id: Tab; icon: LucideIcon }[] = [
   { id: "users", icon: Users2 },
@@ -66,6 +68,7 @@ const TABS: { id: Tab; icon: LucideIcon }[] = [
   { id: "boxing", icon: Swords },
   { id: "lessons", icon: ClipboardPen },
   { id: "lists", icon: ClipboardList },
+  { id: "levels", icon: SignalHigh },
   { id: "muscleGroups", icon: Dumbbell },
   { id: "bodyMap", icon: BicepsFlexed },
   { id: "display", icon: Eye },
@@ -142,6 +145,7 @@ export default function AdminPage() {
           {tab === "boxing" && <BoxingRoundsTab />}
           {tab === "lessons" && <LessonsReferenceTab />}
           {tab === "lists" && <ListsTab />}
+          {tab === "levels" && <LevelsTab />}
           {tab === "muscleGroups" && <MuscleGroupsTab />}
           {tab === "bodyMap" && <BodyMusclesTab />}
           {tab === "display" && <DisplayModesTab />}
@@ -497,9 +501,11 @@ function GdprTab() {
       .catch(() => { setFailed(true); setLoading(false); });
   }, []);
 
+  const daysValid = parseResetDays(s[TRACKING_RESET_DAYS_KEY]) !== null;
   async function save() {
+    if (!daysValid) return;
     await Promise.all(
-      ["company_name", "company_address", "dpo_email", "contact_email"].map((k) => setAppSetting(k, s[k] ?? ""))
+      ["company_name", "company_address", "dpo_email", "contact_email", TRACKING_RESET_DAYS_KEY].map((k) => setAppSetting(k, (s[k] ?? "").trim()))
     );
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -525,7 +531,12 @@ function GdprTab() {
         {field("company_address", t("companyAddress"))}
         {field("dpo_email", t("dpoEmail"))}
         {field("contact_email", t("contactEmail"))}
-        <Button onClick={save} className="w-full">
+        <div>
+          <label htmlFor="tracking-reset-days" className="mb-1 block text-xs font-medium text-muted-foreground">{t("trackingResetDays")}</label>
+          <Input id="tracking-reset-days" inputMode="numeric" value={s[TRACKING_RESET_DAYS_KEY] ?? ""} onChange={(e) => setS({ ...s, [TRACKING_RESET_DAYS_KEY]: e.target.value })} aria-invalid={!daysValid} />
+          <p className={daysValid ? "mt-1 text-xs text-muted-foreground" : "mt-1 text-xs text-destructive"}>{t("trackingResetDaysHint")}</p>
+        </div>
+        <Button onClick={save} className="w-full" disabled={!daysValid}>
           {saved ? <><Check className="mr-1 h-4 w-4" />{t("saved")}</> : t("saveSettings")}
         </Button>
       </CardContent>

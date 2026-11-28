@@ -325,6 +325,10 @@ await page.evaluate(async ({ user, libraryRows, lessonExercises, programTemplate
   const m097 = readFileSync("supabase/migrations/097_run_workouts.sql", "utf8");
   const runs = m097.match(/VALUES \('run_workouts', '([\s\S]*?)'\) ON CONFLICT/)[1].replace(/''/g, "'");
   await page.evaluate((v) => localStorage.setItem("traintrack.guidance.run_workouts", v), JSON.stringify(JSON.parse(runs)));
+  // The levels, as migration 099 seeds them.
+  const m099 = readFileSync("supabase/migrations/099_levels.sql", "utf8");
+  const levels = m099.match(/VALUES \('levels', '([\s\S]*?)'\) ON CONFLICT/)[1].replace(/''/g, "'");
+  await page.evaluate((v) => localStorage.setItem("traintrack.guidance.levels", v), JSON.stringify(JSON.parse(levels)));
   // The music apps, as migration 083 seeds them.
   const m083 = readFileSync("supabase/migrations/083_music_apps.sql", "utf8");
   const music = m083.slice(m083.indexOf("'\n[") + 1, m083.indexOf("]\n'") + 1);
@@ -2168,6 +2172,13 @@ await test("Settings opens in four groups, and the menu opens it on the section 
   await page.goto(`${BASE}/fr/settings?section=import`);
   await page.getByText("Importer mon historique (Strong, Hevy)").waitFor({ timeout: 10000 });
   expect((await page.getByRole("button", { name: /Données et compte/ }).getAttribute("aria-expanded")) === "true", "the data group is closed");
+});
+
+await test("starting over is offered in Settings, and says it needs a connection when offline", async () => {
+  await page.goto(`${BASE}/fr/settings?section=export`);
+  await page.getByRole("heading", { name: "Repartir de zéro" }).waitFor({ timeout: 10000 });
+  await page.getByText("Une connexion est nécessaire pour remettre le suivi à zéro ou le restaurer.").waitFor({ timeout: 10000 });
+  expect(!(await page.getByRole("button", { name: "Remettre mon suivi à zéro" }).count()), "the reset is offered offline");
 });
 
 await test("an injury is declared from the Health page, not only in Settings", async () => {

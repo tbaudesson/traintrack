@@ -6,6 +6,7 @@ import { RUN_LEVELS, RUN_WORKOUTS_KEY, expandSteps, parseRunWorkouts, runText, r
 import { Frame, ListEditor, useSetting } from "@/components/domain/ReferenceTabs";
 import { useFormat } from "@/lib/format";
 import { formatDuration } from "@/lib/cardio";
+import { useLevelName } from "@/hooks/useLevels";
 
 const blank = { id: "", fr: "", en: "", de: "" };
 const select = "h-9 rounded-md border border-input bg-background px-2 text-sm text-foreground";
@@ -21,6 +22,7 @@ const PREVIEW_VMA = 15;
  */
 export function RunWorkoutsTab() {
   const t = useTranslations("runAdmin");
+  const levelName = useLevelName();
   const locale = useLocale();
   const s = useSetting<RunWorkoutsReference>(RUN_WORKOUTS_KEY, parseRunWorkouts);
   const v = s.value;
@@ -69,7 +71,7 @@ export function RunWorkoutsTab() {
                   </label>
                 </div>
                 {RUN_LEVELS.map((level) => (
-                  <LevelSteps key={level} label={t(`level_${level}`)} steps={w.levels[level]} onChange={(steps) => set({ levels: { ...w.levels, [level]: steps } })} />
+                  <LevelSteps key={level} label={levelName(level)} steps={w.levels[level]} onChange={(steps) => set({ levels: { ...w.levels, [level]: steps } })} />
                 ))}
               </div>
             )}

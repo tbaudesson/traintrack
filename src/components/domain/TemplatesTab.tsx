@@ -9,11 +9,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   createTemplate, deleteTemplate, listTemplates, updateTemplate, type AdminTemplate,
 } from "@/lib/templateService";
+import { useLevelName } from "@/hooks/useLevels";
 
 /** Admin: the ready-made programs offered to every user. */
 export function TemplatesTab() {
   const t = useTranslations("adminTemplates");
   const tl = useTranslations("templates");
+  const levelName = useLevelName();
   const router = useRouter();
   const [items, setItems] = useState<AdminTemplate[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -63,7 +65,7 @@ export function TemplatesTab() {
               <div className="min-w-0 flex-1">
                 <p className="font-medium">{item.name}</p>
                 <p className="text-xs text-muted-foreground">
-                  {tl(`goal_${item.goal}`)} · {tl(`level_${item.level}`)} · {item.daysPerWeek} {tl("daysShort")}
+                  {tl(`goal_${item.goal}`)} · {levelName(item.level)} · {item.daysPerWeek} {tl("daysShort")}
                 </p>
               </div>
               {item.locale && (

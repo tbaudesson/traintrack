@@ -9,6 +9,7 @@ import { useRouter, usePathname, Link } from "@/i18n/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { deleteMyAccount, updateMyDisplayName } from "@/lib/adminService";
 import { downloadJSONBackup, downloadSessionsCsv } from "@/lib/exportService";
+import { TrackingResetCard } from "@/components/domain/TrackingResetCard";
 import { HistoryImport } from "@/components/domain/HistoryImport";
 import { saveSportChoice } from "@/hooks/useSportChoice";
 import { InjuryAreasPicker } from "@/components/domain/InjuryAreas";
@@ -36,7 +37,6 @@ import { getTextSize, applyTextSize, type TextSize } from "@/lib/textSize";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useAthleteProfile, updateFitnessLevel, updateTrainingSchedule } from "@/hooks/useAthleteProfile";
 import { trainingCalendar } from "@/lib/ics";
-import type { FitnessLevel } from "@/db";
 import {
   getMode, applyMode, getAccent, applyAccent, ACCENTS, APP_STYLES, FAVORITE_SPORTS, savePrefs, usesDial,
   type AppStyle, type ThemeMode, type Accent, type Silhouette,
@@ -57,6 +57,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { localDate } from "@/lib/dates";
+import { useLevelName } from "@/hooks/useLevels";
+import { LEVELS } from "@/lib/levels";
 
 /** A thumbnail of each style: its background, a card and a button. */
 const STYLE_PREVIEW: Record<AppStyle, { frame: string; card: string; button: string }> = {
@@ -195,7 +197,7 @@ function SettingsContent() {
   const tn = useTranslations("notifications");
   const tc = useTranslations("common");
   const tm = useTranslations("more");
-  const to = useTranslations("onboarding");
+  const levelName = useLevelName();
   const tinj = useTranslations("injuries");
   const athlete = useAthleteProfile();
   const { user, profile, signOut, isAdmin, refreshProfile } = useAuth();
@@ -402,7 +404,7 @@ function SettingsContent() {
           <p className="mb-2 text-xs text-muted-foreground">{t("levelHint")}</p>
           {athlete ? (
             <div className="grid grid-cols-3 gap-2">
-              {(["beginner", "intermediate", "advanced"] as FitnessLevel[]).map((level) => (
+              {LEVELS.map((level) => (
                 <button
                   key={level}
                   onClick={() => updateFitnessLevel(level)}
@@ -414,7 +416,7 @@ function SettingsContent() {
                       : "border-border text-muted-foreground hover:border-accent-300"
                   )}
                 >
-                  {to(`level_${level}`)}
+                  {levelName(level)}
                 </button>
               ))}
             </div>
@@ -981,6 +983,7 @@ function SettingsContent() {
               <Trash2 className="h-4 w-4 text-red-700 dark:text-red-400" aria-hidden="true" />
               <h2 className="text-sm font-semibold text-red-700 dark:text-red-400">{t("dangerZone")}</h2>
             </div>
+            <TrackingResetCard userId={user?.id} />
             <p className="text-xs text-muted-foreground">{t("deleteAccountDesc")}</p>
             {!showDelete ? (
               <Button variant="destructive" className="w-full text-red-700 dark:text-red-300" onClick={() => setShowDelete(true)}>

@@ -1,7 +1,9 @@
 import { PACE_ZONES, metersIn, secondsFor, type PaceZone } from "./runPaces";
+import { LEVELS } from "./levels";
+import type { FitnessLevel } from "@/db";
 
-export type RunLevel = "beginner" | "intermediate" | "advanced";
-export const RUN_LEVELS: RunLevel[] = ["beginner", "intermediate", "advanced"];
+export type RunLevel = FitnessLevel;
+export const RUN_LEVELS = LEVELS;
 
 /** A block of a run: by time or by distance, in a zone. */
 export interface RunBlock {

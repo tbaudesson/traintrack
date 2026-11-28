@@ -24,6 +24,7 @@ import { RunPacesCard } from "@/components/domain/RunPacesCard";
 import type { IntervalResult } from "@/components/domain/IntervalPlayer";
 import { RunGuide, runSummary, useRunWords } from "@/components/domain/RunGuide";
 import { RequireFeature } from "@/components/domain/UpgradeNotice";
+import { useLevelName } from "@/hooks/useLevels";
 
 /**
  * Running: one's paces, and interval sessions to run on their own, played
@@ -31,6 +32,7 @@ import { RequireFeature } from "@/components/domain/UpgradeNotice";
  */
 function RunningPageContent() {
   const t = useTranslations("running");
+  const levelName = useLevelName();
   const locale = useLocale();
   const runs = useRunWorkouts();
   const router = useRouter();
@@ -89,13 +91,13 @@ function RunningPageContent() {
                 onClick={() => setChosen(l)}
                 className={cn("min-h-10 rounded-xl text-sm font-semibold", l === level ? "bg-accent-600 text-white" : "bg-muted")}
               >
-                {t(`level_${l}`)}
+                {levelName(l)}
               </button>
             ))}
           </div>
-          {!runs && <p role="status" className="text-sm text-muted-foreground">{t("notLoaded")}</p>}
+          {(!runs || vma == null) && <p role="status" className="text-sm text-muted-foreground">{t("notLoaded")}</p>}
           <ul className="space-y-2">
-            {(runs?.workouts ?? []).map((w) => {
+            {vma != null && (runs?.workouts ?? []).map((w) => {
               const blocks = timedBlocks(workoutBlocks(w, level), vma);
               const focus = runs?.focuses.find((f) => f.id === w.focus);
               const total = runTotals(blocks);

@@ -55,7 +55,9 @@ export function RunPacesCard() {
             {t("pacesTitle")}
           </h2>
           <p className="text-sm text-muted-foreground">
-            {guessed
+            {vma == null
+              ? t("pacesNotLoaded")
+              : guessed
               ? t("guessed", { vma: num(vma) })
               : paces?.source === "race"
                 ? t("fromRace", { vma: num(vma), date: day(paces.date) })
@@ -70,7 +72,7 @@ export function RunPacesCard() {
         </Button>
       </div>
       <dl className={cn("grid grid-cols-2 gap-x-3 gap-y-1.5 text-sm", guessed && "[&>div]:border [&>div]:border-dashed [&>div]:border-border")}>
-        {PACE_ZONES.map((zone) => {
+        {vma != null && PACE_ZONES.map((zone) => {
           const [slow, fast] = zonePaces(vma, zone);
           return (
             <div key={zone} className="flex flex-col gap-0.5 rounded-lg bg-muted/60 px-2.5 py-1.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-2">

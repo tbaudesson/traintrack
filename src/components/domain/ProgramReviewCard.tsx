@@ -13,6 +13,7 @@ import { useExerciseLabel } from "@/lib/exerciseNames";
 import { useFormat } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useLevelName } from "@/hooks/useLevels";
 
 /** A value as it is measured: kilos of estimated 1RM, reps, or seconds held. */
 export function useMetric() {
@@ -43,6 +44,7 @@ export function ProgramReviewCard({
   canFollow: boolean;
 }) {
   const t = useTranslations("review");
+  const levelName = useLevelName();
   const xl = useExerciseLabel();
   const { num, short } = useFormat();
   const metric = useMetric();
@@ -118,7 +120,7 @@ export function ProgramReviewCard({
             <div key={x.name} className="flex items-center gap-2 rounded-xl bg-muted/60 p-2.5">
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{x.name}</p>
-                <p className="text-xs text-muted-foreground">{t(`level_${x.level}`)} · {t("perWeek", { count: x.daysPerWeek })}</p>
+                <p className="text-xs text-muted-foreground">{levelName(x.level)} · {t("perWeek", { count: x.daysPerWeek })}</p>
               </div>
               <Button size="sm" onClick={() => follow(x.name)} disabled={adding !== null}>
                 {adding === x.name ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Plus className="h-4 w-4" aria-hidden="true" />}

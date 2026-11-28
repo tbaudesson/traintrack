@@ -23,6 +23,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { NumberInput, NumbersInput } from "@/components/domain/NumbersInput";
 import { ListEditor } from "@/components/domain/ReferenceTabs";
+import { useLevelName } from "@/hooks/useLevels";
 
 const select = "h-9 w-full rounded-md border border-input bg-background px-2 text-sm text-foreground";
 
@@ -35,6 +36,7 @@ const select = "h-9 w-full rounded-md border border-input bg-background px-2 tex
  */
 export function TimedSessionsTab() {
   const t = useTranslations("timedAdmin");
+  const levelName = useLevelName();
   const ti = useTranslations("intervals");
   const locale = useLocale();
   const tl = (list: { id: string; fr: string; en: string; de: string }[] | undefined, id: string) => timedLabel(list, id, locale);
@@ -153,7 +155,7 @@ export function TimedSessionsTab() {
           <div className="grid grid-cols-3 gap-2">
             {FITNESS_LEVELS.map((l) => (
               <label key={l} className="space-y-1 text-xs text-muted-foreground">
-                <span>{t(`level_${l}`)}</span>
+                <span>{levelName(l)}</span>
                 <select className={select} value={g.patternForLevel[l]} onChange={(e) => put({ ...g, patternForLevel: { ...g.patternForLevel, [l]: e.target.value } })}>
                   {g.patterns.map((p) => (
                     <option key={p} value={p}>{p}</option>

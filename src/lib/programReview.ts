@@ -5,6 +5,7 @@ import { findWorkoutProgramDay } from "./startWorkout";
 import { programWeek } from "./programWeek";
 import { programCategory } from "./programCategories";
 import type { ProgramTemplate } from "./programTemplates";
+import { LEVELS } from "./levels";
 
 type W = { id?: number; date: string; title?: string; programId?: number | null; programDayIndex?: number | null };
 type S = { workoutId: number; exerciseId: number; completed: boolean; isWarmup?: boolean; weightKg?: number | null; reps?: number | null };
@@ -100,7 +101,6 @@ export function programReview(input: { program: Program; workouts: W[]; sets: S[
   };
 }
 
-const LEVELS = ["beginner", "intermediate", "advanced"];
 
 /**
  * What to follow once a program is over: ready-made programs of the same kind,

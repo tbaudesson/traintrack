@@ -14,6 +14,7 @@ import { useExercises } from "@/hooks/useExercises";
 import { usePrograms } from "@/hooks/usePrograms";
 import { useAthleteProfile, useInjuries, updateTrainingSchedule } from "@/hooks/useAthleteProfile";
 import { defaultSetValues } from "@/lib/setDefaults";
+import { useLevelName, useLevels } from "@/hooks/useLevels";
 import { nextLoad, type Advice } from "@/lib/progression";
 import { oneRepMaxHistory } from "@/lib/goals";
 import { formatPercents, percentWeights, referenceMax } from "@/lib/percent";
@@ -110,6 +111,8 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
   const allWorkouts = useWorkouts();
   const allSets = useAllWorkoutSets();
   const profile = useAthleteProfile();
+  const levels = useLevels();
+  const levelName = useLevelName();
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const [reusing, setReusing] = useState(false);
@@ -399,6 +402,7 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
           set: s,
           totalSets: work.length,
           level: profile?.fitnessLevel,
+          levels,
           exercise: exMap.get(exerciseId),
           targetReps: target?.targetReps,
           previous,
@@ -1360,7 +1364,7 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
                     className="flex min-h-10 w-full items-center justify-center gap-1.5 text-sm font-medium text-accent-text"
                   >
                     <Wand2 className="h-4 w-4" aria-hidden="true" />
-                    {t("prefill", { level: t(`level_${profile?.fitnessLevel ?? "beginner"}`) })}
+                    {t("prefill", { level: levelName(profile?.fitnessLevel ?? "beginner") })}
                   </button>
                 )}
 

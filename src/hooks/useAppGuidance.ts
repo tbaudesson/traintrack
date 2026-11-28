@@ -1,6 +1,23 @@
 import { useEffect, useState } from "react";
 import { getAppSettings } from "@/lib/adminService";
 
+/** How long one read of the settings serves every reference a page asks for. */
+const SHARED_MS = 30_000;
+let shared: { at: number; read: Promise<Record<string, string>> } | null = null;
+
+/** One read of the app settings for all the references mounted together (a page asks for several). */
+function readSettings(): Promise<Record<string, string>> {
+  if (!shared || Date.now() - shared.at > SHARED_MS) {
+    const read = getAppSettings();
+    shared = { at: Date.now(), read };
+    // A failed read is not kept: the next reference asks again.
+    read.catch(() => {
+      if (shared?.read === read) shared = null;
+    });
+  }
+  return shared.read;
+}
+
 /**
  * References an admin keeps in the app settings (nutrition, injuries…), read
  * online and kept on the device for offline use; null until read once or when
@@ -16,7 +33,7 @@ export function useAppGuidance<T>(key: string, parse: (text: string | null | und
     } catch {
       // No storage: wait for the network.
     }
-    getAppSettings()
+    readSettings()
       .then((settings) => {
         const text = settings[key];
         const fresh = parse(text);

@@ -102,9 +102,6 @@ export const metersIn = (vma: number, zone: PaceZone, sec: number) => {
   return Math.round(((vma * ((lo + hi) / 2)) / 3.6) * sec);
 };
 
-/** A starting VMA by level, until the athlete gives one. */
-export const DEFAULT_VMA: Record<string, number> = { beginner: 11, intermediate: 14, advanced: 17 };
-
 /** The zone of a plan's intensity ("Zone 4"), or null. */
 export function hrZoneOf(intensity: string | undefined): number | null {
   const n = Number(intensity?.match(/(\d)\s*$/)?.[1]);

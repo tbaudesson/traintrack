@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { NumberInput, NumbersInput } from "@/components/domain/NumbersInput";
+import { useLevelName } from "@/hooks/useLevels";
 
 const select = "h-9 w-full rounded-md border border-input bg-background px-2 text-sm text-foreground";
 
@@ -30,6 +31,7 @@ const select = "h-9 w-full rounded-md border border-input bg-background px-2 tex
 export function BoxingRoundsTab() {
   const t = useTranslations("boxingAdmin");
   const tt = useTranslations("timedAdmin");
+  const levelName = useLevelName();
   const locale = useLocale();
   const groups = useMuscleGroups();
   const groupIds = (groups ?? []).map((g) => g.id);
@@ -124,7 +126,7 @@ export function BoxingRoundsTab() {
           <div className="grid grid-cols-3 gap-2">
             {FITNESS_LEVELS.map((l) => (
               <label key={l} className="space-y-1 text-xs text-muted-foreground">
-                <span>{tt(`level_${l}`)}</span>
+                <span>{levelName(l)}</span>
                 <select className={select} value={g.formatForLevel[l]} onChange={(e) => put({ ...g, formatForLevel: { ...g.formatForLevel, [l]: e.target.value } })}>
                   {g.formats.map((f) => (
                     <option key={f} value={f}>{f}</option>

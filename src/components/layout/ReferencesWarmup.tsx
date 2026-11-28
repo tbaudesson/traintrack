@@ -4,6 +4,8 @@ import { useEquipmentList } from "@/hooks/useReferences";
 import { useEffect } from "react";
 import { useMuscleGroups } from "@/hooks/useMuscleGroups";
 import { refreshTemplates } from "@/lib/templateService";
+import { getCurrentUserId } from "@/db";
+import { myTrackingReset } from "@/lib/trackingReset";
 
 /**
  * The lists some calculations read on the device without a page showing
@@ -15,5 +17,10 @@ export function ReferencesWarmup() {
   useEquipmentList();
   useMuscleGroups();
   useEffect(() => void refreshTemplates(), []);
+  // A reset of the tracking past its days is deleted for good when the app asks (see lib/trackingReset).
+  useEffect(() => {
+    if (!navigator.onLine) return;
+    void getCurrentUserId().then((id) => (id ? myTrackingReset(id) : null)).catch(() => {});
+  }, []);
   return null;
 }
