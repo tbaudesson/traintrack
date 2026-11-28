@@ -985,7 +985,8 @@
     "feat_group_lessons": "Group lessons: coach's notebook",
     "featHint_group_lessons": "Groups without accounts (tennis, vaulting…), lessons planned and given",
     "lists": "Lists",
-    "foods": "Foods and meals"
+    "foods": "Foods and meals",
+    "running": "Running"
   },
   "profile": {
     "title": "Profile",
@@ -2040,10 +2041,6 @@
     "level_beginner": "Beginner",
     "level_intermediate": "Intermediate",
     "level_advanced": "Advanced",
-    "focus_vma": "MAS",
-    "focus_threshold": "Threshold",
-    "focus_endurance": "Endurance",
-    "focus_test": "Test",
     "totals": "{time} · about {distance} km",
     "go": "Run",
     "libraryHint": "Every session opens with a warm-up and ends with a cool-down. The guide calls each block with the voice and a beep, by time: just hold the pace shown.",
@@ -2056,29 +2053,8 @@
     "block_cooldown": "Cool-down",
     "testTitle": "Test result",
     "testMeters": "Distance run in 6 minutes (metres)",
-    "w_30-30": "30/30",
-    "d_30-30": "30 s fast, 30 s jogging: the classic to build MAS.",
-    "w_400": "400 m repeats",
-    "d_400": "400 m at MAS, 1 min 30 jogging in between.",
-    "w_800": "800 m repeats",
-    "d_800": "800 m at MAS: longer, tougher.",
-    "w_1000": "1000 m repeats",
-    "d_1000": "1000 m at 5 km pace, to hold speed longer.",
-    "w_pyramid": "Pyramid",
-    "d_pyramid": "200 m, 400 m, 600 m… then back down. Varied and motivating.",
-    "w_threshold": "Threshold",
-    "d_threshold": "Blocks of 8 to 12 min at threshold: the pace that pushes fatigue back.",
-    "w_tempo": "Tempo",
-    "d_tempo": "One steady block at half-marathon pace: learning to hold on.",
-    "w_hills": "Hills",
-    "d_hills": "45 s hard uphill, then jog back down. Strength and stride.",
-    "w_fartlek": "Fartlek",
-    "d_fartlek": "1 min at 10 km pace, 1 min easy: rhythm without going into the red.",
-    "w_progressive": "Progression run",
-    "d_progressive": "Three blocks, each faster: easy, marathon, threshold.",
-    "w_half-cooper": "MAS test (half-Cooper)",
-    "d_half-cooper": "6 minutes as far as you can, then enter the distance: your MAS and paces are updated.",
-    "guided": "Run with the guide"
+    "guided": "Run with the guide",
+    "notLoaded": "The run sessions have not been loaded yet: open the app once while online."
   },
   "mealPlan": {
     "title": "Meal ideas for today",
@@ -3212,5 +3188,24 @@
     "addFood": "Add a food",
     "removeFood": "Remove the food",
     "unknownFoods": "These ideas name a food missing from the list and will not be offered: {names}"
+  },
+  "runAdmin": {
+    "title": "Run sessions",
+    "intro": "The sessions offered in Running: their name, description, what they work, and their blocks at each level. Each effort is run at its zone's pace, worked out from the athlete's VMA.",
+    "missing": "This list does not exist yet: apply migration 097.",
+    "invalid": "Incomplete list: unique ids (lowercase, digits, “-” or “_”), names and descriptions in the three languages, and at each level valid blocks with at least one effort.",
+    "focuses": "What the sessions work",
+    "workouts": "{count} sessions",
+    "description_fr": "Description (French)",
+    "description_en": "Description (English)",
+    "description_de": "Description (German)",
+    "focus": "Works",
+    "vmaTest": "VMA test (the distance run updates the VMA)",
+    "level_beginner": "Beginner",
+    "level_intermediate": "Intermediate",
+    "level_advanced": "Advanced",
+    "stepsInvalid": "Incomplete blocks: the change is not taken.",
+    "preview": "{efforts} efforts · {time} · {distance} km at a VMA of {vma} km/h",
+    "stepsHint": "A block: {\"kind\": \"warmup\" | \"work\" | \"recovery\" | \"cooldown\", \"zone\": \"recovery\" | \"easy\" | \"marathon\" | \"half\" | \"threshold\" | \"10k\" | \"5k\" | \"vma\" | \"short\", and \"sec\" or \"meters\"}. A repeat: {\"repeat\": 8, \"of\": [blocks], \"between\": block}; the “between” block goes between two repeats, not after the last."
   }
 }

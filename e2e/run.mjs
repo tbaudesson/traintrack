@@ -312,6 +312,10 @@ await page.evaluate(async ({ user, libraryRows, lessonExercises }) => {
     const value = m096.match(new RegExp(`VALUES \\('${key}', '([\\s\\S]*?)'\\) ON CONFLICT`))[1].replace(/''/g, "'");
     await page.evaluate(([k, v]) => localStorage.setItem(`traintrack.guidance.${k}`, v), [key, JSON.stringify(JSON.parse(value))]);
   }
+  // The run sessions, as migration 097 seeds them.
+  const m097 = readFileSync("supabase/migrations/097_run_workouts.sql", "utf8");
+  const runs = m097.match(/VALUES \('run_workouts', '([\s\S]*?)'\) ON CONFLICT/)[1].replace(/''/g, "'");
+  await page.evaluate((v) => localStorage.setItem("traintrack.guidance.run_workouts", v), JSON.stringify(JSON.parse(runs)));
   // The music apps, as migration 083 seeds them.
   const m083 = readFileSync("supabase/migrations/083_music_apps.sql", "utf8");
   const music = m083.slice(m083.indexOf("'\n[") + 1, m083.indexOf("]\n'") + 1);

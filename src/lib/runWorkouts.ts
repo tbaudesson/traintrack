@@ -1,4 +1,4 @@
-import { metersIn, secondsFor, type PaceZone } from "./runPaces";
+import { PACE_ZONES, metersIn, secondsFor, type PaceZone } from "./runPaces";
 
 export type RunLevel = "beginner" | "intermediate" | "advanced";
 export const RUN_LEVELS: RunLevel[] = ["beginner", "intermediate", "advanced"];
@@ -19,76 +19,97 @@ export interface TimedRunBlock extends RunBlock {
   byDistance: boolean;
 }
 
-export type RunWorkoutId = "30-30" | "400" | "800" | "1000" | "pyramid" | "threshold" | "tempo" | "hills" | "fartlek" | "progressive" | "half-cooper";
+/**
+ * The run sessions, kept by an admin (app_settings "run_workouts", Admin >
+ * Running) rather than fixed in the code: each named and described in three
+ * languages, what it works, and its blocks at each level, repeats written
+ * once ("10 times 30 s fast, 30 s easy between them").
+ */
+export const RUN_WORKOUTS_KEY = "run_workouts";
 
-export interface RunWorkout {
-  id: RunWorkoutId;
-  /** What it works: speed (VMA), threshold, or endurance. */
-  focus: "vma" | "threshold" | "endurance" | "test";
-  blocks: (level: RunLevel) => RunBlock[];
+type Lang = "fr" | "en" | "de";
+type Named = { id: string } & Record<Lang, string>;
+
+/** A block, or a set of blocks done n times with, between two of them (not after the last), a block. */
+export type RunStep = RunBlock | { repeat: number; of: RunStep[]; between?: RunBlock };
+
+export interface RunWorkout extends Named {
+  description: Record<Lang, string>;
+  /** What it works (speed, threshold, endurance…): an id of the reference's focuses. */
+  focus: string;
+  /** The test whose distance gives one's VMA (the half-Cooper). */
+  vmaTest?: boolean;
+  levels: Record<RunLevel, RunStep[]>;
+}
+export interface RunWorkoutsReference {
+  focuses: Named[];
+  workouts: RunWorkout[];
 }
 
-const by = <T,>(level: RunLevel, values: [T, T, T]) => values[RUN_LEVELS.indexOf(level)];
-const warmUp = (level: RunLevel): RunBlock => ({ kind: "warmup", zone: "easy", sec: by(level, [12, 15, 20]) * 60 });
-const coolDown: RunBlock = { kind: "cooldown", zone: "recovery", sec: 10 * 60 };
+const KINDS: RunBlock["kind"][] = ["warmup", "work", "recovery", "cooldown"];
+const LANGS: Lang[] = ["fr", "en", "de"];
+const ID = /^[a-z0-9_-]{1,30}$/;
+const texts = (x: unknown, max: number) =>
+  !!x && typeof x === "object" && LANGS.every((l) => typeof (x as Record<Lang, string>)[l] === "string" && (x as Record<Lang, string>)[l].trim().length > 0 && (x as Record<Lang, string>)[l].length <= max);
+const named = (x: unknown): x is Named => !!x && typeof (x as Named).id === "string" && ID.test((x as Named).id) && texts(x, 80);
+const whole = (n: unknown, lo: number, hi: number) => typeof n === "number" && Number.isInteger(n) && n >= lo && n <= hi;
+
+/** A block of a known kind and zone, by time or by distance (one of them), within reason. */
+export function validBlock(b: unknown): b is RunBlock {
+  const x = b as RunBlock;
+  if (!x || typeof x !== "object" || !KINDS.includes(x.kind) || !PACE_ZONES.includes(x.zone)) return false;
+  return (x.sec !== undefined) !== (x.meters !== undefined) && (x.sec === undefined || whole(x.sec, 1, 4 * 3600)) && (x.meters === undefined || whole(x.meters, 1, 100_000));
+}
+
+/** Steps that hold together: blocks, and repeats of 1 to 50 times, three deep at most. */
+export function validSteps(steps: unknown, depth = 0): steps is RunStep[] {
+  if (!Array.isArray(steps) || !steps.length || steps.length > 60 || depth > 2) return false;
+  return steps.every((s) =>
+    s && typeof s === "object" && "repeat" in s
+      ? whole(s.repeat, 1, 50) && validSteps(s.of, depth + 1) && (s.between === undefined || validBlock(s.between))
+      : validBlock(s)
+  );
+}
+
+/** The blocks of steps, the repeats written out. */
+export function expandSteps(steps: RunStep[]): RunBlock[] {
+  return steps.flatMap((s) =>
+    "repeat" in s ? Array.from({ length: s.repeat }, (_, i) => [...expandSteps(s.of), ...(s.between && i < s.repeat - 1 ? [s.between] : [])]).flat() : [s]
+  );
+}
+
+/** A session's blocks at a level. */
+export const workoutBlocks = (w: Pick<RunWorkout, "levels">, level: RunLevel): RunBlock[] => expandSteps(w.levels[level]);
+
+/** The reference, checked whole; null when anything is off. */
+export function parseRunWorkouts(text: string | null | undefined): RunWorkoutsReference | null {
+  if (!text) return null;
+  let r: RunWorkoutsReference;
+  try {
+    r = JSON.parse(text);
+  } catch {
+    return null;
+  }
+  if (!r || !Array.isArray(r.focuses) || !r.focuses.length || !r.focuses.every(named) || new Set(r.focuses.map((f) => f.id)).size !== r.focuses.length) return null;
+  if (!Array.isArray(r.workouts) || !r.workouts.length || r.workouts.length > 100 || !r.workouts.every(named) || new Set(r.workouts.map((w) => w.id)).size !== r.workouts.length) return null;
+  const focuses = new Set(r.focuses.map((f) => f.id));
+  for (const w of r.workouts) {
+    if (!texts(w.description, 400) || !focuses.has(w.focus) || (w.vmaTest !== undefined && typeof w.vmaTest !== "boolean")) return null;
+    if (!w.levels || !RUN_LEVELS.every((l) => validSteps(w.levels[l]) && expandSteps(w.levels[l]).some((b) => b.kind === "work") && expandSteps(w.levels[l]).length <= 200)) return null;
+  }
+  return r;
+}
+
+/** A name or a description in the app's language. */
+export const runText = (x: Record<Lang, string>, locale: string) => x[locale === "fr" || locale === "de" ? locale : "en"];
+
+// Blocks of a plan's run (below).
 const work = (zone: PaceZone, size: { sec?: number; meters?: number }): RunBlock => ({ kind: "work", zone, ...size });
 const jog = (sec: number): RunBlock => ({ kind: "recovery", zone: "recovery", sec });
 
 /** n times the same effort and recovery, without the recovery after the last. */
 const repeat = (n: number, effort: RunBlock, recovery: RunBlock): RunBlock[] =>
   Array.from({ length: n }, (_, i) => (i < n - 1 ? [effort, recovery] : [effort])).flat();
-
-const session = (level: RunLevel, main: RunBlock[]) => [warmUp(level), ...main, coolDown];
-
-export const RUN_WORKOUTS: RunWorkout[] = [
-  {
-    id: "30-30",
-    focus: "vma",
-    blocks: (l) => {
-      const sets = by(l, [2, 2, 3]);
-      const reps = by(l, [8, 10, 10]);
-      const set = repeat(reps, work("vma", { sec: 30 }), jog(30));
-      return session(l, Array.from({ length: sets }, (_, i) => (i < sets - 1 ? [...set, jog(180)] : set)).flat());
-    },
-  },
-  { id: "400", focus: "vma", blocks: (l) => session(l, repeat(by(l, [6, 8, 10]), work("vma", { meters: 400 }), jog(90))) },
-  { id: "800", focus: "vma", blocks: (l) => session(l, repeat(by(l, [4, 5, 6]), work("vma", { meters: 800 }), jog(120))) },
-  { id: "1000", focus: "vma", blocks: (l) => session(l, repeat(by(l, [3, 5, 6]), work("5k", { meters: 1000 }), jog(120))) },
-  {
-    id: "pyramid",
-    focus: "vma",
-    blocks: (l) => {
-      const steps = by(l, [[200, 400, 600, 400, 200], [200, 400, 600, 800, 600, 400, 200], [200, 400, 600, 800, 1000, 800, 600, 400, 200]]);
-      return session(
-        l,
-        steps.flatMap((m, i) => {
-          const effort = work(m <= 200 ? "short" : "vma", { meters: m });
-          // Recover half the time of the effort, about.
-          return i < steps.length - 1 ? [effort, jog(Math.max(45, Math.round((m / 400) * 45)))] : [effort];
-        })
-      );
-    },
-  },
-  { id: "threshold", focus: "threshold", blocks: (l) => session(l, repeat(by(l, [2, 3, 3]), work("threshold", { sec: by(l, [8, 10, 12]) * 60 }), jog(120))) },
-  { id: "tempo", focus: "threshold", blocks: (l) => session(l, [work("half", { sec: by(l, [15, 20, 30]) * 60 })]) },
-  { id: "hills", focus: "vma", blocks: (l) => session(l, repeat(by(l, [6, 8, 10]), work("5k", { sec: 45 }), jog(90))) },
-  {
-    id: "fartlek",
-    focus: "endurance",
-    blocks: (l) => session(l, repeat(by(l, [6, 8, 10]), work("10k", { sec: 60 }), { kind: "recovery", zone: "easy", sec: 60 })),
-  },
-  {
-    id: "progressive",
-    focus: "endurance",
-    blocks: (l) => {
-      const min = by(l, [8, 10, 12]) * 60;
-      return [warmUp(l), work("easy", { sec: min }), work("marathon", { sec: min }), work("threshold", { sec: min }), coolDown];
-    },
-  },
-  { id: "half-cooper", focus: "test", blocks: (l) => session(l, [work("vma", { sec: 360 })]) },
-];
-
-export const runWorkout = (id: string) => RUN_WORKOUTS.find((w) => w.id === id);
 
 /** The blocks with their time and distance at this VMA. */
 export function timedBlocks(blocks: RunBlock[], vma: number): TimedRunBlock[] {

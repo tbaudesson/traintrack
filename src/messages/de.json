@@ -985,7 +985,8 @@
     "feat_group_lessons": "Gruppenstunden: Trainerheft",
     "featHint_group_lessons": "Gruppen ohne Konten (Tennis, Voltigieren…), geplante und gegebene Stunden",
     "lists": "Listen",
-    "foods": "Lebensmittel und Mahlzeiten"
+    "foods": "Lebensmittel und Mahlzeiten",
+    "running": "Laufen"
   },
   "profile": {
     "title": "Profil",
@@ -2040,10 +2041,6 @@
     "level_beginner": "Anfänger",
     "level_intermediate": "Fortgeschritten",
     "level_advanced": "Erfahren",
-    "focus_vma": "MAG",
-    "focus_threshold": "Schwelle",
-    "focus_endurance": "Ausdauer",
-    "focus_test": "Test",
     "totals": "{time} · ca. {distance} km",
     "go": "Laufen",
     "libraryHint": "Jede Einheit beginnt mit Einlaufen und endet mit Auslaufen. Der Guide sagt jeden Block per Stimme und Piepton an, nach Zeit: halte einfach das angezeigte Tempo.",
@@ -2056,29 +2053,8 @@
     "block_cooldown": "Auslaufen",
     "testTitle": "Testergebnis",
     "testMeters": "In 6 Minuten gelaufene Strecke (Meter)",
-    "w_30-30": "30/30",
-    "d_30-30": "30 s schnell, 30 s traben: der Klassiker für die MAG.",
-    "w_400": "400-m-Intervalle",
-    "d_400": "400 m im MAG-Tempo, 1:30 Min. Trabpause.",
-    "w_800": "800-m-Intervalle",
-    "d_800": "800 m im MAG-Tempo: länger, härter.",
-    "w_1000": "1000-m-Intervalle",
-    "d_1000": "1000 m im 5-km-Tempo, um das Tempo länger zu halten.",
-    "w_pyramid": "Pyramide",
-    "d_pyramid": "200 m, 400 m, 600 m… und wieder zurück. Abwechslungsreich und motivierend.",
-    "w_threshold": "Schwelle",
-    "d_threshold": "Blöcke von 8 bis 12 Min. an der Schwelle: das Tempo, das die Müdigkeit hinausschiebt.",
-    "w_tempo": "Tempolauf",
-    "d_tempo": "Ein durchgehender Block im Halbmarathontempo: lernen durchzuhalten.",
-    "w_hills": "Bergläufe",
-    "d_hills": "45 s hart bergauf, dann locker zurück. Kraft und Laufschritt.",
-    "w_fartlek": "Fahrtspiel",
-    "d_fartlek": "1 Min. im 10-km-Tempo, 1 Min. locker: Rhythmus, ohne zu überziehen.",
-    "w_progressive": "Steigerungslauf",
-    "d_progressive": "Drei Blöcke, jeder schneller: Grundlage, Marathon, Schwelle.",
-    "w_half-cooper": "MAG-Test (halber Cooper)",
-    "d_half-cooper": "6 Minuten so weit wie möglich, dann die Strecke eintragen: deine MAG und Tempos werden aktualisiert.",
-    "guided": "Mit dem Guide laufen"
+    "guided": "Mit dem Guide laufen",
+    "notLoaded": "Die Laufeinheiten wurden noch nicht geladen: Öffne die App einmal mit Verbindung."
   },
   "mealPlan": {
     "title": "Essensideen für heute",
@@ -3212,5 +3188,24 @@
     "addFood": "Lebensmittel hinzufügen",
     "removeFood": "Lebensmittel entfernen",
     "unknownFoods": "Diese Ideen nennen ein Lebensmittel, das nicht in der Liste steht, und werden nicht vorgeschlagen: {names}"
+  },
+  "runAdmin": {
+    "title": "Laufeinheiten",
+    "intro": "Die Einheiten unter Laufen: Name, Beschreibung, was sie trainieren, und ihre Blöcke je Niveau. Jede Belastung wird im Tempo ihrer Zone gelaufen, berechnet aus der VMA des Athleten.",
+    "missing": "Diese Liste gibt es noch nicht: Migration 097 anwenden.",
+    "invalid": "Unvollständige Liste: eindeutige IDs (Kleinbuchstaben, Ziffern, „-“ oder „_“), Namen und Beschreibungen in den drei Sprachen, und je Niveau gültige Blöcke mit mindestens einer Belastung.",
+    "focuses": "Was die Einheiten trainieren",
+    "workouts": "{count} Einheiten",
+    "description_fr": "Beschreibung (Französisch)",
+    "description_en": "Beschreibung (Englisch)",
+    "description_de": "Beschreibung (Deutsch)",
+    "focus": "Trainiert",
+    "vmaTest": "VMA-Test (die gelaufene Strecke aktualisiert die VMA)",
+    "level_beginner": "Anfänger",
+    "level_intermediate": "Fortgeschritten",
+    "level_advanced": "Erfahren",
+    "stepsInvalid": "Unvollständige Blöcke: die Änderung wird nicht übernommen.",
+    "preview": "{efforts} Belastungen · {time} · {distance} km bei VMA {vma} km/h",
+    "stepsHint": "Ein Block: {\"kind\": \"warmup\" | \"work\" | \"recovery\" | \"cooldown\", \"zone\": \"recovery\" | \"easy\" | \"marathon\" | \"half\" | \"threshold\" | \"10k\" | \"5k\" | \"vma\" | \"short\", und \"sec\" oder \"meters\"}. Eine Wiederholung: {\"repeat\": 8, \"of\": [Blöcke], \"between\": Block}; der „between“-Block steht zwischen zwei Wiederholungen, nicht nach der letzten."
   }
 }

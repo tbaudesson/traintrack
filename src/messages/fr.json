@@ -985,7 +985,8 @@
     "feat_group_lessons": "Cours collectifs : carnet de coach",
     "featHint_group_lessons": "Groupes sans comptes (tennis, voltige…), cours préparés et donnés",
     "lists": "Listes",
-    "foods": "Aliments et repas"
+    "foods": "Aliments et repas",
+    "running": "Course à pied"
   },
   "profile": {
     "title": "Profil",
@@ -2040,10 +2041,6 @@
     "level_beginner": "Débutant",
     "level_intermediate": "Intermédiaire",
     "level_advanced": "Confirmé",
-    "focus_vma": "VMA",
-    "focus_threshold": "Seuil",
-    "focus_endurance": "Endurance",
-    "focus_test": "Test",
     "totals": "{time} · env. {distance} km",
     "go": "Courir",
     "libraryHint": "Chaque séance commence par un échauffement et finit par un retour au calme. Le guide vous annonce chaque bloc à la voix et avec un bip, au temps : gardez simplement l’allure indiquée.",
@@ -2056,29 +2053,8 @@
     "block_cooldown": "Retour au calme",
     "testTitle": "Résultat du test",
     "testMeters": "Distance parcourue en 6 minutes (mètres)",
-    "w_30-30": "30/30",
-    "d_30-30": "30 s vite, 30 s en trottinant : le classique pour développer la VMA.",
-    "w_400": "Séries de 400 m",
-    "d_400": "Des 400 m à VMA, récupération 1 min 30 en trottinant.",
-    "w_800": "Séries de 800 m",
-    "d_800": "Des 800 m à VMA : plus long, plus exigeant.",
-    "w_1000": "Séries de 1000 m",
-    "d_1000": "Des 1000 m à allure 5 km, pour tenir la vitesse plus longtemps.",
-    "w_pyramid": "Pyramide",
-    "d_pyramid": "200 m, 400 m, 600 m… puis on redescend. Varié et motivant.",
-    "w_threshold": "Seuil",
-    "d_threshold": "Des blocs de 8 à 12 min au seuil : l’allure qui fait reculer la fatigue.",
-    "w_tempo": "Tempo",
-    "d_tempo": "Un bloc continu à allure semi : apprendre à tenir.",
-    "w_hills": "Côtes",
-    "d_hills": "45 s en montée, fort, puis redescente en trottinant. Force et foulée.",
-    "w_fartlek": "Fartlek",
-    "d_fartlek": "1 min à allure 10 km, 1 min facile : du rythme sans se mettre dans le rouge.",
-    "w_progressive": "Progressif",
-    "d_progressive": "Trois blocs de plus en plus rapides : endurance, marathon, seuil.",
-    "w_half-cooper": "Test VMA (demi-Cooper)",
-    "d_half-cooper": "6 minutes le plus loin possible, puis notez la distance : votre VMA et vos allures sont mises à jour.",
-    "guided": "Courir avec le guide"
+    "guided": "Courir avec le guide",
+    "notLoaded": "Les séances de course n’ont pas encore été chargées : ouvrez l’app une fois avec une connexion."
   },
   "mealPlan": {
     "title": "Idées de repas pour aujourd’hui",
@@ -3212,5 +3188,24 @@
     "addFood": "Ajouter un aliment",
     "removeFood": "Retirer l’aliment",
     "unknownFoods": "Ces idées citent un aliment absent de la liste et ne seront pas proposées : {names}"
+  },
+  "runAdmin": {
+    "title": "Séances de course",
+    "intro": "Les séances proposées dans Course à pied : leur nom, leur description, ce qu’elles travaillent, et leurs blocs à chaque niveau. Chaque effort se court à l’allure de sa zone, calculée depuis la VMA de l’athlète.",
+    "missing": "Cette liste n’existe pas encore : appliquez la migration 097.",
+    "invalid": "Liste incomplète : identifiants uniques (minuscules, chiffres, « - » ou « _ »), noms et descriptions dans les trois langues, et à chaque niveau des blocs valides avec au moins un effort.",
+    "focuses": "Ce que les séances travaillent",
+    "workouts": "{count} séances",
+    "description_fr": "Description (français)",
+    "description_en": "Description (anglais)",
+    "description_de": "Description (allemand)",
+    "focus": "Travaille",
+    "vmaTest": "Test de VMA (la distance courue met à jour la VMA)",
+    "level_beginner": "Débutant",
+    "level_intermediate": "Intermédiaire",
+    "level_advanced": "Confirmé",
+    "stepsInvalid": "Blocs incomplets : la modification n’est pas prise en compte.",
+    "preview": "{efforts} efforts · {time} · {distance} km à VMA {vma} km/h",
+    "stepsHint": "Un bloc : {\"kind\": \"warmup\" | \"work\" | \"recovery\" | \"cooldown\", \"zone\": \"recovery\" | \"easy\" | \"marathon\" | \"half\" | \"threshold\" | \"10k\" | \"5k\" | \"vma\" | \"short\", et \"sec\" ou \"meters\"}. Une répétition : {\"repeat\": 8, \"of\": [blocs], \"between\": bloc} ; le bloc « between » se place entre deux répétitions, pas après la dernière."
   }
 }

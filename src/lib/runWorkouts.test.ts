@@ -1,11 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { RUN_WORKOUTS, runTotals, runWorkout, timedBlocks } from "./runWorkouts";
+import { RUN_LEVELS, expandSteps, parseRunWorkouts, runTotals, timedBlocks, validSteps, workoutBlocks, type RunWorkout } from "./runWorkouts";
+import { settingFromMigrations } from "./settingsFromMigrations";
+
+// The sessions as migration 097 seeds them.
+const ref = parseRunWorkouts(settingFromMigrations("097_run_workouts.sql", "run_workouts"))!;
+const RUN_WORKOUTS = ref.workouts;
+const runWorkout = (id: string) => RUN_WORKOUTS.find((w) => w.id === id);
+const blocksOf = (w: RunWorkout, level: (typeof RUN_LEVELS)[number]) => workoutBlocks(w, level);
 
 describe("runWorkouts", () => {
+  it("hold together as the migration seeds them", () => {
+    expect(ref).not.toBeNull();
+    expect(RUN_WORKOUTS.length).toBe(11);
+    expect(RUN_WORKOUTS.filter((w) => w.vmaTest).map((w) => w.id)).toEqual(["half-cooper"]);
+  });
+
   it("open with a warm-up and end with a cool-down, at every level", () => {
     for (const w of RUN_WORKOUTS) {
-      for (const level of ["beginner", "intermediate", "advanced"] as const) {
-        const blocks = w.blocks(level);
+      for (const level of RUN_LEVELS) {
+        const blocks = blocksOf(w, level);
         expect(blocks[0].kind, w.id).toBe("warmup");
         expect(blocks.at(-1)?.kind, w.id).toBe("cooldown");
         expect(blocks.some((b) => b.kind === "work"), w.id).toBe(true);
@@ -15,18 +28,39 @@ describe("runWorkouts", () => {
   });
 
   it("ask more of an advanced runner", () => {
-    const efforts = (level: "beginner" | "advanced") => runWorkout("400")!.blocks(level).filter((b) => b.kind === "work").length;
+    const efforts = (level: "beginner" | "advanced") => blocksOf(runWorkout("400")!, level).filter((b) => b.kind === "work").length;
     expect(efforts("beginner")).toBe(6);
     expect(efforts("advanced")).toBe(10);
   });
 
   it("leave no recovery after the last effort", () => {
-    const blocks = runWorkout("800")!.blocks("intermediate");
+    const blocks = blocksOf(runWorkout("800")!, "intermediate");
     expect(blocks.at(-2)?.kind).toBe("work");
   });
 
+  it("write repeats out, the block between two of them and none after the last, nested ones too", () => {
+    // The 30/30 of a beginner: 2 sets of 8, 3 min between the sets.
+    const blocks = blocksOf(runWorkout("30-30")!, "beginner");
+    expect(blocks.filter((b) => b.kind === "work")).toHaveLength(16);
+    expect(blocks.filter((b) => b.kind === "recovery" && b.sec === 180)).toHaveLength(1);
+    expect(blocks.filter((b) => b.kind === "recovery" && b.sec === 30)).toHaveLength(14);
+    expect(expandSteps([{ repeat: 3, of: [{ kind: "work", zone: "vma", sec: 30 }], between: { kind: "recovery", zone: "recovery", sec: 30 } }]).map((b) => b.kind)).toEqual(["work", "recovery", "work", "recovery", "work"]);
+  });
+
+  it("refuse blocks that do not hold together", () => {
+    expect(validSteps([{ kind: "work", zone: "vma" }])).toBe(false);
+    expect(validSteps([{ kind: "work", zone: "vma", sec: 30, meters: 100 }])).toBe(false);
+    expect(validSteps([{ kind: "sprint", zone: "vma", sec: 30 }])).toBe(false);
+    expect(validSteps([{ kind: "work", zone: "warp", sec: 30 }])).toBe(false);
+    expect(validSteps([{ repeat: 0, of: [{ kind: "work", zone: "vma", sec: 30 }] }])).toBe(false);
+    expect(validSteps([])).toBe(false);
+    const broken = structuredClone(ref);
+    broken.workouts[0].levels.beginner = [{ kind: "warmup", zone: "easy", sec: 600 }];
+    expect(parseRunWorkouts(JSON.stringify(broken))).toBeNull();
+  });
+
   it("work out time and distance from the VMA", () => {
-    const blocks = timedBlocks(runWorkout("400")!.blocks("beginner"), 15);
+    const blocks = timedBlocks(blocksOf(runWorkout("400")!, "beginner"), 15);
     const totals = runTotals(blocks);
     expect(blocks[1]).toMatchObject({ kind: "work", meters: 400, sec: 96, byDistance: true });
     expect(totals.efforts).toBe(6);
@@ -35,7 +69,7 @@ describe("runWorkouts", () => {
   });
 
   it("the half-Cooper is six minutes flat out", () => {
-    const main = runWorkout("half-cooper")!.blocks("intermediate").filter((b) => b.kind === "work");
+    const main = blocksOf(runWorkout("half-cooper")!, "intermediate").filter((b) => b.kind === "work");
     expect(main).toEqual([{ kind: "work", zone: "vma", sec: 360 }]);
   });
 });

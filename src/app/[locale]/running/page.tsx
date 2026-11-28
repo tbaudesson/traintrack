@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Play, Timer } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { useAthleteProfileOrNull, updateTrainingSchedule } from "@/hooks/useAthleteProfile";
@@ -13,7 +13,8 @@ import { localDate } from "@/lib/dates";
 import { useFormat } from "@/lib/format";
 import { sessionHref } from "@/lib/routes";
 import { vmaFromHalfCooper } from "@/lib/runPaces";
-import { RUN_LEVELS, RUN_WORKOUTS, runLevelOf, runTotals, timedBlocks, type RunLevel, type RunWorkout, type TimedRunBlock } from "@/lib/runWorkouts";
+import { RUN_LEVELS, runLevelOf, runText, runTotals, timedBlocks, workoutBlocks, type RunLevel, type RunWorkout, type TimedRunBlock } from "@/lib/runWorkouts";
+import { useRunWorkouts } from "@/hooks/useRunWorkouts";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,8 @@ import { RequireFeature } from "@/components/domain/UpgradeNotice";
  */
 function RunningPageContent() {
   const t = useTranslations("running");
+  const locale = useLocale();
+  const runs = useRunWorkouts();
   const router = useRouter();
   const { num } = useFormat();
   const profile = useAthleteProfileOrNull();
@@ -51,13 +54,13 @@ function RunningPageContent() {
     const distanceM = result.distanceM;
     const id = await createWorkout({
       date: localDate(),
-      title: t(`w_${run.workout.id}`),
+      title: runText(run.workout, locale),
       kind: "cardio",
       sport: "run",
       durationSec: result.elapsedSec,
     });
     await updateWorkout(id, { distanceM });
-    if (run.workout.id === "half-cooper") setTestWorkout(id);
+    if (run.workout.vmaTest) setTestWorkout(id);
     else router.push(sessionHref(id));
   }
 
@@ -90,9 +93,11 @@ function RunningPageContent() {
               </button>
             ))}
           </div>
+          {!runs && <p role="status" className="text-sm text-muted-foreground">{t("notLoaded")}</p>}
           <ul className="space-y-2">
-            {RUN_WORKOUTS.map((w) => {
-              const blocks = timedBlocks(w.blocks(level), vma);
+            {(runs?.workouts ?? []).map((w) => {
+              const blocks = timedBlocks(workoutBlocks(w, level), vma);
+              const focus = runs?.focuses.find((f) => f.id === w.focus);
               const total = runTotals(blocks);
               const main = blocks.filter((b) => b.kind === "work");
               return (
@@ -100,10 +105,10 @@ function RunningPageContent() {
                   <div className="flex items-start gap-2">
                     <div className="min-w-0 flex-1">
                       <p className="flex items-center gap-2 font-semibold">
-                        {t(`w_${w.id}`)}
-                        <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-foreground">{t(`focus_${w.focus}`)}</span>
+                        {runText(w, locale)}
+                        {focus && <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-foreground">{runText(focus, locale)}</span>}
                       </p>
-                      <p className="text-sm text-muted-foreground">{t(`d_${w.id}`)}</p>
+                      <p className="text-sm text-muted-foreground">{runText(w.description, locale)}</p>
                     </div>
                   </div>
                   <p className="text-sm">
@@ -135,7 +140,7 @@ function RunningPageContent() {
         </section>
       </div>
 
-      {playing && <RunGuide blocks={playing.workout.blocks(level)} onEnd={end} />}
+      {playing && <RunGuide blocks={workoutBlocks(playing.workout, level)} onEnd={end} />}
 
       <Dialog open={testWorkout !== null} onOpenChange={(o) => !o && testWorkout !== null && router.push(sessionHref(testWorkout))}>
         <DialogContent>
