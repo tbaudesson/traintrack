@@ -11,12 +11,14 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { RequireFeature } from "@/components/domain/UpgradeNotice";
 import { DrillDialog, DrillList } from "@/components/domain/TennisDialogs";
+import { TennisReferenceGate } from "@/components/domain/TennisReferenceGate";
+import type { TennisReference } from "@/lib/tennisReference";
 
 /**
  * The tennis drills: the library and one's own. One's own drills are changed
  * here; the library's by an admin only (for everyone, online).
  */
-function DrillsContent() {
+function DrillsContent({ reference }: { reference: TennisReference }) {
   const t = useTranslations("tennis");
   const locale = useLocale();
   const { isAdmin } = useAuth();
@@ -43,6 +45,7 @@ function DrillsContent() {
         ) : (
           <DrillList
             drills={drills}
+            reference={reference}
             // A library drill, for a coach: a copy of it to make one's own, in one's language.
             onPick={(d) =>
               d.userId || isAdmin
@@ -53,7 +56,7 @@ function DrillsContent() {
           />
         )}
       </div>
-      <DrillDialog drill={editing} admin={!!isAdmin} onClose={() => setEditing(null)} />
+      <DrillDialog drill={editing} admin={!!isAdmin} reference={reference} onClose={() => setEditing(null)} />
     </>
   );
 }
@@ -61,7 +64,7 @@ function DrillsContent() {
 export default function TennisDrillsPage() {
   return (
     <RequireFeature feature="tennis" namespace="tennis">
-      <DrillsContent />
+      <TennisReferenceGate>{(reference) => <DrillsContent reference={reference} />}</TennisReferenceGate>
     </RequireFeature>
   );
 }

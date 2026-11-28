@@ -300,6 +300,12 @@ await page.evaluate(async ({ user, libraryRows, tennisDrills }) => {
   const m083 = readFileSync("supabase/migrations/083_music_apps.sql", "utf8");
   const music = m083.slice(m083.indexOf("'\n[") + 1, m083.indexOf("]\n'") + 1);
   await page.evaluate((v) => localStorage.setItem("traintrack.guidance.music_apps", v), JSON.stringify(JSON.parse(music)));
+  // The tennis notebook's reference and the body map's muscles, as migration 089 keeps them.
+  const m089 = readFileSync("supabase/migrations/089_tennis_teams_and_references.sql", "utf8");
+  for (const key of ["tennis_reference", "body_muscles"]) {
+    const text = m089.match(new RegExp(`VALUES \\('${key}', '([\\s\\S]*?)'\\) ON CONFLICT`))[1].replace(/''/g, "'");
+    await page.evaluate(({ key, text }) => localStorage.setItem(`traintrack.guidance.${key}`, text), { key, text: JSON.stringify(JSON.parse(text)) });
+  }
 }
 
 await context.setOffline(true);
@@ -2874,7 +2880,10 @@ await test("a link asking for boxing waits for the rounds' reference on a first 
   });
   // The reference read from the server, a little after the rest: only that request is answered, nothing reaches a server.
   const settings = (route) =>
-    new Promise((resolve) => setTimeout(resolve, 1500)).then(() => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([{ key: "boxing_rounds", value: kept }]) }));
+    new Promise((resolve) => setTimeout(resolve, 1500))
+      .then(() => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([{ key: "boxing_rounds", value: kept }]) }))
+      // A request the page let go meanwhile (it moved on): nothing left to answer.
+      .catch(() => {});
   const isSettings = (url) => url.pathname.endsWith("/rest/v1/app_settings");
   try {
     await context.route(isSettings, settings);
@@ -2894,9 +2903,9 @@ await test("a link asking for boxing waits for the rounds' reference on a first 
 });
 
 await test("tennis: a coach's group, a lesson prepared with drills for its age, run with the clock, marked given, followed week by week", async () => {
-  // Found among the sports and tools.
-  await page.goto(`${BASE}/fr/more`);
-  await page.getByRole("link", { name: /Tennis : carnet de coach/ }).click();
+  // In Coaching > Teams, the way to the notebook.
+  await page.goto(`${BASE}/fr/teams`);
+  await page.getByRole("link", { name: "Carnet de tennis" }).click();
   await page.waitForURL(/\/fr\/tennis$/, { timeout: 10000 });
   await page.getByText(/Créez votre premier groupe/).waitFor({ timeout: 10000 });
 
@@ -2914,6 +2923,13 @@ await test("tennis: a coach's group, a lesson prepared with drills for its age, 
   const week = page.locator("section", { has: page.getByRole("heading", { name: "Cette semaine" }) });
   await week.getByText("À préparer").waitFor({ timeout: 5000 });
   await snap("tennis-home");
+  // A team without accounts, in Coaching > Teams beside the teams.
+  await page.goto(`${BASE}/fr/teams`);
+  const teams = page.locator("section", { has: page.getByRole("heading", { name: "Groupes de tennis · sans comptes" }) });
+  await teams.getByRole("link", { name: /Mardi 17h · 8-10 ans/ }).waitFor({ timeout: 10000 });
+  expect(await teams.getByText(/8 joueurs/).count(), "the group's players are not counted");
+  await page.goto(`${BASE}/fr/tennis`);
+  await week.getByText("À préparer").waitFor({ timeout: 10000 });
 
   // The lesson of today: a theme, drills that suit the age band.
   await week.getByRole("button", { name: /Mardi 17h · 8-10 ans/ }).click();

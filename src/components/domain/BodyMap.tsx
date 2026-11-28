@@ -1,11 +1,12 @@
 "use client";
 
 import { useId, useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { ChevronDown, ChevronUp, X } from "lucide-react";
 import type { Exercise, Muscle, MuscleGroup } from "@/db";
 import { JOINTS, MIRROR, SHAPES, SILHOUETTE, VIEW_BOX, type View } from "@/lib/bodyShapes";
-import { MUSCLES_BY_GROUP, muscleLoad, nextChoice, type MuscleSelection } from "@/lib/muscleMap";
+import { muscleLoad, muscleName, musclesByGroup, nextChoice, type MuscleSelection } from "@/lib/muscleMap";
+import { useBodyMuscles } from "@/hooks/useBodyMuscles";
 import { activeInjuries } from "@/lib/injuries";
 import type { PainArea } from "@/lib/pain";
 import { useInjuries } from "@/hooks/useAthleteProfile";
@@ -131,6 +132,8 @@ function useInjuredAreas(): PainArea[] {
 export function MuscleFilter({ selection, onChange }: { selection: MuscleSelection; onChange: (s: MuscleSelection) => void }) {
   const t = useTranslations("bodyMap");
   const te = useTranslations("exercises");
+  const locale = useLocale();
+  const muscles = useBodyMuscles();
   const injured = useInjuredAreas();
   const tap = (m: Muscle) => {
     const next = { ...selection };
@@ -140,6 +143,7 @@ export function MuscleFilter({ selection, onChange }: { selection: MuscleSelecti
     onChange(next);
   };
   const any = Object.keys(selection).length > 0;
+  if (!muscles) return <p role="status" className="text-xs text-muted-foreground">{t("notLoaded")}</p>;
   return (
     <div className="space-y-3">
       <p className="text-xs text-muted-foreground">{t("filterHint")}</p>
@@ -151,23 +155,23 @@ export function MuscleFilter({ selection, onChange }: { selection: MuscleSelecti
         </p>
       )}
       <div className="space-y-2" role="group" aria-label={t("filterTitle")}>
-        {MUSCLES_BY_GROUP.map(({ group, muscles }) => (
+        {musclesByGroup(muscles).map(({ group, muscles: ofGroup }) => (
           <div key={group} className="flex flex-wrap items-center gap-1.5">
             <span className="w-full text-xs font-semibold text-muted-foreground">{te(`mg_${group}`)}</span>
-            {muscles.map((m) => {
+            {ofGroup.map((m) => {
               const c = selection[m];
               return (
                 <button
                   key={m}
                   type="button"
                   onClick={() => tap(m)}
-                  aria-label={`${t(`m_${m}`)} : ${c === "in" ? t("stateIn") : c === "out" ? t("stateOut") : t("stateNone")}`}
+                  aria-label={`${muscleName(muscles, m, locale)} : ${c === "in" ? t("stateIn") : c === "out" ? t("stateOut") : t("stateNone")}`}
                   className={cn(
                     "min-h-9 rounded-full border px-2.5 text-xs font-medium",
                     c === "in" ? "border-accent-500 bg-accent-500 text-white" : c === "out" ? "border-border text-muted-foreground line-through" : "border-border hover:bg-muted"
                   )}
                 >
-                  {t(`m_${m}`)}
+                  {muscleName(muscles, m, locale)}
                 </button>
               );
             })}
@@ -196,7 +200,9 @@ export interface SessionEntry {
 /** The muscles a session works, on the body, folded by default. */
 export function SessionMuscles({ entries, title, defaultOpen = false }: { entries: SessionEntry[]; title?: string; defaultOpen?: boolean }) {
   const t = useTranslations("bodyMap");
+  const locale = useLocale();
   const library = useExercises();
+  const muscles = useBodyMuscles();
   const injured = useInjuredAreas();
   const [open, setOpen] = useState(defaultOpen);
   const load = useMemo(() => {
@@ -205,11 +211,13 @@ export function SessionMuscles({ entries, title, defaultOpen = false }: { entrie
       entries.flatMap((e) => {
         const exercise = e.exercise ?? byName.get(e.name) ?? (e.muscleGroup ? { muscleGroup: e.muscleGroup } : undefined);
         return exercise ? [{ exercise, amount: e.amount }] : [];
-      })
+      }),
+      muscles ?? []
     );
-  }, [entries, library]);
-  if (!load.size) return null;
-  const most = [...load].sort((a, b) => b[1] - a[1]).filter(([, v]) => v >= 0.67).map(([m]) => t(`m_${m}`));
+  }, [entries, library, muscles]);
+  if (!muscles || !load.size) return null;
+  const name = (m: string) => muscleName(muscles, m, locale);
+  const most = [...load].sort((a, b) => b[1] - a[1]).filter(([, v]) => v >= 0.67).map(([m]) => name(m));
   const heading = title ?? t("sessionTitle");
   return (
     <section className="t-surface rounded-2xl ring-1 ring-foreground/5">
@@ -222,7 +230,7 @@ export function SessionMuscles({ entries, title, defaultOpen = false }: { entrie
       </button>
       {open && (
         <div className="space-y-2 px-4 pb-4">
-          <BodyMap load={load} injured={injured} label={t("imgLabel", { list: [...load].sort((a, b) => b[1] - a[1]).map(([m]) => t(`m_${m}`)).join(", ") })} />
+          <BodyMap load={load} injured={injured} label={t("imgLabel", { list: [...load].sort((a, b) => b[1] - a[1]).map(([m]) => name(m)).join(", ") })} />
           <BodyMapLegend injured={injured.length > 0} />
         </div>
       )}

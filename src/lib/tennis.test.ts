@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
-import { AGE_BANDS, CATEGORIES, EQUIPMENT, addDays, drillText, groupWeeks, isoDay, lessonLength, nextSlot, planItem, planMinutes, previousPlan, slotsOfWeek, suitsAge, themeMinutes, themesToRevisit } from "./tennis";
+import { addDays, drillText, groupWeeks, isoDay, lessonLength, nextSlot, planItem, planMinutes, previousPlan, slotsOfWeek, suitsAge, themeMinutes, themesToRevisit } from "./tennis";
 import type { TennisPlanItem } from "@/db";
+import { coreThemes, parseTennisReference, refLabel } from "./tennisReference";
+
+// The reference as migration 089 puts it in the app settings.
+const sql089 = readFileSync("supabase/migrations/089_tennis_teams_and_references.sql", "utf8");
+const reference = parseTennisReference(sql089.match(/VALUES \('tennis_reference', '([\s\S]*?)'\) ON CONFLICT/)![1].replace(/''/g, "'"))!;
+const CORE = coreThemes(reference);
 
 const group = { slots: [{ day: 4, time: "17:00", minutes: 90 }, { day: 2, time: "17:00", minutes: 60 }] };
 const item = (category: TennisPlanItem["category"], minutes: number): TennisPlanItem => ({ name: category, category, minutes });
@@ -33,8 +39,8 @@ describe("the themes worked", () => {
   });
 
   it("names the core themes left aside these last three weeks, for a group that trained", () => {
-    expect(themesToRevisit(lessons, "2026-12-01")).toEqual(["return", "volley"]);
-    expect(themesToRevisit(lessons, "2026-12-28")).toEqual([]);
+    expect(themesToRevisit(lessons, "2026-12-01", CORE)).toEqual(["return", "volley"]);
+    expect(themesToRevisit(lessons, "2026-12-28", CORE)).toEqual([]);
   });
 
   it("starts from the last lesson's plan, a copy", () => {
@@ -63,16 +69,26 @@ describe("a drill", () => {
   });
 });
 
-describe("the library of migration 088", () => {
+describe("the reference of migration 089 and the library of migration 088", () => {
   const sql = readFileSync("supabase/migrations/088_tennis.sql", "utf8");
-  const rows = [...sql.matchAll(/^INSERT INTO tennis_drills .*? VALUES \(NULL, '((?:[^']|'')+)', .*?, '(\w+)', (\d+), '(\[.*?\])'::jsonb, '(\[.*?\])'::jsonb\)/gm)];
-  it("has drills in every category, for every age, with known equipment, each in three languages", () => {
+  const rows = [...sql.matchAll(/^INSERT INTO tennis_drills .*? VALUES \(NULL, '((?:[^']|'')+)', .*?, '([\w-]+)', (\d+), '(\[.*?\])'::jsonb, '(\[.*?\])'::jsonb\)/gm)];
+  const ids = (list: { id: string }[]) => list.map((i) => i.id);
+
+  it("names themes, ages, levels and equipment in three languages, the strokes and footwork marked core", () => {
+    expect(reference).not.toBeNull();
+    expect(CORE).toEqual(["footwork", "forehand", "backhand", "serve", "return", "volley"]);
+    expect(refLabel(reference.ageBands, "8-10", "fr")).toBe("8-10 ans");
+    expect(refLabel(reference.themes, "gone", "fr")).toBe("gone");
+    expect(parseTennisReference(JSON.stringify({ ...reference, themes: [{ id: "Bad Id", fr: "a", en: "b", de: "c" }] }))).toBeNull();
+  });
+
+  it("covers every drill of the library: its theme, its ages, its equipment", () => {
     expect(rows.length).toBe(35);
-    expect(new Set(rows.map((r) => r[2]))).toEqual(new Set(CATEGORIES));
-    for (const band of AGE_BANDS) expect(rows.some((r) => JSON.parse(r[4]).includes(band))).toBe(true);
-    for (const r of rows) for (const e of JSON.parse(r[5])) expect(EQUIPMENT).toContain(e);
+    expect(new Set(rows.map((r) => r[2]))).toEqual(new Set(ids(reference.themes)));
+    for (const r of rows) {
+      for (const a of JSON.parse(r[4])) expect(ids(reference.ageBands)).toContain(a);
+      for (const e of JSON.parse(r[5])) expect(ids(reference.equipment)).toContain(e);
+    }
     expect(new Set(rows.map((r) => r[1])).size).toBe(35);
-    expect(sql).toContain("tennis_drills_check");
-    for (const c of CATEGORIES) expect(sql).toContain(`'${c}'`);
   });
 });

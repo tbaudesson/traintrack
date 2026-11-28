@@ -45,9 +45,9 @@ export function useTennisDrills(): TennisDrill[] | undefined {
   }, []);
 }
 
-export async function saveTennisGroup(fields: Pick<TennisGroup, "name" | "ageBand" | "level" | "slots" | "players" | "notes"> & { archivedAt?: string | null }, id?: number): Promise<number> {
-  if (id) await db.tennisGroups.update(id, { ...fields, updatedAt: now(), _dirty: 1 });
-  else id = (await db.tennisGroups.add({ ...fields, ...fresh() } as TennisGroup)) as number;
+export async function saveTennisGroup(fields: Pick<TennisGroup, "name" | "ageBand" | "level" | "slots" | "players" | "description"> & { archivedAt?: string | null }, id?: number): Promise<number> {
+  if (id) await db.tennisGroups.update(id, { ...fields, kind: "tennis", updatedAt: now(), _dirty: 1 });
+  else id = (await db.tennisGroups.add({ ...fields, kind: "tennis", ...fresh() } as TennisGroup)) as number;
   schedulePush();
   return id;
 }

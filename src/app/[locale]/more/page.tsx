@@ -20,7 +20,6 @@ import {
   Gauge,
   Footprints,
   PersonStanding,
-  ClipboardPen,
 } from "lucide-react";
 
 export default function MorePage() {
@@ -54,8 +53,6 @@ export default function MorePage() {
     // Vaulting only: for a vaulter, or once there is something to see.
     ...(hasFeature("vaulting") && (vaulting || competitions.length) ? [{ href: "/competitions", icon: Award, label: t("competitions") }] : []),
     ...(hasFeature("vaulting") && (vaulting || horses.length) ? [{ href: "/horses", icon: PawPrint, label: t("horses") }] : []),
-    // A tennis coach's notebook: groups, lessons prepared and given.
-    ...(hasFeature("tennis") ? [{ href: "/tennis", icon: ClipboardPen, label: t("tennis") }] : []),
     { href: "/messages", icon: MessageCircle, label: t("messages") },
     { href: "/health", icon: Activity, label: t("health") },
   ];

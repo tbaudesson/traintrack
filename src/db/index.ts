@@ -38,12 +38,8 @@ export type MuscleGroup =
   | "full_body"
   | "other";
 /** The muscles drawn on the body map, finer than the groups (migration 086); each belongs to one group. */
-export type Muscle =
-  | "chest" | "front_delts" | "side_delts" | "rear_delts"
-  | "biceps" | "triceps" | "forearms"
-  | "abs" | "obliques"
-  | "traps" | "lats" | "lower_back"
-  | "glutes" | "quads" | "hamstrings" | "adductors" | "calves";
+/** A muscle of the body map: an id of the list the admin keeps (app settings "body_muscles"). */
+export type Muscle = string;
 export type Equipment =
   | "barbell"
   | "dumbbell"
@@ -509,20 +505,26 @@ export interface TennisSlot {
   minutes: number;
 }
 
-export type TennisAgeBand = "8-10" | "11-13" | "14-16" | "adult";
-export type TennisLevel = "beginner" | "intermediate" | "competition";
-export type TennisCategory = "warmup" | "footwork" | "forehand" | "backhand" | "serve" | "return" | "volley" | "play" | "games" | "physical" | "cooldown";
-export type TennisEquipment = "balls" | "bands" | "cones" | "hoops" | "ladder" | "medicine_ball" | "rope" | "targets";
+/** Ids of the tennis reference an admin keeps (app settings "tennis_reference", migration 089). */
+export type TennisAgeBand = string;
+export type TennisLevel = string;
+export type TennisCategory = string;
+export type TennisEquipment = string;
 
-/** A tennis coach's group: never its players, only its age band and how many play (migration 088). */
+/**
+ * A tennis coach's group: a team without accounts, kept with the teams (kind
+ * "tennis", migration 089). Never its players, only its age band and how many play.
+ */
 export interface TennisGroup extends SyncFields {
   id?: number;
+  kind: "tennis";
   name: string;
+  /** Notes on the group (the team's description). */
+  description?: string | null;
   ageBand?: TennisAgeBand | null;
   level?: TennisLevel | null;
   slots: TennisSlot[];
   players?: number | null;
-  notes?: string | null;
   archivedAt?: string | null;
   createdAt: string;
   updatedAt: string;

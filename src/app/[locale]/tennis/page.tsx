@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Archive, CheckCircle2, ChevronRight, CircleDashed, ListChecks, Pencil, Plus, Users } from "lucide-react";
 import type { TennisGroup, TennisLesson } from "@/db";
 import { Link, useRouter } from "@/i18n/navigation";
 import { addTennisLesson, useTennisGroups, useTennisLessons } from "@/hooks/useTennis";
 import { isGiven, lessonLength, planMinutes, slotsOfWeek, themesToRevisit } from "@/lib/tennis";
+import { coreThemes, refLabel, type TennisReference } from "@/lib/tennisReference";
+import { TennisReferenceGate } from "@/components/domain/TennisReferenceGate";
 import { mondayOfDate } from "@/lib/weekPlan";
 import { localDate } from "@/lib/dates";
 import { tennisGroupHref as groupHref, tennisLessonHref as lessonHref } from "@/lib/routes";
@@ -22,7 +24,7 @@ import { GroupDialog } from "@/components/domain/TennisDialogs";
  * ready, given), then the groups with what to bring back. Nothing about the
  * players themselves.
  */
-function TennisHome() {
+function TennisHome({ reference }: { reference: TennisReference }) {
   const t = useTranslations("tennis");
   const router = useRouter();
   const groups = useTennisGroups();
@@ -81,7 +83,7 @@ function TennisHome() {
           <section className="space-y-2" aria-labelledby="tennis-groups">
             <SectionHeading id="tennis-groups">{t("groups")}</SectionHeading>
             {active.map((g) => (
-              <GroupRow key={g.id} group={g} lessons={(lessons ?? []).filter((l) => l.groupId === g.id)} today={today} onEdit={() => setEditing(g)} />
+              <GroupRow key={g.id} group={g} reference={reference} lessons={(lessons ?? []).filter((l) => l.groupId === g.id)} today={today} onEdit={() => setEditing(g)} />
             ))}
           </section>
         )}
@@ -94,13 +96,13 @@ function TennisHome() {
             </summary>
             <div className="space-y-2 pt-1 pb-3">
               {archived.map((g) => (
-                <GroupRow key={g.id} group={g} lessons={(lessons ?? []).filter((l) => l.groupId === g.id)} today={today} onEdit={() => setEditing(g)} />
+                <GroupRow key={g.id} group={g} reference={reference} lessons={(lessons ?? []).filter((l) => l.groupId === g.id)} today={today} onEdit={() => setEditing(g)} />
               ))}
             </div>
           </details>
         )}
       </div>
-      <GroupDialog group={editing} onClose={() => setEditing(null)} />
+      <GroupDialog group={editing} reference={reference} onClose={() => setEditing(null)} />
     </>
   );
 }
@@ -137,12 +139,13 @@ function WeekRow({ group, date, time, lesson, past, onOpen }: { group: TennisGro
   );
 }
 
-function GroupRow({ group, lessons, today, onEdit }: { group: TennisGroup; lessons: TennisLesson[]; today: string; onEdit: () => void }) {
+function GroupRow({ group, reference, lessons, today, onEdit }: { group: TennisGroup; reference: TennisReference; lessons: TennisLesson[]; today: string; onEdit: () => void }) {
   const t = useTranslations("tennis");
+  const locale = useLocale();
   const { day } = useFormat();
   const last = lessons.filter(isGiven).sort((a, b) => b.date.localeCompare(a.date))[0];
-  const revisit = themesToRevisit(lessons, today);
-  const facts = [group.ageBand ? t(`age_${group.ageBand}`) : null, group.level ? t(`level_${group.level}`) : null, group.players ? t("playersCount", { count: group.players }) : null];
+  const revisit = themesToRevisit(lessons, today, coreThemes(reference));
+  const facts = [group.ageBand ? refLabel(reference.ageBands, group.ageBand, locale) : null, group.level ? refLabel(reference.levels, group.level, locale) : null, group.players ? t("playersCount", { count: group.players }) : null];
   return (
     <div className="t-surface flex items-start gap-1 rounded-2xl ring-1 ring-foreground/5">
       <Link href={groupHref(group.id!)} className="min-w-0 flex-1 space-y-0.5 rounded-2xl px-4 py-3 hover:bg-muted">
@@ -150,7 +153,7 @@ function GroupRow({ group, lessons, today, onEdit }: { group: TennisGroup; lesso
         <span className="block text-xs text-muted-foreground">{facts.filter(Boolean).join(" · ")}</span>
         <span className="block text-xs text-muted-foreground">{last ? t("lastGiven", { date: day(last.date) }) : t("noLessonYet")}</span>
         {revisit.length > 0 && (
-          <span className="block text-xs font-medium text-amber-700 dark:text-amber-300">{t("revisit", { list: revisit.map((c) => t(`cat_${c}`)).join(", ") })}</span>
+          <span className="block text-xs font-medium text-amber-700 dark:text-amber-300">{t("revisit", { list: revisit.map((c) => refLabel(reference.themes, c, locale)).join(", ") })}</span>
         )}
       </Link>
       <Button variant="ghost" size="icon-sm" className="m-2" onClick={onEdit} aria-label={t("editGroupNamed", { name: group.name })}>
@@ -163,7 +166,7 @@ function GroupRow({ group, lessons, today, onEdit }: { group: TennisGroup; lesso
 export default function TennisPage() {
   return (
     <RequireFeature feature="tennis" namespace="tennis">
-      <TennisHome />
+      <TennisReferenceGate>{(reference) => <TennisHome reference={reference} />}</TennisReferenceGate>
     </RequireFeature>
   );
 }

@@ -2,12 +2,14 @@
 
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { CheckCircle2, CircleDashed, Pencil, Plus } from "lucide-react";
 import type { TennisGroup } from "@/db";
 import { Link, useRouter } from "@/i18n/navigation";
 import { addTennisLesson, useTennisGroup, useTennisLessons } from "@/hooks/useTennis";
-import { CATEGORIES, addDays, groupWeeks, isGiven, nextSlot, planMinutes, sortedSlots, themeMinutes, themesToRevisit } from "@/lib/tennis";
+import { addDays, groupWeeks, isGiven, nextSlot, planMinutes, sortedSlots, themeMinutes, themesToRevisit } from "@/lib/tennis";
+import { coreThemes, refLabel, type TennisReference } from "@/lib/tennisReference";
+import { TennisReferenceGate } from "@/components/domain/TennisReferenceGate";
 import { mondayOfDate } from "@/lib/weekPlan";
 import { localDate } from "@/lib/dates";
 import { tennisLessonHref } from "@/lib/routes";
@@ -22,8 +24,14 @@ import { GroupDialog } from "@/components/domain/TennisDialogs";
  * A group, week by week: the lessons planned and given, with their themes,
  * and the minutes given to each theme over the last four weeks.
  */
-function GroupContent({ id }: { id: number }) {
+function GroupContent({ id, reference }: { id: number; reference: TennisReference }) {
   const t = useTranslations("tennis");
+  const locale = useLocale();
+  // The themes in a lesson's order; one the reference no longer has, after them.
+  const themeOrder = (ids: Iterable<string>) => {
+    const all = [...new Set(ids)];
+    return [...reference.themes.map((th) => th.id).filter((c) => all.includes(c)), ...all.filter((c) => !reference.themes.some((th) => th.id === c))];
+  };
   const router = useRouter();
   const { day } = useFormat();
   const group = useTennisGroup(id);
@@ -39,7 +47,7 @@ function GroupContent({ id }: { id: number }) {
   const recent = lessons.filter((l) => l.date >= addDays(mondayOfDate(today), -21) && l.date <= today);
   const minutes = themeMinutes(recent);
   const top = Math.max(1, ...minutes.values());
-  const revisit = themesToRevisit(lessons, today);
+  const revisit = themesToRevisit(lessons, today, coreThemes(reference));
 
   async function newLesson() {
     const date = nextSlot(group!, today)?.date ?? today;
@@ -61,8 +69,8 @@ function GroupContent({ id }: { id: number }) {
       <div className="mx-auto max-w-3xl space-y-6 p-4 pb-28 md:p-6">
         <p className="text-sm text-muted-foreground">
           {[
-            group.ageBand ? t(`age_${group.ageBand}`) : null,
-            group.level ? t(`level_${group.level}`) : null,
+            group.ageBand ? refLabel(reference.ageBands, group.ageBand, locale) : null,
+            group.level ? refLabel(reference.levels, group.level, locale) : null,
             group.players ? t("playersCount", { count: group.players }) : null,
             ...sortedSlots(group.slots ?? []).map((s) => `${t(`day_${s.day}`)} ${s.time} (${s.minutes} min)`),
           ]
@@ -80,9 +88,9 @@ function GroupContent({ id }: { id: number }) {
             <p className="text-sm text-muted-foreground">{t("themesEmpty")}</p>
           ) : (
             <ul className="space-y-1.5">
-              {CATEGORIES.filter((c) => minutes.get(c)).map((c) => (
+              {themeOrder(minutes.keys()).filter((c) => minutes.get(c)).map((c) => (
                 <li key={c} className="grid grid-cols-[7.5rem_1fr_3.5rem] items-center gap-2 text-sm">
-                  <span className="truncate">{t(`cat_${c}`)}</span>
+                  <span className="truncate">{refLabel(reference.themes, c, locale)}</span>
                   <span className="h-2 overflow-hidden rounded-full bg-muted">
                     <span className="block h-full rounded-full bg-accent-500" style={{ width: `${(minutes.get(c)! / top) * 100}%` }} />
                   </span>
@@ -93,7 +101,7 @@ function GroupContent({ id }: { id: number }) {
           )}
           {revisit.length > 0 && (
             <p className="rounded-xl bg-amber-50 p-2.5 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
-              {t("revisit", { list: revisit.map((c) => t(`cat_${c}`)).join(", ") })}
+              {t("revisit", { list: revisit.map((c) => refLabel(reference.themes, c, locale)).join(", ") })}
             </p>
           )}
         </section>
@@ -109,7 +117,7 @@ function GroupContent({ id }: { id: number }) {
                 <p className="text-sm text-muted-foreground">{t("noLessonWeek")}</p>
               ) : (
                 w.lessons.map((l) => {
-                  const cats = CATEGORIES.filter((c) => (l.plan ?? []).some((p) => p.category === c));
+                  const cats = themeOrder((l.plan ?? []).map((p) => p.category));
                   return (
                     <Link key={l.id} href={tennisLessonHref(l.id!)} className="t-surface flex items-start gap-3 rounded-2xl px-4 py-3 ring-1 ring-foreground/5 hover:bg-muted">
                       {isGiven(l) ? (
@@ -128,7 +136,7 @@ function GroupContent({ id }: { id: number }) {
                             .filter(Boolean)
                             .join(" · ")}
                         </span>
-                        {cats.length > 0 && <span className="block text-xs text-muted-foreground">{cats.map((c) => t(`cat_${c}`)).join(", ")}</span>}
+                        {cats.length > 0 && <span className="block text-xs text-muted-foreground">{cats.map((c) => refLabel(reference.themes, c, locale)).join(", ")}</span>}
                         {l.notes && <span className="mt-1 line-clamp-2 block text-xs italic text-muted-foreground">{l.notes}</span>}
                       </span>
                     </Link>
@@ -141,6 +149,7 @@ function GroupContent({ id }: { id: number }) {
       </div>
       <GroupDialog
         group={editing}
+        reference={reference}
         onClose={() => {
           setEditing(null);
         }}
@@ -151,7 +160,7 @@ function GroupContent({ id }: { id: number }) {
 
 function ById() {
   const id = Number(useSearchParams().get("id"));
-  return id > 0 ? <GroupContent key={id} id={id} /> : null;
+  return id > 0 ? <TennisReferenceGate>{(reference) => <GroupContent key={id} id={id} reference={reference} />}</TennisReferenceGate> : null;
 }
 
 export default function TennisGroupPage() {

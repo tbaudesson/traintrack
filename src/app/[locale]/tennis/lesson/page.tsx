@@ -8,6 +8,8 @@ import type { TennisLesson, TennisPlanItem } from "@/db";
 import { useRouter } from "@/i18n/navigation";
 import { deleteTennisLesson, updateTennisLesson, useTennisDrills, useTennisGroup, useTennisLesson, useTennisLessons } from "@/hooks/useTennis";
 import { isGiven, lessonLength, planItem, planMinutes, previousPlan } from "@/lib/tennis";
+import { refLabel, type TennisReference } from "@/lib/tennisReference";
+import { TennisReferenceGate } from "@/components/domain/TennisReferenceGate";
 import { tennisGroupHref } from "@/lib/routes";
 import { useFormat } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -27,7 +29,7 @@ const GET_READY_SEC = 10;
  * the length of the group's slot. Run on the court with the clock, then
  * marked given: how many came, how hard it was, a note.
  */
-function LessonContent({ id }: { id: number }) {
+function LessonContent({ id, reference }: { id: number; reference: TennisReference }) {
   const t = useTranslations("tennis");
   const locale = useLocale();
   const router = useRouter();
@@ -123,7 +125,7 @@ function LessonContent({ id }: { id: number }) {
                 <span className="w-5 shrink-0 text-xs text-muted-foreground tabular-nums">{i + 1}</span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-medium">{p.name}</span>
-                  <span className="block text-xs text-muted-foreground">{t(`cat_${p.category}`)}</span>
+                  <span className="block text-xs text-muted-foreground">{refLabel(reference.themes, p.category, locale)}</span>
                 </span>
                 <label className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Input
@@ -209,6 +211,7 @@ function LessonContent({ id }: { id: number }) {
       <DrillPicker
         open={picking}
         drills={drills ?? []}
+        reference={reference}
         ageBand={group.ageBand}
         onClose={() => setPicking(false)}
         onPick={(d) => {
@@ -219,7 +222,7 @@ function LessonContent({ id }: { id: number }) {
       <GivenDialog lesson={giving} onClose={() => setGiving(null)} />
       {running && (
         <IntervalPlayer
-          session={{ steps: plan.map((p) => ({ type: "work" as const, exercise: { name: p.name, cue: t(`cat_${p.category}`) }, seconds: p.minutes * 60 })) }}
+          session={{ steps: plan.map((p) => ({ type: "work" as const, exercise: { name: p.name, cue: refLabel(reference.themes, p.category, locale) }, seconds: p.minutes * 60 })) }}
           getReadySec={GET_READY_SEC}
           labels={{ work: t("playerWork"), rest: t("playerNext"), counter: (n, all) => t("counter", { n, total: all }) }}
           onEnd={() => {
@@ -235,7 +238,7 @@ function LessonContent({ id }: { id: number }) {
 
 function ById() {
   const id = Number(useSearchParams().get("id"));
-  return id > 0 ? <LessonContent key={id} id={id} /> : null;
+  return id > 0 ? <TennisReferenceGate>{(reference) => <LessonContent key={id} id={id} reference={reference} />}</TennisReferenceGate> : null;
 }
 
 export default function TennisLessonPage() {

@@ -3,16 +3,9 @@
  * drills with their minutes, then given. Everything here is worked out from
  * those rows; nothing about the players is ever kept.
  */
-import type { TennisAgeBand, TennisCategory, TennisDrill, TennisEquipment, TennisGroup, TennisLesson, TennisLevel, TennisPlanItem, TennisSlot } from "@/db";
+import type { TennisAgeBand, TennisCategory, TennisDrill, TennisGroup, TennisLesson, TennisPlanItem, TennisSlot } from "@/db";
 import { mondayOfDate } from "./weekPlan";
 
-export const AGE_BANDS: TennisAgeBand[] = ["8-10", "11-13", "14-16", "adult"];
-export const LEVELS: TennisLevel[] = ["beginner", "intermediate", "competition"];
-/** In the order of a lesson: warming up first, cooling down last. */
-export const CATEGORIES: TennisCategory[] = ["warmup", "footwork", "forehand", "backhand", "serve", "return", "volley", "play", "games", "physical", "cooldown"];
-export const EQUIPMENT: TennisEquipment[] = ["balls", "bands", "cones", "hoops", "ladder", "medicine_ball", "rope", "targets"];
-/** The strokes and the footwork: the themes a coach keeps coming back to, flagged when left aside. */
-export const CORE_THEMES: TennisCategory[] = ["footwork", "forehand", "backhand", "serve", "return", "volley"];
 /** A lesson of this length unless the group's slot says otherwise. */
 export const DEFAULT_MINUTES = 60;
 
@@ -76,15 +69,15 @@ export function groupWeeks<L extends Pick<TennisLesson, "date">>(lessons: L[], t
 }
 
 /**
- * The core themes not worked in the lessons given over the last weeks, for a
- * group that has given lessons in that time: what to bring back.
+ * The core themes (the reference's) not worked in the lessons given over the
+ * last weeks, for a group that has given lessons in that time: what to bring back.
  */
-export function themesToRevisit(lessons: Pick<TennisLesson, "date" | "plan" | "givenAt">[], today: string, weeks = 3): TennisCategory[] {
+export function themesToRevisit(lessons: Pick<TennisLesson, "date" | "plan" | "givenAt">[], today: string, core: TennisCategory[], weeks = 3): TennisCategory[] {
   const from = addDays(mondayOfDate(today), -7 * (weeks - 1));
   const recent = lessons.filter((l) => isGiven(l) && l.date >= from && l.date <= today);
   if (!recent.length) return [];
   const worked = themeMinutes(recent);
-  return CORE_THEMES.filter((c) => !worked.get(c));
+  return core.filter((c) => !worked.get(c));
 }
 
 /** The plan of the group's last lesson before a day, to start from. */

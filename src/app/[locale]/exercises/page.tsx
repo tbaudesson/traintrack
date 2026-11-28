@@ -25,6 +25,7 @@ import { useExerciseLabel, exerciseDescription } from "@/lib/exerciseNames";
 import { search as searchItems } from "@/lib/search";
 import { MuscleFilter } from "@/components/domain/BodyMap";
 import { matchExercises, type MuscleRole, type MuscleSelection } from "@/lib/muscleMap";
+import { useBodyMuscles } from "@/hooks/useBodyMuscles";
 
 const EQUIPMENT: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "bodyweight", "kettlebell", "bands", "other"];
 
@@ -47,7 +48,8 @@ export default function ExercisesPage() {
     [exercises, search]
   );
 
-  const matched = useMemo(() => (filtering ? matchExercises(filtered, selection) : []), [filtering, filtered, selection]);
+  const bodyMuscles = useBodyMuscles();
+  const matched = useMemo(() => (filtering && bodyMuscles ? matchExercises(filtered, selection, bodyMuscles) : []), [filtering, filtered, selection, bodyMuscles]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, typeof filtered>();

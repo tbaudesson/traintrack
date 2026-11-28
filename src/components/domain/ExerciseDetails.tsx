@@ -3,7 +3,8 @@
 import { useLocale, useTranslations } from "next-intl";
 import type { Exercise, ExerciseLevel, LocalizedList, Movement, Muscle, MuscleGroup } from "@/db";
 import { BodyMap } from "@/components/domain/BodyMap";
-import { MUSCLES_BY_GROUP } from "@/lib/muscleMap";
+import { muscleName, musclesByGroup } from "@/lib/muscleMap";
+import { useBodyMuscles } from "@/hooks/useBodyMuscles";
 import { LEVELS, MOVEMENTS } from "@/lib/movements";
 import { MUSCLE_GROUPS } from "@/lib/muscles";
 import { useExerciseLabel } from "@/lib/exerciseNames";
@@ -33,6 +34,8 @@ export function ExerciseDetails({ ex, library }: { ex: Exercise; library: Exerci
     ...(ex.movements ?? []).map((m) => t(`movement_${m}`)),
   ].filter(Boolean) as string[];
   const tb = useTranslations("bodyMap");
+  const muscles = useBodyMuscles() ?? [];
+  const mn = (m: Muscle) => muscleName(muscles, m, locale);
   const target = ex.targetMuscles ?? [];
   const assist = ex.assistMuscles ?? [];
   if (!tags.length && !target.length && !ex.secondaryMuscles?.length && !cues.length && !mistakes.length && !parent) return null;
@@ -50,8 +53,8 @@ export function ExerciseDetails({ ex, library }: { ex: Exercise; library: Exerci
             className="h-32 w-40 shrink-0 gap-0.5"
           />
           <div className="space-y-1 text-xs">
-            <p><span className="font-semibold">{tb("worked")} :</span> {target.map((m) => tb(`m_${m}`)).join(", ")}</p>
-            {assist.length > 0 && <p className="text-muted-foreground">{tb("workedToo")} : {assist.map((m) => tb(`m_${m}`)).join(", ")}</p>}
+            <p><span className="font-semibold">{tb("worked")} :</span> {target.map(mn).join(", ")}</p>
+            {assist.length > 0 && <p className="text-muted-foreground">{tb("workedToo")} : {assist.map(mn).join(", ")}</p>}
           </div>
         </div>
       ) : (
@@ -110,6 +113,8 @@ export function listsOf(text: Record<Lang, string>): LocalizedList {
 export function ExerciseDetailsEditor({ value, onChange, library, self }: { value: DetailsDraft; onChange: (v: DetailsDraft) => void; library: Exercise[]; self: Exercise }) {
   const t = useTranslations("restrictions");
   const tb = useTranslations("bodyMap");
+  const locale = useLocale();
+  const bodyMuscles = useBodyMuscles() ?? [];
   const te = useTranslations("exercises");
   const xl = useExerciseLabel();
   const chip = (on: boolean) => cn("min-h-9 rounded-full border px-2.5 text-xs font-medium", on ? "border-accent-500 bg-accent-500 text-white" : "border-border hover:bg-muted");
@@ -151,9 +156,9 @@ export function ExerciseDetailsEditor({ value, onChange, library, self }: { valu
         <p className="mb-1 text-xs">{tb("adminLabel")}</p>
         <p className="mb-1.5 text-xs text-muted-foreground">{tb("adminHint")}</p>
         <div className="space-y-1.5">
-          {MUSCLES_BY_GROUP.map(({ group, muscles }) => (
+          {musclesByGroup(bodyMuscles).map(({ group, muscles: ofGroup }) => (
             <div key={group} className="flex flex-wrap gap-1.5">
-              {muscles.map((m) => {
+              {ofGroup.map((m) => {
                 const role = value.targetMuscles.includes(m) ? "target" : value.assistMuscles.includes(m) ? "assist" : null;
                 // A tap: main, then secondary, then none.
                 const next = () => {
@@ -168,10 +173,10 @@ export function ExerciseDetailsEditor({ value, onChange, library, self }: { valu
                     key={m}
                     type="button"
                     onClick={next}
-                    aria-label={`${tb(`m_${m}`)} : ${role === "target" ? tb("adminMain") : role === "assist" ? tb("adminAlso") : tb("stateNone")}`}
+                    aria-label={`${muscleName(bodyMuscles, m, locale)} : ${role === "target" ? tb("adminMain") : role === "assist" ? tb("adminAlso") : tb("stateNone")}`}
                     className={cn(chip(role === "target"), role === "assist" && "border-accent-500 bg-accent-500/15 text-accent-text")}
                   >
-                    {tb(`m_${m}`)}
+                    {muscleName(bodyMuscles, m, locale)}
                   </button>
                 );
               })}

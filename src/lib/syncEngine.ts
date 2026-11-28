@@ -40,6 +40,8 @@ interface TableSyncConfig {
    * user_id = null).
    */
   trainerVisible?: boolean;
+  /** Only the rows with these values are pulled: a table shared by two kinds of rows (the teams and the tennis groups). */
+  pullFilter?: Record<string, string>;
 }
 
 // ─── Table configuration ──────────────────────────────────────────────
@@ -166,12 +168,15 @@ const TABLE_CONFIGS: TableSyncConfig[] = [
     trainerVisible: true,
   },
   {
-    // A tennis coach's notebook (migration 088): one's own groups and lessons;
-    // the drill library (user_id null) is read by everyone, like the exercises.
+    // A tennis coach's notebook (migrations 088, 089): one's own tennis groups,
+    // kept with the teams (a team without accounts, kind "tennis") and only
+    // those read here; the lessons; the drill library (user_id null) read by
+    // everyone, like the exercises.
     dexieTable: "tennisGroups",
-    supabaseTable: "tennis_groups",
+    supabaseTable: "groups",
     jsonFields: ["slots"],
     hasUpdatedAt: true,
+    pullFilter: { kind: "tennis" },
   },
   {
     dexieTable: "tennisDrills",
@@ -545,6 +550,7 @@ async function pullTable(
   let query = config.trainerVisible
     ? supabase.from(config.supabaseTable).select("*")
     : supabase.from(config.supabaseTable).select("*").eq("user_id", userId);
+  for (const [column, value] of Object.entries(config.pullFilter ?? {})) query = query.eq(column, value);
 
   // For tables with updated_at, use it as the delta cursor.
   // Use `gte` (not `gt`) because the cursor is advanced to the newest row we
