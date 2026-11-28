@@ -28,6 +28,7 @@ export function ListEditor<R extends Row>({
   onChange,
   blank,
   extra,
+  shown,
 }: {
   title: string;
   hint?: string;
@@ -35,6 +36,8 @@ export function ListEditor<R extends Row>({
   onChange: (rows: R[]) => void;
   blank: R;
   extra?: (row: R, set: (change: Partial<R>) => void) => ReactNode;
+  /** The rows to show (a search over a long list); all by default. */
+  shown?: (row: R) => boolean;
 }) {
   const t = useTranslations("references");
   const set = (i: number, change: Partial<R>) => onChange(rows.map((r, j) => (j === i ? { ...r, ...change } : r)));
@@ -48,7 +51,7 @@ export function ListEditor<R extends Row>({
     <section className="space-y-2">
       <h3 className="text-base font-semibold">{title}</h3>
       {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
-      {rows.map((r, i) => (
+      {rows.map((r, i) => (shown && !shown(r) ? null : (
         <Card key={i}>
           <CardContent className="grid gap-2 py-3 sm:grid-cols-4">
             {(["id", "fr", "en", "de"] as const).map((k) => (
@@ -72,7 +75,7 @@ export function ListEditor<R extends Row>({
             </div>
           </CardContent>
         </Card>
-      ))}
+      )))}
       <Button variant="outline" size="sm" onClick={() => onChange([...rows, { ...blank }])}>
         <Plus className="mr-1 size-4" aria-hidden="true" />
         {t("add")}
@@ -82,7 +85,7 @@ export function ListEditor<R extends Row>({
 }
 
 /** Read one app setting, edit it, save it only when it holds together. */
-function useSetting<T>(key: string, parse: (text: string | null | undefined) => T | null) {
+export function useSetting<T>(key: string, parse: (text: string | null | undefined) => T | null) {
   const [value, setValue] = useState<T | null>(null);
   const [state, setState] = useState<"loading" | "missing" | "failed" | "ready">("loading");
   const [saving, setSaving] = useState(false);
@@ -115,12 +118,12 @@ function useSetting<T>(key: string, parse: (text: string | null | undefined) => 
   return { value, state, change, save, saving, saved, invalid };
 }
 
-function Frame({ state, title, intro, invalid, saving, saved, onSave, children }: { state: string; title: string; intro: string; invalid: boolean; saving: boolean; saved: boolean; onSave: () => void; children: ReactNode }) {
+export function Frame({ state, title, intro, invalid, saving, saved, onSave, children, missing, invalidText }: { state: string; title: string; intro: string; invalid: boolean; saving: boolean; saved: boolean; onSave: () => void; children: ReactNode; missing?: string; invalidText?: string }) {
   const t = useTranslations("references");
   const ts = useTranslations("sync");
   if (state === "loading") return <Loader2 className="mx-auto my-8 h-6 w-6 animate-spin text-muted-foreground" />;
   if (state === "failed") return <p role="status" className="py-6 text-center text-sm text-muted-foreground">{ts("offline")}</p>;
-  if (state === "missing") return <p role="status" className="py-6 text-center text-sm text-muted-foreground">{t("missing")}</p>;
+  if (state === "missing") return <p role="status" className="py-6 text-center text-sm text-muted-foreground">{missing ?? t("missing")}</p>;
   return (
     <div className="space-y-5">
       <div>
@@ -129,7 +132,7 @@ function Frame({ state, title, intro, invalid, saving, saved, onSave, children }
         <p className="mt-1 text-xs text-muted-foreground">{t("idHint")}</p>
       </div>
       {children}
-      {invalid && <p role="alert" className="text-sm text-destructive">{t("invalid")}</p>}
+      {invalid && <p role="alert" className="text-sm text-destructive">{invalidText ?? t("invalid")}</p>}
       <Button onClick={onSave} disabled={saving}>
         {saving ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : saved ? <Check className="size-4" aria-hidden="true" /> : null}
         {saved ? t("saved") : t("save")}

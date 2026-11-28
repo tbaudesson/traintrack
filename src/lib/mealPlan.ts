@@ -1,4 +1,4 @@
-import { INGREDIENTS, MEALS, suits, type FoodKey, type Ingredient, type MealIdea, type MealPrefs } from "./mealCatalog";
+import { suits, type FoodCatalog, type FoodDef, type MealIdea, type MealPrefs } from "./foods";
 import type { NutritionGuidance } from "./sportNutrition";
 
 export type DayType = "rest" | "training" | "long";
@@ -14,7 +14,7 @@ export interface Macros {
 export interface PlannedMeal {
   slot: PlanSlot;
   meal: MealIdea;
-  items: [FoodKey, number][];
+  items: [string, number][];
   macros: Macros;
 }
 
@@ -27,12 +27,14 @@ export interface DayPlan {
   total: Macros;
 }
 
-const food = (k: FoodKey) => INGREDIENTS[k] as Ingredient;
+type Foods = Pick<FoodCatalog, "foods">;
+const food = (c: Foods, id: string): FoodDef | undefined => c.foods.find((f) => f.id === id);
 
-export function macrosOf(items: [FoodKey, number][]): Macros {
+export function macrosOf(c: Foods, items: [string, number][]): Macros {
   const sum = items.reduce(
     (m, [k, g]) => {
-      const f = food(k);
+      const f = food(c, k);
+      if (!f) return m;
       return { calories: m.calories + (f.kcal * g) / 100, proteinG: m.proteinG + (f.protein * g) / 100, carbsG: m.carbsG + (f.carbs * g) / 100, fatG: m.fatG + (f.fat * g) / 100 };
     },
     { calories: 0, proteinG: 0, carbsG: 0, fatG: 0 }
@@ -41,8 +43,8 @@ export function macrosOf(items: [FoodKey, number][]): Macros {
 }
 
 /** Grams that read well: by 5 under 30 g, by 10 above; an egg stays whole, a fruit whole or half. */
-function roundGrams(k: FoodKey, g: number): number {
-  const unit = food(k).unitG;
+function roundGrams(c: Foods, k: string, g: number): number {
+  const unit = food(c, k)?.unitG;
   if (unit && unit >= 50) {
     const step = unit < 80 ? unit : unit / 2;
     return Math.max(step, Math.round(g / step) * step);
@@ -54,12 +56,12 @@ function roundGrams(k: FoodKey, g: number): number {
  * A meal to the calories wanted: the foods that make it (not the oil and the
  * vegetables) go up or down together, from half to a bit over twice the portion.
  */
-export function scaleMeal(meal: MealIdea, calories: number, [least, most]: [number, number]): [FoodKey, number][] {
-  const fixed = new Set(meal.fixed ?? []);
-  const fixedKcal = macrosOf(meal.items.filter(([k]) => fixed.has(k))).calories;
-  const movingKcal = macrosOf(meal.items.filter(([k]) => !fixed.has(k))).calories;
+export function scaleMeal(c: Foods, meal: Pick<MealIdea, "items">, calories: number, [least, most]: [number, number]): [string, number][] {
+  const fixed = new Set(meal.items.filter(([k]) => food(c, k)?.keepsPortion).map(([k]) => k));
+  const fixedKcal = macrosOf(c, meal.items.filter(([k]) => fixed.has(k))).calories;
+  const movingKcal = macrosOf(c, meal.items.filter(([k]) => !fixed.has(k))).calories;
   const factor = movingKcal > 0 ? Math.min(most, Math.max(least, (calories - fixedKcal) / movingKcal)) : 1;
-  return meal.items.map(([k, g]) => [k, fixed.has(k) ? g : roundGrams(k, g * factor)]);
+  return meal.items.map(([k, g]) => [k, fixed.has(k) ? g : roundGrams(c, k, g * factor)]);
 }
 
 
@@ -75,7 +77,7 @@ const share = (m: Macros) => ({
  * fewer on a rest day. `seed` changes the ideas from one day to the next;
  * `swaps` gives, for a slot, the next idea asked for.
  */
-export function planDay(g: NutritionGuidance, input: {
+export function planDay(g: NutritionGuidance, c: FoodCatalog, input: {
   calories: number;
   protein: number;
   type: DayType;
@@ -95,9 +97,9 @@ export function planDay(g: NutritionGuidance, input: {
   g.meals.split[String(input.prefs.meals) as "3" | "4"].forEach(([slot, part], i) => {
     const kind = slot === "breakfast" ? "breakfast" : slot === "snack" ? "snack" : "main";
     const taken = new Set(meals.map((m) => m.meal.id));
-    const ranked = MEALS.filter((m) => m.slot === kind && suits(m, input.prefs) && !taken.has(m.id))
+    const ranked = c.meals.filter((m) => m.slot === kind && suits(c, m, input.prefs) && !taken.has(m.id))
       .map((m) => {
-        const s = share(macrosOf(m.items));
+        const s = share(macrosOf(c, m.items));
         // The meals closest to the day's shares of protein and carbohydrates.
         return { m, score: Math.abs(s.protein - proteinShare) + Math.abs(s.carbs - carbShare) };
       })
@@ -105,8 +107,8 @@ export function planDay(g: NutritionGuidance, input: {
     if (!ranked.length) return;
     const pool = ranked.slice(0, Math.min(6, ranked.length));
     const pick = pool[(input.seed + i * 3 + (input.swaps?.[slot] ?? 0)) % pool.length].m;
-    const items = scaleMeal(pick, calories * part, g.meals.portionScale);
-    meals.push({ slot, meal: pick, items, macros: macrosOf(items) });
+    const items = scaleMeal(c, pick, calories * part, g.meals.portionScale);
+    meals.push({ slot, meal: pick, items, macros: macrosOf(c, items) });
   });
   const total = meals.reduce(
     (t, m) => ({ calories: t.calories + m.macros.calories, proteinG: t.proteinG + m.macros.proteinG, carbsG: t.carbsG + m.macros.carbsG, fatG: t.fatG + m.macros.fatG }),

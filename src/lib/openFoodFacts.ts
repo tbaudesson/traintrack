@@ -1,4 +1,4 @@
-import type { FoodItem } from "./foodCatalog";
+import type { FoodItem } from "./foods";
 
 const round1 = (v: unknown): number => {
   const n = typeof v === "number" ? v : Number(v);
@@ -45,6 +45,5 @@ export async function lookupBarcode(code: string): Promise<FoodItem | null> {
     carbs: round1(n["carbohydrates_100g"]),
     fat: round1(n["fat_100g"]),
     serving: Number.isFinite(serving) && serving > 0 ? serving : 100,
-    cat: "snack",
   };
 }

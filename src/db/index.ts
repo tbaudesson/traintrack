@@ -3,7 +3,7 @@ import { unspecifiedGroup } from "@/lib/muscles";
 import type { IntervalPlan } from "@/lib/intervals";
 import type { Injury } from "@/lib/injuries";
 import type { RunPaces } from "@/lib/runPaces";
-import type { MealPrefs } from "@/lib/mealCatalog";
+import type { MealPrefs } from "@/lib/foods";
 import Dexie, { type EntityTable } from "dexie";
 
 // ─── Sync metadata mixin ─────────────────────────────────────────────
@@ -84,7 +84,7 @@ export interface AthleteProfile extends SyncFields {
   planB?: unknown;
   /** How much of the app one sees, read by lib/displayMode; null when never chosen (migration 082). */
   displayMode?: string | null;
-  /** Diet, foods left out and meals a day, for the meal ideas, see lib/mealCatalog. */
+  /** Diet, foods left out and meals a day, for the meal ideas, see lib/foods. */
   mealPrefs?: MealPrefs | null;
   /** Optional daily macro targets */
   nutritionTargets?: { calories?: number; protein?: number; carbs?: number; fat?: number; water?: number };

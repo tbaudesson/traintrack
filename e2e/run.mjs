@@ -306,6 +306,12 @@ await page.evaluate(async ({ user, libraryRows, lessonExercises }) => {
   // The boxing rounds, as migration 085 seeds them.
   const boxingRounds = m085.slice(m085.indexOf("'boxing_rounds', '") + 18, m085.indexOf("')\nON CONFLICT"));
   await page.evaluate((v) => localStorage.setItem("traintrack.guidance.boxing_rounds", v), JSON.stringify({ ...JSON.parse(boxingRounds), ...patch095("boxing_rounds") }));
+  // The foods and the meal ideas, as migration 096 seeds them.
+  const m096 = readFileSync("supabase/migrations/096_foods.sql", "utf8");
+  for (const key of ["foods", "meal_ideas"]) {
+    const value = m096.match(new RegExp(`VALUES \\('${key}', '([\\s\\S]*?)'\\) ON CONFLICT`))[1].replace(/''/g, "'");
+    await page.evaluate(([k, v]) => localStorage.setItem(`traintrack.guidance.${k}`, v), [key, JSON.stringify(JSON.parse(value))]);
+  }
   // The music apps, as migration 083 seeds them.
   const m083 = readFileSync("supabase/migrations/083_music_apps.sql", "utf8");
   const music = m083.slice(m083.indexOf("'\n[") + 1, m083.indexOf("]\n'") + 1);
@@ -1762,6 +1768,13 @@ await test("nutrition for one's sport: carbohydrates by the kilo, and food aroun
     await page.getByText("Autour de la séance", { exact: true }).waitFor({ timeout: 5000 });
     // A long run: carbohydrates and water by the hour during it.
     await page.getByText("30–60 g de glucides/h · 400–800 ml d’eau/h").waitFor({ timeout: 5000 });
+    // The meal ideas, from the foods' reference: named in French, with their foods and grams.
+    await page.getByText(/Riz cuit \d+ g|Flocons d’avoine \d+ g|Pâtes cuites \d+ g/).first().waitFor({ timeout: 5000 });
+    // The food search, in French, finds what the list names in English too.
+    await page.getByRole("button", { name: "Ajouter un aliment" }).click();
+    await page.getByPlaceholder("Rechercher un aliment…").fill("poulet");
+    await page.getByRole("button", { name: /^Blanc de poulet cuit/ }).click();
+    expect((await page.getByPlaceholder("Rechercher un aliment…").inputValue()) === "Blanc de poulet cuit", "the food picked is not named in French");
     await page.getByText("Autour de la séance", { exact: true }).scrollIntoViewIfNeeded();
     await page.screenshot({ path: join(ARTIFACTS, "sport-nutrition.png"), fullPage: false });
   } finally {

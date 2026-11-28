@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Check, Clock, Plus, RefreshCw, SlidersHorizontal, Utensils } from "lucide-react";
 import type { NutritionEntry } from "@/db";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,7 +16,8 @@ import { fuelling, sportDay } from "@/lib/sportNutrition";
 import { useNutritionGuidance } from "@/hooks/useNutritionGuidance";
 import { localDate } from "@/lib/dates";
 import { useFormat } from "@/lib/format";
-import { DEFAULT_MEAL_PREFS, DIETS, EXCLUSIONS, INGREDIENTS, type Exclusion, type Ingredient, type MealPrefs } from "@/lib/mealCatalog";
+import { DEFAULT_MEAL_PREFS, dietOf, nameOf, type FoodsReference, type MealPrefs } from "@/lib/foods";
+import { useFoodCatalog } from "@/hooks/useFoods";
 import { daySeed, dayTypeOf, planDay, type PlanSlot } from "@/lib/mealPlan";
 import { plannedPrograms, scheduleSessions } from "@/lib/schedule";
 import { cn } from "@/lib/utils";
@@ -30,8 +31,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
  */
 export function MealPlanCard({ targets, entries, onSetTargets }: { targets?: { calories?: number; protein?: number }; entries: NutritionEntry[]; onSetTargets: () => void }) {
   const t = useTranslations("mealPlan");
-  const tm = useTranslations("meals");
-  const tf = useTranslations("food");
+  const locale = useLocale();
+  const catalog = useFoodCatalog();
   const tn = useTranslations("nutrition");
   const tc = useTranslations("catalog");
   const { sport } = useAppPrefs();
@@ -62,7 +63,7 @@ export function MealPlanCard({ targets, entries, onSetTargets }: { targets?: { c
   }, [programs, user?.id, profile?.trainingDays, profile?.scheduleMoves, workouts, today]);
 
   // The references not read yet (never online since the app was installed): nothing to work from.
-  if (!guidance) {
+  if (!guidance || !catalog) {
     return (
       <section className="t-surface space-y-2 rounded-2xl p-4 ring-1 ring-foreground/5">
         <h2 className="flex items-center gap-2 text-sm font-semibold">
@@ -93,7 +94,7 @@ export function MealPlanCard({ targets, entries, onSetTargets }: { targets?: { c
   // With the weight known, the day is shared out for one's sport; else as before.
   const goal = profile?.goals?.[0];
   const day = weightKg ? sportDay(guidance, { weightKg, calories: targets.calories, type, sport, goal }) : null;
-  const plan = planDay(guidance, {
+  const plan = planDay(guidance, catalog, {
     calories: targets.calories,
     protein: day?.protein ?? targets.protein ?? Math.round((targets.calories * guidance.meals.proteinShareDefault) / 4),
     type,
@@ -136,7 +137,7 @@ export function MealPlanCard({ targets, entries, onSetTargets }: { targets?: { c
       {plan.meals.length === 0 && <p className="text-sm text-muted-foreground">{t("nothing")}</p>}
       <ul className="space-y-2.5">
         {plan.meals.map((m) => {
-          const name = tm(m.meal.id);
+          const name = nameOf([m.meal], m.meal.id, locale);
           const done = added(name, m.slot);
           return (
             <li key={m.slot} className="space-y-1 rounded-xl bg-muted/50 p-3">
@@ -152,8 +153,8 @@ export function MealPlanCard({ targets, entries, onSetTargets }: { targets?: { c
               <p className="text-sm text-muted-foreground">
                 {m.items
                   .map(([k, g]) => {
-                    const unit = (INGREDIENTS[k] as Ingredient).unitG;
-                    return `${tf(k)} ${g} g${unit && unit >= 50 ? ` (${t("pieces", { n: num(g / unit) })})` : ""}`;
+                    const unit = catalog.foods.find((f) => f.id === k)?.unitG;
+                    return `${nameOf(catalog.foods, k, locale)} ${g} g${unit && unit >= 50 ? ` (${t("pieces", { n: num(g / unit) })})` : ""}`;
                   })
                   .join(" · ")}
               </p>
@@ -214,6 +215,7 @@ export function MealPlanCard({ targets, entries, onSetTargets }: { targets?: { c
             <DialogTitle>{t("prefs")}</DialogTitle>
           </DialogHeader>
           <MealPrefsForm
+            foods={catalog}
             initial={prefs}
             onSave={async (next) => {
               await updateTrainingSchedule({ mealPrefs: next });
@@ -227,10 +229,12 @@ export function MealPlanCard({ targets, entries, onSetTargets }: { targets?: { c
   );
 }
 
-function MealPrefsForm({ initial, onSave }: { initial: MealPrefs; onSave: (prefs: MealPrefs) => void }) {
+function MealPrefsForm({ foods, initial, onSave }: { foods: Pick<FoodsReference, "diets" | "tags">; initial: MealPrefs; onSave: (prefs: MealPrefs) => void }) {
   const t = useTranslations("mealPlan");
-  const [prefs, setPrefs] = useState(initial);
-  const toggle = (x: Exclusion) =>
+  const locale = useLocale();
+  // The diet as the list has it (the first one before any choice); what can be left out, from the foods' tags.
+  const [prefs, setPrefs] = useState({ ...initial, diet: dietOf(foods.diets, initial.diet)?.id ?? initial.diet });
+  const toggle = (x: string) =>
     setPrefs((p) => ({ ...p, exclude: p.exclude.includes(x) ? p.exclude.filter((e) => e !== x) : [...p.exclude, x] }));
   const chip = (on: boolean) => cn("min-h-10 rounded-lg px-3 text-sm font-medium", on ? "bg-accent-600 text-white" : "bg-muted");
   return (
@@ -238,9 +242,9 @@ function MealPrefsForm({ initial, onSave }: { initial: MealPrefs; onSave: (prefs
       <fieldset className="space-y-1.5">
         <legend className="text-sm font-medium">{t("diet")}</legend>
         <div className="grid grid-cols-2 gap-1.5">
-          {DIETS.map((d) => (
+          {foods.diets.map(({ id: d }) => (
             <button key={d} type="button" aria-pressed={prefs.diet === d} onClick={() => setPrefs((p) => ({ ...p, diet: d }))} className={chip(prefs.diet === d)}>
-              {t(`diet_${d}`)}
+              {nameOf(foods.diets, d, locale)}
             </button>
           ))}
         </div>
@@ -248,9 +252,9 @@ function MealPrefsForm({ initial, onSave }: { initial: MealPrefs; onSave: (prefs
       <fieldset className="space-y-1.5">
         <legend className="text-sm font-medium">{t("exclude")}</legend>
         <div className="flex flex-wrap gap-1.5">
-          {EXCLUSIONS.map((x) => (
+          {foods.tags.filter((x) => x.excludable).map(({ id: x }) => (
             <button key={x} type="button" aria-pressed={prefs.exclude.includes(x)} onClick={() => toggle(x)} className={chip(prefs.exclude.includes(x))}>
-              {t(`no_${x}`)}
+              {nameOf(foods.tags, x, locale)}
             </button>
           ))}
         </div>

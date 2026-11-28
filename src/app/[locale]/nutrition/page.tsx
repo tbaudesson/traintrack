@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   useNutritionForDate,
   addNutritionEntry,
@@ -20,7 +20,8 @@ import { UpgradeNotice } from "@/components/domain/UpgradeNotice";
 import { BarcodeScanner } from "@/components/domain/BarcodeScanner";
 import { lookupBarcode } from "@/lib/openFoodFacts";
 import type { Meal, NutritionEntry } from "@/db";
-import { searchFoods, scaleFood, type FoodItem } from "@/lib/foodCatalog";
+import { searchFoods, scaleFood, type FoodItem } from "@/lib/foods";
+import { useFoods } from "@/hooks/useFoods";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -80,7 +81,9 @@ export default function NutritionPage() {
   const [foodQuery, setFoodQuery] = useState("");
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
   const [grams, setGrams] = useState("");
-  const matches = foodQuery && !selectedFood ? searchFoods(foodQuery) : [];
+  const locale = useLocale();
+  const foods = useFoods();
+  const matches = foodQuery && !selectedFood ? searchFoods(foods?.foods, foodQuery, locale) : [];
   // Barcode scanner
   const [scanOpen, setScanOpen] = useState(false);
   const [scanBusy, setScanBusy] = useState(false);
