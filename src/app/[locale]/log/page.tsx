@@ -1,16 +1,16 @@
 "use client";
 
 import { sessionHref } from "@/lib/routes";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useFormat } from "@/lib/format";
 import { useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLighterToday } from "@/hooks/useLighterToday";
-import { useWorkouts } from "@/hooks/useWorkouts";
-import { useTrainablePrograms } from "@/hooks/usePrograms";
+import { useWorkoutsRead } from "@/hooks/useWorkouts";
+import { trainableOf, useProgramsRead } from "@/hooks/usePrograms";
 import { useExercises } from "@/hooks/useExercises";
-import { useAthleteProfile } from "@/hooks/useAthleteProfile";
+import { useAthleteProfile, useAthleteProfileOrNull } from "@/hooks/useAthleteProfile";
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
@@ -48,11 +48,17 @@ export default function TrainPage() {
   const { day } = useFormat();
   const router = useRouter();
   const { user } = useAuth();
-  const workouts = useWorkouts();
+  const workoutsRead = useWorkoutsRead();
+  const workouts = useMemo(() => workoutsRead ?? [], [workoutsRead]);
   const sets = useAllWorkoutSets();
-  const programs = useTrainablePrograms();
+  const programsRead = useProgramsRead();
+  const programs = useMemo(() => trainableOf(programsRead ?? []), [programsRead]);
   const exercises = useExercises();
   const profile = useAthleteProfile();
+  // Until the sessions, the programs and the planning are read, today's session is not known:
+  // the main button waits, so it never shows "Choose" and then opens a session under the finger.
+  const profileRead = useAthleteProfileOrNull();
+  const ready = workoutsRead !== undefined && programsRead !== undefined && profileRead !== undefined;
   const catalogue = useProgramTemplates();
   // Every language's, to know a program by its name.
   const allTemplates = useTemplateCatalogue();
@@ -114,8 +120,8 @@ export default function TrainPage() {
               <p className="text-sm text-muted-foreground">{t("plannedNone")}</p>
             )}
             <div className="mt-auto space-y-2">
-              <Button onClick={startPlanned} disabled={starting} className="w-full">
-                {starting ? (
+              <Button onClick={startPlanned} disabled={starting || !ready} aria-busy={!ready} className="w-full">
+                {starting || !ready ? (
                   <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                 ) : session ? (
                   <>

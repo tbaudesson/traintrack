@@ -7,6 +7,11 @@ import { canEditProgram } from "@/lib/programOrigin";
 
 /** Programs owned by, or assigned to, the current user. */
 export function usePrograms() {
+  return useProgramsRead() ?? [];
+}
+
+/** The same, undefined while they are read from the device. */
+export function useProgramsRead(): Program[] | undefined {
   return useLiveQuery(async () => {
     const uid = getCurrentUserIdSync();
     const all = await db.programs.filter((p) => !p.deletedAt).toArray();
@@ -14,7 +19,7 @@ export function usePrograms() {
     return all.filter(
       (p) => p.userId === uid || p.ownerUserId === uid || p.assignedToUserId === uid
     );
-  }, []) ?? [];
+  }, []);
 }
 
 export function useProgram(id: number | undefined) {
@@ -53,7 +58,11 @@ export async function createProgram(data: {
 
 /** The programs this user trains on: not the copies they assigned to clients, nor those archived. */
 export function useTrainablePrograms() {
-  const programs = usePrograms();
+  return trainableOf(usePrograms());
+}
+
+/** Of the user's programs, those trained on (see useTrainablePrograms). */
+export function trainableOf(programs: Program[]): Program[] {
   const uid = getCurrentUserIdSync();
   return programs.filter((p) => (!p.assignedToUserId || p.assignedToUserId === uid) && !p.archivedAt);
 }

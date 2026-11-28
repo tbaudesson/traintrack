@@ -6,6 +6,11 @@ import type { IntervalPlan } from "@/lib/intervals";
 
 /** Workouts for a given user (defaults to the current user). */
 export function useWorkouts(userId?: string) {
+  return useWorkoutsRead(userId) ?? [];
+}
+
+/** The same, undefined while they are read from the device. */
+export function useWorkoutsRead(userId?: string): Workout[] | undefined {
   return useLiveQuery(async () => {
     const uid = userId ?? getCurrentUserIdSync();
     // By the owner's index: a coach's device holds every client's sessions too.
@@ -13,7 +18,7 @@ export function useWorkouts(userId?: string) {
       ? await db.workouts.where("userId").equals(uid).filter((w) => !w.deletedAt).toArray()
       : await db.workouts.filter((w) => !w.deletedAt).toArray();
     return mine.sort((a, b) => (a.date < b.date ? 1 : -1));
-  }, [userId]) ?? [];
+  }, [userId]);
 }
 
 export function useWorkout(id: number | undefined) {
