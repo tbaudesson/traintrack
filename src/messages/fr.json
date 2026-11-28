@@ -3138,7 +3138,9 @@
     "scope": "Exercices proposés",
     "wholeLibrary": "Toute la bibliothèque",
     "forLessons": "Cours collectifs",
-    "notForLessons": "Aucun"
+    "notForLessons": "Aucun",
+    "drillInfo": "Voir « {name} » : description et vidéo",
+    "noDescription": "Pas encore de description pour cet exercice."
   },
   "foodsAdmin": {
     "title": "Aliments et repas",

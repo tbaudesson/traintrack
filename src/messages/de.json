@@ -3138,7 +3138,9 @@
     "scope": "Angebotene Übungen",
     "wholeLibrary": "Ganze Bibliothek",
     "forLessons": "Gruppenstunden",
-    "notForLessons": "Keine"
+    "notForLessons": "Keine",
+    "drillInfo": "„{name}“ ansehen: Beschreibung und Video",
+    "noDescription": "Für diese Übung gibt es noch keine Beschreibung."
   },
   "foodsAdmin": {
     "title": "Lebensmittel und Mahlzeiten",

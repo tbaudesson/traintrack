@@ -3047,6 +3047,11 @@ await test("group lessons, tennis: a coach's group, a lesson prepared with exerc
   await page.getByText("36 min sur 60").waitFor({ timeout: 5000 });
   await page.getByRole("button", { name: "Monter « Le lancer de balle »" }).click();
   await page.locator("ol li").first().getByText("Le lancer de balle").waitFor({ timeout: 5000 });
+  // An exercise of the plan says what it is: its description from the library.
+  await page.getByRole("button", { name: "Voir « Le lancer de balle » : description et vidéo" }).click();
+  await page.getByRole("dialog").getByText(/laisser retomber dans un cerceau/).waitFor({ timeout: 5000 });
+  await page.keyboard.press("Escape");
+  await page.getByRole("dialog").waitFor({ state: "detached", timeout: 5000 });
 
   // One's own exercise, made right there: it joins the one library.
   await page.getByRole("button", { name: "Ajouter un exercice" }).click();

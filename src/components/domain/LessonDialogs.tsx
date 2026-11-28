@@ -16,6 +16,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Choice, ChoiceField } from "@/components/ui/choice";
 import { Chip, ChipRow, SearchField } from "@/components/ui/find";
+import { demoVideo } from "@/lib/demoVideos";
+import { VideoEmbed } from "@/components/domain/VideoEmbed";
+import { ExerciseDetails } from "@/components/domain/ExerciseDetails";
 
 const DAYS = [1, 2, 3, 4, 5, 6, 7];
 
@@ -104,11 +107,11 @@ function GroupForm({ group, reference, onClose }: { group: Partial<LessonGroup>;
                   ))}
                 </select>
               </label>
-              <label className="w-24 space-y-1 text-xs">
+              <label className="w-24 shrink-0 space-y-1 text-xs">
                 <span className="text-muted-foreground">{t("slotTime")}</span>
                 <Input type="time" value={s.time} onChange={(e) => setSlot(i, { time: e.target.value })} />
               </label>
-              <label className="w-20 space-y-1 text-xs">
+              <label className="w-20 shrink-0 space-y-1 text-xs">
                 <span className="text-muted-foreground">{t("slotMinutes")}</span>
                 <Input type="number" inputMode="numeric" min={15} max={240} value={s.minutes} onChange={(e) => setSlot(i, { minutes: Number(e.target.value) })} />
               </label>
@@ -469,6 +472,43 @@ export function LessonExercisePicker({ open, exercises, sport, ageBand, onPick, 
               <Plus className="mr-1 size-4" aria-hidden="true" />
               {t("newDrill")}
             </Button>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/** The exercise a lesson item came from: by its uuid, else by its name in any language. */
+export function drillOf(item: { drill?: string | null; name: string }, library: Exercise[]): Exercise | undefined {
+  return (
+    (item.drill ? library.find((e) => e.uuid === item.drill) : undefined) ??
+    library.find((e) => !e.deletedAt && [e.name, e.nameFr, e.nameDe].includes(item.name))
+  );
+}
+
+/**
+ * What a lesson's exercise is about, opened from the plan: its description,
+ * its video when the library has one that plays here, and what the library
+ * says of it (theme, minutes, ages, kit, key points).
+ */
+export function LessonDrillDialog({ item, library, onClose }: { item: { drill?: string | null; name: string } | null; library: Exercise[]; onClose: () => void }) {
+  const t = useTranslations("lessons");
+  const locale = useLocale();
+  const ex = item ? drillOf(item, library) : undefined;
+  const description = ex ? drillText(ex, locale).description : "";
+  const video = demoVideo(ex?.videoUrl);
+  return (
+    <Dialog open={item !== null} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        {item && (
+          <>
+            <DialogHeader>
+              <DialogTitle>{item.name}</DialogTitle>
+            </DialogHeader>
+            {video && <VideoEmbed url={video} />}
+            {description ? <p className="text-sm">{description}</p> : <p className="text-sm text-muted-foreground">{t("noDescription")}</p>}
+            {ex && <ExerciseDetails ex={ex} library={library} />}
           </>
         )}
       </DialogContent>

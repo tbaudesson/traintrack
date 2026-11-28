@@ -19,7 +19,9 @@ import { SectionHeading } from "@/components/ui/page-parts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RequireFeature } from "@/components/domain/UpgradeNotice";
-import { GivenDialog, LessonExercisePicker } from "@/components/domain/LessonDialogs";
+import { GivenDialog, LessonDrillDialog, LessonExercisePicker, drillOf } from "@/components/domain/LessonDialogs";
+import { drillText } from "@/lib/lessons";
+import { demoVideo } from "@/lib/demoVideos";
 import { IntervalPlayer } from "@/components/domain/IntervalPlayer";
 
 /** The seconds before the first drill starts, on the court. */
@@ -40,6 +42,7 @@ function LessonContent({ id, reference }: { id: number; reference: LessonsRefere
   const lessons = useGroupLessons(lesson?.groupId);
   const exercises = useExercises();
   const [picking, setPicking] = useState(false);
+  const [shown, setShown] = useState<LessonPlanItem | null>(null);
   const [giving, setGiving] = useState<GroupLesson | null>(null);
   const [running, setRunning] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -66,11 +69,11 @@ function LessonContent({ id, reference }: { id: number; reference: LessonsRefere
       <PageHeader title={group.name} showBack />
       <div className="mx-auto max-w-3xl space-y-5 p-4 pb-48 md:p-6">
         <div className="grid grid-cols-[9.5rem_1fr] gap-2">
-          <label className="space-y-1 text-xs">
+          <label className="min-w-0 space-y-1 text-xs">
             <span className="text-muted-foreground">{t("date")}</span>
             <Input type="date" value={lesson.date} onChange={(e) => e.target.value && void updateGroupLesson(id, { date: e.target.value })} />
           </label>
-          <label className="space-y-1 text-xs">
+          <label className="min-w-0 space-y-1 text-xs">
             <span className="text-muted-foreground">{t("theme")}</span>
             <Input
               value={themeDraft ?? lesson.theme ?? ""}
@@ -125,10 +128,10 @@ function LessonContent({ id, reference }: { id: number; reference: LessonsRefere
             {plan.map((p, i) => (
               <li key={`${i}-${p.name}`} className="t-surface flex items-center gap-2 rounded-xl px-3 py-2 ring-1 ring-foreground/5">
                 <span className="w-5 shrink-0 text-xs text-muted-foreground tabular-nums">{i + 1}</span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium">{p.name}</span>
+                <button type="button" onClick={() => setShown(p)} aria-label={t("drillInfo", { name: p.name })} className="min-w-0 flex-1 text-left">
+                  <span className="block text-sm font-medium underline decoration-dotted decoration-muted-foreground/60 underline-offset-4">{p.name}</span>
                   <span className="block text-xs text-muted-foreground">{refLabel(sport?.themes, p.category, locale)}</span>
-                </span>
+                </button>
                 <label className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Input
                     type="number"
@@ -210,6 +213,7 @@ function LessonContent({ id, reference }: { id: number; reference: LessonsRefere
         </div>
       </div>
 
+      <LessonDrillDialog item={shown} library={exercises} onClose={() => setShown(null)} />
       {sport && (
         <LessonExercisePicker
           open={picking}
@@ -226,7 +230,19 @@ function LessonContent({ id, reference }: { id: number; reference: LessonsRefere
       <GivenDialog lesson={giving} group={group} sport={sport} onClose={() => setGiving(null)} />
       {running && (
         <IntervalPlayer
-          session={{ steps: plan.map((p) => ({ type: "work" as const, exercise: { name: p.name, cue: refLabel(sport?.themes, p.category, locale) }, seconds: p.minutes * 60 })) }}
+          session={{
+            steps: plan.map((p) => {
+              // On the court: the theme under the name, and the description and video one tap away (the clock waits).
+              const ex = drillOf(p, exercises);
+              const description = ex ? drillText(ex, locale).description : "";
+              const video = demoVideo(ex?.videoUrl);
+              return {
+                type: "work" as const,
+                exercise: { name: p.name, cue: refLabel(sport?.themes, p.category, locale), demo: description || video ? { video, cue: description || undefined } : undefined },
+                seconds: p.minutes * 60,
+              };
+            }),
+          }}
           getReadySec={GET_READY_SEC}
           labels={{ work: t("playerWork"), rest: t("playerNext"), counter: (n, all) => t("counter", { n, total: all }) }}
           onEnd={() => {

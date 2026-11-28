@@ -233,6 +233,21 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* Safari on iPhone gives date and time fields a width of their own, wider
+     than their box: they spilled over the field next to them. They now keep
+     to their box, the date read from the left, and keep their height empty. */
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"],
+  input[type="month"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+  }
+  input::-webkit-date-and-time-value {
+    text-align: left;
+    min-height: 1.5em;
+  }
   body {
     @apply bg-background text-foreground;
     min-height: 100dvh;
