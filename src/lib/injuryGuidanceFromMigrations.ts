@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { parseTimed, type TimedGuidance } from "./intervals";
+import { settingWithPatches } from "./settingsFromMigrations";
 import { parseProgramEquipment, type ProgramEquipmentGuide } from "./programEquipment";
 import { parseInjuryGuidance, type InjuryGuidance } from "./injuryGuidance";
 import type { ExerciseRules, InjuryRules } from "./injuries";
@@ -63,10 +64,9 @@ export function mobilityFromMigrations(): MobilityGuidance {
 
 /** For the tests only: what timed sessions are built from, as migration 065 seeds it. */
 export function timedFromMigrations(): TimedGuidance {
-  const text = sql("065_mobility_and_timed_sessions.sql");
-  const start = text.indexOf("'timed_sessions', '") + 19;
-  const g = parseTimed(text.slice(start, text.indexOf("')\nON CONFLICT", start)).replace(/''/g, "'"));
-  if (!g) throw new Error("The timed sessions of migration 065 do not hold together");
+  // Seeded by 065; its lists (focuses, kinds, equipment) added by 095.
+  const g = parseTimed(settingWithPatches("065_mobility_and_timed_sessions.sql", "timed_sessions", ["095_timed_lists.sql"]));
+  if (!g) throw new Error("The timed sessions of migrations 065 and 095 do not hold together");
   return g;
 }
 

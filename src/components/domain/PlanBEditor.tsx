@@ -3,13 +3,13 @@
 import { useTranslations } from "next-intl";
 import type { Sport } from "@/db";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
-import { useTimedGuidance } from "@/hooks/useTimedGuidance";
+import { usePlanFocusLabel, useTimedGuidance } from "@/hooks/useTimedGuidance";
 import { useMobilityGuidance } from "@/hooks/useMobilityGuidance";
 import { useTrainablePrograms } from "@/hooks/usePrograms";
 import { savePlanB } from "@/hooks/useSportChoice";
 import { PLAN_B_KINDS, type PlanB } from "@/lib/planB";
 import { useChoices } from "@/hooks/useReferences";
-import { BOXING_FOCUS, INTERVAL_FOCUSES, PLAN_FOCUSES, type PlanFocus } from "@/lib/intervals";
+import { BOXING_FOCUS, planFocuses, type PlanFocus } from "@/lib/intervals";
 import { useBoxingGuidance } from "@/hooks/useBoxingGuidance";
 import { DISTANCE_SPORTS } from "@/lib/cardio";
 import { cn } from "@/lib/utils";
@@ -38,7 +38,8 @@ export function PlanBEditor() {
   const timedMinutes = timed?.minutes ?? [10, 15, 20];
   // Boxing rounds, once their reference is there, with their own lengths.
   const boxing = useBoxingGuidance();
-  const focuses = boxing ? PLAN_FOCUSES : INTERVAL_FOCUSES;
+  const focuses = boxing ? planFocuses(timed) : (timed?.focuses ?? []).map((f) => f.id);
+  const focusLabel = usePlanFocusLabel();
   const minutesOf = (f: PlanFocus) => (f === BOXING_FOCUS && boxing ? boxing.minutes : timedMinutes);
   const mobilityMinutes = (m: MobilityMode) => mobility?.minutes[m] ?? [5, 10, 15];
   // The modes the reference holds (yoga, tai-chi once their migrations are applied).
@@ -46,7 +47,7 @@ export function PlanBEditor() {
 
   // A kind chosen: its first sensible settings, changed below.
   const start = (kind: PlanB["kind"]) => {
-    if (kind === "timed") set({ kind, focus: "full", minutes: timedMinutes.includes(15) ? 15 : timedMinutes[0] });
+    if (kind === "timed" && timed) set({ kind, focus: timed.focuses[0].id, minutes: timedMinutes.includes(15) ? 15 : timedMinutes[0] });
     if (kind === "mobility") set({ kind, mode: "stretch", minutes: mobilityMinutes("stretch")[0] });
     if (kind === "cardio") set({ kind, sport: "run", minutes: 20 });
     if (kind === "program" && programs[0]?.uuid) set({ kind, programUuid: programs[0].uuid, dayIndex: 0 });
@@ -58,7 +59,7 @@ export function PlanBEditor() {
       <p className="text-xs text-muted-foreground">{t("hint")}</p>
       <div className="flex flex-wrap gap-2" role="group" aria-label={t("kind")}>
         <button type="button" aria-pressed={!plan} onClick={() => set(null)} className={chip(!plan)}>{t("none")}</button>
-        {PLAN_B_KINDS.filter((k) => k !== "program" || programs.length > 0).map((k) => (
+        {PLAN_B_KINDS.filter((k) => (k !== "program" || programs.length > 0) && (k !== "timed" || !!timed)).map((k) => (
           <button key={k} type="button" aria-pressed={plan?.kind === k} onClick={() => plan?.kind !== k && start(k)} className={chip(plan?.kind === k)}>
             {t(`kind_${k}`)}
           </button>
@@ -68,7 +69,7 @@ export function PlanBEditor() {
       {plan?.kind === "timed" && (
         <>
           <Row label={ti("focus")}>
-            {focuses.map((f) => <button key={f} type="button" aria-pressed={plan.focus === f} onClick={() => set({ ...plan, focus: f, minutes: minutesOf(f).includes(plan.minutes) ? plan.minutes : minutesOf(f)[Math.floor(minutesOf(f).length / 2)] })} className={chip(plan.focus === f)}>{ti(`focus_${f}`)}</button>)}
+            {focuses.map((f) => <button key={f} type="button" aria-pressed={plan.focus === f} onClick={() => set({ ...plan, focus: f, minutes: minutesOf(f).includes(plan.minutes) ? plan.minutes : minutesOf(f)[Math.floor(minutesOf(f).length / 2)] })} className={chip(plan.focus === f)}>{focusLabel(f)}</button>)}
           </Row>
           <Row label={t("minutes")}>
             {minutesOf(plan.focus).map((m) => <button key={m} type="button" aria-pressed={plan.minutes === m} onClick={() => set({ ...plan, minutes: m })} className={chip(plan.minutes === m)}>{t("min", { m })}</button>)}

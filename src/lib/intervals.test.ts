@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  INTERVAL_FOCUSES,
   buildIntervalSession,
   defaultPattern,
   exercisesPerRound,
@@ -8,12 +7,14 @@ import {
   roundsDone,
   parseTimed,
   patternSeconds,
+  planGear,
   type CircuitPlan,
 } from "./intervals";
 import { libraryFromMigrations } from "./libraryFromMigrations";
 import { timedFromMigrations } from "./injuryGuidanceFromMigrations";
 
 const G = timedFromMigrations();
+const FOCUSES = G.focuses.map((f) => f.id);
 
 const LIBRARY = new Map(libraryFromMigrations().map((r) => [r.name, r]));
 
@@ -37,7 +38,7 @@ describe("buildIntervalSession", () => {
   });
 
   it("keeps to the focus and the equipment", () => {
-    for (const focus of INTERVAL_FOCUSES) {
+    for (const focus of FOCUSES) {
       const bare = buildIntervalSession(G, plan({ focus, minutes: 45 }));
       for (const r of bare.rounds) for (const e of r) {
         expect(e.focus).toContain(focus);
@@ -49,7 +50,7 @@ describe("buildIntervalSession", () => {
   });
 
   it("never repeats an exercise inside a round", () => {
-    for (const focus of INTERVAL_FOCUSES)
+    for (const focus of FOCUSES)
       for (const seed of [1, 2, 3, 4, 5]) {
         const s = buildIntervalSession(G, plan({ focus, seed, minutes: 45 }));
         for (const r of s.rounds) expect(new Set(r.map((e) => e.name)).size).toBe(r.length);
@@ -63,7 +64,7 @@ describe("buildIntervalSession", () => {
   });
 
   it("keeps the second circuit apart from the first, and dumbbells to about half", () => {
-    for (const focus of INTERVAL_FOCUSES)
+    for (const focus of FOCUSES)
       for (const dumbbells of [false, true])
         for (const seed of [1, 2, 3, 4, 5, 6]) {
           const [a, b] = buildIntervalSession(G, plan({ focus, dumbbells, seed, minutes: 45 })).rounds;
@@ -139,5 +140,46 @@ describe("roundsDone", () => {
     expect(roundsDone(s.steps, works.slice(0, s.rounds[0].length))).toBe(1);
     expect(roundsDone(s.steps, works.slice(1))).toBe(s.rounds.length - 1);
     expect(roundsDone(s.steps, [])).toBe(0);
+  });
+});
+
+describe("the reference's lists", () => {
+  it("are read from it: focuses, kinds of effort and equipment, one of them the body", () => {
+    expect(FOCUSES).toEqual(["full", "abs", "lower"]);
+    expect(G.kinds.map((k) => k.id)).toEqual(["cardio", "strength", "core"]);
+    expect(G.equipment.filter((e) => e.base).map((e) => e.id)).toEqual(["bodyweight"]);
+  });
+
+  it("refuse a reference whose exercises leave its lists, or without the body as base", () => {
+    const broken = (change: (g: typeof G) => void) => {
+      const g = structuredClone(G);
+      change(g);
+      return parseTimed(JSON.stringify(g));
+    };
+    expect(broken((g) => (g.exercises[0].kind = "yoga"))).toBeNull();
+    expect(broken((g) => (g.exercises[0].focus = ["arms"]))).toBeNull();
+    expect(broken((g) => (g.exercises[0].equipment = "kettlebell"))).toBeNull();
+    expect(broken((g) => (g.equipment = g.equipment.map((e) => ({ ...e, base: false }))))).toBeNull();
+    expect(broken((g) => g.focuses.push({ id: "boxing", fr: "Boxe", en: "Boxing", de: "Boxen" }))).toBeNull();
+  });
+
+  it("take a focus and an equipment added by the admin", () => {
+    const g = structuredClone(G);
+    g.focuses.push({ id: "arms", fr: "Bras", en: "Arms", de: "Arme" });
+    g.rhythm.arms = ["strength"];
+    g.equipment.push({ id: "kettlebell", fr: "Kettlebell", en: "Kettlebell", de: "Kettlebell", base: false });
+    g.exercises.push({ name: g.exercises[0].name + " x", muscleGroup: g.exercises[0].muscleGroup, equipment: "bodyweight", focus: ["arms"], kind: "strength" });
+    g.exercises.push({ name: g.exercises[0].name + " k", muscleGroup: g.exercises[0].muscleGroup, equipment: "kettlebell", focus: ["arms"], kind: "strength" });
+    const parsed = parseTimed(JSON.stringify(g))!;
+    expect(parsed).not.toBeNull();
+    const names = (gear: string[]) => new Set(buildIntervalSession(parsed, { focus: "arms", gear, pattern: "45-15", minutes: 10, seed: 1 }).rounds.flat().map((e) => e.name));
+    expect(names([]).has(g.exercises[0].name + " k")).toBe(false);
+    expect(names(["kettlebell"]).has(g.exercises[0].name + " k")).toBe(true);
+  });
+
+  it("read a plan from before the list from its two flags", () => {
+    expect(planGear({ dumbbells: true, trx: true })).toEqual(["dumbbell", "suspension"]);
+    expect(planGear({ dumbbells: false })).toEqual([]);
+    expect(planGear({ gear: ["suspension"], dumbbells: true })).toEqual(["suspension"]);
   });
 });

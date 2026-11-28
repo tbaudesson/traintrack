@@ -9,11 +9,9 @@ import type { MuscleGroup } from "@/db";
 import { getAppSettings, setAppSetting } from "@/lib/adminService";
 import {
   FITNESS_LEVELS,
-  INTERVAL_EQUIPMENT,
-  INTERVAL_FOCUSES,
-  INTERVAL_KINDS,
   TIMED_KEY,
   parseTimed,
+  timedLabel,
   type IntervalExercise,
   type IntervalKind,
   type TimedGuidance,
@@ -24,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { NumberInput, NumbersInput } from "@/components/domain/NumbersInput";
+import { ListEditor } from "@/components/domain/ReferenceTabs";
 
 const select = "h-9 w-full rounded-md border border-input bg-background px-2 text-sm text-foreground";
 
@@ -38,6 +37,7 @@ export function TimedSessionsTab() {
   const t = useTranslations("timedAdmin");
   const ti = useTranslations("intervals");
   const locale = useLocale();
+  const tl = (list: { id: string; fr: string; en: string; de: string }[] | undefined, id: string) => timedLabel(list, id, locale);
   const groups = useMuscleGroups();
   const groupIds = (groups ?? []).map((g) => g.id);
   const gl = (id: string | null | undefined) => groupLabel(groups, id, locale);
@@ -117,15 +117,32 @@ export function TimedSessionsTab() {
           </Button>
         </div>
 
+        {/* What a circuit can work, the kinds of effort and the equipment: ids kept in the exercises below. */}
+        <ListEditor title={t("focuses")} hint={t("listHint")} rows={g.focuses} blank={{ id: "", fr: "", en: "", de: "" }} onChange={(focuses) => put({ ...g, focuses })} />
+        <ListEditor title={t("kinds")} hint={t("listHint")} rows={g.kinds} blank={{ id: "", fr: "", en: "", de: "" }} onChange={(kinds) => put({ ...g, kinds })} />
+        <ListEditor
+          title={t("equipmentList")}
+          hint={t("equipmentHint")}
+          rows={g.equipment}
+          blank={{ id: "", fr: "", en: "", de: "", base: false }}
+          onChange={(equipment) => put({ ...g, equipment })}
+          extra={(row, set) => (
+            <label className="flex items-center gap-1.5 text-xs">
+              <input type="checkbox" className="size-4 accent-accent-600" checked={row.base} onChange={(ev) => set({ base: ev.target.checked })} />
+              {t("base")}
+            </label>
+          )}
+        />
+
         <div className="space-y-2 rounded-xl border border-border p-3">
           <p className="text-sm font-medium">{t("rhythm")}</p>
           <p className="text-xs text-muted-foreground">{t("rhythmHint")}</p>
-          {INTERVAL_FOCUSES.map((f) => (
+          {g.focuses.map(({ id: f }) => (
             <NumbersInput
               key={f}
               asText
-              label={ti(`focus_${f}`)}
-              value={g.rhythm[f]}
+              label={tl(g.focuses, f)}
+              value={g.rhythm[f] ?? []}
               onChange={(kinds) => put({ ...g, rhythm: { ...g.rhythm, [f]: kinds as IntervalKind[] } })}
             />
           ))}
@@ -157,7 +174,7 @@ export function TimedSessionsTab() {
           <details key={i} className="rounded-xl border border-border p-3">
             <summary className="cursor-pointer text-sm font-medium">
               {e.name ? xl(e.name) : t("untitled")}{" "}
-              <span className="text-xs text-muted-foreground">· {e.focus.map((f) => ti(`focus_${f}`)).join(", ")} · {t(`kind_${e.kind}`)}</span>
+              <span className="text-xs text-muted-foreground">· {e.focus.map((f) => tl(g.focuses, f)).join(", ")} · {tl(g.kinds, e.kind)}</span>
             </summary>
             <div className="mt-3 space-y-2">
               <label className="block space-y-1 text-xs text-muted-foreground">
@@ -176,25 +193,25 @@ export function TimedSessionsTab() {
                 <label className="space-y-1 text-xs text-muted-foreground">
                   <span>{ti("equipment")}</span>
                   <select className={select} value={e.equipment} onChange={(ev) => setExercise(i, { ...e, equipment: ev.target.value as IntervalExercise["equipment"] })}>
-                    {INTERVAL_EQUIPMENT.map((q) => (
-                      <option key={q} value={q}>{t(`equipment_${q}`)}</option>
+                    {g.equipment.map(({ id: q }) => (
+                      <option key={q} value={q}>{tl(g.equipment, q)}</option>
                     ))}
                   </select>
                 </label>
                 <label className="space-y-1 text-xs text-muted-foreground">
                   <span>{t("kind")}</span>
                   <select className={select} value={e.kind} onChange={(ev) => setExercise(i, { ...e, kind: ev.target.value as IntervalKind })}>
-                    {INTERVAL_KINDS.map((k) => (
-                      <option key={k} value={k}>{t(`kind_${k}`)}</option>
+                    {g.kinds.map(({ id: k }) => (
+                      <option key={k} value={k}>{tl(g.kinds, k)}</option>
                     ))}
                   </select>
                 </label>
               </div>
               <div className="flex flex-wrap gap-x-3 gap-y-1">
-                {INTERVAL_FOCUSES.map((f) => (
+                {g.focuses.map(({ id: f }) => (
                   <label key={f} className="flex items-center gap-1.5 text-xs">
                     <input type="checkbox" className="size-4 accent-accent-600" checked={e.focus.includes(f)} onChange={(ev) => setExercise(i, { ...e, focus: ev.target.checked ? [...e.focus, f] : e.focus.filter((x) => x !== f) })} />
-                    {ti(`focus_${f}`)}
+                    {tl(g.focuses, f)}
                   </label>
                 ))}
                 <label className="flex items-center gap-1.5 text-xs">
@@ -210,7 +227,7 @@ export function TimedSessionsTab() {
           </details>
         ))}
 
-        <Button variant="outline" className="w-full" onClick={() => put({ ...g, exercises: [...g.exercises, { name: "", muscleGroup: (groups ?? []).find((x) => x.wholeBody)?.id ?? groupIds[0] ?? "", equipment: "bodyweight", focus: ["full"], kind: "cardio" }] })}>
+        <Button variant="outline" className="w-full" onClick={() => put({ ...g, exercises: [...g.exercises, { name: "", muscleGroup: (groups ?? []).find((x) => x.wholeBody)?.id ?? groupIds[0] ?? "", equipment: g.equipment.find((q) => q.base)?.id ?? g.equipment[0]?.id ?? "", focus: g.focuses[0] ? [g.focuses[0].id] : [], kind: g.kinds[0]?.id ?? "" }] })}>
           <Plus className="mr-1 h-4 w-4" aria-hidden="true" />
           {t("add")}
         </Button>

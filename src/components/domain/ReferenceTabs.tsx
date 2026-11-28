@@ -21,7 +21,7 @@ type Row = { id: string; fr: string; en: string; de: string };
  * care) and its name in the three languages, in order, plus what a list adds
  * (a theme's "core", a muscle's group).
  */
-function ListEditor<R extends Row>({
+export function ListEditor<R extends Row>({
   title,
   hint,
   rows,

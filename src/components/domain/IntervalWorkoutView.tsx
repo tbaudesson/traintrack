@@ -2,12 +2,13 @@
 
 import { TrimpLine } from "@/components/domain/TrimpLine";
 import { SessionFeedback } from "@/components/domain/SessionFeedback";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Check, RotateCcw, Timer, Trash2 } from "lucide-react";
 import type { Exercise, Workout, WorkoutSet } from "@/db";
 import { Link, useRouter } from "@/i18n/navigation";
 import { deleteWorkout } from "@/hooks/useWorkouts";
-import { BOXING_FOCUS, patternSeconds } from "@/lib/intervals";
+import { BOXING_FOCUS, patternSeconds, planGear, timedLabel } from "@/lib/intervals";
+import { usePlanFocusLabel, useTimedGuidance } from "@/hooks/useTimedGuidance";
 import { roundLength } from "@/lib/boxing";
 import { useExerciseLabel } from "@/lib/exerciseNames";
 import { useFormat } from "@/lib/format";
@@ -24,6 +25,9 @@ import { SessionMuscles } from "@/components/domain/BodyMap";
 export function IntervalWorkoutView({ workout, sets, exercises, justDone = false }: { workout: Workout; sets: WorkoutSet[]; exercises: Exercise[]; justDone?: boolean }) {
   const t = useTranslations("intervals");
   const xl = useExerciseLabel();
+  const locale = useLocale();
+  const timed = useTimedGuidance();
+  const focusLabel = usePlanFocusLabel();
   const router = useRouter();
   const { day } = useFormat();
   const plan = workout.intervalPlan;
@@ -41,8 +45,13 @@ export function IntervalWorkoutView({ workout, sets, exercises, justDone = false
   const rhythm = plan ? patternSeconds(plan.pattern) : null;
   // Boxing rounds: a round and its rest, each combination its own length.
   const boxing = plan?.focus === BOXING_FOCUS;
+  // The equipment used: the body alone, or what was chosen besides it.
+  const gearIds = plan ? planGear(plan) : [];
+  const gearLabel = gearIds.length
+    ? gearIds.map((id) => timedLabel(timed?.equipment, id, locale)).join(", ")
+    : timedLabel(timed?.equipment, timed?.equipment.find((e) => e.base)?.id, locale);
   const again = plan
-    ? `/intervals?focus=${plan.focus}&dumbbells=${plan.dumbbells ? 1 : 0}&trx=${plan.trx ? 1 : 0}&pattern=${plan.pattern}&minutes=${plan.minutes}&seed=${plan.seed}`
+    ? `/intervals?focus=${plan.focus}&gear=${planGear(plan).join(",")}&pattern=${plan.pattern}&minutes=${plan.minutes}&seed=${plan.seed}`
     : "/intervals";
 
   return (
@@ -70,7 +79,7 @@ export function IntervalWorkoutView({ workout, sets, exercises, justDone = false
             <p className="mt-3 text-sm text-muted-foreground">
               {boxing
                 ? `${t("focus_boxing")} · ${t("roundLabel", { round: roundLength(rhythm.work), rest: rhythm.rest })}`
-                : `${t(`focus_${plan.focus}`)} · ${plan.dumbbells ? t("dumbbells") : t("bodyweight")} · ${t("patternLabel", rhythm)}`}
+                : `${focusLabel(plan.focus)} · ${gearLabel} · ${t("patternLabel", rhythm)}`}
             </p>
           )}
         </div>

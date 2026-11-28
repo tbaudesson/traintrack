@@ -5,7 +5,9 @@ import { useLocale, useTranslations } from "next-intl";
 import { Check, Loader2, Plus, Swords, Trash2 } from "lucide-react";
 import type { MuscleGroup } from "@/db";
 import { getAppSettings, setAppSetting } from "@/lib/adminService";
-import { BOXING_KEY, BOXING_KINDS, parseBoxing, type BoxingCombo, type BoxingGuidance, type BoxingKind } from "@/lib/boxing";
+import { BOXING_KEY, mainKind, parseBoxing, type BoxingCombo, type BoxingGuidance, type BoxingKind } from "@/lib/boxing";
+import { timedLabel } from "@/lib/intervals";
+import { ListEditor } from "@/components/domain/ReferenceTabs";
 import { FITNESS_LEVELS } from "@/lib/intervals";
 import { groupLabel } from "@/lib/muscles";
 import { useMuscleGroups } from "@/hooks/useMuscleGroups";
@@ -96,6 +98,27 @@ export function BoxingRoundsTab() {
           <p className="text-xs text-muted-foreground">{t("rhythmHint")}</p>
         </div>
 
+        {/* The kinds of combination: one closes each round, one fills a round when another has nothing left. */}
+        <ListEditor
+          title={t("kinds")}
+          hint={t("kindsHint")}
+          rows={g.kinds}
+          blank={{ id: "", fr: "", en: "", de: "" }}
+          onChange={(kinds) => put({ ...g, kinds })}
+          extra={(row, set) => (
+            <div className="flex flex-wrap gap-x-4 gap-y-1">
+              <label className="flex items-center gap-1.5 text-xs">
+                <input type="checkbox" className="size-4 accent-accent-600" checked={!!row.finisher} onChange={(ev) => set({ finisher: ev.target.checked || undefined })} />
+                {t("finisher")}
+              </label>
+              <label className="flex items-center gap-1.5 text-xs">
+                <input type="checkbox" className="size-4 accent-accent-600" checked={!!row.main} onChange={(ev) => set({ main: ev.target.checked || undefined })} />
+                {t("main")}
+              </label>
+            </div>
+          )}
+        />
+
         <div className="space-y-2 rounded-xl border border-border p-3">
           <p className="text-sm font-medium">{t("formatForLevel")}</p>
           <div className="grid grid-cols-3 gap-2">
@@ -136,8 +159,8 @@ export function BoxingRoundsTab() {
               <label className="space-y-1 text-xs text-muted-foreground">
                 <span>{tt("kind")}</span>
                 <select className={select} value={c.kind} onChange={(ev) => setCombo(i, { ...c, kind: ev.target.value as BoxingKind })}>
-                  {BOXING_KINDS.map((k) => (
-                    <option key={k} value={k}>{t(`kind_${k}`)}</option>
+                  {g.kinds.map(({ id: k }) => (
+                    <option key={k} value={k}>{timedLabel(g.kinds, k, locale)}</option>
                   ))}
                 </select>
               </label>
@@ -148,7 +171,7 @@ export function BoxingRoundsTab() {
           </div>
         ))}
 
-        <Button variant="outline" className="w-full" onClick={() => put({ ...g, combos: [...g.combos, { name: "", muscleGroup: "shoulders", kind: "attack" }] })}>
+        <Button variant="outline" className="w-full" onClick={() => put({ ...g, combos: [...g.combos, { name: "", muscleGroup: g.combos[0]?.muscleGroup ?? groupIds[0] ?? "", kind: mainKind(g) ?? g.kinds[0]?.id ?? "" }] })}>
           <Plus className="mr-1 h-4 w-4" aria-hidden="true" />
           {t("add")}
         </Button>

@@ -1,13 +1,13 @@
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { boxingFormat, boxingPool, buildBoxingSession, parseBoxing, roundCount, type BoxingGuidance } from "./boxing";
 import { libraryFromMigrations } from "./libraryFromMigrations";
 import { demoVideo } from "./demoVideos";
+import { settingWithPatches } from "./settingsFromMigrations";
 import { patternSeconds, roundsDone, type BoxingPlan } from "./intervals";
 
 // The reference as migration 085 seeds it.
-const sql = readFileSync("supabase/migrations/085_boxing.sql", "utf8");
-const G = parseBoxing(sql.slice(sql.indexOf("'boxing_rounds', '") + 18, sql.indexOf("')\nON CONFLICT")))!;
+// Seeded by 085, its kinds added by 095.
+const G = parseBoxing(settingWithPatches("085_boxing.sql", "boxing_rounds", ["095_timed_lists.sql"]))!;
 const LIBRARY = new Map(libraryFromMigrations().map((r) => [r.name, r]));
 const plan = (over: Partial<BoxingPlan> = {}): BoxingPlan => ({ focus: "boxing", dumbbells: false, pattern: "180-60", minutes: 15, seed: 7, ...over });
 
@@ -37,6 +37,25 @@ describe("boxing rounds", () => {
     expect(broken((g) => (g.rhythm = ["finisher" as never]))).toBeNull();
     expect(broken((g) => (g.combos = g.combos.filter((c) => c.kind !== "attack")))).toBeNull();
     expect(broken((g) => (g.combos[1].name = g.combos[0].name))).toBeNull();
+    // One kind closes the rounds, another fills them; a combination's kind is one of the list.
+    expect(broken((g) => (g.kinds = g.kinds.map((k) => ({ ...k, finisher: undefined }))))).toBeNull();
+    expect(broken((g) => (g.kinds = g.kinds.map((k) => ({ ...k, main: true }))))).toBeNull();
+    expect(broken((g) => (g.combos[0].kind = "uppercut"))).toBeNull();
+  });
+
+  it("takes its kinds from the reference: a kind added, renamed roles, rounds still closed by the burst", () => {
+    const g = structuredClone(G);
+    // The admin calls the burst "sprint" and the punches "punch", and adds a kind.
+    g.kinds = g.kinds.map((k) => (k.id === "finisher" ? { ...k, id: "sprint" } : k.id === "attack" ? { ...k, id: "punch" } : k));
+    g.kinds.push({ id: "clinch", fr: "Corps à corps", en: "Clinch", de: "Clinch" });
+    g.combos = g.combos.map((c) => ({ ...c, kind: c.kind === "finisher" ? "sprint" : c.kind === "attack" ? "punch" : c.kind }));
+    g.rhythm = g.rhythm.map((k) => (k === "attack" ? "punch" : k));
+    const parsed = parseBoxing(JSON.stringify(g))!;
+    expect(parsed).not.toBeNull();
+    const plan: BoxingPlan = { focus: "boxing", pattern: parsed.formats[0], minutes: parsed.minutes[0], seed: 3 };
+    const s = buildBoxingSession(parsed, plan);
+    const sprints = new Set(parsed.combos.filter((c) => c.kind === "sprint").map((c) => c.name));
+    for (const round of s.rounds) expect(sprints.has(round[round.length - 1].name)).toBe(true);
   });
 
   it("box round after round, each closed by the burst, a rest between rounds and none at the end", () => {

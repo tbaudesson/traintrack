@@ -13,19 +13,21 @@ import { addWorkoutSet } from "@/hooks/useWorkoutSets";
 import {
   injuryPool,
   roundsDone,
-  INTERVAL_FOCUSES,
   BOXING_FOCUS,
-  PLAN_FOCUSES,
+  planFocuses,
+  planGear,
+  timedLabel,
   buildIntervalSession,
   defaultPattern,
   patternSeconds,
   type IntervalFocus,
   type IntervalExercise,
   type IntervalPattern,
+  type BoxingPlan,
   type IntervalPlan,
   type TimedGuidance,
 } from "@/lib/intervals";
-import { useTimedGuidance } from "@/hooks/useTimedGuidance";
+import { usePlanFocusLabel, useTimedGuidance } from "@/hooks/useTimedGuidance";
 import { useBoxingGuidance } from "@/hooks/useBoxingGuidance";
 import { boxingFormat, boxingPool, buildBoxingSession, roundLength, type BoxingGuidance } from "@/lib/boxing";
 import { useHeartRateMonitor } from "@/hooks/useHeartRateMonitor";
@@ -54,8 +56,10 @@ function initialPlan(): Partial<IntervalPlan> {
     if (params.has("focus")) {
       return {
         focus: params.get("focus") as IntervalFocus,
-        dumbbells: params.get("dumbbells") === "1",
-        trx: params.get("trx") === "1",
+        // The equipment chosen; a link from before the list names dumbbells and straps.
+        gear: params.has("gear")
+          ? (params.get("gear") ?? "").split(",").filter(Boolean)
+          : planGear({ dumbbells: params.get("dumbbells") === "1", trx: params.get("trx") === "1" }),
         pattern: params.get("pattern") as IntervalPattern,
         minutes: Number(params.get("minutes")),
         seed: Number(params.get("seed")) || undefined,
@@ -77,9 +81,11 @@ const BOXING_WAIT_MS = 3000;
  * otherwise a circuit, with the circuits' rhythms and lengths.
  */
 function sane(p: Partial<IntervalPlan>, fallback: IntervalPlan, g: TimedGuidance, box: BoxingGuidance | null, level?: string): IntervalPlan {
+  // The equipment the reference still has, besides the body; a plan from before the list, read from its flags.
+  const offered = g.equipment.filter((e) => !e.base).map((e) => e.id);
+  const chosen = Array.isArray(p.gear) || typeof p.dumbbells === "boolean" || typeof p.trx === "boolean" ? planGear(p) : planGear(fallback);
   const base = {
-    dumbbells: typeof p.dumbbells === "boolean" ? p.dumbbells : fallback.dumbbells,
-    trx: typeof p.trx === "boolean" ? p.trx : fallback.trx,
+    gear: chosen.filter((id) => offered.includes(id)),
     seed: p.seed && p.seed > 0 ? p.seed : fallback.seed,
   };
   if (p.focus === BOXING_FOCUS && box)
@@ -91,7 +97,7 @@ function sane(p: Partial<IntervalPlan>, fallback: IntervalPlan, g: TimedGuidance
     };
   return {
     ...base,
-    focus: INTERVAL_FOCUSES.includes(p.focus as IntervalFocus) ? (p.focus as IntervalFocus) : fallback.focus === BOXING_FOCUS ? "full" : fallback.focus,
+    focus: g.focuses.some((f) => f.id === p.focus) ? p.focus! : g.focuses.some((f) => f.id === fallback.focus) ? fallback.focus : g.focuses[0].id,
     pattern: g.patterns.includes(p.pattern as IntervalPattern) ? p.pattern! : g.patterns.includes(fallback.pattern) ? fallback.pattern : defaultPattern(g, level),
     minutes: g.minutes.includes(p.minutes ?? 0) ? p.minutes! : g.minutes.includes(fallback.minutes) ? fallback.minutes : middle(g.minutes),
   };
@@ -108,6 +114,7 @@ export default function IntervalsPage() {
   const xl = useExerciseLabel();
   const locale = useLocale();
   const router = useRouter();
+  const focusLabel = usePlanFocusLabel();
   const athlete = useAthleteProfileOrNull();
   const exercises = useExercises();
   const timed = useTimedGuidance();
@@ -138,9 +145,9 @@ export default function IntervalsPage() {
     const wanted = initialPlan();
     if (wanted.focus === BOXING_FOCUS && !boxing && !boxingWaitOver) return;
     const fallback: IntervalPlan = {
-      focus: "full",
-      dumbbells: !!athlete?.equipment?.includes("dumbbell"),
-      trx: !!athlete?.equipment?.includes("suspension"),
+      focus: timed.focuses[0].id,
+      // The equipment the athlete has at hand, among the circuits' own.
+      gear: timed.equipment.filter((e) => !e.base && athlete?.equipment?.includes(e.id)).map((e) => e.id),
       pattern: defaultPattern(timed, athlete?.fitnessLevel),
       // The length in the middle of those offered.
       minutes: timed.minutes[Math.floor(timed.minutes.length / 2)],
@@ -161,7 +168,7 @@ export default function IntervalsPage() {
   }, [plan, timed, boxing, injuries, injuryRules]);
   const build = useCallback(
     (p: IntervalPlan) => {
-      if (p.focus === BOXING_FOCUS) return boxing ? buildBoxingSession(boxing, p, boxingPool(boxing, injuries, injuryRules).pool) : null;
+      if (p.focus === BOXING_FOCUS) return boxing ? buildBoxingSession(boxing, p as BoxingPlan, boxingPool(boxing, injuries, injuryRules).pool) : null;
       return timed ? buildIntervalSession(timed, p, injuryPool(timed, p, injuries, injuryRules).pool) : null;
     },
     [timed, boxing, injuries, injuryRules]
@@ -205,7 +212,7 @@ export default function IntervalsPage() {
     const { rest } = patternSeconds(plan.pattern);
     const id = await createWorkout({
       date: localDate(),
-      title: t("workoutTitle", { focus: t(`focus_${plan.focus}`), minutes: plan.minutes }),
+      title: t("workoutTitle", { focus: focusLabel(plan.focus), minutes: plan.minutes }),
       kind: "interval",
       intervalPlan: plan,
       durationSec: elapsedSec,
@@ -259,7 +266,8 @@ export default function IntervalsPage() {
   const { work, rest } = patternSeconds(plan.pattern);
   const circuits = !isBoxing && session.rounds.length > 1 && plan.minutes >= 30 ? session.rounds.slice(0, 2) : session.rounds.slice(0, 1);
   const level = athlete?.fitnessLevel;
-  function chooseFocus(focus: (typeof PLAN_FOCUSES)[number]) {
+  const gear = planGear(plan);
+  function chooseFocus(focus: string) {
     if (!plan || !timed) return;
     // Boxing rounds have their own formats and lengths; a circuit, its rhythms and lengths.
     if (focus === BOXING_FOCUS) {
@@ -311,9 +319,9 @@ export default function IntervalsPage() {
         <p className="text-sm text-muted-foreground">{t(isBoxing ? "boxingIntro" : "intro")}</p>
 
         <ChoiceField label={t("focus")}>
-          {(boxing ? PLAN_FOCUSES : INTERVAL_FOCUSES).map((focus) => (
+          {(boxing ? planFocuses(timed) : timed.focuses.map((f) => f.id)).map((focus) => (
             <Choice key={focus} on={plan.focus === focus} onClick={() => chooseFocus(focus)}>
-              {t(`focus_${focus}`)}
+              {focusLabel(focus)}
             </Choice>
           ))}
         </ChoiceField>
@@ -332,16 +340,22 @@ export default function IntervalsPage() {
         ) : (
         <>
         <ChoiceField label={t("equipment")}>
-          {/* The body alone, or with dumbbells, straps or both. */}
-          <Choice on={!plan.dumbbells && !plan.trx} onClick={() => change({ dumbbells: false, trx: false })}>
-            {t("bodyweight")}
-          </Choice>
-          <Choice on={plan.dumbbells} onClick={() => change({ dumbbells: !plan.dumbbells })}>
-            {t("dumbbells")}
-          </Choice>
-          <Choice on={!!plan.trx} onClick={() => change({ trx: !plan.trx })}>
-            {t("trx")}
-          </Choice>
+          {/* The body alone, or with any of the rest of the reference's equipment. */}
+          {timed.equipment.map((e) =>
+            e.base ? (
+              <Choice key={e.id} on={gear.length === 0} onClick={() => change({ gear: [], dumbbells: undefined, trx: undefined })}>
+                {timedLabel(timed.equipment, e.id, locale)}
+              </Choice>
+            ) : (
+              <Choice
+                key={e.id}
+                on={gear.includes(e.id)}
+                onClick={() => change({ gear: gear.includes(e.id) ? gear.filter((x) => x !== e.id) : [...gear, e.id], dumbbells: undefined, trx: undefined })}
+              >
+                {timedLabel(timed.equipment, e.id, locale)}
+              </Choice>
+            )
+          )}
         </ChoiceField>
 
         <ChoiceField label={t("pattern")} hint={t.has(`patternHint_${plan.pattern}`) ? t(`patternHint_${plan.pattern}`) : undefined}>

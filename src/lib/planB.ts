@@ -1,5 +1,5 @@
 import type { Sport } from "@/db";
-import { PLAN_FOCUSES, type PlanFocus } from "./intervals";
+import type { PlanFocus } from "./intervals";
 import { MOBILITY_MODES, type MobilityMode } from "./mobility";
 import { SPORT_DEFS } from "./disciplines";
 
@@ -26,7 +26,8 @@ export function readPlanB(raw: unknown): PlanB | null {
   const p = raw as Record<string, unknown>;
   switch (p.kind) {
     case "timed":
-      return PLAN_FOCUSES.includes(p.focus as PlanFocus) && whole(p.minutes, 1, 120) ? { kind: "timed", focus: p.focus as PlanFocus, minutes: p.minutes as number } : null;
+      // The focus is an id of the timed sessions' reference (or boxing), which may change: its form only.
+      return typeof p.focus === "string" && /^[a-z0-9_-]{1,30}$/.test(p.focus) && whole(p.minutes, 1, 120) ? { kind: "timed", focus: p.focus as PlanFocus, minutes: p.minutes as number } : null;
     case "mobility":
       return MOBILITY_MODES.includes(p.mode as MobilityMode) && whole(p.minutes, 1, 120) ? { kind: "mobility", mode: p.mode as MobilityMode, minutes: p.minutes as number } : null;
     case "cardio":

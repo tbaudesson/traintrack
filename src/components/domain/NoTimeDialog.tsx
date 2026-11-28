@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { usePlanFocusLabel } from "@/hooks/useTimedGuidance";
 import { CalendarClock, ChevronRight, Settings2, Timer, Zap } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import type { PlanB } from "@/lib/planB";
@@ -9,11 +10,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 /** "HIIT · full body · 15 min", "Run · 20 min", "Force 3 days · Day B": a plan B in a few words. */
 export function usePlanBLabel(): (p: PlanB, programs: { uuid: string; name: string; structure?: { name: string }[] }[]) => string {
   const t = useTranslations("planB");
-  const ti = useTranslations("intervals");
+  const focusLabel = usePlanFocusLabel();
   const tm = useTranslations("mobility");
   const tc = useTranslations("cardio");
   return (p, programs) => {
-    if (p.kind === "timed") return `${t("kind_timed")} · ${ti(`focus_${p.focus}`)} · ${t("min", { m: p.minutes })}`;
+    if (p.kind === "timed") return `${t("kind_timed")} · ${focusLabel(p.focus)} · ${t("min", { m: p.minutes })}`;
     if (p.kind === "mobility") return `${tm(`mode_${p.mode}`)} · ${t("min", { m: p.minutes })}`;
     if (p.kind === "cardio") return `${tc(`sport_${p.sport}`)} · ${t("min", { m: p.minutes })}`;
     const program = programs.find((x) => x.uuid === p.programUuid);

@@ -274,9 +274,13 @@ await page.evaluate(async ({ user, libraryRows, lessonExercises }) => {
     const [mode, rules] = [...text.matchAll(/FROM \(SELECT '\n([\s\S]*?)\n'::jsonb AS data\) AS \w/g)].map((m) => JSON.parse(m[1].replace(/''/g, "'")));
     return { name, mode, rules };
   });
+  // What migration 095 adds to a reference (the timed sessions' and the boxing rounds' lists).
+  const m095 = readFileSync("supabase/migrations/095_timed_lists.sql", "utf8");
+  const patch095 = (key) => JSON.parse(m095.match(new RegExp(`value::jsonb \\|\\| '((?:[^']|'')*)'::jsonb\\)::text\\s*WHERE key = '${key}'`))[1].replace(/''/g, "'"));
   for (const key of ["mobility_moves", "timed_sessions"]) {
     const start = m065.indexOf(`'${key}', '`) + key.length + 5;
     const value = JSON.parse(m065.slice(start, m065.indexOf("')\nON CONFLICT", start)).replace(/''/g, "'"));
+    if (key === "timed_sessions") Object.assign(value, patch095(key));
     if (key === "mobility_moves") {
       for (const { name, mode } of extraModes) {
         value.minutes[name] = mode.minutes;
@@ -301,7 +305,7 @@ await page.evaluate(async ({ user, libraryRows, lessonExercises }) => {
   await page.evaluate((v) => localStorage.setItem("traintrack.guidance.display_modes", v), JSON.stringify(JSON.parse(modes)));
   // The boxing rounds, as migration 085 seeds them.
   const boxingRounds = m085.slice(m085.indexOf("'boxing_rounds', '") + 18, m085.indexOf("')\nON CONFLICT"));
-  await page.evaluate((v) => localStorage.setItem("traintrack.guidance.boxing_rounds", v), JSON.stringify(JSON.parse(boxingRounds)));
+  await page.evaluate((v) => localStorage.setItem("traintrack.guidance.boxing_rounds", v), JSON.stringify({ ...JSON.parse(boxingRounds), ...patch095("boxing_rounds") }));
   // The music apps, as migration 083 seeds them.
   const m083 = readFileSync("supabase/migrations/083_music_apps.sql", "utf8");
   const music = m083.slice(m083.indexOf("'\n[") + 1, m083.indexOf("]\n'") + 1);

@@ -6,7 +6,7 @@ describe("one's plan B", () => {
     expect(readPlanB({ kind: "timed", focus: "full", minutes: 15 })).toEqual({ kind: "timed", focus: "full", minutes: 15 });
     expect(readPlanB({ kind: "cardio", sport: "run", minutes: 30 })).toEqual({ kind: "cardio", sport: "run", minutes: 30 });
     expect(readPlanB({ kind: "program", programUuid: "p1", dayIndex: 2 })).toEqual({ kind: "program", programUuid: "p1", dayIndex: 2 });
-    expect(readPlanB({ kind: "timed", focus: "arms", minutes: 15 })).toBeNull();
+    expect(readPlanB({ kind: "timed", focus: "Arms and legs", minutes: 15 })).toBeNull();
     expect(readPlanB({ kind: "cardio", sport: "curling", minutes: 30 })).toBeNull();
     expect(readPlanB({ kind: "mobility", mode: "taichi", minutes: 15 })).toEqual({ kind: "mobility", mode: "taichi", minutes: 15 });
     expect(readPlanB({ kind: "mobility", mode: "karate", minutes: 15 })).toBeNull();

@@ -2,6 +2,7 @@ import type { MuscleGroup } from "@/db";
 import { isGroupId } from "@/lib/muscles";
 import { injuryWarning, type Injury, type InjuryRules } from "./injuries";
 import {
+  BOXING_FOCUS,
   FITNESS_LEVELS,
   patternSeconds,
   random,
@@ -12,6 +13,7 @@ import {
   type IntervalPattern,
   type IntervalSession,
   type IntervalStep,
+  type TimedItem,
 } from "./intervals";
 
 /**
@@ -23,9 +25,18 @@ import {
  * names, descriptions, videos and injury rules live there).
  */
 
-/** What a combination asks: punching, getting out of the way, moving, or the burst that ends a round. */
-export type BoxingKind = "attack" | "defense" | "footwork" | "finisher";
-export const BOXING_KINDS: BoxingKind[] = ["attack", "defense", "footwork", "finisher"];
+/** What a combination asks (punching, getting out of the way, moving…): an id of the reference's kinds. */
+export type BoxingKind = string;
+
+/**
+ * A kind of combination, named in three languages. One closes each round
+ * (the finisher, a burst of fast punches); one fills a round when another
+ * kind has nothing left (the main one, punches).
+ */
+export interface BoxingKindDef extends TimedItem {
+  finisher?: boolean;
+  main?: boolean;
+}
 
 export interface BoxingCombo {
   /** The library's name of the exercise. */
@@ -41,14 +52,20 @@ export interface BoxingGuidance {
   formatForLevel: Record<(typeof FITNESS_LEVELS)[number], IntervalPattern>;
   /** How long each combination of a round lasts. */
   comboSec: number;
+  /** The kinds of combination, in the order offered. */
+  kinds: BoxingKindDef[];
   /** The order the kinds come in within a round (the finisher closes it). */
-  rhythm: Exclude<BoxingKind, "finisher">[];
+  rhythm: BoxingKind[];
   combos: BoxingCombo[];
 }
 
 export const BOXING_KEY = "boxing_rounds";
 
 const whole = (v: unknown, lo: number, hi: number) => typeof v === "number" && Number.isInteger(v) && v >= lo && v <= hi;
+
+/** The kind that closes each round, and the one that fills a round when another has nothing left. */
+export const finisherKind = (g: Pick<BoxingGuidance, "kinds">) => g.kinds.find((k) => k.finisher)?.id;
+export const mainKind = (g: Pick<BoxingGuidance, "kinds">) => g.kinds.find((k) => k.main)?.id;
 
 /** The reference, checked whole; null when anything is off. */
 export function parseBoxing(raw: string | null | undefined): BoxingGuidance | null {
@@ -70,16 +87,24 @@ export function parseBoxing(raw: string | null | undefined): BoxingGuidance | nu
     if (work % g.comboSec !== 0 || work / g.comboSec < 2) return null;
   }
   if (!g.formatForLevel || !FITNESS_LEVELS.every((l) => g.formats.includes(g.formatForLevel[l]))) return null;
-  if (!Array.isArray(g.rhythm) || !g.rhythm.length || !g.rhythm.every((k) => BOXING_KINDS.includes(k) && (k as string) !== "finisher")) return null;
+  const items = g.kinds;
+  if (!Array.isArray(items) || !items.length || items.length > 20) return null;
+  if (!items.every((i) => i && typeof i.id === "string" && /^[a-z0-9_-]{1,30}$/.test(i.id) && ["fr", "en", "de"].every((l) => typeof i[l as "fr"] === "string" && i[l as "fr"].trim()))) return null;
+  if (new Set(items.map((i) => i.id)).size !== items.length) return null;
+  // One kind closes the rounds, another (not the same) fills them.
+  if (items.filter((i) => i.finisher === true).length !== 1 || items.filter((i) => i.main === true).length !== 1 || items.some((i) => i.finisher && i.main)) return null;
+  const KINDS = items.map((i) => i.id);
+  const finisher = finisherKind(g);
+  if (!Array.isArray(g.rhythm) || !g.rhythm.length || !g.rhythm.every((k) => KINDS.includes(k) && k !== finisher)) return null;
   if (!Array.isArray(g.combos)) return null;
   const names = new Set<string>();
   for (const c of g.combos) {
     if (!c || typeof c.name !== "string" || !c.name.trim() || names.has(c.name)) return null;
     names.add(c.name);
-    if (!isGroupId(c.muscleGroup) || !BOXING_KINDS.includes(c.kind)) return null;
+    if (!isGroupId(c.muscleGroup) || !KINDS.includes(c.kind)) return null;
   }
-  // Punches at least: a round can always be filled with them.
-  if (!g.combos.some((c) => c.kind === "attack")) return null;
+  // Combinations of the main kind at least: a round can always be filled with them.
+  if (!g.combos.some((c) => c.kind === mainKind(g))) return null;
   return g;
 }
 
@@ -95,7 +120,7 @@ export function boxingPool(
 ): { pool: BoxingCombo[]; leftOut: number; cautious: string[] } {
   const level = (c: BoxingCombo) => injuryWarning(rules, c.name, injuries)?.level ?? null;
   const safe = g.combos.filter((c) => !level(c));
-  const cautious = BOXING_KINDS.flatMap((kind) => (safe.some((c) => c.kind === kind) ? [] : g.combos.filter((c) => c.kind === kind && level(c) === "caution")));
+  const cautious = g.kinds.map((k) => k.id).flatMap((kind) => (safe.some((c) => c.kind === kind) ? [] : g.combos.filter((c) => c.kind === kind && level(c) === "caution")));
   const pool = g.combos.filter((c) => safe.includes(c) || cautious.includes(c));
   return { pool, leftOut: g.combos.length - pool.length, cautious: cautious.map((c) => c.name) };
 }
@@ -107,7 +132,7 @@ export function roundCount(pattern: IntervalPattern, minutes: number): number {
 }
 
 /** A combination as the timer and the saved workout know an exercise. */
-const asExercise = (c: BoxingCombo): IntervalExercise => ({ name: c.name, muscleGroup: c.muscleGroup, equipment: "bodyweight", focus: ["full"], kind: "cardio" });
+const asExercise = (c: BoxingCombo): IntervalExercise => ({ name: c.name, muscleGroup: c.muscleGroup, equipment: "bodyweight", focus: [BOXING_FOCUS], kind: c.kind });
 
 /**
  * The rounds for a plan: each one the kinds in their order, a combination
@@ -119,11 +144,13 @@ export function buildBoxingSession(g: BoxingGuidance, plan: BoxingPlan, pool: Bo
   const rand = random(plan.seed);
   const { work, rest } = patternSeconds(plan.pattern);
   const perRound = work / g.comboSec;
-  const queues = new Map(BOXING_KINDS.map((kind) => [kind, shuffle(pool.filter((c) => c.kind === kind), rand)]));
+  const queues = new Map(g.kinds.map(({ id: kind }) => [kind, shuffle(pool.filter((c) => c.kind === kind), rand)]));
+  const finisher = finisherKind(g);
+  const main = mainKind(g);
   const turns = new Map<BoxingKind, number>();
-  const take = (kind: BoxingKind): BoxingCombo | null => {
-    const queue = queues.get(kind)!;
-    if (!queue.length) return null;
+  const take = (kind: BoxingKind | undefined): BoxingCombo | null => {
+    const queue = kind ? queues.get(kind) : undefined;
+    if (!kind || !queue?.length) return null;
     const n = turns.get(kind) ?? 0;
     turns.set(kind, n + 1);
     return queue[n % queue.length];
@@ -136,7 +163,7 @@ export function buildBoxingSession(g: BoxingGuidance, plan: BoxingPlan, pool: Bo
     const combos: IntervalExercise[] = [];
     for (let i = 0; i < perRound; i++) {
       // The burst closes the round; a kind with nothing left (injuries) gives way to punches.
-      const combo = (i === perRound - 1 ? take("finisher") : null) ?? take(g.rhythm[i % g.rhythm.length]) ?? take("attack");
+      const combo = (i === perRound - 1 ? take(finisher) : null) ?? take(g.rhythm[i % g.rhythm.length]) ?? take(main);
       if (!combo) continue;
       combos.push(asExercise(combo));
       steps.push({ type: "work", exercise: asExercise(combo), seconds: g.comboSec, round });

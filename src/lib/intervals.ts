@@ -2,9 +2,28 @@ import type { MuscleGroup } from "@/db";
 import { isGroupId } from "@/lib/muscles";
 import { injuryWarning, type Injury, type InjuryRules } from "./injuries";
 
-/** What the session works: the belly, the whole body, or the legs and glutes. */
-export type IntervalFocus = "abs" | "full" | "lower";
-export const INTERVAL_FOCUSES: IntervalFocus[] = ["full", "abs", "lower"];
+/** What a circuit works (the whole body, the belly, the legs…): an id of the reference's focuses. */
+export type IntervalFocus = string;
+
+/** An item of the reference's lists (focuses, kinds of effort, equipment), named in three languages. */
+export interface TimedItem {
+  id: string;
+  fr: string;
+  en: string;
+  de: string;
+}
+/** A circuit's equipment; the base one (the body) is always allowed. */
+export interface TimedEquipment extends TimedItem {
+  base: boolean;
+}
+
+/** An item's name in the app's language; its id when the reference no longer has it. */
+export function timedLabel(list: readonly TimedItem[] | undefined, id: string | null | undefined, locale: string): string {
+  if (!id) return "";
+  const it = list?.find((i) => i.id === id);
+  if (!it) return id;
+  return locale === "fr" ? it.fr : locale === "de" ? it.de : it.en;
+}
 
 /** Seconds of effort / seconds of rest, written "30-30". */
 export type IntervalPattern = string;
@@ -13,12 +32,15 @@ export type IntervalPattern = string;
 export const BOXING_FOCUS = "boxing" as const;
 /** What a timed session works: a circuit's area, or boxing rounds. */
 export type PlanFocus = IntervalFocus | typeof BOXING_FOCUS;
-export const PLAN_FOCUSES: PlanFocus[] = [...INTERVAL_FOCUSES, BOXING_FOCUS];
+/** The focuses a timed session can have: the reference's circuits, then boxing. */
+export const planFocuses = (g: Pick<TimedGuidance, "focuses"> | null | undefined): PlanFocus[] => [...(g?.focuses ?? []).map((f) => f.id), BOXING_FOCUS];
 
 /** What a timed session was built from, kept on the workout. */
 interface PlanBase {
-  dumbbells: boolean;
-  /** Suspension straps (TRX); absent on the plans made before them. */
+  /** The equipment chosen besides the body (ids of the reference's equipment). */
+  gear?: string[];
+  /** Plans made before the reference's equipment: dumbbells, and suspension straps (TRX). */
+  dumbbells?: boolean;
   trx?: boolean;
   /** A circuit's effort and rest ("30-30"); a boxing round and the rest after it ("180-60"). */
   pattern: IntervalPattern;
@@ -29,10 +51,13 @@ export type CircuitPlan = PlanBase & { focus: IntervalFocus };
 export type BoxingPlan = PlanBase & { focus: typeof BOXING_FOCUS };
 export type IntervalPlan = CircuitPlan | BoxingPlan;
 
-export type IntervalKind = "cardio" | "strength" | "core";
-export const INTERVAL_KINDS: IntervalKind[] = ["cardio", "strength", "core"];
-export type IntervalEquipment = "bodyweight" | "dumbbell" | "suspension";
-export const INTERVAL_EQUIPMENT: IntervalEquipment[] = ["bodyweight", "dumbbell", "suspension"];
+/** A kind of effort (cardio, strength, core…) and a circuit's equipment: ids of the reference's lists. */
+export type IntervalKind = string;
+export type IntervalEquipment = string;
+
+/** The equipment a plan chose besides the body; a plan from before the list read from its two flags. */
+export const planGear = (plan: Pick<PlanBase, "gear" | "dumbbells" | "trx">): string[] =>
+  plan.gear ?? [...(plan.dumbbells ? ["dumbbell"] : []), ...(plan.trx ? ["suspension"] : [])];
 export const FITNESS_LEVELS = ["beginner", "intermediate", "advanced"] as const;
 
 export interface IntervalExercise {
@@ -60,6 +85,10 @@ export interface TimedGuidance {
   getReadySec: number;
   /** Exercises per round, by length of session (the first that fits). */
   perRound: { upToMinutes: number; count: number }[];
+  /** What a circuit can work, the kinds of effort and the equipment, in the order offered. */
+  focuses: TimedItem[];
+  kinds: TimedItem[];
+  equipment: TimedEquipment[];
   /** The order the kinds come in, so that the heart rate goes up and down. */
   rhythm: Record<IntervalFocus, IntervalKind[]>;
   /** The usual rhythm for a level. */
@@ -91,25 +120,36 @@ export function parseTimed(raw: string | null | undefined): TimedGuidance | null
   if (!num(g.roundRestSec, 0, 600) || !num(g.getReadySec, 0, 120)) return null;
   if (!Array.isArray(g.perRound) || !g.perRound.length || !g.perRound.every((r) => r && num(r.upToMinutes, 1, 10000) && num(r.count, 1, 30))) return null;
   if (Math.max(...g.perRound.map((r) => r.upToMinutes)) < Math.max(...g.minutes)) return null;
-  if (!g.rhythm || !INTERVAL_FOCUSES.every((f) => Array.isArray(g.rhythm[f]) && g.rhythm[f].length && g.rhythm[f].every((k) => INTERVAL_KINDS.includes(k)))) return null;
+  const items = (list: unknown) =>
+    Array.isArray(list) && list.length > 0 && list.length <= 20 && list.every((i) => i && typeof i.id === "string" && /^[a-z0-9_-]{1,30}$/.test(i.id) && ["fr", "en", "de"].every((l) => typeof i[l] === "string" && i[l].trim())) && new Set(list.map((i) => i.id)).size === list.length;
+  if (!items(g.focuses) || !items(g.kinds) || !items(g.equipment) || g.focuses.some((f) => f.id === BOXING_FOCUS)) return null;
+  if (g.equipment.filter((e) => e.base === true).length !== 1) return null;
+  const FOCUSES = g.focuses.map((f) => f.id);
+  const KINDS = g.kinds.map((k) => k.id);
+  const EQUIPMENT = g.equipment.map((e) => e.id);
+  const BASE = g.equipment.find((e) => e.base)!.id;
+  if (!g.rhythm || !FOCUSES.every((f) => Array.isArray(g.rhythm[f]) && g.rhythm[f].length && g.rhythm[f].every((k) => KINDS.includes(k)))) return null;
   if (!g.patternForLevel || !FITNESS_LEVELS.every((l) => g.patternForLevel[l] && g.patterns.includes(g.patternForLevel[l]))) return null;
   if (!Array.isArray(g.exercises)) return null;
   const names = new Set<string>();
   for (const e of g.exercises) {
     if (!e || typeof e.name !== "string" || !e.name.trim() || names.has(e.name)) return null;
     names.add(e.name);
-    if (!isGroupId(e.muscleGroup) || !INTERVAL_EQUIPMENT.includes(e.equipment) || !INTERVAL_KINDS.includes(e.kind)) return null;
-    if (!Array.isArray(e.focus) || !e.focus.length || !e.focus.every((f) => INTERVAL_FOCUSES.includes(f))) return null;
+    if (!isGroupId(e.muscleGroup) || !EQUIPMENT.includes(e.equipment) || !KINDS.includes(e.kind)) return null;
+    if (!Array.isArray(e.focus) || !e.focus.length || !e.focus.every((f) => FOCUSES.includes(f))) return null;
     if (e.sides !== undefined && typeof e.sides !== "boolean") return null;
   }
-  // Every focus needs bodyweight exercises: a session without equipment must be possible.
-  if (!INTERVAL_FOCUSES.every((f) => g.exercises.some((e) => e.focus.includes(f) && e.equipment === "bodyweight"))) return null;
+  // Every focus needs exercises with the base equipment: a session with nothing but the body must be possible.
+  if (!FOCUSES.every((f) => g.exercises.some((e) => e.focus.includes(f) && e.equipment === BASE))) return null;
   return g;
 }
 
-/** Whether a plan's equipment allows an exercise: the body always, the rest when chosen. */
-export const allows = (plan: Pick<IntervalPlan, "dumbbells" | "trx">, e: Pick<IntervalExercise, "equipment">) =>
-  e.equipment === "bodyweight" || (e.equipment === "dumbbell" && plan.dumbbells) || (e.equipment === "suspension" && !!plan.trx);
+/** The base equipment (the body): always allowed. */
+export const baseGear = (g: Pick<TimedGuidance, "equipment">) => g.equipment.find((e) => e.base)?.id;
+
+/** Whether a plan's equipment allows an exercise: the base always, the rest when chosen. */
+export const allows = (g: Pick<TimedGuidance, "equipment">, plan: Pick<PlanBase, "gear" | "dumbbells" | "trx">, e: Pick<IntervalExercise, "equipment">) =>
+  e.equipment === baseGear(g) || planGear(plan).includes(e.equipment);
 
 /**
  * The exercises a timed session may use, given the athlete's injuries. A
@@ -119,13 +159,13 @@ export const allows = (plan: Pick<IntervalPlan, "dumbbells" | "trx">, e: Pick<In
  */
 export function injuryPool(
   g: TimedGuidance,
-  plan: Pick<CircuitPlan, "focus" | "dumbbells" | "trx" | "minutes">,
+  plan: Pick<CircuitPlan, "focus" | "gear" | "dumbbells" | "trx" | "minutes">,
   injuries: Pick<Injury, "area" | "healedOn">[],
   rules: InjuryRules,
   all: IntervalExercise[] = g.exercises
 ): { pool: IntervalExercise[]; leftOut: number; cautious: string[] } {
   const level = (e: IntervalExercise) => injuryWarning(rules, e.name, injuries)?.level ?? null;
-  const fits = (e: IntervalExercise) => e.focus.includes(plan.focus) && allows(plan, e);
+  const fits = (e: IntervalExercise) => e.focus.includes(plan.focus) && allows(g, plan, e);
   const safe = all.filter((e) => !level(e));
   const short = exercisesPerRound(g, plan.minutes) - safe.filter(fits).length;
   const cautious = short > 0 ? all.filter((e) => fits(e) && level(e) === "caution").slice(0, short) : [];
@@ -171,15 +211,16 @@ export function shuffle<T>(items: T[], rand: () => number): T[] {
  * leaving out those of the other circuit while there are others.
  */
 export function pickRound(
-  g: Pick<TimedGuidance, "rhythm">,
-  plan: Pick<CircuitPlan, "focus" | "dumbbells" | "trx">,
+  g: Pick<TimedGuidance, "rhythm" | "equipment">,
+  plan: Pick<CircuitPlan, "focus" | "gear" | "dumbbells" | "trx">,
   count: number,
   rand: () => number,
   avoid: Set<string>,
   pool: IntervalExercise[]
 ): IntervalExercise[] {
-  const usable = pool.filter((e) => e.focus.includes(plan.focus) && allows(plan, e));
-  const equipped = plan.dumbbells || !!plan.trx;
+  const usable = pool.filter((e) => e.focus.includes(plan.focus) && allows(g, plan, e));
+  const equipped = planGear(plan).length > 0;
+  const base = baseGear(g);
   // Exercises of the other circuit come last, so the two differ as much as they can.
   const shuffled = shuffle(usable, rand);
   const ordered = [...shuffled.filter((e) => !avoid.has(e.name)), ...shuffled.filter((e) => avoid.has(e.name))];
@@ -190,10 +231,10 @@ export function pickRound(
     const kind = rhythm[i % rhythm.length];
     const candidates = ordered.filter((e) => e.kind === kind && !picked.includes(e));
     // With equipment, about half the round uses it, the rest stays bodyweight.
-    const wantEquipment = equipped && picked.filter((e) => e.equipment !== "bodyweight").length < dumbbellShare && i % 2 === 0;
+    const wantEquipment = equipped && picked.filter((e) => e.equipment !== base).length < dumbbellShare && i % 2 === 0;
     const fresh = candidates.filter((e) => !avoid.has(e.name));
     const pool2 = fresh.length ? fresh : candidates;
-    const next = pool2.find((e) => (e.equipment !== "bodyweight") === wantEquipment) ?? pool2[0];
+    const next = pool2.find((e) => (e.equipment !== base) === wantEquipment) ?? pool2[0];
     if (next) picked.push(next);
   }
   // A focus short of one kind: fill with whatever is left.
