@@ -87,6 +87,20 @@ describe("adoptLocalData", () => {
     await expect(flushAndClearLocalData()).resolves.toBe(true);
   });
 
+  it("leaves the tennis drill library alone, and gives back library drills a first version adopted", async () => {
+    await db.table("tennisDrills").add({ uuid: U1, name: "Mini-tennis", nameFr: "Mini-tennis", nameDe: "Kleinfeld-Tennis", userId: null, _dirty: 0, syncedAt: "2026-11-28T06:00:00Z" });
+    await db.table("tennisDrills").add({ uuid: U2, name: "Tie-break", nameFr: "Tie-break", nameDe: "Tiebreak", userId: "u1", _dirty: 1, syncedAt: "2026-11-28T06:00:00Z" });
+    const mine = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+    await db.table("tennisDrills").add({ uuid: mine, name: "Mon jeu", userId: null, _dirty: 0 });
+
+    await adoptLocalData("u1");
+
+    expect(await db.table("tennisDrills").get({ uuid: U1 })).toMatchObject({ userId: null, _dirty: 0 });
+    expect(await db.table("tennisDrills").get({ uuid: U2 })).toMatchObject({ userId: null, _dirty: 0 });
+    // Made on the device before signing in: one's own.
+    expect(await db.table("tennisDrills").get({ uuid: mine })).toMatchObject({ userId: "u1", _dirty: 1 });
+  });
+
   it("still adopts the user's own ownerless rows", async () => {
     await db.table("exercises").add({ uuid: U1, name: "Mine", isCustom: true, userId: null, _dirty: 0 });
     await db.table("bodyMetrics").add({ uuid: U2, date: "2026-11-08", userId: null, _dirty: 0 });

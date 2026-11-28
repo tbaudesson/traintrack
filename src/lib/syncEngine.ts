@@ -967,8 +967,9 @@ export async function startSync(userId: string): Promise<void> {
 
 /**
  * Rows created before signing in have no owner yet: give them to this user
- * and queue them for upload. The shared exercise library also has no owner
- * but belongs to nobody, and the server rightly refuses it. An earlier version
+ * and queue them for upload. The shared exercise library (and the tennis
+ * drill library) also has no owner but belongs to nobody, and the server
+ * rightly refuses it. An earlier version
  * adopted it anyway, so devices may still hold those rows stuck as dirty.
  */
 export async function adoptLocalData(userId: string): Promise<void> {
@@ -980,13 +981,23 @@ export async function adoptLocalData(userId: string): Promise<void> {
         .table("exercises")
         .filter((r: Record<string, unknown>) => !r.isCustom && r._dirty === 1)
         .modify({ userId: null, _dirty: 0 });
+      // The tennis drill library likewise (migration 088): its rows, read from
+      // the server and named in the three languages, were adopted by a first
+      // version of this; given back to no one.
+      await db
+        .table("tennisDrills")
+        .filter((r: Record<string, unknown>) => r._dirty === 1 && !!r.syncedAt && !!r.nameFr && !!r.nameDe)
+        .modify({ userId: null, _dirty: 0 });
 
       for (const { dexieTable } of TABLE_CONFIGS) {
         await db
           .table(dexieTable)
           .filter(
             (r: Record<string, unknown>) =>
-              !r.userId && (dexieTable !== "exercises" || !!r.isCustom)
+              !r.userId &&
+              (dexieTable !== "exercises" || !!r.isCustom) &&
+              // An ownerless drill read from the server is the library's.
+              (dexieTable !== "tennisDrills" || !r.syncedAt)
           )
           .modify({ userId, _dirty: 1 });
       }
