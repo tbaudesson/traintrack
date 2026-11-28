@@ -78,9 +78,8 @@ describe("the equipment reference", () => {
       return parseProgramEquipment(JSON.stringify(copy));
     };
     expect(parseProgramEquipment("{")).toBeNull();
-    expect(broken((g) => (g.needs["Deadlift"] = "anvil" as never))).toBeNull();
-    expect(broken((g) => (g.needs["Push-up"] = "bodyweight"))).toBeNull();
+    expect(broken((g) => (g.needs["Deadlift"] = "Anvil!" as never))).toBeNull();
     expect(broken((g) => (g.alternatives["Deadlift"] = ["Deadlift"]))).toBeNull();
-    expect(broken((g) => (g.gym = ["gym" as never]))).toBeNull();
+    expect(broken((g) => (g.gym = ["Gym!" as never]))).toBeNull();
   });
 });

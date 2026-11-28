@@ -1,7 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { warmupSets } from "./warmup";
 import { substitutes } from "./substitutes";
 import { chainedNext, linkGroup, programGroups, restsAfter, supersetLabels, supersetOf, unlinkAfter } from "./supersets";
+import { equipmentOnDeviceForTests } from "./settingsFromMigrations";
+
+// The equipment as the admin keeps it (migration 093): dumbbells by 2 kg, a 20 kg bar, no warm-up for bodyweight.
+equipmentOnDeviceForTests(vi.stubGlobal);
 
 describe("warm-up sets", () => {
   it("climb from the empty bar to the working weight", () => {

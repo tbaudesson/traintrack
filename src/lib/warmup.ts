@@ -1,11 +1,10 @@
 import type { Equipment } from "@/db";
+import { barOf, loadStep, skipsWarmup } from "@/lib/references";
 
 export interface WarmupStep {
   weightKg: number;
   reps: number;
 }
-
-const BAR_KG = 20;
 
 /** Ramp-up percentages of the working weight, with the reps for each. */
 const BARBELL: [number, number][] = [[0.5, 8], [0.7, 5], [0.85, 3]];
@@ -17,9 +16,11 @@ const OTHER: [number, number][] = [[0.5, 10], [0.75, 5]];
  * bodyweight work, which warms up on its own.
  */
 export function warmupSets(workKg: number | undefined, equipment: Equipment | undefined): WarmupStep[] {
-  if (!workKg || workKg <= 0 || equipment === "bodyweight" || equipment === "bands") return [];
-  const barbell = equipment === "barbell";
-  const step = equipment === "dumbbell" || equipment === "kettlebell" ? 2 : 2.5;
+  // As the admin's list of equipment says: none before bodyweight or bands, the empty bar first on a barbell.
+  if (!workKg || workKg <= 0 || skipsWarmup(equipment)) return [];
+  const BAR_KG = barOf(equipment);
+  const barbell = BAR_KG > 0;
+  const step = loadStep(equipment);
   const round = (kg: number) => Math.floor(kg / step) * step;
 
   const steps: WarmupStep[] = barbell && workKg > BAR_KG ? [{ weightKg: BAR_KG, reps: 10 }] : [];

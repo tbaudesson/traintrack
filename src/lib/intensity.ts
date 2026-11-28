@@ -1,7 +1,5 @@
 import type { ProgramDay } from "@/db";
 
-/** The intensities offered at the start of a session, in percent of the program's reps and holds. */
-export const INTENSITY_STEPS = [-20, 0, 10, 20, 30] as const;
 
 /**
  * A program's target made harder or easier: each number (reps, seconds) by

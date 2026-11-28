@@ -1,5 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { nextLoad } from "./progression";
+import { equipmentOnDeviceForTests } from "./settingsFromMigrations";
+
+// The equipment as the admin keeps it (migration 093): dumbbells by 2 kg, a 20 kg bar, no warm-up for bodyweight.
+equipmentOnDeviceForTests(vi.stubGlobal);
 
 const set = (weightKg: number, reps: number, rpe?: number) => ({ weightKg, reps, rpe });
 const plan = { targetSets: 3, targetReps: "8-10", equipment: "barbell" as const };

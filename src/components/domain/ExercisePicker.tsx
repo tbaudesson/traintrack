@@ -1,6 +1,7 @@
 "use client";
 
 import { groupLabel } from "@/lib/muscles";
+import { needsNoGear } from "@/lib/references";
 import { useMuscleGroups } from "@/hooks/useMuscleGroups";
 import { useLessonsReference } from "@/hooks/useLessonsReference";
 import { refLabel } from "@/lib/lessonsReference";
@@ -101,7 +102,7 @@ function PickerBody({ onPick, injuries, exclude, exercises }: { onPick: (exercis
   );
   const results = useMemo(() => {
     const byFilter = usable.filter(
-      (e) => (!muscle || e.muscleGroup === muscle) && (!ownGear || !e.equipment || e.equipment === "bodyweight" || mine.includes(e.equipment))
+      (e) => (!muscle || e.muscleGroup === muscle) && (!ownGear || !e.equipment || needsNoGear(e.equipment) || mine.includes(e.equipment))
     );
     const sorted = [...byFilter].sort((a, b) => xl(a.name).localeCompare(xl(b.name), locale));
     return search(sorted, query, (e) => ({

@@ -1,4 +1,5 @@
 import type { Equipment, Exercise, Program, ProgramDay, Workout, WorkoutSet } from "@/db";
+import { needsNoGear } from "@/lib/references";
 import { findExercise } from "./exerciseMatch";
 import { findWorkoutProgramDay } from "./startWorkout";
 import { substitutes } from "./substitutes";
@@ -102,7 +103,7 @@ export function coachProposals(input: {
           skippedHere = true;
           // A stand-in the athlete can do: their own equipment or the body alone (any, when the equipment is not known).
           const owned = input.owned ?? [];
-          const doable = (e: E) => !owned.length || !e.equipment || e.equipment === "bodyweight" || owned.includes(e.equipment);
+          const doable = (e: E) => !owned.length || !e.equipment || needsNoGear(e.equipment) || owned.includes(e.equipment);
           const candidate = ex
             ? substitutes(ex, input.exercises.filter((e) => !dayNames.includes(e.name) && doable(e)), owned).find((e) => !input.avoid?.(e.name))
             : undefined;

@@ -5,7 +5,10 @@ import { useTranslations } from "next-intl";
 import { Check, Dumbbell, Loader2, Plus, Trash2 } from "lucide-react";
 import type { Equipment } from "@/db";
 import { getAppSettings, setAppSetting } from "@/lib/adminService";
-import { EQUIPMENT, PROGRAM_EQUIPMENT_KEY, parseProgramEquipment, type ProgramEquipmentGuide } from "@/lib/programEquipment";
+import { PROGRAM_EQUIPMENT_KEY, parseProgramEquipment, type ProgramEquipmentGuide } from "@/lib/programEquipment";
+import { itemLabel } from "@/lib/references";
+import { useEquipmentList } from "@/hooks/useReferences";
+import { useLocale } from "next-intl";
 import { useExercises } from "@/hooks/useExercises";
 import { useExerciseLabel } from "@/lib/exerciseNames";
 import { Button } from "@/components/ui/button";
@@ -15,7 +18,6 @@ import { NumbersInput } from "@/components/domain/NumbersInput";
 
 type Row = { name: string; need: Equipment | ""; alternatives: string[] };
 const select = "h-9 w-full rounded-md border border-input bg-background px-2 text-sm text-foreground";
-const GEAR = EQUIPMENT.filter((e) => e !== "bodyweight" && e !== "other");
 
 /** One row per exercise: what it needs and what stands in for it. */
 function toRows(g: ProgramEquipmentGuide): Row[] {
@@ -40,7 +42,10 @@ function fromRows(rows: Row[], g: ProgramEquipmentGuide): ProgramEquipmentGuide 
  */
 export function ProgramEquipmentTab() {
   const t = useTranslations("equipmentAdmin");
-  const to = useTranslations("onboarding");
+  const locale = useLocale();
+  const equipmentList = useEquipmentList();
+  // The gear a program may need: neither none (bodyweight) nor the unsorted.
+  const GEAR = (equipmentList ?? []).filter((e) => !e.noGear && !e.unspecified).map((e) => e.id);
   const ts = useTranslations("sync");
   const xl = useExerciseLabel();
   const library = useExercises().filter((e) => !e.isCustom);
@@ -117,7 +122,7 @@ export function ProgramEquipmentTab() {
             {GEAR.map((e) => (
               <label key={e} className="flex items-center gap-1.5 text-xs">
                 <input type="checkbox" className="size-4 accent-accent-600" checked={g.gym.includes(e)} onChange={(ev) => putG({ ...g, gym: toggle(g.gym, e, ev.target.checked) })} />
-                {to(`equip_${e}`)}
+                {itemLabel(equipmentList, e, locale)}
               </label>
             ))}
           </div>
@@ -129,7 +134,7 @@ export function ProgramEquipmentTab() {
           <div className="mt-2 space-y-2">
             {GEAR.map((need) => (
               <div key={need}>
-                <p className="text-xs font-medium">{to(`equip_${need}`)}</p>
+                <p className="text-xs font-medium">{itemLabel(equipmentList, need, locale)}</p>
                 <div className="flex flex-wrap gap-x-3 gap-y-1">
                   {GEAR.filter((e) => e !== need).map((e) => (
                     <label key={e} className="flex items-center gap-1.5 text-xs">
@@ -145,7 +150,7 @@ export function ProgramEquipmentTab() {
                           putG({ ...g, standIns });
                         }}
                       />
-                      {to(`equip_${e}`)}
+                      {itemLabel(equipmentList, e, locale)}
                     </label>
                   ))}
                 </div>
@@ -168,7 +173,7 @@ export function ProgramEquipmentTab() {
           <details key={i} className="rounded-xl border border-border p-3">
             <summary className="cursor-pointer text-sm font-medium">
               {r.name ? xl(r.name) : t("untitled")}{" "}
-              <span className="text-xs text-muted-foreground">· {r.need ? to(`equip_${r.need}`) : t("noNeed")}</span>
+              <span className="text-xs text-muted-foreground">· {r.need ? itemLabel(equipmentList, r.need, locale) : t("noNeed")}</span>
             </summary>
             <div className="mt-3 space-y-2">
               <div className="grid gap-2 sm:grid-cols-2">
@@ -181,7 +186,7 @@ export function ProgramEquipmentTab() {
                   <select className={select} value={r.need} onChange={(e) => setRow(i, { ...r, need: e.target.value as Row["need"] })}>
                     <option value="">{t("noNeed")}</option>
                     {GEAR.map((e) => (
-                      <option key={e} value={e}>{to(`equip_${e}`)}</option>
+                      <option key={e} value={e}>{itemLabel(equipmentList, e, locale)}</option>
                     ))}
                   </select>
                 </label>

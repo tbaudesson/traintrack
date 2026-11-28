@@ -7,10 +7,8 @@ import { sportDef } from "./disciplines";
  * shown as a measure. Pure.
  */
 
-export type SwimStroke = "free" | "breast" | "back" | "fly" | "mixed";
-export const SWIM_STROKES: SwimStroke[] = ["free", "breast", "back", "fly", "mixed"];
-/** Pool lengths offered; open water has none. */
-export const POOL_LENGTHS = [25, 50] as const;
+/** A swim's stroke: an id of the list the admin keeps (app settings "swim_strokes", migration 093). */
+export type SwimStroke = string;
 
 /**
  * SWOLF: seconds per length plus strokes per length (one arm's stroke counted

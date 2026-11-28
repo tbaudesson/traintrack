@@ -1,6 +1,8 @@
 "use client";
 
 import { groupLabel } from "@/lib/muscles";
+import { useEquipmentList } from "@/hooks/useReferences";
+import { itemLabel } from "@/lib/references";
 import { useMuscleGroups } from "@/hooks/useMuscleGroups";
 import { useEffect, useMemo, useState } from "react";
 import { AreaRulesEditor } from "@/components/domain/AreaRulesEditor";
@@ -38,7 +40,6 @@ import { useLessonsReference } from "@/hooks/useLessonsReference";
 import { refLabel, sportOf } from "@/lib/lessonsReference";
 import { Chip, ChipRow } from "@/components/ui/find";
 
-const EQUIPMENT: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "bodyweight", "kettlebell", "bands", "other"];
 
 export default function ExercisesPage() {
   const t = useTranslations("exercises");
@@ -181,12 +182,15 @@ function AddExerciseForm({ onDone }: { onDone: () => void }) {
   const [nameDe, setNameDe] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
+  const equipmentList = useEquipmentList();
   const groups = useMuscleGroups();
   const locale = useLocale();
   const [picked, setMg] = useState<MuscleGroup | null>(null);
   // The admin's first group until one is picked.
   const mg = picked ?? groups?.[0]?.id ?? "";
-  const [equip, setEquip] = useState<Equipment>("barbell");
+  const [pickedEquip, setEquip] = useState<Equipment | null>(null);
+  // The admin's first equipment until one is picked.
+  const equip = pickedEquip ?? equipmentList?.[0]?.id ?? "";
   const [description, setDescription] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [busy, setBusy] = useState(false);
@@ -247,10 +251,10 @@ function AddExerciseForm({ onDone }: { onDone: () => void }) {
         <div>
           <label className="mb-1 block text-xs font-medium text-muted-foreground">{t("equipment")}</label>
           <div className="flex flex-wrap gap-1.5">
-            {EQUIPMENT.map((eq) => (
+            {(equipmentList ?? []).map(({ id: eq }) => (
               <button key={eq} onClick={() => setEquip(eq)}
                 className={cn("rounded-full border px-2.5 py-1 text-xs", equip === eq ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-950/40 dark:text-accent-200" : "border-border text-muted-foreground")}>
-                {eq}
+                {itemLabel(equipmentList, eq, locale)}
               </button>
             ))}
           </div>

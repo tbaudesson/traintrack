@@ -1,4 +1,5 @@
 import type { Equipment, WorkoutSet } from "@/db";
+import { loadStep } from "@/lib/references";
 import { bottomOfRepRange, isTimedTarget, topOfRepRange } from "./performance";
 
 type Logged = Pick<WorkoutSet, "weightKg" | "reps" | "rpe">;
@@ -39,7 +40,7 @@ export function nextLoad(input: {
   if (!weights.length || isTimedTarget(input.targetReps)) return null;
   const fromKg = Math.max(...weights);
 
-  const step = input.equipment === "dumbbell" || input.equipment === "kettlebell" ? 2 : 2.5;
+  const step = loadStep(input.equipment);
   const round = (kg: number) => Math.round(kg / step) * step;
   const top = topOfRepRange(input.targetReps);
   const bottom = bottomOfRepRange(input.targetReps);

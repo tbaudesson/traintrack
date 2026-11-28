@@ -1,6 +1,8 @@
 "use client";
 
 import { useAreaLabel } from "@/hooks/useAreaLabel";
+import { itemLabel, loadStep, needsNoGear } from "@/lib/references";
+import { useChoices, useEquipmentList } from "@/hooks/useReferences";
 import { isRestrictionKey } from "@/lib/restrictions";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useAvoidedAreas, useInjuryRules } from "@/hooks/useInjuryRules";
@@ -69,7 +71,7 @@ import { Plus, Check, Trash2, Timer, X, Dumbbell, Pencil, Heart, MoreHorizontal,
 import { cn } from "@/lib/utils";
 import { SessionMuscles } from "@/components/domain/BodyMap";
 import { Chip, ChipRow } from "@/components/ui/find";
-import { INTENSITY_STEPS, scaleDay } from "@/lib/intensity";
+import { scaleDay } from "@/lib/intensity";
 import { WorkoutNotes } from "@/components/domain/WorkoutNotes";
 import { IntervalWorkoutView } from "@/components/domain/IntervalWorkoutView";
 import { MusicButton } from "@/components/domain/MusicButton";
@@ -84,10 +86,11 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
   const t = useTranslations("log");
   const tp = useTranslations("programs");
   const tc = useTranslations("common");
-  const to = useTranslations("onboarding");
   const tpain = useTranslations("pain");
   const xl = useExerciseLabel();
   const locale = useLocale();
+  const equipmentList = useEquipmentList();
+  const choices = useChoices();
   const router = useRouter();
   const workout = useWorkout(workoutId);
   const sets = useWorkoutSets(workoutId);
@@ -437,7 +440,7 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
         weightKg: s.weightKg ?? fill?.weightKg,
         reps: s.reps ?? fill?.reps,
         rpe: s.rpe ?? (s.isWarmup ? undefined : fill?.rpe),
-        step: ex?.equipment === "dumbbell" || ex?.equipment === "kettlebell" ? 2 : 2.5,
+        step: loadStep(ex?.equipment),
       };
     });
   }
@@ -966,7 +969,8 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
           <section className="space-y-1.5" aria-labelledby="session-intensity">
             <p id="session-intensity" className="text-xs font-semibold text-muted-foreground">{t("intensity")}</p>
             <ChipRow label={t("intensity")}>
-              {INTENSITY_STEPS.map((pct) => (
+              {/* The steps the admin offers, with normal (0) and the one already chosen. */}
+              {[...new Set([...(choices?.intensitySteps ?? []), 0, workout.intensityPct ?? 0])].sort((a, b) => a - b).map((pct) => (
                 <Chip key={pct} on={(workout.intensityPct ?? 0) === pct} onClick={() => updateWorkout(workoutId, { intensityPct: pct || null })}>
                   {pct === 0 ? t("intensityNormal") : `${pct > 0 ? "+" : "−"}${Math.abs(pct)} %`}
                 </Chip>
@@ -1078,7 +1082,7 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
           const best = bestLifts(exerciseId, allSets);
           const records = recordHistory(exerciseId, allWorkouts, allSets).slice(-5).reverse();
           // A bodyweight exercise shows no load, until one is added (a weighted pull-up).
-          const bodyweight = ex?.equipment === "bodyweight" && !percentPlan && !exSets.some((x) => (x.weightKg ?? 0) > 0) && !loaded.has(exerciseId);
+          const bodyweight = needsNoGear(ex?.equipment) && !percentPlan && !exSets.some((x) => (x.weightKg ?? 0) > 0) && !loaded.has(exerciseId);
           // Load, reps and the tick first; the RPE and deleting are in the set's menu.
           const cols = bodyweight ? "grid-cols-[2.25rem_1fr_3rem_2.5rem]" : "grid-cols-[2.25rem_1fr_1fr_3rem_2.5rem]";
           // Done: folded to one line, reopened on demand.
@@ -1753,7 +1757,7 @@ export function SessionLogger({ workoutId, startGuided = false, justDone = false
                     {xl(e.name)}
                     <InjuryBadge exerciseName={e.name} injuries={avoided} />
                   </span>
-                  {e.equipment && <span className="shrink-0 text-xs text-muted-foreground">{to(`equip_${e.equipment}`)}</span>}
+                  {e.equipment && <span className="shrink-0 text-xs text-muted-foreground">{itemLabel(equipmentList, e.equipment, locale)}</span>}
                 </button>
               ))}
             </div>

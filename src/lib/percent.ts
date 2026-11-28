@@ -1,4 +1,5 @@
 import type { Equipment } from "@/db";
+import { loadStep } from "@/lib/references";
 import type { GoalPoint } from "./goals";
 
 /** "75" or "70/75/80" (one per set) as numbers; undefined when empty or off. */
@@ -28,7 +29,7 @@ export function referenceMax(history: GoalPoint[], today: string): number | null
 
 /** The weight of each set: its percentage of the 1RM, to the nearest plate step. */
 export function percentWeights(percents: number[], sets: number, maxKg: number, equipment?: Equipment): number[] {
-  const step = equipment === "dumbbell" || equipment === "kettlebell" ? 2 : 2.5;
+  const step = loadStep(equipment);
   return Array.from({ length: sets }, (_, i) => {
     const percent = percents[Math.min(i, percents.length - 1)];
     return Math.round((maxKg * percent) / 100 / step) * step;

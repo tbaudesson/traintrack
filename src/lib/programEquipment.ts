@@ -2,7 +2,6 @@ import type { Equipment, ProgramDay } from "@/db";
 import type { InjuryRules } from "./injuries";
 import type { PainArea } from "./pain";
 
-export const EQUIPMENT: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "bodyweight", "kettlebell", "bands", "pullup_bar", "suspension", "other"];
 
 /**
  * What the ready-made programs need, as the admin keeps it (app settings
@@ -24,7 +23,8 @@ export interface ProgramEquipmentGuide {
 
 export const PROGRAM_EQUIPMENT_KEY = "program_equipment";
 
-const isEquipment = (v: unknown): v is Equipment => EQUIPMENT.includes(v as Equipment);
+/** An equipment id as kept in the guide: its form (the list itself is the admin's, app settings "equipment"). */
+const isEquipment = (v: unknown): v is Equipment => typeof v === "string" && /^[a-z0-9_-]{1,30}$/.test(v);
 const isName = (v: unknown): v is string => typeof v === "string" && v.trim().length > 0;
 
 /** The equipment reference, checked whole; null when anything is off. */
@@ -37,7 +37,7 @@ export function parseProgramEquipment(raw: string | null | undefined): ProgramEq
     return null;
   }
   if (!g || typeof g !== "object" || !g.needs || !g.alternatives || !g.standIns || !Array.isArray(g.gym)) return null;
-  for (const [name, need] of Object.entries(g.needs)) if (!isName(name) || !isEquipment(need) || need === "bodyweight") return null;
+  for (const [name, need] of Object.entries(g.needs)) if (!isName(name) || !isEquipment(need)) return null;
   for (const [name, alts] of Object.entries(g.alternatives)) {
     if (!isName(name) || !Array.isArray(alts) || !alts.every(isName) || alts.includes(name) || new Set(alts).size !== alts.length) return null;
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
+import { useChoices } from "@/hooks/useReferences";
 import { useSearchParams } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
@@ -37,7 +38,7 @@ import { useAthleteProfile, updateFitnessLevel, updateTrainingSchedule } from "@
 import { trainingCalendar } from "@/lib/ics";
 import type { FitnessLevel } from "@/db";
 import {
-  getMode, applyMode, getAccent, applyAccent, ACCENTS, APP_STYLES, FAVORITE_SPORTS, REST_DEFAULTS, REST_WARMUPS, savePrefs, usesDial,
+  getMode, applyMode, getAccent, applyAccent, ACCENTS, APP_STYLES, FAVORITE_SPORTS, savePrefs, usesDial,
   type AppStyle, type ThemeMode, type Accent, type Silhouette,
 } from "@/lib/appTheme";
 import { useAppPrefs } from "@/hooks/useAppPrefs";
@@ -155,7 +156,11 @@ export default function SettingsPage() {
   );
 }
 
+/** The values the admin offers, with the one already chosen even if no longer offered. */
+const withCurrent = (offered: number[] | undefined, current: number) => [...new Set([...(offered ?? []), current])].sort((a, b) => a - b);
+
 function SettingsContent() {
+  const choices = useChoices();
   const t = useTranslations("settings");
   const tAuth = useTranslations("auth");
   const tai = useTranslations("ai");
@@ -527,7 +532,7 @@ function SettingsContent() {
         <Section id="rest" icon={Timer} title={trest("title")}>
           <p className="mb-2 text-xs text-muted-foreground">{trest("default")}</p>
           <div className="mb-3 flex flex-wrap gap-2">
-            {REST_DEFAULTS.map((sec) => (
+            {withCurrent(choices?.restDefaults, prefs.rest.defaultSec).map((sec) => (
               <Choice key={sec} on={prefs.rest.defaultSec === sec} onClick={() => savePrefs({ rest: { ...prefs.rest, defaultSec: sec } })}>
                 {restLabel(sec)}
               </Choice>
@@ -535,7 +540,7 @@ function SettingsContent() {
           </div>
           <p className="mb-2 text-xs text-muted-foreground">{trest("warmup")}</p>
           <div className="mb-3 flex flex-wrap gap-2">
-            {REST_WARMUPS.map((sec) => (
+            {withCurrent(choices?.restWarmups, prefs.rest.warmupSec).map((sec) => (
               <Choice key={sec} on={prefs.rest.warmupSec === sec} onClick={() => savePrefs({ rest: { ...prefs.rest, warmupSec: sec } })}>
                 {restLabel(sec)}
               </Choice>

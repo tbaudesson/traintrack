@@ -312,7 +312,8 @@ await page.evaluate(async ({ user, libraryRows, lessonExercises }) => {
   const m092 = readFileSync("supabase/migrations/092_group_lessons.sql", "utf8").match(/jsonb_build_array\(\n\s*'(\{[\s\S]*?\})'::jsonb \|\| COALESCE[\s\S]*?,\n\s*'(\{[\s\S]*?\})'::jsonb\n\)\)/);
   const lessonsRef = JSON.stringify({ sports: [JSON.parse(m092[1].replace(/''/g, "'")), JSON.parse(m092[2].replace(/''/g, "'"))] });
   await page.evaluate((v) => localStorage.setItem("traintrack.guidance.group_lessons", v), lessonsRef);
-  for (const [key, sql] of [["body_muscles", m089], ["muscle_groups", m091]]) {
+  const m093 = readFileSync("supabase/migrations/093_lists.sql", "utf8");
+  for (const [key, sql] of [["body_muscles", m089], ["muscle_groups", m091], ["equipment", m093], ["movements", m093], ["swim_strokes", m093], ["choices", m093]]) {
     const text = sql.match(new RegExp(`VALUES \\('${key}', '([\\s\\S]*?)'\\) ON CONFLICT`))[1].replace(/''/g, "'");
     await page.evaluate(({ key, text }) => localStorage.setItem(`traintrack.guidance.${key}`, text), { key, text: JSON.stringify(JSON.parse(text)) });
   }

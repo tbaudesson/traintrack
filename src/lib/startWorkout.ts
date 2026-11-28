@@ -1,4 +1,5 @@
 import type { Exercise, Program, ProgramDay, Workout } from "@/db";
+import { loadStep } from "@/lib/references";
 import { needsKeys, plannedIndex, withDayKeys } from "./planSnapshot";
 import db, { getCurrentUserIdSync } from "@/db";
 import { lastPerformance, recentPerformances, topWeight } from "@/lib/performance";
@@ -19,7 +20,7 @@ import { findExercise } from "./exerciseMatch";
 
 /** A deload load: a tenth lighter, to the plate step below. */
 export function lighter(kg: number, equipment?: Exercise["equipment"], factor: number = DELOAD_LOAD): number {
-  const step = equipment === "dumbbell" || equipment === "kettlebell" ? 2 : 2.5;
+  const step = loadStep(equipment);
   return Math.max(step, Math.floor((kg * factor) / step) * step);
 }
 

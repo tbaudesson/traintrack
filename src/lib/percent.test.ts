@@ -1,5 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { formatPercents, parsePercents, percentWeights, referenceMax } from "./percent";
+import { equipmentOnDeviceForTests } from "./settingsFromMigrations";
+
+// The equipment as the admin keeps it (migration 093): dumbbells by 2 kg, a 20 kg bar, no warm-up for bodyweight.
+equipmentOnDeviceForTests(vi.stubGlobal);
 
 describe("percentages of the 1RM", () => {
   it("read one percentage or one per set", () => {

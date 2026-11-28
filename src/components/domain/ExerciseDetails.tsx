@@ -5,7 +5,9 @@ import type { Exercise, ExerciseLevel, LocalizedList, Movement, Muscle, MuscleGr
 import { BodyMap } from "@/components/domain/BodyMap";
 import { muscleName, musclesByGroup } from "@/lib/muscleMap";
 import { useBodyMuscles, useBodyRef } from "@/hooks/useBodyMuscles";
-import { LEVELS, MOVEMENTS } from "@/lib/movements";
+import { LEVELS } from "@/lib/movements";
+import { itemLabel } from "@/lib/references";
+import { useMovements } from "@/hooks/useReferences";
 import { groupLabel } from "@/lib/muscles";
 import { useMuscleGroups } from "@/hooks/useMuscleGroups";
 import { useLessonsReference } from "@/hooks/useLessonsReference";
@@ -26,6 +28,7 @@ export function localList(list: LocalizedList | null | undefined, locale: string
 /** What the library says of an exercise: its level, its movements, the muscles it also works, its key points and usual faults. */
 export function ExerciseDetails({ ex, library }: { ex: Exercise; library: Exercise[] }) {
   const t = useTranslations("restrictions");
+  const movementList = useMovements();
   const locale = useLocale();
   const xl = useExerciseLabel();
   const cues = localList(ex.cues, locale);
@@ -33,7 +36,7 @@ export function ExerciseDetails({ ex, library }: { ex: Exercise; library: Exerci
   const parent = ex.variantOf ? library.find((e) => e.uuid === ex.variantOf) : undefined;
   const tags = [
     ex.level ? t(`level_${ex.level}`) : null,
-    ...(ex.movements ?? []).map((m) => t(`movement_${m}`)),
+    ...(ex.movements ?? []).map((m) => itemLabel(movementList, m, locale)),
   ].filter(Boolean) as string[];
   const tb = useTranslations("bodyMap");
   const muscles = useBodyMuscles() ?? [];
@@ -133,6 +136,7 @@ export function listsOf(text: Record<Lang, string>): LocalizedList {
 /** The admin's fields for those details. */
 export function ExerciseDetailsEditor({ value, onChange, library, self }: { value: DetailsDraft; onChange: (v: DetailsDraft) => void; library: Exercise[]; self: Exercise }) {
   const t = useTranslations("restrictions");
+  const movementList = useMovements();
   const tb = useTranslations("bodyMap");
   const locale = useLocale();
   const bodyRef = useBodyRef();
@@ -158,9 +162,9 @@ export function ExerciseDetailsEditor({ value, onChange, library, self }: { valu
       <div>
         <p className="mb-1 text-xs">{t("movements")}</p>
         <div className="flex flex-wrap gap-1.5">
-          {MOVEMENTS.map((m) => (
+          {(movementList ?? []).map(({ id: m }) => (
             <button key={m} type="button" aria-pressed={value.movements.includes(m)} onClick={() => onChange({ ...value, movements: toggle(value.movements, m).slice(0, 6) })} className={chip(value.movements.includes(m))}>
-              {t(`movement_${m}`)}
+              {itemLabel(movementList, m, locale)}
             </button>
           ))}
         </div>

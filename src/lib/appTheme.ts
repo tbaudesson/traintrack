@@ -76,8 +76,6 @@ export interface RestPrefs {
   /** A system notification at the end, for a phone left locked. */
   notify: boolean;
 }
-export const REST_DEFAULTS = [60, 90, 120, 180] as const;
-export const REST_WARMUPS = [30, 45, 60, 90] as const;
 
 export interface AppPrefs {
   style: AppStyle;
@@ -100,6 +98,7 @@ export interface AppPrefs {
 
 const PREFS_KEY = "traintrack.prefs";
 const PREFS_EVENT = "traintrack-prefs";
+const restSec = (v: unknown) => (typeof v === "number" && Number.isInteger(v) && v >= 10 && v <= 900 ? v : null);
 const DEFAULT_REST: RestPrefs = { defaultSec: 90, warmupSec: 60, sound: false, vibrate: true, notify: false, autoChain: true };
 const DEFAULT_PREFS: AppPrefs = { style: "classic", sport: null, sport2: null, allSports: false, silhouette: "male", rest: DEFAULT_REST, voice: true, wheel: null, planB: null, music: null };
 
@@ -130,8 +129,9 @@ export function getPrefs(): AppPrefs {
     allSports: parsed.allSports === true && !FAVORITE_SPORTS.includes(parsed.sport as FavoriteSport),
     silhouette: parsed.silhouette === "female" ? "female" : "male",
     rest: {
-      defaultSec: (REST_DEFAULTS as readonly number[]).includes(parsed.rest?.defaultSec ?? 0) ? parsed.rest!.defaultSec : DEFAULT_REST.defaultSec,
-      warmupSec: (REST_WARMUPS as readonly number[]).includes(parsed.rest?.warmupSec ?? 0) ? parsed.rest!.warmupSec : DEFAULT_REST.warmupSec,
+      // A rest the admin's choices offered (app settings "choices"): kept whatever the list becomes.
+      defaultSec: restSec(parsed.rest?.defaultSec) ?? DEFAULT_REST.defaultSec,
+      warmupSec: restSec(parsed.rest?.warmupSec) ?? DEFAULT_REST.warmupSec,
       sound: typeof parsed.rest?.sound === "boolean" ? parsed.rest.sound : DEFAULT_REST.sound,
       vibrate: typeof parsed.rest?.vibrate === "boolean" ? parsed.rest.vibrate : DEFAULT_REST.vibrate,
       autoChain: typeof parsed.rest?.autoChain === "boolean" ? parsed.rest.autoChain : DEFAULT_REST.autoChain,

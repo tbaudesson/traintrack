@@ -7,7 +7,8 @@ import { useTimedGuidance } from "@/hooks/useTimedGuidance";
 import { useMobilityGuidance } from "@/hooks/useMobilityGuidance";
 import { useTrainablePrograms } from "@/hooks/usePrograms";
 import { savePlanB } from "@/hooks/useSportChoice";
-import { CARDIO_MINUTES, PLAN_B_KINDS, type PlanB } from "@/lib/planB";
+import { PLAN_B_KINDS, type PlanB } from "@/lib/planB";
+import { useChoices } from "@/hooks/useReferences";
 import { BOXING_FOCUS, INTERVAL_FOCUSES, PLAN_FOCUSES, type PlanFocus } from "@/lib/intervals";
 import { useBoxingGuidance } from "@/hooks/useBoxingGuidance";
 import { DISTANCE_SPORTS } from "@/lib/cardio";
@@ -21,6 +22,7 @@ import { modesOf, type MobilityMode } from "@/lib/mobility";
  * mobility routine, an outing of a given length, or a day of a program.
  */
 export function PlanBEditor() {
+  const choices = useChoices();
   const t = useTranslations("planB");
   const ti = useTranslations("intervals");
   const tm = useTranslations("mobility");
@@ -91,7 +93,7 @@ export function PlanBEditor() {
             {DISTANCE_SPORTS.filter((s) => s !== "other").map((s: Sport) => <button key={s} type="button" aria-pressed={plan.sport === s} onClick={() => set({ ...plan, sport: s })} className={chip(plan.sport === s)}>{tc(`sport_${s}`)}</button>)}
           </Row>
           <Row label={t("minutes")}>
-            {CARDIO_MINUTES.map((m) => <button key={m} type="button" aria-pressed={plan.minutes === m} onClick={() => set({ ...plan, minutes: m })} className={chip(plan.minutes === m)}>{t("min", { m })}</button>)}
+            {[...new Set([...(choices?.cardioMinutes ?? []), plan.minutes])].sort((a, b) => a - b).map((m) => <button key={m} type="button" aria-pressed={plan.minutes === m} onClick={() => set({ ...plan, minutes: m })} className={chip(plan.minutes === m)}>{t("min", { m })}</button>)}
           </Row>
         </>
       )}

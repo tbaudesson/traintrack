@@ -8,6 +8,7 @@ import { LESSONS_REFERENCE_KEY, parseLessonsReference, type LessonSport, type Le
 import { BODY_MUSCLES_KEY, parseBodyMuscles, type MuscleDef } from "@/lib/muscleMap";
 import { MUSCLE_GROUPS_KEY, groupLabel, parseMuscleGroups, specificGroups, type MuscleGroupDef } from "@/lib/muscles";
 import { useMuscleGroups } from "@/hooks/useMuscleGroups";
+import { CHOICES_KEY, EQUIPMENT_KEY, MOVEMENTS_KEY, SWIM_STROKES_KEY, parseChoices, parseEquipment, parseMovements, parseSwimStrokes, type Choices, type EquipmentItem, type ListItem, type MovementItem } from "@/lib/references";
 import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -287,6 +288,121 @@ export function MuscleGroupsTab() {
             </div>
           )}
         />
+      )}
+    </Frame>
+  );
+}
+
+/** One list of Admin > Lists, saved on its own. */
+function ListTab<R extends Row>({ settingKey, parse, title, intro, blank, extra }: { settingKey: string; parse: (text: string | null | undefined) => R[] | null; title: string; intro: string; blank: R; extra?: (row: R, set: (change: Partial<R>) => void) => ReactNode }) {
+  const t = useTranslations("references");
+  const s = useSetting<R[]>(settingKey, parse);
+  const v = s.value;
+  return (
+    <Frame state={s.state} title={title} intro={intro} invalid={s.invalid} saving={s.saving} saved={s.saved} onSave={() => v && s.save(JSON.stringify(v, null, 2))}>
+      {v && <ListEditor title={t("items")} rows={v} blank={blank} onChange={(rows) => s.change(rows)} extra={extra} />}
+    </Frame>
+  );
+}
+
+const ROLES = ["noGear", "noWarmup", "unspecified", "gym", "home"] as const;
+
+/**
+ * The lists the app offers and reads (app settings): the equipment with its
+ * roles, load step and bar; the movements with their words in a sentence;
+ * the swim strokes; the values of the choices.
+ */
+export function ListsTab() {
+  const t = useTranslations("references");
+  const [which, setWhich] = useState<"equipment" | "movements" | "strokes" | "choices">("equipment");
+  const num = (label: string, value: number, onChange: (n: number) => void, step = 0.5) => (
+    <label className="flex items-center gap-2 text-xs">
+      {label}
+      <Input type="number" step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} className="h-9 w-20" />
+    </label>
+  );
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2" role="group" aria-label={t("listsTitle")}>
+        {(["equipment", "movements", "strokes", "choices"] as const).map((k) => (
+          <Button key={k} size="sm" variant={which === k ? "default" : "outline"} aria-pressed={which === k} onClick={() => setWhich(k)}>
+            {t(`list_${k}`)}
+          </Button>
+        ))}
+      </div>
+      {which === "equipment" && (
+        <ListTab<EquipmentItem>
+          settingKey={EQUIPMENT_KEY}
+          parse={parseEquipment}
+          title={t("list_equipment")}
+          intro={t("equipmentIntro")}
+          blank={{ ...blankItem, noGear: false, noWarmup: false, unspecified: false, gym: false, home: false, stepKg: 2.5, barKg: 0 }}
+          extra={(r, set) => (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+              {ROLES.map((role) => (
+                <label key={role} className="flex min-h-9 items-center gap-2 text-xs">
+                  <input type="checkbox" checked={r[role]} onChange={(e) => set({ [role]: e.target.checked } as Partial<EquipmentItem>)} className="size-4 accent-accent-600" />
+                  {t(`equip_${role}`)}
+                </label>
+              ))}
+              {num(t("stepKg"), r.stepKg, (n) => set({ stepKg: n }))}
+              {num(t("barKg"), r.barKg, (n) => set({ barKg: n }), 1)}
+            </div>
+          )}
+        />
+      )}
+      {which === "movements" && (
+        <ListTab<MovementItem>
+          settingKey={MOVEMENTS_KEY}
+          parse={parseMovements}
+          title={t("list_movements")}
+          intro={t("movementsIntro")}
+          blank={{ ...blankItem, shortFr: "", shortEn: "", shortDe: "" }}
+          extra={(r, set) => (
+            <div className="grid gap-2 sm:grid-cols-3">
+              {(["shortFr", "shortEn", "shortDe"] as const).map((k) => (
+                <label key={k} className="block space-y-1 text-xs">
+                  <span className="font-medium">{t(k)}</span>
+                  <Input value={r[k]} onChange={(e) => set({ [k]: e.target.value } as Partial<MovementItem>)} />
+                </label>
+              ))}
+            </div>
+          )}
+        />
+      )}
+      {which === "strokes" && <ListTab<ListItem> settingKey={SWIM_STROKES_KEY} parse={parseSwimStrokes} title={t("list_strokes")} intro={t("strokesIntro")} blank={blankItem} />}
+      {which === "choices" && <ChoicesEditor />}
+    </div>
+  );
+}
+
+/** The values the choices offer, as numbers separated by commas. */
+function ChoicesEditor() {
+  const t = useTranslations("references");
+  const s = useSetting<Choices>(CHOICES_KEY, parseChoices);
+  const v = s.value;
+  const [texts, setTexts] = useState<Record<keyof Choices, string> | null>(null);
+  const shown = texts ?? (v ? (Object.fromEntries(Object.entries(v).map(([k, list]) => [k, (list as number[]).join(", ")])) as Record<keyof Choices, string>) : null);
+  const parse = (text: string) => text.split(/[,\s]+/).filter(Boolean).map(Number);
+  return (
+    <Frame
+      state={s.state}
+      title={t("list_choices")}
+      intro={t("choicesIntro")}
+      invalid={s.invalid}
+      saving={s.saving}
+      saved={s.saved}
+      onSave={() => shown && s.save(JSON.stringify(Object.fromEntries(Object.entries(shown).map(([k, text]) => [k, parse(text)])), null, 2))}
+    >
+      {shown && (
+        <div className="space-y-2">
+          {(["restDefaults", "restWarmups", "poolLengths", "cardioMinutes", "intensitySteps"] as const).map((k) => (
+            <label key={k} className="block space-y-1 text-xs">
+              <span className="font-medium">{t(`choice_${k}`)}</span>
+              <Input value={shown[k]} onChange={(e) => setTexts({ ...shown, [k]: e.target.value })} />
+            </label>
+          ))}
+        </div>
       )}
     </Frame>
   );

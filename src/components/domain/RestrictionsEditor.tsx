@@ -7,7 +7,8 @@ import type { Restriction } from "@/db";
 import { updateTrainingSchedule, useAthleteProfileOrNull } from "@/hooks/useAthleteProfile";
 import { useExercises } from "@/hooks/useExercises";
 import { useAreaLabel } from "@/hooks/useAreaLabel";
-import { MOVEMENTS } from "@/lib/movements";
+import { itemLabel } from "@/lib/references";
+import { useMovements } from "@/hooks/useReferences";
 import { groupLabel } from "@/lib/muscles";
 import { useMuscleGroups } from "@/hooks/useMuscleGroups";
 import { restrictionKey } from "@/lib/restrictions";
@@ -29,6 +30,7 @@ export function RestrictionsEditor() {
   const t = useTranslations("restrictions");
   const locale = useLocale();
   const groups = useMuscleGroups();
+  const movementList = useMovements();
   const gl = (id: string | null | undefined) => groupLabel(groups, id, locale);
   const { short } = useFormat();
   const profile = useAthleteProfileOrNull();
@@ -124,9 +126,9 @@ export function RestrictionsEditor() {
             </fieldset>
             {kind === "movement" && (
               <div className="flex flex-wrap gap-2">
-                {MOVEMENTS.map((m) => (
+                {(movementList ?? []).map(({ id: m }) => (
                   <button key={m} type="button" aria-pressed={value === m} onClick={() => setValue(m)} className={chip(value === m)}>
-                    {t(`movement_${m}`)}
+                    {itemLabel(movementList, m, locale)}
                   </button>
                 ))}
               </div>

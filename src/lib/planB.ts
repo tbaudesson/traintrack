@@ -17,7 +17,6 @@ export type PlanB =
 
 export const PLAN_B_KINDS: PlanB["kind"][] = ["timed", "mobility", "cardio", "program"];
 /** The lengths offered for an outing. */
-export const CARDIO_MINUTES = [15, 20, 30, 45];
 
 const whole = (n: unknown, min: number, max: number) => typeof n === "number" && Number.isInteger(n) && n >= min && n <= max;
 

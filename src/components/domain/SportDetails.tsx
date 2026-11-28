@@ -1,10 +1,12 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { Workout } from "@/db";
 import { updateWorkout } from "@/hooks/useWorkouts";
 import { updateTrainingSchedule, useAthleteProfileOrNull } from "@/hooks/useAthleteProfile";
-import { cadenceUnit, lengthsOf, POOL_LENGTHS, powerLoad, powerZone, SWIM_STROKES, swolf } from "@/lib/sportMetrics";
+import { cadenceUnit, lengthsOf, powerLoad, powerZone, swolf } from "@/lib/sportMetrics";
+import { itemLabel } from "@/lib/references";
+import { useChoices, useSwimStrokes } from "@/hooks/useReferences";
 import { useFormat } from "@/lib/format";
 import { metricPlace, sportDef, type MetricId } from "@/lib/disciplines";
 import { Input } from "@/components/ui/input";
@@ -48,6 +50,9 @@ function NumberField({ label, unit, value, min, max, onSave }: { label: string; 
  */
 export function SportDetails({ workout, distanceM, durationSec, place }: { workout: Workout; distanceM: number; durationSec: number; place: "essential" | "advanced" }) {
   const t = useTranslations("sportDetails");
+  const strokes = useSwimStrokes();
+  const locale = useLocale();
+  const choices = useChoices();
   const { num } = useFormat();
   const profile = useAthleteProfileOrNull();
   const id = workout.id!;
@@ -80,14 +85,14 @@ export function SportDetails({ workout, distanceM, durationSec, place }: { worko
     <div className="space-y-3">
       {here("swimStroke") && (
         <ChipRow label={t("stroke")}>
-          {SWIM_STROKES.map((s) => (
-            <Chip key={s} on={workout.swimStroke === s} onClick={() => updateWorkout(id, { swimStroke: workout.swimStroke === s ? null : s })}>{t(`stroke_${s}`)}</Chip>
+          {(strokes ?? []).map(({ id: s }) => (
+            <Chip key={s} on={workout.swimStroke === s} onClick={() => updateWorkout(id, { swimStroke: workout.swimStroke === s ? null : s })}>{itemLabel(strokes, s, locale)}</Chip>
           ))}
         </ChipRow>
       )}
       {here("pool") && (
         <ChipRow label={t("pool")}>
-          {POOL_LENGTHS.map((m) => (
+          {(choices?.poolLengths ?? []).map((m) => (
             <Chip key={m} on={workout.poolLengthM === m} onClick={() => updateWorkout(id, { poolLengthM: workout.poolLengthM === m ? null : m })}>{t("poolM", { m })}</Chip>
           ))}
           {/* Open water is kept as a pool of 0 m: known to have no lengths. */}

@@ -34,17 +34,8 @@ export type MuscleGroup = string;
 /** The muscles drawn on the body map, finer than the groups (migration 086); each belongs to one group. */
 /** A muscle of the body map: an id of the list the admin keeps (app settings "body_muscles"). */
 export type Muscle = string;
-export type Equipment =
-  | "barbell"
-  | "dumbbell"
-  | "machine"
-  | "cable"
-  | "bodyweight"
-  | "kettlebell"
-  | "bands"
-  | "pullup_bar"
-  | "suspension"
-  | "other";
+/** An exercise's equipment: an id of the list the admin keeps (app settings "equipment", migration 093). */
+export type Equipment = string;
 
 // ─── Entity interfaces ───────────────────────────────────────────────
 
@@ -150,12 +141,8 @@ export interface NutritionEntry extends SyncFields {
 
 export type ExerciseLevel = "beginner" | "intermediate" | "advanced";
 /** What an exercise asks of the body; one exercise may ask several (migration 076). */
-export type Movement =
-  | "squat" | "hinge" | "lunge"
-  | "push_horizontal" | "push_vertical" | "pull_horizontal" | "pull_vertical"
-  | "overhead" | "hanging" | "isolation"
-  | "core_flexion" | "core_stability" | "rotation"
-  | "jump" | "conditioning" | "mobility";
+/** A movement: an id of the list the admin keeps (app settings "movements", migration 093). */
+export type Movement = string;
 export type LocalizedList = Partial<Record<"fr" | "en" | "de", string[]>>;
 
 /**
@@ -362,7 +349,7 @@ export interface Workout extends SyncFields {
   /** SHA-256 of the file it was imported from (migration 078). */
   fileHash?: string | null;
   /** A swim: the stroke, the pool length (0 in open water) and the strokes per length (migration 071). */
-  swimStroke?: "free" | "breast" | "back" | "fly" | "mixed" | null;
+  swimStroke?: string | null;
   poolLengthM?: number | null;
   strokesPerLength?: number | null;
   /** When it started, "HH:MM" local time (migration 074). */
