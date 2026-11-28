@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Plus, X } from "lucide-react";
 import type { Restriction } from "@/db";
 import { updateTrainingSchedule, useAthleteProfileOrNull } from "@/hooks/useAthleteProfile";
 import { useExercises } from "@/hooks/useExercises";
 import { useAreaLabel } from "@/hooks/useAreaLabel";
 import { MOVEMENTS } from "@/lib/movements";
-import { MUSCLE_GROUPS } from "@/lib/muscles";
+import { groupLabel } from "@/lib/muscles";
+import { useMuscleGroups } from "@/hooks/useMuscleGroups";
 import { restrictionKey } from "@/lib/restrictions";
 import { localDate } from "@/lib/dates";
 import { useFormat } from "@/lib/format";
@@ -26,7 +27,9 @@ const SELECT = "mt-1 h-11 w-full rounded-lg border border-input bg-card px-3 tex
  */
 export function RestrictionsEditor() {
   const t = useTranslations("restrictions");
-  const te = useTranslations("exercises");
+  const locale = useLocale();
+  const groups = useMuscleGroups();
+  const gl = (id: string | null | undefined) => groupLabel(groups, id, locale);
   const { short } = useFormat();
   const profile = useAthleteProfileOrNull();
   const exercises = useExercises();
@@ -130,9 +133,9 @@ export function RestrictionsEditor() {
             )}
             {kind === "muscle" && (
               <div className="flex flex-wrap gap-2">
-                {MUSCLE_GROUPS.filter((g) => g !== "other").map((g) => (
+                {(groups ?? []).filter((g) => !g.unspecified).map((g) => g.id).map((g) => (
                   <button key={g} type="button" aria-pressed={value === g} onClick={() => setValue(g)} className={chip(value === g)}>
-                    {te(`mg_${g}`)}
+                    {gl(g)}
                   </button>
                 ))}
               </div>

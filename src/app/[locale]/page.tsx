@@ -5,6 +5,8 @@ import { NoTimeDialog, usePlanBLabel } from "@/components/domain/NoTimeDialog";
 import { SportSwitch } from "@/components/domain/SportSwitch";
 import { planBHref } from "@/lib/planB";
 import { sessionConflicts } from "@/lib/conflicts";
+import { groupLabel, noRecoveryIds } from "@/lib/muscles";
+import { useMuscleGroups } from "@/hooks/useMuscleGroups";
 import { AlertLine, HomeAlerts, HomeProgress, SessionMenu, useInjurySummary } from "@/components/domain/HomeZones";
 import { useGoals } from "@/hooks/useGoals";
 import { useBodyMetrics } from "@/hooks/useBodyMetrics";
@@ -160,7 +162,6 @@ export default function HomePage() {
   const tr = useTranslations("readiness");
   const trec = useTranslations("recommend");
   const trcv = useTranslations("recovery");
-  const tex = useTranslations("exercises");
   const tz = useTranslations("homeZones");
   const tnav = useTranslations("nav");
   const tpb = useTranslations("planB");
@@ -470,11 +471,12 @@ export default function HomePage() {
   // An injury in progress, or a pain coming back: one line on the home screen, the care on the Health page.
   const injuryLine = useInjurySummary(injuryG, profile?.injuryAreas ?? [], pains, today);
   // Two planned sessions working the same muscles hard less than 48 h apart, this week and next.
+  const muscleGroups = useMuscleGroups();
   const conflict = useMemo(() => {
-    if (!planned.length) return null;
+    if (!planned.length || !muscleGroups) return null;
     const ahead = scheduleSessions({ planned, workouts, from: today, to: localDateIn(13, now), today }).filter((x) => x.status === "planned");
-    return sessionConflicts(ahead.map((x) => ({ date: x.date, label: x.label, day: x.program.structure?.[x.index] })), exercises)[0] ?? null;
-  }, [planned, workouts, today, now, exercises]);
+    return sessionConflicts(ahead.map((x) => ({ date: x.date, label: x.label, day: x.program.structure?.[x.index] })), exercises, noRecoveryIds(muscleGroups))[0] ?? null;
+  }, [planned, workouts, today, now, exercises, muscleGroups]);
   const conflictKey = conflict ? `conflict-${conflict.first.date}-${conflict.second.date}` : "";
 
   // The next competition within a week: worth knowing now; later ones are on their page.
@@ -504,7 +506,7 @@ export default function HomePage() {
             tone="warn"
             area={tz("areaAssistant")}
             title={trcv("conflictTitle")}
-            text={`${conflict.first.label} (${short(conflict.first.date)}) · ${conflict.second.label} (${short(conflict.second.date)}) · ${conflict.groups.map((g) => tex(`mg_${g}`).toLowerCase()).join(", ")}`}
+            text={`${conflict.first.label} (${short(conflict.first.date)}) · ${conflict.second.label} (${short(conflict.second.date)}) · ${conflict.groups.map((g) => groupLabel(muscleGroups, g, locale).toLowerCase()).join(", ")}`}
             href="/assistant"
           />
         ) }]

@@ -475,14 +475,6 @@
     "name": "Name",
     "muscleGroup": "Muscle group",
     "equipment": "Equipment",
-    "mg_chest": "Chest",
-    "mg_back": "Back",
-    "mg_legs": "Legs",
-    "mg_shoulders": "Shoulders",
-    "mg_arms": "Arms",
-    "mg_core": "Core",
-    "mg_full_body": "Full body",
-    "mg_other": "Other",
     "added": "Exercise added",
     "search": "Search exercises",
     "description": "Description",
@@ -494,7 +486,8 @@
     "descPlaceholder": "How to perform it…",
     "videoPlaceholder": "https://…",
     "videoEmbedHint": "Paste a YouTube or Vimeo link to play it inside the app. A search link opens YouTube instead.",
-    "myHistory": "My history"
+    "myHistory": "My history",
+    "noGroup": "No group"
   },
   "teams": {
     "dashboard": "Dashboard",
@@ -996,7 +989,8 @@
     "feat_tennis": "Tennis: coach's notebook",
     "featHint_tennis": "Groups, lessons planned and given, drills",
     "tennis": "Tennis",
-    "bodyMap": "Body map"
+    "bodyMap": "Body map",
+    "muscleGroups": "Muscle groups"
   },
   "profile": {
     "title": "Profile",
@@ -3307,6 +3301,14 @@
     "musclesTitle": "Body map: muscles",
     "musclesIntro": "The muscles of the filter and of the exercise cards, each in a group. The drawing has a shape for each of the first 17 muscles; one added shows in the lists, not on the drawing.",
     "muscles": "Muscles",
-    "group": "Group"
+    "group": "Group",
+    "groupsTitle": "Muscle groups",
+    "groupsIntro": "The exercises' groups, in the order shown everywhere (filters, cards, generated sessions), with their roles.",
+    "groups": "Groups",
+    "groupsHint": "One “unsorted” group only; at most one “whole body” group.",
+    "role_wholeBody": "Whole body (works every muscle)",
+    "role_unspecified": "Unsorted (an imported or unknown exercise)",
+    "role_noRecovery": "Left out of “same muscles two days running”",
+    "role_endurance": "Worked in endurance (stretches after an outing)"
   }
 }

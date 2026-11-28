@@ -1,6 +1,7 @@
 "use client";
 
-import { MUSCLE_GROUPS } from "@/lib/muscles";
+import { groupLabel } from "@/lib/muscles";
+import { useMuscleGroups } from "@/hooks/useMuscleGroups";
 import { useMemo, useState } from "react";
 import { AreaRulesEditor } from "@/components/domain/AreaRulesEditor";
 import type { ExerciseRules } from "@/lib/injuries";
@@ -25,12 +26,13 @@ import { useExerciseLabel, exerciseDescription } from "@/lib/exerciseNames";
 import { search as searchItems } from "@/lib/search";
 import { MuscleFilter } from "@/components/domain/BodyMap";
 import { matchExercises, type MuscleRole, type MuscleSelection } from "@/lib/muscleMap";
-import { useBodyMuscles } from "@/hooks/useBodyMuscles";
+import { useBodyRef } from "@/hooks/useBodyMuscles";
 
 const EQUIPMENT: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "bodyweight", "kettlebell", "bands", "other"];
 
 export default function ExercisesPage() {
   const t = useTranslations("exercises");
+  const locale = useLocale();
   const tr = useTranslations("restrictions");
   const { isAdmin } = useAuth();
   const exercises = useExercises();
@@ -48,13 +50,14 @@ export default function ExercisesPage() {
     [exercises, search]
   );
 
-  const bodyMuscles = useBodyMuscles();
-  const matched = useMemo(() => (filtering && bodyMuscles ? matchExercises(filtered, selection, bodyMuscles) : []), [filtering, filtered, selection, bodyMuscles]);
+  const bodyRef = useBodyRef();
+  const groups = useMuscleGroups();
+  const matched = useMemo(() => (filtering && bodyRef ? matchExercises(filtered, selection, bodyRef) : []), [filtering, filtered, selection, bodyRef]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, typeof filtered>();
     for (const e of filtered) {
-      const k = e.muscleGroup ?? "other";
+      const k = e.muscleGroup ?? "";
       if (!map.has(k)) map.set(k, []);
       map.get(k)!.push(e);
     }
@@ -116,9 +119,10 @@ export default function ExercisesPage() {
           </section>
         ) : (
         <div className="grid items-start gap-5 lg:grid-cols-2">
-          {MUSCLE_GROUPS.filter((g) => grouped.has(g)).map((g) => (
+          {/* In the admin's order; a group the list no longer has (or none), after. */}
+          {[...(groups ?? []).map((g) => g.id), ...[...grouped.keys()].filter((k) => !groups?.some((g) => g.id === k))].filter((g) => grouped.has(g)).map((g) => (
             <section key={g} className="space-y-1.5">
-              <SectionHeading>{t(`mg_${g}`)}</SectionHeading>
+              <SectionHeading>{groupLabel(groups, g, locale) || t("noGroup")}</SectionHeading>
               {grouped.get(g)!.map((e) => (
                 <ExerciseRow key={e.id} ex={e} library={exercises} />
               ))}
@@ -139,7 +143,11 @@ function AddExerciseForm({ onDone }: { onDone: () => void }) {
   const [nameDe, setNameDe] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
-  const [mg, setMg] = useState<MuscleGroup>("chest");
+  const groups = useMuscleGroups();
+  const locale = useLocale();
+  const [picked, setMg] = useState<MuscleGroup | null>(null);
+  // The admin's first group until one is picked.
+  const mg = picked ?? groups?.[0]?.id ?? "";
   const [equip, setEquip] = useState<Equipment>("barbell");
   const [description, setDescription] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
@@ -190,10 +198,10 @@ function AddExerciseForm({ onDone }: { onDone: () => void }) {
         <div>
           <label className="mb-1 block text-xs font-medium text-muted-foreground">{t("muscleGroup")}</label>
           <div className="flex flex-wrap gap-1.5">
-            {MUSCLE_GROUPS.map((g) => (
+            {(groups ?? []).map(({ id: g }) => (
               <button key={g} onClick={() => setMg(g)}
                 className={cn("rounded-full border px-2.5 py-1 text-xs", mg === g ? "border-accent-500 bg-accent-50 text-accent-700 dark:bg-accent-950/40 dark:text-accent-200" : "border-border text-muted-foreground")}>
-                {t(`mg_${g}`)}
+                {groupLabel(groups, g, locale)}
               </button>
             ))}
           </div>

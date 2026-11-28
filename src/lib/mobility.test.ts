@@ -8,6 +8,10 @@ import {
   sessionMuscles,
 } from "./mobility";
 import { injuryGuidanceFromMigrations, mobilityFromMigrations } from "./injuryGuidanceFromMigrations";
+import { parseMuscleGroups, unsortedIds } from "./muscles";
+import { settingFromMigrations } from "./settingsFromMigrations";
+
+const GROUPS = parseMuscleGroups(settingFromMigrations("091_muscle_groups.sql", "muscle_groups"));
 
 const MOBILITY_INJURY_RULES = injuryGuidanceFromMigrations().mobility;
 const G = mobilityFromMigrations();
@@ -71,7 +75,7 @@ describe("injuries", () => {
 
 describe("sessionMuscles", () => {
   it("keeps each muscle once and leaves out the unknown", () => {
-    expect(sessionMuscles(["legs", "legs", "other", undefined, "core"])).toEqual(["legs", "core"]);
+    expect(sessionMuscles(["legs", "legs", "other", undefined, "core"], unsortedIds(GROUPS))).toEqual(["legs", "core"]);
   });
 });
 
@@ -96,7 +100,7 @@ describe("parseMobility", () => {
     expect(broken((g) => (g.moves[0].name.de = ""))).toBeNull();
     expect(broken((g) => (g.moves[0].video = "http://example.com"))).toBeNull();
     expect(broken((g) => (g.moves = g.moves.filter((m) => m.mode !== "warmup")))).toBeNull();
-    expect(broken((g) => (g.targets.full = ["toes" as never]))).toBeNull();
+    expect(broken((g) => (g.targets.full = ["Toes!" as never]))).toBeNull();
   });
 });
 

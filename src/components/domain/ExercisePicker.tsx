@@ -1,6 +1,7 @@
 "use client";
 
-import { MUSCLE_GROUPS } from "@/lib/muscles";
+import { groupLabel } from "@/lib/muscles";
+import { useMuscleGroups } from "@/hooks/useMuscleGroups";
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Dumbbell, History, Loader2, Sparkles } from "lucide-react";
@@ -18,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import { Chip, ChipRow, SearchField } from "@/components/ui/find";
 import { InjuryBadge } from "@/components/domain/InjuryBadge";
 
-const MUSCLES = MUSCLE_GROUPS;
 /** Results shown at once; more on demand rather than a wall of names. */
 const PAGE = 30;
 
@@ -76,8 +76,10 @@ function PickerLoader(props: { onPick: (exercise: Exercise) => void; injuries: I
 
 function PickerBody({ onPick, injuries, exclude, exercises }: { onPick: (exercise: Exercise) => void; injuries: Injury[]; exclude: number[]; exercises: Exercise[] }) {
   const t = useTranslations("picker");
-  const te = useTranslations("exercises");
   const locale = useLocale();
+  const groups = useMuscleGroups();
+  const groupIds = (groups ?? []).map((g) => g.id);
+  const gl = (id: string | null | undefined) => groupLabel(groups, id, locale);
   const xl = useExerciseLabel();
   const sets = useAllWorkoutSets();
   const workouts = useWorkouts();
@@ -96,9 +98,9 @@ function PickerBody({ onPick, injuries, exclude, exercises }: { onPick: (exercis
     const sorted = [...byFilter].sort((a, b) => xl(a.name).localeCompare(xl(b.name), locale));
     return search(sorted, query, (e) => ({
       names: [e.name, e.nameFr, e.nameDe],
-      others: [e.description, e.descriptionFr, e.descriptionDe, te(`mg_${e.muscleGroup ?? "other"}`)],
+      others: [e.description, e.descriptionFr, e.descriptionDe, groupLabel(groups, e.muscleGroup, locale)],
     }));
-  }, [usable, muscle, ownGear, mine, query, xl, locale, te]);
+  }, [usable, muscle, ownGear, mine, query, xl, locale, groups]);
 
   const recent = useMemo(() => {
     const ids = recentExerciseIds(sets, workouts);
@@ -124,7 +126,7 @@ function PickerBody({ onPick, injuries, exclude, exercises }: { onPick: (exercis
       <Dumbbell className="h-4 w-4 shrink-0 text-accent-500" aria-hidden="true" />
       <span className="flex min-w-0 flex-1 flex-col items-start gap-0.5">
         <span>{xl(e.name)}</span>
-        <span className="text-xs text-muted-foreground">{te(`mg_${e.muscleGroup ?? "other"}`)}</span>
+        <span className="text-xs text-muted-foreground">{gl(e.muscleGroup)}</span>
         <InjuryBadge exerciseName={e.name} injuries={injuries} />
       </span>
     </button>
@@ -144,9 +146,9 @@ function PickerBody({ onPick, injuries, exclude, exercises }: { onPick: (exercis
         />
         <ChipRow label={t("muscle")}>
           <Chip on={!muscle} onClick={() => setMuscle(null)}>{t("all")}</Chip>
-          {MUSCLES.filter((m) => usable.some((e) => e.muscleGroup === m)).map((m) => (
+          {groupIds.filter((m) => usable.some((e) => e.muscleGroup === m)).map((m) => (
             <Chip key={m} on={muscle === m} onClick={() => { setMuscle(muscle === m ? null : m); setShown(PAGE); }}>
-              {te(`mg_${m}`)}
+              {gl(m)}
             </Chip>
           ))}
         </ChipRow>

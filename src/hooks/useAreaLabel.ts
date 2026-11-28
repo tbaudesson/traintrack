@@ -3,6 +3,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { useExercises } from "@/hooks/useExercises";
 import { useExerciseLabel } from "@/lib/exerciseNames";
 import { parseRestrictionKey } from "@/lib/restrictions";
+import { groupLabel } from "@/lib/muscles";
+import { useMuscleGroups } from "@/hooks/useMuscleGroups";
 
 /**
  * The words for what a warning is about: an injured area ("shoulder"), or one
@@ -11,7 +13,7 @@ import { parseRestrictionKey } from "@/lib/restrictions";
 export function useAreaLabel(): (area: string) => string {
   const tp = useTranslations("pain");
   const tr = useTranslations("restrictions");
-  const te = useTranslations("exercises");
+  const groups = useMuscleGroups();
   const locale = useLocale();
   const exercises = useExercises();
   const xl = useExerciseLabel();
@@ -21,10 +23,10 @@ export function useAreaLabel(): (area: string) => string {
       const lower = (s: string) => (locale === "de" ? s : s.toLowerCase());
       if (!r) return lower(tp(`area_${area}`));
       if (r.kind === "movement") return tr(`movementShort_${r.value}`);
-      if (r.kind === "muscle") return lower(te(`mg_${r.value}`));
+      if (r.kind === "muscle") return lower(groupLabel(groups, r.value, locale));
       const e = exercises.find((x) => x.uuid === r.value || x.name === r.value);
       return e ? xl(e.name) : tr("anExercise");
     },
-    [tp, tr, te, locale, exercises, xl]
+    [tp, tr, groups, locale, exercises, xl]
   );
 }

@@ -43,9 +43,9 @@ import { ProgramEquipmentTab } from "@/components/domain/ProgramEquipmentTab";
 import { DisplayModesTab } from "@/components/domain/DisplayModesTab";
 import { MusicAppsTab } from "@/components/domain/MusicAppsTab";
 import { BoxingRoundsTab } from "@/components/domain/BoxingRoundsTab";
-import { BodyMusclesTab, TennisReferenceTab } from "@/components/domain/ReferenceTabs";
+import { BodyMusclesTab, MuscleGroupsTab, TennisReferenceTab } from "@/components/domain/ReferenceTabs";
 
-type Tab = "users" | "invitations" | "plans" | "templates" | "equipment" | "nutrition" | "injuries" | "mobility" | "timed" | "swimming" | "hiking" | "boxing" | "tennis" | "bodyMap" | "display" | "music" | "gdpr";
+type Tab = "users" | "invitations" | "plans" | "templates" | "equipment" | "nutrition" | "injuries" | "mobility" | "timed" | "swimming" | "hiking" | "boxing" | "tennis" | "muscleGroups" | "bodyMap" | "display" | "music" | "gdpr";
 
 const TABS: { id: Tab; icon: LucideIcon }[] = [
   { id: "users", icon: Users2 },
@@ -61,6 +61,7 @@ const TABS: { id: Tab; icon: LucideIcon }[] = [
   { id: "hiking", icon: Mountain },
   { id: "boxing", icon: Swords },
   { id: "tennis", icon: ClipboardPen },
+  { id: "muscleGroups", icon: Dumbbell },
   { id: "bodyMap", icon: BicepsFlexed },
   { id: "display", icon: Eye },
   { id: "music", icon: Music },
@@ -133,6 +134,7 @@ export default function AdminPage() {
           {tab === "hiking" && <OutingChecklistTab />}
           {tab === "boxing" && <BoxingRoundsTab />}
           {tab === "tennis" && <TennisReferenceTab />}
+          {tab === "muscleGroups" && <MuscleGroupsTab />}
           {tab === "bodyMap" && <BodyMusclesTab />}
           {tab === "display" && <DisplayModesTab />}
           {tab === "music" && <MusicAppsTab />}

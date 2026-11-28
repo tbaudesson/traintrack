@@ -1,8 +1,9 @@
 "use client";
 
-import { MUSCLE_GROUPS } from "@/lib/muscles";
+import { groupLabel } from "@/lib/muscles";
+import { useMuscleGroups } from "@/hooks/useMuscleGroups";
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Check, Loader2, PersonStanding, Plus, Trash2 } from "lucide-react";
 import type { MuscleGroup } from "@/db";
 import { getAppSettings, setAppSetting } from "@/lib/adminService";
@@ -14,19 +15,21 @@ import { Input } from "@/components/ui/input";
 import { NumberInput, NumbersInput } from "@/components/domain/NumbersInput";
 
 const LANGS = ["fr", "en", "de"] as const;
-const MUSCLES = MUSCLE_GROUPS;
 const empty = { fr: "", en: "", de: "" };
 
 function MuscleChecks({ value, onChange, label }: { value: MuscleGroup[]; onChange: (m: MuscleGroup[]) => void; label: string }) {
-  const te = useTranslations("exercises");
+  const locale = useLocale();
+  const groups = useMuscleGroups();
+  const groupIds = (groups ?? []).map((g) => g.id);
+  const gl = (id: string | null | undefined) => groupLabel(groups, id, locale);
   return (
     <fieldset className="space-y-1">
       <legend className="text-xs text-muted-foreground">{label}</legend>
       <div className="flex flex-wrap gap-x-3 gap-y-1">
-        {MUSCLES.map((m) => (
+        {groupIds.map((m) => (
           <label key={m} className="flex items-center gap-1.5 text-xs">
             <input type="checkbox" className="size-4 accent-accent-600" checked={value.includes(m)} onChange={(e) => onChange(e.target.checked ? [...value, m] : value.filter((x) => x !== m))} />
-            {te(`mg_${m}`)}
+            {gl(m)}
           </label>
         ))}
       </div>

@@ -1,4 +1,5 @@
 import db, { getCurrentUserIdSync, type Workout, type WorkoutSet } from "@/db";
+import { unspecifiedGroup } from "./muscles";
 import { schedulePush } from "./syncEngine";
 import { matchExercise, type ImportedWorkout, type ParsedHistory } from "./importCsv";
 
@@ -49,9 +50,11 @@ export async function runImport(plan: ImportPlan): Promise<{ workouts: number; s
       idOf.set(name, found.id);
       continue;
     }
-    const id = (await db.exercises.add({ name, muscleGroup: "other", isCustom: true, uuid: crypto.randomUUID(), ...sync })) as number;
+    // The group of an exercise nobody sorted, as the admin keeps it.
+    const unsorted = unspecifiedGroup() ?? "";
+    const id = (await db.exercises.add({ name, muscleGroup: unsorted, isCustom: true, uuid: crypto.randomUUID(), ...sync })) as number;
     idOf.set(name, id);
-    library.push({ id, name, muscleGroup: "other", isCustom: true, ...sync } as (typeof library)[number]);
+    library.push({ id, name, muscleGroup: unsorted, isCustom: true, ...sync } as (typeof library)[number]);
   }
 
   const workoutIds = (await db.workouts.bulkAdd(

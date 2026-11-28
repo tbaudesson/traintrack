@@ -6,7 +6,9 @@ import { ArrowDown, ArrowUp, Check, Loader2, Plus, Trash2 } from "lucide-react";
 import { getAppSettings, setAppSetting } from "@/lib/adminService";
 import { TENNIS_REFERENCE_KEY, parseTennisReference, type TennisReference } from "@/lib/tennisReference";
 import { BODY_MUSCLES_KEY, parseBodyMuscles, type MuscleDef } from "@/lib/muscleMap";
-import { MUSCLE_GROUPS } from "@/lib/muscles";
+import { MUSCLE_GROUPS_KEY, groupLabel, parseMuscleGroups, specificGroups, type MuscleGroupDef } from "@/lib/muscles";
+import { useMuscleGroups } from "@/hooks/useMuscleGroups";
+import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -168,12 +170,11 @@ export function TennisReferenceTab() {
   );
 }
 
-const GROUPS = MUSCLE_GROUPS.filter((g) => g !== "full_body" && g !== "other");
-
 /** The muscles of the body map, each in a group. */
 export function BodyMusclesTab() {
   const t = useTranslations("references");
-  const te = useTranslations("exercises");
+  const locale = useLocale();
+  const groups = specificGroups(useMuscleGroups());
   const s = useSetting<MuscleDef[]>(BODY_MUSCLES_KEY, parseBodyMuscles);
   const v = s.value;
   return (
@@ -182,7 +183,7 @@ export function BodyMusclesTab() {
         <ListEditor
           title={t("muscles")}
           rows={v}
-          blank={{ ...blankItem, group: "chest" } as MuscleDef}
+          blank={{ ...blankItem, group: groups[0]?.id ?? "" } as MuscleDef}
           onChange={(rows) => s.change(rows)}
           extra={(r, set) => (
             <label className="block space-y-1 text-xs">
@@ -192,11 +193,45 @@ export function BodyMusclesTab() {
                 onChange={(e) => set({ group: e.target.value as MuscleDef["group"] })}
                 className="h-10 w-full rounded-lg border border-border bg-transparent px-2 text-sm"
               >
-                {GROUPS.map((g) => (
-                  <option key={g} value={g}>{te(`mg_${g}`)}</option>
+                {groups.map((g) => (
+                  <option key={g.id} value={g.id}>{groupLabel(groups, g.id, locale)}</option>
                 ))}
               </select>
             </label>
+          )}
+        />
+      )}
+    </Frame>
+  );
+}
+
+/** The muscle groups of the exercises, in order, with their roles. */
+export function MuscleGroupsTab() {
+  const t = useTranslations("references");
+  const s = useSetting<MuscleGroupDef[]>(MUSCLE_GROUPS_KEY, parseMuscleGroups);
+  const v = s.value;
+  const role = (r: MuscleGroupDef, set: (c: Partial<MuscleGroupDef>) => void, key: "wholeBody" | "unspecified" | "noRecovery" | "endurance") => (
+    <label className="flex min-h-9 items-center gap-2 text-xs">
+      <input type="checkbox" checked={r[key]} onChange={(e) => set({ [key]: e.target.checked })} className="size-4 accent-accent-600" />
+      {t(`role_${key}`)}
+    </label>
+  );
+  return (
+    <Frame state={s.state} title={t("groupsTitle")} intro={t("groupsIntro")} invalid={s.invalid} saving={s.saving} saved={s.saved} onSave={() => v && s.save(JSON.stringify(v, null, 2))}>
+      {v && (
+        <ListEditor
+          title={t("groups")}
+          hint={t("groupsHint")}
+          rows={v}
+          blank={{ ...blankItem, wholeBody: false, unspecified: false, noRecovery: false, endurance: false }}
+          onChange={(rows) => s.change(rows)}
+          extra={(r, set) => (
+            <div className="flex flex-wrap gap-x-4">
+              {role(r, set, "wholeBody")}
+              {role(r, set, "unspecified")}
+              {role(r, set, "noRecovery")}
+              {role(r, set, "endurance")}
+            </div>
           )}
         />
       )}

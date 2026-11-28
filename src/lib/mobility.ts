@@ -1,5 +1,5 @@
 import type { MuscleGroup } from "@/db";
-import { MUSCLE_GROUPS } from "@/lib/muscles";
+import { isGroupId } from "@/lib/muscles";
 import type { PainArea } from "./pain";
 import type { InjuryLevel, InjuryRules } from "./injuries";
 
@@ -52,7 +52,6 @@ export interface MobilityGuidance {
 }
 
 export const MOBILITY_KEY = "mobility_moves";
-const MUSCLES = MUSCLE_GROUPS;
 const LANGS = ["en", "fr", "de"] as const;
 const num = (v: unknown, lo: number, hi: number) => typeof v === "number" && Number.isFinite(v) && v >= lo && v <= hi;
 const text = (v: unknown) => !!v && typeof v === "object" && LANGS.every((l) => typeof (v as Text)[l] === "string" && (v as Text)[l].trim().length > 0);
@@ -76,12 +75,12 @@ export function parseMobility(raw: string | null | undefined): MobilityGuidance 
     // A warm-up starts with its first move: there must be one.
     if (!g.moves.some((m) => m.mode === mode)) return null;
   }
-  for (const target of MOBILITY_TARGETS) if (!Array.isArray(g.targets[target]) || !g.targets[target].every((m) => MUSCLES.includes(m))) return null;
+  for (const target of MOBILITY_TARGETS) if (!Array.isArray(g.targets[target]) || !g.targets[target].every(isGroupId)) return null;
   const keys = new Set<string>();
   for (const m of g.moves) {
     if (!m || typeof m.key !== "string" || !/^[a-z0-9-]+$/.test(m.key) || keys.has(m.key)) return null;
     keys.add(m.key);
-    if (!MOBILITY_MODES.includes(m.mode) || !Array.isArray(m.muscles) || !m.muscles.length || !m.muscles.every((x) => MUSCLES.includes(x))) return null;
+    if (!MOBILITY_MODES.includes(m.mode) || !Array.isArray(m.muscles) || !m.muscles.length || !m.muscles.every(isGroupId)) return null;
     if (!text(m.name) || !text(m.cue)) return null;
     if (m.sides !== undefined && typeof m.sides !== "boolean") return null;
     if (m.video != null && (typeof m.video !== "string" || !/^https:\/\//.test(m.video))) return null;
@@ -121,11 +120,12 @@ const cost = (g: MobilityGuidance, e: MobilityExercise) => {
   return e.sides ? 2 * (t.sideHold + t.transition) : t.hold + t.transition;
 };
 
-/** How much an exercise works the muscles aimed at; whole-body ones always fit a little. */
-function relevance(e: MobilityExercise, muscles: MuscleGroup[]): number {
-  if (!muscles.length || muscles.includes("full_body")) return e.muscles.includes("full_body") ? 2 : 1;
+/** How much an exercise works the muscles aimed at; whole-body ones (the group the admin marks so) always fit a little. */
+function relevance(e: MobilityExercise, muscles: MuscleGroup[], whole: readonly MuscleGroup[]): number {
+  const isWhole = (list: MuscleGroup[]) => list.some((m) => whole.includes(m));
+  if (!muscles.length || isWhole(muscles)) return isWhole(e.muscles) ? 2 : 1;
   const hits = e.muscles.filter((m) => muscles.includes(m)).length;
-  return hits * 2 + (e.muscles.includes("full_body") ? 0.5 : 0);
+  return hits * 2 + (isWhole(e.muscles) ? 0.5 : 0);
 }
 
 /**
@@ -140,13 +140,15 @@ export function pickMobility(
   minutes: number,
   muscles: MuscleGroup[],
   injuries: { area: PainArea }[] = [],
-  rules: InjuryRules = {}
+  rules: InjuryRules = {},
+  /** The whole-body groups (the admin's list). */
+  whole: readonly MuscleGroup[] = []
 ): MobilityExercise[] {
   // Moves that load an injured area too much are left out.
   const all = g.moves.filter((e) => e.mode === mode && mobilityWarning(rules, e.key, injuries)?.level !== "avoid");
   const budget = minutes * 60;
   const inOrder = followsForm(mode);
-  const ranked = inOrder ? all : [...all].sort((a, b) => relevance(b, muscles) - relevance(a, muscles));
+  const ranked = inOrder ? all : [...all].sort((a, b) => relevance(b, muscles, whole) - relevance(a, muscles, whole));
   const chosen = new Set<MobilityExercise>();
   let total = 0;
   // A warm-up starts with its first move; a yoga or tai-chi session opens with
@@ -178,11 +180,12 @@ export function buildMobilitySession(
   muscles: MuscleGroup[],
   locale: string,
   injuries: { area: PainArea }[] = [],
-  rules: InjuryRules = {}
+  rules: InjuryRules = {},
+  whole: readonly MuscleGroup[] = []
 ): { exercises: MobilityExercise[]; steps: MobilityStep[]; totalSec: number } {
   const lang = (locale === "fr" || locale === "de" ? locale : "en") as keyof Text;
   const timing = g.timing[mode];
-  const exercises = pickMobility(g, mode, minutes, muscles, injuries, rules);
+  const exercises = pickMobility(g, mode, minutes, muscles, injuries, rules, whole);
   const steps: MobilityStep[] = [];
   for (const e of exercises) {
     const shown: MobilityMove = { key: e.key, name: e.name[lang], cue: e.cue[lang], demo: { video: e.video ?? null, cue: e.cue[lang] } };
@@ -194,7 +197,7 @@ export function buildMobilitySession(
   return { exercises, steps, totalSec: steps.reduce((sum, s) => sum + s.seconds, 0) };
 }
 
-/** The muscles a past or planned session worked, read from its exercises. */
-export function sessionMuscles(groups: (MuscleGroup | undefined)[]): MuscleGroup[] {
-  return [...new Set(groups.filter((g): g is MuscleGroup => !!g && g !== "other"))];
+/** The muscles a past or planned session worked, read from its exercises (the unsorted group aside). */
+export function sessionMuscles(groups: (MuscleGroup | undefined)[], unsorted: readonly MuscleGroup[] = []): MuscleGroup[] {
+  return [...new Set(groups.filter((g): g is MuscleGroup => !!g && !unsorted.includes(g)))];
 }

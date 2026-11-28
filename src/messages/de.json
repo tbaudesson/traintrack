@@ -475,14 +475,6 @@
     "name": "Name",
     "muscleGroup": "Muskelgruppe",
     "equipment": "Ausrüstung",
-    "mg_chest": "Brust",
-    "mg_back": "Rücken",
-    "mg_legs": "Beine",
-    "mg_shoulders": "Schultern",
-    "mg_arms": "Arme",
-    "mg_core": "Rumpf",
-    "mg_full_body": "Ganzkörper",
-    "mg_other": "Andere",
     "added": "Übung hinzugefügt",
     "search": "Übungen suchen",
     "description": "Beschreibung",
@@ -494,7 +486,8 @@
     "descPlaceholder": "Ausführung…",
     "videoPlaceholder": "https://…",
     "videoEmbedHint": "Füge einen YouTube- oder Vimeo-Link ein, um ihn in der App abzuspielen. Ein Suchlink öffnet YouTube.",
-    "myHistory": "Mein Verlauf"
+    "myHistory": "Mein Verlauf",
+    "noGroup": "Ohne Gruppe"
   },
   "teams": {
     "dashboard": "Übersicht",
@@ -996,7 +989,8 @@
     "feat_tennis": "Tennis: Trainerheft",
     "featHint_tennis": "Gruppen, geplante und gegebene Stunden, Übungen",
     "tennis": "Tennis",
-    "bodyMap": "Körperkarte"
+    "bodyMap": "Körperkarte",
+    "muscleGroups": "Muskelgruppen"
   },
   "profile": {
     "title": "Profil",
@@ -3307,6 +3301,14 @@
     "musclesTitle": "Körperkarte: Muskeln",
     "musclesIntro": "Die Muskeln des Filters und der Übungskarten, jeder in einer Gruppe. Die Zeichnung hat eine Form für jeden der ersten 17 Muskeln; ein neuer erscheint in den Listen, nicht auf der Zeichnung.",
     "muscles": "Muskeln",
-    "group": "Gruppe"
+    "group": "Gruppe",
+    "groupsTitle": "Muskelgruppen",
+    "groupsIntro": "Die Gruppen der Übungen, in der überall gezeigten Reihenfolge (Filter, Karten, erzeugte Einheiten), mit ihrer Rolle.",
+    "groups": "Gruppen",
+    "groupsHint": "Nur eine „nicht zugeordnete“ Gruppe; höchstens eine „Ganzkörper“-Gruppe.",
+    "role_wholeBody": "Ganzkörper (trainiert alle Muskeln)",
+    "role_unspecified": "Nicht zugeordnet (importierte oder unbekannte Übung)",
+    "role_noRecovery": "Nicht im Hinweis „gleiche Muskeln zwei Tage hintereinander“",
+    "role_endurance": "Im Ausdauertraining beansprucht (Dehnen nach einer Einheit)"
   }
 }

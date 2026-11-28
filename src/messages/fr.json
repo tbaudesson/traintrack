@@ -475,14 +475,6 @@
     "name": "Nom",
     "muscleGroup": "Groupe musculaire",
     "equipment": "Équipement",
-    "mg_chest": "Pectoraux",
-    "mg_back": "Dos",
-    "mg_legs": "Jambes",
-    "mg_shoulders": "Épaules",
-    "mg_arms": "Bras",
-    "mg_core": "Gainage",
-    "mg_full_body": "Corps entier",
-    "mg_other": "Autre",
     "added": "Exercice ajouté",
     "search": "Rechercher un exercice",
     "description": "Description",
@@ -494,7 +486,8 @@
     "descPlaceholder": "Comment l'exécuter…",
     "videoPlaceholder": "https://…",
     "videoEmbedHint": "Collez un lien YouTube ou Vimeo pour le lire dans l'application. Un lien de recherche ouvre YouTube.",
-    "myHistory": "Mon historique"
+    "myHistory": "Mon historique",
+    "noGroup": "Sans groupe"
   },
   "teams": {
     "dashboard": "Tableau de bord",
@@ -996,7 +989,8 @@
     "feat_tennis": "Tennis : carnet de coach",
     "featHint_tennis": "Groupes, cours préparés et donnés, exercices",
     "tennis": "Tennis",
-    "bodyMap": "Carte du corps"
+    "bodyMap": "Carte du corps",
+    "muscleGroups": "Groupes musculaires"
   },
   "profile": {
     "title": "Profil",
@@ -3307,6 +3301,14 @@
     "musclesTitle": "Carte du corps : muscles",
     "musclesIntro": "Les muscles du filtre et des fiches d’exercice, chacun dans un groupe. Le dessin a une forme pour chacun des 17 muscles de départ ; un muscle ajouté apparaît dans les listes, pas sur le dessin.",
     "muscles": "Muscles",
-    "group": "Groupe"
+    "group": "Groupe",
+    "groupsTitle": "Groupes musculaires",
+    "groupsIntro": "Les groupes des exercices, dans l’ordre affiché partout (filtres, fiches, séances générées), avec leur rôle.",
+    "groups": "Groupes",
+    "groupsHint": "Un seul groupe « non classé » ; au plus un groupe « corps entier ».",
+    "role_wholeBody": "Corps entier (travaille tous les muscles)",
+    "role_unspecified": "Non classé (exercice importé ou inconnu)",
+    "role_noRecovery": "Hors alerte « mêmes muscles deux jours de suite »",
+    "role_endurance": "Travaillé en endurance (étirements après une sortie)"
   }
 }

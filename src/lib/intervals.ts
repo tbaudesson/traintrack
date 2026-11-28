@@ -1,5 +1,5 @@
 import type { MuscleGroup } from "@/db";
-import { MUSCLE_GROUPS } from "@/lib/muscles";
+import { isGroupId } from "@/lib/muscles";
 import { injuryWarning, type Injury, type InjuryRules } from "./injuries";
 
 /** What the session works: the belly, the whole body, or the legs and glutes. */
@@ -69,7 +69,6 @@ export interface TimedGuidance {
 
 export const TIMED_KEY = "timed_sessions";
 
-const MUSCLES = MUSCLE_GROUPS;
 const num = (v: unknown, lo: number, hi: number) => typeof v === "number" && Number.isInteger(v) && v >= lo && v <= hi;
 export const validPattern = (p: unknown): p is string => {
   if (typeof p !== "string" || !/^\d{1,3}-\d{1,3}$/.test(p)) return false;
@@ -99,7 +98,7 @@ export function parseTimed(raw: string | null | undefined): TimedGuidance | null
   for (const e of g.exercises) {
     if (!e || typeof e.name !== "string" || !e.name.trim() || names.has(e.name)) return null;
     names.add(e.name);
-    if (!MUSCLES.includes(e.muscleGroup) || !INTERVAL_EQUIPMENT.includes(e.equipment) || !INTERVAL_KINDS.includes(e.kind)) return null;
+    if (!isGroupId(e.muscleGroup) || !INTERVAL_EQUIPMENT.includes(e.equipment) || !INTERVAL_KINDS.includes(e.kind)) return null;
     if (!Array.isArray(e.focus) || !e.focus.length || !e.focus.every((f) => INTERVAL_FOCUSES.includes(f))) return null;
     if (e.sides !== undefined && typeof e.sides !== "boolean") return null;
   }

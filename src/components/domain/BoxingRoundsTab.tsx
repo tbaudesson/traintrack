@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Check, Loader2, Plus, Swords, Trash2 } from "lucide-react";
 import type { MuscleGroup } from "@/db";
 import { getAppSettings, setAppSetting } from "@/lib/adminService";
 import { BOXING_KEY, BOXING_KINDS, parseBoxing, type BoxingCombo, type BoxingGuidance, type BoxingKind } from "@/lib/boxing";
 import { FITNESS_LEVELS } from "@/lib/intervals";
-import { MUSCLE_GROUPS } from "@/lib/muscles";
+import { groupLabel } from "@/lib/muscles";
+import { useMuscleGroups } from "@/hooks/useMuscleGroups";
 import { useExercises } from "@/hooks/useExercises";
 import { useExerciseLabel } from "@/lib/exerciseNames";
 import { Button } from "@/components/ui/button";
@@ -27,7 +28,10 @@ const select = "h-9 w-full rounded-md border border-input bg-background px-2 tex
 export function BoxingRoundsTab() {
   const t = useTranslations("boxingAdmin");
   const tt = useTranslations("timedAdmin");
-  const te = useTranslations("exercises");
+  const locale = useLocale();
+  const groups = useMuscleGroups();
+  const groupIds = (groups ?? []).map((g) => g.id);
+  const gl = (id: string | null | undefined) => groupLabel(groups, id, locale);
   const ts = useTranslations("sync");
   const xl = useExerciseLabel();
   const library = useExercises().filter((e) => !e.isCustom);
@@ -124,8 +128,8 @@ export function BoxingRoundsTab() {
               <label className="space-y-1 text-xs text-muted-foreground">
                 <span>{tt("muscleGroup")}</span>
                 <select className={select} value={c.muscleGroup} onChange={(ev) => setCombo(i, { ...c, muscleGroup: ev.target.value as MuscleGroup })}>
-                  {MUSCLE_GROUPS.map((m) => (
-                    <option key={m} value={m}>{te(`mg_${m}`)}</option>
+                  {groupIds.map((m) => (
+                    <option key={m} value={m}>{gl(m)}</option>
                   ))}
                 </select>
               </label>

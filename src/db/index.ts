@@ -28,15 +28,8 @@ export type TrainingGoal =
   | "endurance"
   | "fat_loss"
   | "general_fitness";
-export type MuscleGroup =
-  | "chest"
-  | "back"
-  | "legs"
-  | "shoulders"
-  | "arms"
-  | "core"
-  | "full_body"
-  | "other";
+/** A muscle group: an id of the list the admin keeps (app settings "muscle_groups", migration 091). */
+export type MuscleGroup = string;
 /** The muscles drawn on the body map, finer than the groups (migration 086); each belongs to one group. */
 /** A muscle of the body map: an id of the list the admin keeps (app settings "body_muscles"). */
 export type Muscle = string;

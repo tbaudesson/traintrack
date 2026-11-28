@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { hardGroups, sessionConflicts } from "./conflicts";
+import { hardGroups as hard, sessionConflicts as conflicts } from "./conflicts";
+import { noRecoveryIds, parseMuscleGroups } from "./muscles";
+import { settingFromMigrations } from "./settingsFromMigrations";
+
+// The groups the admin keeps (migration 091): the core, the whole body and the unsorted need no recovery.
+const SKIP = noRecoveryIds(parseMuscleGroups(settingFromMigrations("091_muscle_groups.sql", "muscle_groups")));
+const hardGroups = (day: Parameters<typeof hard>[0], lib: Parameters<typeof hard>[1]) => hard(day, lib, SKIP);
+const sessionConflicts = (s: Parameters<typeof conflicts>[0], lib: Parameters<typeof conflicts>[1]) => conflicts(s, lib, SKIP);
 
 const lib = [
   { name: "Back Squat", uuid: "sq", isCustom: false, muscleGroup: "legs" as const },

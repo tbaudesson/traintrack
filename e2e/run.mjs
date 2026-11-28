@@ -302,8 +302,9 @@ await page.evaluate(async ({ user, libraryRows, tennisDrills }) => {
   await page.evaluate((v) => localStorage.setItem("traintrack.guidance.music_apps", v), JSON.stringify(JSON.parse(music)));
   // The tennis notebook's reference and the body map's muscles, as migration 089 keeps them.
   const m089 = readFileSync("supabase/migrations/089_tennis_teams_and_references.sql", "utf8");
-  for (const key of ["tennis_reference", "body_muscles"]) {
-    const text = m089.match(new RegExp(`VALUES \\('${key}', '([\\s\\S]*?)'\\) ON CONFLICT`))[1].replace(/''/g, "'");
+  const m091 = readFileSync("supabase/migrations/091_muscle_groups.sql", "utf8");
+  for (const [key, sql] of [["tennis_reference", m089], ["body_muscles", m089], ["muscle_groups", m091]]) {
+    const text = sql.match(new RegExp(`VALUES \\('${key}', '([\\s\\S]*?)'\\) ON CONFLICT`))[1].replace(/''/g, "'");
     await page.evaluate(({ key, text }) => localStorage.setItem(`traintrack.guidance.${key}`, text), { key, text: JSON.stringify(JSON.parse(text)) });
   }
 }

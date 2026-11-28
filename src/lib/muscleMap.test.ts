@@ -3,16 +3,21 @@ import type { Exercise } from "@/db";
 import { readFileSync } from "node:fs";
 import { libraryFromMigrations } from "./libraryFromMigrations";
 import { matchExercises as match, muscleLoad as load, musclesOf as of, muscleName, musclesByGroup, nextChoice, parseBodyMuscles } from "./muscleMap";
+import { parseMuscleGroups } from "./muscles";
+import { settingFromMigrations } from "./settingsFromMigrations";
 import { SHAPES } from "./bodyShapes";
 
 // The muscles as migration 089 puts them in the app settings.
 const sql = readFileSync("supabase/migrations/089_tennis_teams_and_references.sql", "utf8");
 const MUSCLES = parseBodyMuscles(sql.match(/VALUES \('body_muscles', '([\s\S]*?)'\) ON CONFLICT/)![1].replace(/''/g, "'"))!;
+// The groups as migration 091 puts them.
+const GROUPS = parseMuscleGroups(settingFromMigrations("091_muscle_groups.sql", "muscle_groups"))!;
+const REF = { muscles: MUSCLES, groups: GROUPS };
 const MUSCLE_IDS = MUSCLES.map((m) => m.id);
 const groupOf = (m: string) => MUSCLES.find((d) => d.id === m)!.group;
-const musclesOf = (e: Parameters<typeof of>[0]) => of(e, MUSCLES);
-const matchExercises = <T extends Parameters<typeof of>[0]>(exs: T[], s: Parameters<typeof match>[1]) => match(exs, s, MUSCLES);
-const muscleLoad = (entries: Parameters<typeof load>[0]) => load(entries, MUSCLES);
+const musclesOf = (e: Parameters<typeof of>[0]) => of(e, REF);
+const matchExercises = <T extends Parameters<typeof of>[0]>(exs: T[], s: Parameters<typeof match>[1]) => match(exs, s, REF);
+const muscleLoad = (entries: Parameters<typeof load>[0]) => load(entries, REF);
 
 describe("the muscles of the body map (migration 089)", () => {
   it("are 17, each in a group, named in three languages, each drawn", () => {
@@ -21,13 +26,13 @@ describe("the muscles of the body map (migration 089)", () => {
     expect(muscleName(MUSCLES, "gone", "fr")).toBe("gone");
     const drawn = new Set([...SHAPES.front, ...SHAPES.back].map((s) => s.muscle));
     for (const m of MUSCLES) expect(drawn.has(m.id), m.id).toBe(true);
-    expect(musclesByGroup(MUSCLES).flatMap((g) => g.muscles).length).toBe(17);
+    expect(musclesByGroup(REF).flatMap((g) => g.muscles).length).toBe(17);
   });
 
   it("refuses a list that does not hold together", () => {
     const bad = (list: Record<string, string>[]) => parseBodyMuscles(JSON.stringify(list));
     expect(bad([{ id: "Chest", group: "chest", fr: "a", en: "b", de: "c" }])).toBeNull();
-    expect(bad([{ id: "chest", group: "nowhere", fr: "a", en: "b", de: "c" }])).toBeNull();
+    expect(bad([{ id: "chest", group: "Nowhere!", fr: "a", en: "b", de: "c" }])).toBeNull();
     expect(bad([{ id: "chest", group: "chest", fr: "", en: "b", de: "c" }])).toBeNull();
     expect(bad([])).toBeNull();
   });

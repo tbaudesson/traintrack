@@ -1,8 +1,9 @@
 "use client";
 
-import { MUSCLE_GROUPS } from "@/lib/muscles";
+import { groupLabel } from "@/lib/muscles";
+import { useMuscleGroups } from "@/hooks/useMuscleGroups";
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Check, Loader2, Plus, Timer, Trash2 } from "lucide-react";
 import type { MuscleGroup } from "@/db";
 import { getAppSettings, setAppSetting } from "@/lib/adminService";
@@ -24,7 +25,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { NumberInput, NumbersInput } from "@/components/domain/NumbersInput";
 
-const MUSCLES = MUSCLE_GROUPS;
 const select = "h-9 w-full rounded-md border border-input bg-background px-2 text-sm text-foreground";
 
 /**
@@ -37,7 +37,10 @@ const select = "h-9 w-full rounded-md border border-input bg-background px-2 tex
 export function TimedSessionsTab() {
   const t = useTranslations("timedAdmin");
   const ti = useTranslations("intervals");
-  const te = useTranslations("exercises");
+  const locale = useLocale();
+  const groups = useMuscleGroups();
+  const groupIds = (groups ?? []).map((g) => g.id);
+  const gl = (id: string | null | undefined) => groupLabel(groups, id, locale);
   const ts = useTranslations("sync");
   const xl = useExerciseLabel();
   const library = useExercises().filter((e) => !e.isCustom);
@@ -165,8 +168,8 @@ export function TimedSessionsTab() {
                 <label className="space-y-1 text-xs text-muted-foreground">
                   <span>{t("muscleGroup")}</span>
                   <select className={select} value={e.muscleGroup} onChange={(ev) => setExercise(i, { ...e, muscleGroup: ev.target.value as MuscleGroup })}>
-                    {MUSCLES.map((m) => (
-                      <option key={m} value={m}>{te(`mg_${m}`)}</option>
+                    {groupIds.map((m) => (
+                      <option key={m} value={m}>{gl(m)}</option>
                     ))}
                   </select>
                 </label>
@@ -207,7 +210,7 @@ export function TimedSessionsTab() {
           </details>
         ))}
 
-        <Button variant="outline" className="w-full" onClick={() => put({ ...g, exercises: [...g.exercises, { name: "", muscleGroup: "full_body", equipment: "bodyweight", focus: ["full"], kind: "cardio" }] })}>
+        <Button variant="outline" className="w-full" onClick={() => put({ ...g, exercises: [...g.exercises, { name: "", muscleGroup: (groups ?? []).find((x) => x.wholeBody)?.id ?? groupIds[0] ?? "", equipment: "bodyweight", focus: ["full"], kind: "cardio" }] })}>
           <Plus className="mr-1 h-4 w-4" aria-hidden="true" />
           {t("add")}
         </Button>

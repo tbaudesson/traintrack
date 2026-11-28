@@ -1,13 +1,16 @@
 "use client";
 
 import { useTimedGuidance } from "@/hooks/useTimedGuidance";
+import { useBoxingGuidance } from "@/hooks/useBoxingGuidance";
+import { useMuscleGroups } from "@/hooks/useMuscleGroups";
+import { unsortedIds, wholeBodyIds } from "@/lib/muscles";
+import { BOXING_FOCUS } from "@/lib/intervals";
 import { sessionHref } from "@/lib/routes";
 import { useMobilityGuidance } from "@/hooks/useMobilityGuidance";
 import { useMobilityRules } from "@/hooks/useInjuryRules";
 import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { CheckCircle2, Play } from "lucide-react";
-import type { MuscleGroup } from "@/db";
 import { Link } from "@/i18n/navigation";
 import { createWorkout, useWorkout } from "@/hooks/useWorkouts";
 import { localDate } from "@/lib/dates";
@@ -34,7 +37,6 @@ import { Button } from "@/components/ui/button";
 import { Choice, ChoiceField } from "@/components/ui/choice";
 import { IntervalPlayer } from "@/components/domain/IntervalPlayer";
 
-const FOCUS_MUSCLES: Record<string, MuscleGroup[]> = { full: ["full_body"], abs: ["core"], lower: ["legs", "core"] };
 
 /** The mode and the workout from the link: "?mode=stretch&workout=12". */
 function fromLink(): { mode: MobilityMode; workoutId?: number; minutes?: number } {
@@ -59,7 +61,10 @@ function fromLink(): { mode: MobilityMode; workoutId?: number; minutes?: number 
 export default function MobilityPage() {
   const t = useTranslations("mobility");
   // The countdown before the first step; without the reference yet, none.
-  const readySec = useTimedGuidance()?.getReadySec ?? 0;
+  const timed = useTimedGuidance();
+  const boxing = useBoxingGuidance();
+  const muscleGroups = useMuscleGroups();
+  const readySec = timed?.getReadySec ?? 0;
   const tinj = useTranslations("injuries");
   const tpain = useTranslations("pain");
   const locale = useLocale();
@@ -91,11 +96,18 @@ export default function MobilityPage() {
   // What the session works: its exercises, its timed plan, or the legs for a run.
   const fromSession = useMemo(() => {
     if (!workout) return [];
-    if (workout.kind === "cardio") return ["legs", "core"] as MuscleGroup[];
-    if (workout.kind === "interval" && workout.intervalPlan) return FOCUS_MUSCLES[workout.intervalPlan.focus] ?? ["full_body"];
+    // An outing: the groups the admin marks as worked in endurance.
+    if (workout.kind === "cardio") return (muscleGroups ?? []).filter((g) => g.endurance).map((g) => g.id);
+    // A timed session: the groups of the exercises of its focus (the rounds' for boxing), else the whole body.
+    if (workout.kind === "interval" && workout.intervalPlan) {
+      const focus = workout.intervalPlan.focus;
+      const worked = focus === BOXING_FOCUS ? (boxing?.combos ?? []).map((c) => c.muscleGroup) : (timed?.exercises ?? []).filter((e) => (e.focus as string[]).includes(focus)).map((e) => e.muscleGroup);
+      const specific = sessionMuscles(worked, unsortedIds(muscleGroups));
+      return specific.length ? specific : wholeBodyIds(muscleGroups);
+    }
     const groups = new Map(exercises.map((e) => [e.id, e.muscleGroup]));
-    return sessionMuscles(sets.map((s) => groups.get(s.exerciseId)));
-  }, [workout, sets, exercises]);
+    return sessionMuscles(sets.map((s) => groups.get(s.exerciseId)), unsortedIds(muscleGroups));
+  }, [workout, sets, exercises, muscleGroups, timed, boxing]);
 
   const mobility = useMobilityGuidance();
   /** The length offered first: the shortest for a warm-up (a session follows), the middle one otherwise. */
@@ -118,8 +130,8 @@ export default function MobilityPage() {
   const injuries = useInjuries();
   const mobilityRules = useMobilityRules();
   const session = useMemo(
-    () => (mobility ? buildMobilitySession(mobility, mode, minutes, muscles, locale, injuries, mobilityRules) : { exercises: [], steps: [], totalSec: 0 }),
-    [mobility, mode, minutes, muscles, locale, injuries, mobilityRules]
+    () => (mobility ? buildMobilitySession(mobility, mode, minutes, muscles, locale, injuries, mobilityRules, wholeBodyIds(muscleGroups)) : { exercises: [], steps: [], totalSec: 0 }),
+    [mobility, mode, minutes, muscles, locale, injuries, mobilityRules, muscleGroups]
   );
   const leftOut = (mobility?.moves ?? []).filter((e) => e.mode === mode && mobilityWarning(mobilityRules, e.key, injuries)?.level === "avoid").length;
   const areaWords = (areas: string[]) => areas.map((a) => (locale === "de" ? tpain(`area_${a}`) : tpain(`area_${a}`).toLowerCase())).join(", ");

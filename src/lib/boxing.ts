@@ -1,5 +1,5 @@
 import type { MuscleGroup } from "@/db";
-import { MUSCLE_GROUPS } from "@/lib/muscles";
+import { isGroupId } from "@/lib/muscles";
 import { injuryWarning, type Injury, type InjuryRules } from "./injuries";
 import {
   FITNESS_LEVELS,
@@ -76,7 +76,7 @@ export function parseBoxing(raw: string | null | undefined): BoxingGuidance | nu
   for (const c of g.combos) {
     if (!c || typeof c.name !== "string" || !c.name.trim() || names.has(c.name)) return null;
     names.add(c.name);
-    if (!MUSCLE_GROUPS.includes(c.muscleGroup) || !BOXING_KINDS.includes(c.kind)) return null;
+    if (!isGroupId(c.muscleGroup) || !BOXING_KINDS.includes(c.kind)) return null;
   }
   // Punches at least: a round can always be filled with them.
   if (!g.combos.some((c) => c.kind === "attack")) return null;

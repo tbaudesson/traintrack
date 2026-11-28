@@ -1,5 +1,5 @@
 import type { Exercise, Muscle, MuscleGroup } from "@/db";
-import { MUSCLE_GROUPS } from "./muscles";
+import { isGroupId, specificGroups, wholeBodyIds, type MuscleGroupDef } from "./muscles";
 
 /**
  * The muscles of the body map, finer than the groups, as an admin keeps them
@@ -14,14 +14,14 @@ export const BODY_MUSCLES_KEY = "body_muscles";
 
 export interface MuscleDef {
   id: Muscle;
-  group: Exclude<MuscleGroup, "full_body" | "other">;
+  /** A group of the admin's list (neither the whole body nor the unsorted). */
+  group: MuscleGroup;
   fr: string;
   en: string;
   de: string;
 }
 
 const ID = /^[a-z_]{1,30}$/;
-const GROUPS = MUSCLE_GROUPS.filter((g) => g !== "full_body" && g !== "other");
 const LABEL = (v: unknown): v is string => typeof v === "string" && !!v.trim() && v.length <= 60;
 
 /** The muscles as the admin keeps them; null when the list does not hold together. */
@@ -35,9 +35,9 @@ export function parseBodyMuscles(text: string | null | undefined): MuscleDef[] |
       if (!raw || typeof raw !== "object") return null;
       const { id, group, fr, en, de } = raw;
       if (typeof id !== "string" || !ID.test(id) || out.some((m) => m.id === id)) return null;
-      if (typeof group !== "string" || !GROUPS.includes(group as MuscleDef["group"])) return null;
+      if (!isGroupId(group)) return null;
       if (!LABEL(fr) || !LABEL(en) || !LABEL(de)) return null;
-      out.push({ id, group: group as MuscleDef["group"], fr: fr.trim(), en: en.trim(), de: de.trim() });
+      out.push({ id, group, fr: fr.trim(), en: en.trim(), de: de.trim() });
     }
     return out;
   } catch {
@@ -52,9 +52,15 @@ export function muscleName(muscles: readonly MuscleDef[], id: Muscle, locale: st
   return locale === "fr" ? m.fr : locale === "de" ? m.de : m.en;
 }
 
-/** The muscles of a group; a full-body exercise works them all. */
-export const musclesOfGroup = (muscles: readonly MuscleDef[], g: MuscleGroup): Muscle[] =>
-  g === "full_body" ? muscles.map((m) => m.id) : muscles.filter((m) => m.group === g).map((m) => m.id);
+/** The muscles and their groups, both as the admin keeps them. */
+export interface BodyRef {
+  muscles: readonly MuscleDef[];
+  groups: readonly MuscleGroupDef[];
+}
+
+/** The muscles of a group; a whole-body group works them all. */
+export const musclesOfGroup = (ref: BodyRef, g: MuscleGroup): Muscle[] =>
+  wholeBodyIds(ref.groups).includes(g) ? ref.muscles.map((m) => m.id) : ref.muscles.filter((m) => m.group === g).map((m) => m.id);
 
 export type MuscleRole = "target" | "assist";
 type Ex = Pick<Exercise, "muscleGroup" | "secondaryMuscles" | "targetMuscles" | "assistMuscles">;
@@ -64,20 +70,20 @@ type Ex = Pick<Exercise, "muscleGroup" | "secondaryMuscles" | "targetMuscles" | 
  * groups (the main group's muscles as worked, a full-body one's and the other
  * groups' as worked too).
  */
-export function musclesOf(ex: Ex, muscles: readonly MuscleDef[]): Map<Muscle, MuscleRole> {
+export function musclesOf(ex: Ex, ref: BodyRef): Map<Muscle, MuscleRole> {
   const out = new Map<Muscle, MuscleRole>();
-  const known = (m: unknown): m is Muscle => muscles.some((d) => d.id === m);
+  const known = (m: unknown): m is Muscle => ref.muscles.some((d) => d.id === m);
   const target = ex.targetMuscles?.filter(known) ?? [];
   if (target.length) {
     for (const m of ex.assistMuscles?.filter(known) ?? []) out.set(m, "assist");
     for (const m of target) out.set(m, "target");
     return out;
   }
-  for (const g of ex.secondaryMuscles ?? []) for (const m of musclesOfGroup(muscles, g)) out.set(m, "assist");
-  if (ex.muscleGroup === "full_body") {
-    for (const m of muscles) out.set(m.id, "assist");
+  for (const g of ex.secondaryMuscles ?? []) for (const m of musclesOfGroup(ref, g)) out.set(m, "assist");
+  if (wholeBodyIds(ref.groups).includes(ex.muscleGroup)) {
+    for (const m of ref.muscles) out.set(m.id, "assist");
   } else {
-    for (const m of musclesOfGroup(muscles, ex.muscleGroup)) out.set(m, "target");
+    for (const m of musclesOfGroup(ref, ex.muscleGroup)) out.set(m, "target");
   }
   return out;
 }
@@ -97,12 +103,12 @@ export const ruledOut = (s: MuscleSelection) => (Object.keys(s) as Muscle[]).fil
  * when none is), without those that mainly work a muscle ruled out; the ones
  * that mainly work what is wanted first, then those that work it too.
  */
-export function matchExercises<T extends Ex>(exercises: T[], s: MuscleSelection, muscles: readonly MuscleDef[]): { exercise: T; role: MuscleRole | null }[] {
+export function matchExercises<T extends Ex>(exercises: T[], s: MuscleSelection, ref: BodyRef): { exercise: T; role: MuscleRole | null }[] {
   const ins = wanted(s);
   const outs = ruledOut(s);
   const rows: { exercise: T; role: MuscleRole | null; score: number }[] = [];
   for (const exercise of exercises) {
-    const worked = musclesOf(exercise, muscles);
+    const worked = musclesOf(exercise, ref);
     if (outs.some((m) => worked.get(m) === "target")) continue;
     if (!ins.length) {
       rows.push({ exercise, role: null, score: 0 });
@@ -121,16 +127,18 @@ export function matchExercises<T extends Ex>(exercises: T[], s: MuscleSelection,
  * or its seconds) counted whole for its main muscles and half for the others,
  * then scaled so the most worked is 1.
  */
-export function muscleLoad(entries: { exercise: Ex; amount: number }[], muscles: readonly MuscleDef[]): Map<Muscle, number> {
+export function muscleLoad(entries: { exercise: Ex; amount: number }[], ref: BodyRef): Map<Muscle, number> {
   const sum = new Map<Muscle, number>();
   for (const { exercise, amount } of entries) {
     if (!(amount > 0)) continue;
-    for (const [m, role] of musclesOf(exercise, muscles)) sum.set(m, (sum.get(m) ?? 0) + amount * (role === "target" ? 1 : 0.5));
+    for (const [m, role] of musclesOf(exercise, ref)) sum.set(m, (sum.get(m) ?? 0) + amount * (role === "target" ? 1 : 0.5));
   }
   const top = Math.max(0, ...sum.values());
   return new Map([...sum].filter(([, v]) => v > 0).map(([m, v]) => [m, v / top]));
 }
 
-/** The groups in their usual order, each with its muscles: the list beside the drawing. */
-export const musclesByGroup = (muscles: readonly MuscleDef[]) =>
-  GROUPS.map((g) => ({ group: g, muscles: muscles.filter((m) => m.group === g).map((m) => m.id) })).filter((g) => g.muscles.length > 0);
+/** The groups in the admin's order, each with its muscles: the list beside the drawing. */
+export const musclesByGroup = (ref: BodyRef) =>
+  specificGroups(ref.groups)
+    .map((g) => ({ group: g.id, muscles: ref.muscles.filter((m) => m.group === g.id).map((m) => m.id) }))
+    .filter((g) => g.muscles.length > 0);

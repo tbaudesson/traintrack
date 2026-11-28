@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useMuscleGroups } from "@/hooks/useMuscleGroups";
+import { groupLabel } from "@/lib/muscles";
+import { useLocale, useTranslations } from "next-intl";
 import { useAllWorkoutSets } from "@/hooks/useWorkoutSets";
 import { SessionMuscles } from "@/components/domain/BodyMap";
 import { useWorkouts } from "@/hooks/useWorkouts";
@@ -61,6 +63,8 @@ export default function ProgressPage() {
   const { num, day } = useFormat();
   const xl = useExerciseLabel();
   const tex = useTranslations("exercises");
+  const muscleGroups = useMuscleGroups();
+  const locale = useLocale();
   const tb = useTranslations("bodyMap");
   const { hasFeature } = useFeatureAccess();
   // One's display mode keeps some readings for later; a load calling for care always shows.
@@ -175,13 +179,13 @@ export default function ProgressPage() {
     for (const s of scored) {
       const d = workoutDate.get(s.workoutId);
       if (!d || d < cutoff) continue;
-      const mg = exMg.get(s.exerciseId) ?? "other";
+      const mg = exMg.get(s.exerciseId) ?? "";
       byMg.set(mg, (byMg.get(mg) ?? 0) + s.weightKg! * s.reps!);
     }
     return [...byMg.entries()]
-      .map(([mg, vol]) => ({ mg, label: tex(`mg_${mg}`), vol: Math.round(vol) }))
+      .map(([mg, vol]) => ({ mg, label: groupLabel(muscleGroups, mg, locale) || tex("noGroup"), vol: Math.round(vol) }))
       .sort((a, b) => b.vol - a.vol);
-  }, [scored, exercises, workoutDate, tex, now]);
+  }, [scored, exercises, workoutDate, tex, now, muscleGroups, locale]);
 
   // ── The muscles worked this week, on the body: each set done counted ──
   const weekMuscles = useMemo(() => {

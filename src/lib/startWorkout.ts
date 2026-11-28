@@ -9,6 +9,7 @@ import { addWorkoutSet } from "@/hooks/useWorkoutSets";
 import { programGroups } from "./supersets";
 import { oneRepMaxHistory } from "./goals";
 import { lastIntensity } from "./intensity";
+import { unspecifiedGroup } from "./muscles";
 import { percentWeights, referenceMax } from "./percent";
 import { DELOAD_LOAD, deloadSets } from "./deload";
 import { programWeek } from "./programWeek";
@@ -134,7 +135,7 @@ export async function startWorkoutFromDay(
     const ex = findExercise(pool, pe.exerciseName, pe.exerciseUuid);
     let exerciseId = ex?.id;
     if (!exerciseId) {
-      exerciseId = await createCustomExercise({ name: pe.exerciseName, muscleGroup: "other" });
+      exerciseId = await createCustomExercise({ name: pe.exerciseName, muscleGroup: unspecifiedGroup() ?? "" });
     }
     const last = lastPerformance(exerciseId, undefined, pastWorkouts, pastSets);
     const sessions = recentPerformances(exerciseId, undefined, pastWorkouts, pastSets, 2);

@@ -4,9 +4,10 @@ import { useLocale, useTranslations } from "next-intl";
 import type { Exercise, ExerciseLevel, LocalizedList, Movement, Muscle, MuscleGroup } from "@/db";
 import { BodyMap } from "@/components/domain/BodyMap";
 import { muscleName, musclesByGroup } from "@/lib/muscleMap";
-import { useBodyMuscles } from "@/hooks/useBodyMuscles";
+import { useBodyMuscles, useBodyRef } from "@/hooks/useBodyMuscles";
 import { LEVELS, MOVEMENTS } from "@/lib/movements";
-import { MUSCLE_GROUPS } from "@/lib/muscles";
+import { groupLabel } from "@/lib/muscles";
+import { useMuscleGroups } from "@/hooks/useMuscleGroups";
 import { useExerciseLabel } from "@/lib/exerciseNames";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,7 +24,6 @@ export function localList(list: LocalizedList | null | undefined, locale: string
 /** What the library says of an exercise: its level, its movements, the muscles it also works, its key points and usual faults. */
 export function ExerciseDetails({ ex, library }: { ex: Exercise; library: Exercise[] }) {
   const t = useTranslations("restrictions");
-  const te = useTranslations("exercises");
   const locale = useLocale();
   const xl = useExerciseLabel();
   const cues = localList(ex.cues, locale);
@@ -35,6 +35,7 @@ export function ExerciseDetails({ ex, library }: { ex: Exercise; library: Exerci
   ].filter(Boolean) as string[];
   const tb = useTranslations("bodyMap");
   const muscles = useBodyMuscles() ?? [];
+  const groups = useMuscleGroups();
   const mn = (m: Muscle) => muscleName(muscles, m, locale);
   const target = ex.targetMuscles ?? [];
   const assist = ex.assistMuscles ?? [];
@@ -58,7 +59,7 @@ export function ExerciseDetails({ ex, library }: { ex: Exercise; library: Exerci
           </div>
         </div>
       ) : (
-        !!ex.secondaryMuscles?.length && <p className="text-xs text-muted-foreground">{t("secondary")} : {ex.secondaryMuscles.map((m) => te(`mg_${m}`)).join(", ")}</p>
+        !!ex.secondaryMuscles?.length && <p className="text-xs text-muted-foreground">{t("secondary")} : {ex.secondaryMuscles.map((m) => groupLabel(groups, m, locale)).join(", ")}</p>
       )}
       {parent && <p className="text-xs text-muted-foreground">{t("variantOf")} : {xl(parent.name)}</p>}
       {cues.length > 0 && (
@@ -114,8 +115,9 @@ export function ExerciseDetailsEditor({ value, onChange, library, self }: { valu
   const t = useTranslations("restrictions");
   const tb = useTranslations("bodyMap");
   const locale = useLocale();
-  const bodyMuscles = useBodyMuscles() ?? [];
-  const te = useTranslations("exercises");
+  const bodyRef = useBodyRef();
+  const bodyMuscles = bodyRef?.muscles ?? [];
+  const groups = useMuscleGroups();
   const xl = useExerciseLabel();
   const chip = (on: boolean) => cn("min-h-9 rounded-full border px-2.5 text-xs font-medium", on ? "border-accent-500 bg-accent-500 text-white" : "border-border hover:bg-muted");
   const toggle = <T,>(list: T[], x: T) => (list.includes(x) ? list.filter((y) => y !== x) : [...list, x]);
@@ -145,9 +147,9 @@ export function ExerciseDetailsEditor({ value, onChange, library, self }: { valu
       <div>
         <p className="mb-1 text-xs">{t("secondary")}</p>
         <div className="flex flex-wrap gap-1.5">
-          {MUSCLE_GROUPS.filter((g) => g !== self.muscleGroup).map((g) => (
+          {(groups ?? []).map((g) => g.id).filter((g) => g !== self.muscleGroup).map((g) => (
             <button key={g} type="button" aria-pressed={value.secondaryMuscles.includes(g)} onClick={() => onChange({ ...value, secondaryMuscles: toggle(value.secondaryMuscles, g) })} className={chip(value.secondaryMuscles.includes(g))}>
-              {te(`mg_${g}`)}
+              {groupLabel(groups, g, locale)}
             </button>
           ))}
         </div>
@@ -156,7 +158,7 @@ export function ExerciseDetailsEditor({ value, onChange, library, self }: { valu
         <p className="mb-1 text-xs">{tb("adminLabel")}</p>
         <p className="mb-1.5 text-xs text-muted-foreground">{tb("adminHint")}</p>
         <div className="space-y-1.5">
-          {musclesByGroup(bodyMuscles).map(({ group, muscles: ofGroup }) => (
+          {(bodyRef ? musclesByGroup(bodyRef) : []).map(({ group, muscles: ofGroup }) => (
             <div key={group} className="flex flex-wrap gap-1.5">
               {ofGroup.map((m) => {
                 const role = value.targetMuscles.includes(m) ? "target" : value.assistMuscles.includes(m) ? "assist" : null;
