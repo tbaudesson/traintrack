@@ -43,9 +43,9 @@ import { ProgramEquipmentTab } from "@/components/domain/ProgramEquipmentTab";
 import { DisplayModesTab } from "@/components/domain/DisplayModesTab";
 import { MusicAppsTab } from "@/components/domain/MusicAppsTab";
 import { BoxingRoundsTab } from "@/components/domain/BoxingRoundsTab";
-import { BodyMusclesTab, MuscleGroupsTab, TennisReferenceTab } from "@/components/domain/ReferenceTabs";
+import { BodyMusclesTab, LessonsReferenceTab, MuscleGroupsTab } from "@/components/domain/ReferenceTabs";
 
-type Tab = "users" | "invitations" | "plans" | "templates" | "equipment" | "nutrition" | "injuries" | "mobility" | "timed" | "swimming" | "hiking" | "boxing" | "tennis" | "muscleGroups" | "bodyMap" | "display" | "music" | "gdpr";
+type Tab = "users" | "invitations" | "plans" | "templates" | "equipment" | "nutrition" | "injuries" | "mobility" | "timed" | "swimming" | "hiking" | "boxing" | "lessons" | "muscleGroups" | "bodyMap" | "display" | "music" | "gdpr";
 
 const TABS: { id: Tab; icon: LucideIcon }[] = [
   { id: "users", icon: Users2 },
@@ -60,7 +60,7 @@ const TABS: { id: Tab; icon: LucideIcon }[] = [
   { id: "swimming", icon: Waves },
   { id: "hiking", icon: Mountain },
   { id: "boxing", icon: Swords },
-  { id: "tennis", icon: ClipboardPen },
+  { id: "lessons", icon: ClipboardPen },
   { id: "muscleGroups", icon: Dumbbell },
   { id: "bodyMap", icon: BicepsFlexed },
   { id: "display", icon: Eye },
@@ -133,7 +133,7 @@ export default function AdminPage() {
           {tab === "swimming" && <SwimTechniquesTab />}
           {tab === "hiking" && <OutingChecklistTab />}
           {tab === "boxing" && <BoxingRoundsTab />}
-          {tab === "tennis" && <TennisReferenceTab />}
+          {tab === "lessons" && <LessonsReferenceTab />}
           {tab === "muscleGroups" && <MuscleGroupsTab />}
           {tab === "bodyMap" && <BodyMusclesTab />}
           {tab === "display" && <DisplayModesTab />}

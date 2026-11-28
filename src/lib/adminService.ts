@@ -51,7 +51,7 @@ export const FEATURE_GROUPS = [
   { key: "followUp", features: ["readiness", "advanced_progress", "reports"] },
   { key: "coaching", features: ["coaching", "challenges"] },
   { key: "vaulting", features: ["vaulting"] },
-  { key: "tennis", features: ["tennis"] },
+  { key: "lessons", features: ["group_lessons"] },
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_GROUPS)[number]["features"][number];
@@ -59,7 +59,7 @@ export type FeatureKey = (typeof FEATURE_GROUPS)[number]["features"][number];
 export const FEATURE_KEYS: FeatureKey[] = FEATURE_GROUPS.flatMap((g) => [...g.features]);
 
 /** The features the server checks itself, on what they save. */
-export const SERVER_CHECKED: readonly FeatureKey[] = ["nutrition", "meal_plans", "readiness", "running", "planning", "coaching", "challenges", "vaulting", "tennis"];
+export const SERVER_CHECKED: readonly FeatureKey[] = ["nutrition", "meal_plans", "readiness", "running", "planning", "coaching", "challenges", "vaulting", "group_lessons"];
 
 export interface Plan {
   id: string;

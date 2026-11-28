@@ -1,4 +1,5 @@
 import type { StrengthGoal } from "@/lib/goals";
+import { unspecifiedGroup } from "@/lib/muscles";
 import type { IntervalPlan } from "@/lib/intervals";
 import type { Injury } from "@/lib/injuries";
 import type { RunPaces } from "@/lib/runPaces";
@@ -198,6 +199,12 @@ export interface Exercise extends SyncFields {
   mistakes?: LocalizedList | null;
   /** The exercise it is a variant of (its uuid) (migration 076). */
   variantOf?: string | null;
+  /** For group lessons (migration 092): its sport and theme there, its suggested minutes, the ages it suits and the kit it needs. */
+  sport?: string | null;
+  theme?: string | null;
+  minutes?: number | null;
+  ages?: string[] | null;
+  gear?: string[] | null;
   /** true = user-created custom exercise; false = seeded library row */
   isCustom: boolean;
   createdAt: string;
@@ -491,77 +498,61 @@ export interface HorseSession extends SyncFields {
   updatedAt: string;
 }
 
-/** When a tennis group trains in the week: ISO day (1 Monday … 7 Sunday), "HH:MM", minutes (migration 088). */
-export interface TennisSlot {
+/** When a lesson group trains in the week: ISO day (1 Monday … 7 Sunday), "HH:MM", minutes (migration 088). */
+export interface LessonSlot {
   day: number;
   time: string;
   minutes: number;
 }
 
-/** Ids of the tennis reference an admin keeps (app settings "tennis_reference", migration 089). */
-export type TennisAgeBand = string;
-export type TennisLevel = string;
-export type TennisCategory = string;
-export type TennisEquipment = string;
-
 /**
- * A tennis coach's group: a team without accounts, kept with the teams (kind
- * "tennis", migration 089). Never its players, only its age band and how many play.
+ * A coach's lesson group: a team without accounts, kept with the teams (kind
+ * "lessons", migrations 089 and 092), in a sport of the reference (tennis,
+ * vaulting). Never its players, only its age band and how many play.
  */
-export interface TennisGroup extends SyncFields {
+export interface LessonGroup extends SyncFields {
   id?: number;
-  kind: "tennis";
+  kind: "lessons";
+  /** A sport of the lessons' reference (app settings "group_lessons"). */
+  sport: string;
   name: string;
   /** Notes on the group (the team's description). */
   description?: string | null;
-  ageBand?: TennisAgeBand | null;
-  level?: TennisLevel | null;
-  slots: TennisSlot[];
+  ageBand?: string | null;
+  level?: string | null;
+  slots: LessonSlot[];
   players?: number | null;
   archivedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
-/** A tennis drill: the library's (userId null, kept by an admin) or a coach's own (migration 088). */
-export interface TennisDrill extends SyncFields {
-  id?: number;
-  name: string;
-  nameFr?: string | null;
-  nameDe?: string | null;
-  description?: string | null;
-  descriptionFr?: string | null;
-  descriptionDe?: string | null;
-  category: TennisCategory;
-  minutes: number;
-  ages: TennisAgeBand[];
-  equipment: TennisEquipment[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-/** A drill in a lesson, as it was planned: kept readable if the drill goes. */
-export interface TennisPlanItem {
-  /** The drill's uuid, when it came from one. */
+/** An exercise in a lesson, as it was planned: kept readable if the exercise goes. */
+export interface LessonPlanItem {
+  /** The exercise's uuid, when it came from the library. */
   drill?: string | null;
   name: string;
-  category: TennisCategory;
+  /** Its theme in the lesson; none for an exercise not made for lessons. */
+  category?: string | null;
   minutes: number;
 }
 
-/** A lesson of a group on a day: planned, then given (migration 088). */
-export interface TennisLesson extends SyncFields {
+/** A lesson of a group on a day: planned, then given (migrations 088, 092). */
+export interface GroupLesson extends SyncFields {
   id?: number;
   groupId: number;
   date: string;
   theme?: string | null;
-  plan: TennisPlanItem[];
+  plan: LessonPlanItem[];
   /** When it was marked given (ISO); null while planned. */
   givenAt?: string | null;
   present?: number | null;
   /** How hard it was for the group, 1 (easy) to 5 (very hard). */
   intensity?: number | null;
   notes?: string | null;
+  /** On a horse (vaulting): which one, and the work logged on it for this lesson. */
+  horseId?: number | null;
+  horseSessionId?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -617,9 +608,8 @@ const db = new Dexie("TrainTrack") as Dexie & {
   competitionResults: EntityTable<CompetitionResult, "id">;
   horses: EntityTable<Horse, "id">;
   horseSessions: EntityTable<HorseSession, "id">;
-  tennisGroups: EntityTable<TennisGroup, "id">;
-  tennisDrills: EntityTable<TennisDrill, "id">;
-  tennisLessons: EntityTable<TennisLesson, "id">;
+  lessonGroups: EntityTable<LessonGroup, "id">;
+  groupLessons: EntityTable<GroupLesson, "id">;
   goals: EntityTable<Goal, "id">;
   formDrafts: EntityTable<FormDraft, "id">;
   syncMeta: EntityTable<SyncMeta, "tableName">;
@@ -751,6 +741,37 @@ db.version(11).stores({
   tennisDrills: "++id, uuid, _dirty, userId",
   tennisLessons: "++id, groupId, date, uuid, _dirty, userId",
 });
+
+// v12: the tennis notebook becomes the group lessons' (migration 092): its
+// groups and lessons move to tables of their own name, its drills become
+// exercises of the library (one's own drills, one's own exercises).
+db.version(12)
+  .stores({
+    lessonGroups: "++id, uuid, _dirty, userId",
+    groupLessons: "++id, groupId, date, uuid, _dirty, userId",
+    tennisGroups: null,
+    tennisDrills: null,
+    tennisLessons: null,
+  })
+  .upgrade(async (tx) => {
+    const ids = new Map<number, number>();
+    for (const g of await tx.table("tennisGroups").toArray()) {
+      const { id, ...rest } = g;
+      ids.set(id, (await tx.table("lessonGroups").add({ ...rest, kind: "lessons", sport: rest.sport ?? "tennis" })) as number);
+    }
+    for (const l of await tx.table("tennisLessons").toArray()) {
+      const { id, ...rest } = l;
+      void id;
+      await tx.table("groupLessons").add({ ...rest, groupId: ids.get(l.groupId) ?? l.groupId });
+    }
+    // One's own drills, which only this device may hold: one's own exercises.
+    for (const d of await tx.table("tennisDrills").toArray()) {
+      if (!d.userId) continue;
+      const { id, category, equipment, ...rest } = d;
+      void id;
+      await tx.table("exercises").add({ ...rest, muscleGroup: unspecifiedGroup() ?? "", isCustom: true, sport: "tennis", theme: category, gear: equipment });
+    }
+  });
 
 export { db };
 

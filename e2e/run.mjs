@@ -103,7 +103,7 @@ await page.waitForLoadState("load");
 expect(await page.evaluate(() => !!navigator.serviceWorker.controller), "the service worker never took control");
 
 // What the background warm-up does once signed in: every page and its files.
-const PAGES = ["", "/log", "/log/session", "/history", "/tennis", "/tennis/drills", "/programs", "/progress", "/intervals", "/mobility", "/exercises", "/competitions", "/report", "/settings", "/more", "/horses", "/swim-techniques", "/outing-checklist", "/onboarding", "/readiness", "/join", "/tests", "/running"];
+const PAGES = ["", "/log", "/log/session", "/history", "/lessons", "/programs", "/progress", "/intervals", "/mobility", "/exercises", "/competitions", "/report", "/settings", "/more", "/horses", "/swim-techniques", "/outing-checklist", "/onboarding", "/readiness", "/join", "/tests", "/running"];
 const warmed = await page.evaluate(async (pages) => {
   const files = new Set();
   for (const p of pages) {
@@ -190,16 +190,22 @@ for (const m of readFileSync("supabase/migrations/086_muscles.sql", "utf8").matc
 }
 if (tagged !== libraryRows.length) throw new Error(`086: ${tagged} of ${libraryRows.length} exercises given their muscles`);
 
-// The tennis drill library, as migration 088 seeds it.
-const tennisDrills = [...readFileSync("supabase/migrations/088_tennis.sql", "utf8").matchAll(/^INSERT INTO tennis_drills .*? VALUES \((NULL, .*?), '(\[.*?\])'::jsonb, '(\[.*?\])'::jsonb\) ON CONFLICT/gm)].map((m) => {
-  const [, name, nameFr, nameDe, description, descriptionFr, descriptionDe, category] = sqlValues(m[1]);
-  const minutes = Number(m[1].match(/, (\d+)$/)[1]);
-  return { name, nameFr, nameDe, description, descriptionFr, descriptionDe, category, minutes, ages: JSON.parse(m[2]), equipment: JSON.parse(m[3]) };
-});
-if (tennisDrills.length !== 35 || tennisDrills.some((d) => !d.name || !d.category || !(d.minutes > 0))) throw new Error("088: the tennis drills were not read");
+// The lesson exercises of the one library: the tennis drills of 088 (moved by 092) and the vaulting exercises of 092.
+const unq = (v) => v.replace(/''/g, "'");
+const lessonExercises = [
+  ...[...readFileSync("supabase/migrations/088_tennis.sql", "utf8").matchAll(/^INSERT INTO tennis_drills .*? VALUES \(NULL, '((?:[^']|'')+)', '((?:[^']|'')+)', '((?:[^']|'')+)', '((?:[^']|'')+)', '((?:[^']|'')+)', '((?:[^']|'')+)', '([\w-]+)', (\d+), '(\[.*?\])'::jsonb, '(\[.*?\])'::jsonb\)/gm)].map((m) => ({
+    name: unq(m[1]), nameFr: unq(m[2]), nameDe: unq(m[3]), description: unq(m[4]), descriptionFr: unq(m[5]), descriptionDe: unq(m[6]),
+    muscleGroup: "other", sport: "tennis", theme: m[7], minutes: Number(m[8]), ages: JSON.parse(m[9]), gear: JSON.parse(m[10]),
+  })),
+  ...[...readFileSync("supabase/migrations/092_group_lessons.sql", "utf8").matchAll(/^INSERT INTO exercises .*? SELECT NULL, '((?:[^']|'')+)', '((?:[^']|'')+)', '((?:[^']|'')+)', '((?:[^']|'')+)', '((?:[^']|'')+)', '((?:[^']|'')+)', '(\w+)', false, '(\w+)', '([\w-]+)', (\d+), '(\[.*?\])'::jsonb, '(\[.*?\])'::jsonb WHERE/gm)].map((m) => ({
+    name: unq(m[1]), nameFr: unq(m[2]), nameDe: unq(m[3]), description: unq(m[4]), descriptionFr: unq(m[5]), descriptionDe: unq(m[6]),
+    muscleGroup: m[7], sport: m[8], theme: m[9], minutes: Number(m[10]), ages: JSON.parse(m[11]), gear: JSON.parse(m[12]),
+  })),
+];
+if (lessonExercises.filter((e) => e.sport === "tennis").length !== 35 || lessonExercises.filter((e) => e.sport === "vaulting").length !== 25) throw new Error("088/092: the lesson exercises were not read");
 
 // A signed-in user as the app caches it, a profile, and the exercise library.
-await page.evaluate(async ({ user, libraryRows, tennisDrills }) => {
+await page.evaluate(async ({ user, libraryRows, lessonExercises }) => {
   const db = await new Promise((resolve, reject) => {
     const req = indexedDB.open("TrainTrack");
     req.onsuccess = () => resolve(req.result);
@@ -214,7 +220,7 @@ await page.evaluate(async ({ user, libraryRows, tennisDrills }) => {
       tx.onerror = () => reject(tx.error);
     });
   // The licence as last seen online: every feature.
-  await put("authMeta", { key: "currentUser", userId: user, email: "e2e@test.local", planFeatures: ["ai_programs","nutrition","readiness","coaching","advanced_progress","planning","level_tests","excel_import","running","meal_plans","reports","challenges","vaulting","tennis"] });
+  await put("authMeta", { key: "currentUser", userId: user, email: "e2e@test.local", planFeatures: ["ai_programs","nutrition","readiness","coaching","advanced_progress","planning","level_tests","excel_import","running","meal_plans","reports","challenges","vaulting","group_lessons"] });
   await put("athleteProfiles", {
     userId: user, uuid: "e2e-profile", goals: ["general_fitness"], fitnessLevel: "beginner", equipment: ["dumbbell"],
     trainingDays: [1, 3, 5], trainingTime: "18:30", _dirty: 0, createdAt: now, updatedAt: now,
@@ -222,8 +228,8 @@ await page.evaluate(async ({ user, libraryRows, tennisDrills }) => {
   for (const [i, e] of libraryRows.entries()) {
     await put("exercises", { ...e, isCustom: false, userId: null, uuid: `e2e-ex-${i}`, _dirty: 0, createdAt: now, updatedAt: now });
   }
-  for (const [i, d] of tennisDrills.entries()) {
-    await put("tennisDrills", { ...d, userId: null, uuid: `e2e-drill-${i}`, _dirty: 0, createdAt: now, updatedAt: now });
+  for (const [i, e] of lessonExercises.entries()) {
+    await put("exercises", { ...e, isCustom: false, userId: null, uuid: `e2e-lesson-${i}`, _dirty: 0, createdAt: now, updatedAt: now });
   }
   // Five weeks of easy runs, then a much harder week: the load jumps.
   const day = (ago) => {
@@ -241,7 +247,7 @@ await page.evaluate(async ({ user, libraryRows, tennisDrills }) => {
       durationSec: r.min * 60, distanceM: r.min * 180, _dirty: 0, createdAt: now, updatedAt: now,
     });
   }
-}, { user: USER, libraryRows, tennisDrills });
+}, { user: USER, libraryRows, lessonExercises });
 
 // The injury references as the app keeps them after reading them online once (migration 058).
 {
@@ -300,10 +306,13 @@ await page.evaluate(async ({ user, libraryRows, tennisDrills }) => {
   const m083 = readFileSync("supabase/migrations/083_music_apps.sql", "utf8");
   const music = m083.slice(m083.indexOf("'\n[") + 1, m083.indexOf("]\n'") + 1);
   await page.evaluate((v) => localStorage.setItem("traintrack.guidance.music_apps", v), JSON.stringify(JSON.parse(music)));
-  // The tennis notebook's reference and the body map's muscles, as migration 089 keeps them.
+  // The body map's muscles (089), the muscle groups (091) and the group lessons' sports (092), as the app keeps them.
   const m089 = readFileSync("supabase/migrations/089_tennis_teams_and_references.sql", "utf8");
   const m091 = readFileSync("supabase/migrations/091_muscle_groups.sql", "utf8");
-  for (const [key, sql] of [["tennis_reference", m089], ["body_muscles", m089], ["muscle_groups", m091]]) {
+  const m092 = readFileSync("supabase/migrations/092_group_lessons.sql", "utf8").match(/jsonb_build_array\(\n\s*'(\{[\s\S]*?\})'::jsonb \|\| COALESCE[\s\S]*?,\n\s*'(\{[\s\S]*?\})'::jsonb\n\)\)/);
+  const lessonsRef = JSON.stringify({ sports: [JSON.parse(m092[1].replace(/''/g, "'")), JSON.parse(m092[2].replace(/''/g, "'"))] });
+  await page.evaluate((v) => localStorage.setItem("traintrack.guidance.group_lessons", v), lessonsRef);
+  for (const [key, sql] of [["body_muscles", m089], ["muscle_groups", m091]]) {
     const text = sql.match(new RegExp(`VALUES \\('${key}', '([\\s\\S]*?)'\\) ON CONFLICT`))[1].replace(/''/g, "'");
     await page.evaluate(({ key, text }) => localStorage.setItem(`traintrack.guidance.${key}`, text), { key, text: JSON.stringify(JSON.parse(text)) });
   }
@@ -1010,7 +1019,7 @@ await test("a feature left out of the licence is locked, offline too", async () 
       });
       db.close();
     }, features);
-  const all = ["ai_programs","nutrition","readiness","coaching","advanced_progress","planning","level_tests","excel_import","running","meal_plans","reports","challenges","vaulting","tennis"];
+  const all = ["ai_programs","nutrition","readiness","coaching","advanced_progress","planning","level_tests","excel_import","running","meal_plans","reports","challenges","vaulting","group_lessons"];
   await setFeatures(all.filter((f) => f !== "running" && f !== "level_tests"));
   await page.goto(`${BASE}/fr/running`);
   await page.getByText("Licence requise").waitFor({ timeout: 10000 });
@@ -2903,17 +2912,18 @@ await test("a link asking for boxing waits for the rounds' reference on a first 
   }
 });
 
-await test("tennis: a coach's group, a lesson prepared with drills for its age, run with the clock, marked given, followed week by week", async () => {
+await test("group lessons, tennis: a coach's group, a lesson prepared with exercises for its age, run with the clock, marked given, followed week by week", async () => {
   // In Coaching > Teams, the way to the notebook.
   await page.goto(`${BASE}/fr/teams`);
-  await page.getByRole("link", { name: "Carnet de tennis" }).click();
-  await page.waitForURL(/\/fr\/tennis$/, { timeout: 10000 });
+  await page.getByRole("link", { name: "Carnet de cours" }).click();
+  await page.waitForURL(/\/fr\/lessons$/, { timeout: 10000 });
   await page.getByText(/Créez votre premier groupe/).waitFor({ timeout: 10000 });
 
-  // A group training today: its age, level, slot and how many play (no names).
+  // A tennis group training today: its age, level, slot and how many play (no names).
   const today = ((new Date().getDay() + 6) % 7) + 1;
   await page.getByRole("button", { name: "Nouveau groupe" }).click();
   const form = page.getByRole("dialog");
+  await form.getByRole("button", { name: "Tennis", pressed: true }).waitFor({ timeout: 5000 });
   await form.getByRole("textbox", { name: "Nom du groupe" }).fill("Mardi 17h · 8-10 ans");
   await form.getByRole("button", { name: "8-10 ans" }).click();
   await form.getByRole("button", { name: "Débutant" }).click();
@@ -2923,18 +2933,18 @@ await test("tennis: a coach's group, a lesson prepared with drills for its age, 
   await form.waitFor({ state: "detached", timeout: 5000 });
   const week = page.locator("section", { has: page.getByRole("heading", { name: "Cette semaine" }) });
   await week.getByText("À préparer").waitFor({ timeout: 5000 });
-  await snap("tennis-home");
+  await snap("lessons-home");
   // A team without accounts, in Coaching > Teams beside the teams.
   await page.goto(`${BASE}/fr/teams`);
-  const teams = page.locator("section", { has: page.getByRole("heading", { name: "Groupes de tennis · sans comptes" }) });
+  const teams = page.locator("section", { has: page.getByRole("heading", { name: "Groupes de cours · sans comptes" }) });
   await teams.getByRole("link", { name: /Mardi 17h · 8-10 ans/ }).waitFor({ timeout: 10000 });
-  expect(await teams.getByText(/8 joueurs/).count(), "the group's players are not counted");
-  await page.goto(`${BASE}/fr/tennis`);
+  expect(await teams.getByText(/Tennis · 8-10 ans · 8 joueurs/).count(), "the group's sport, age and players are not shown");
+  await page.goto(`${BASE}/fr/lessons`);
   await week.getByText("À préparer").waitFor({ timeout: 10000 });
 
-  // The lesson of today: a theme, drills that suit the age band.
+  // The lesson of today: a theme, exercises of the library that suit the age band.
   await week.getByRole("button", { name: /Mardi 17h · 8-10 ans/ }).click();
-  await page.waitForURL(/\/fr\/tennis\/lesson\?id=\d+/, { timeout: 10000 });
+  await page.waitForURL(/\/fr\/lessons\/lesson\?id=\d+/, { timeout: 10000 });
   const theme = page.getByRole("textbox", { name: "Thème du jour" });
   await theme.fill("Service : le lancer");
   await theme.blur();
@@ -2942,7 +2952,8 @@ await test("tennis: a coach's group, a lesson prepared with drills for its age, 
     await page.getByRole("button", { name: "Ajouter un exercice" }).click();
     const picker = page.getByRole("dialog");
     await picker.getByRole("button", { name: "Pour les 8-10 ans", pressed: true }).waitFor({ timeout: 5000 });
-    expect(!(await picker.getByRole("button", { name: "Ajouter « Revers le long de la ligne »" }).count()), "a drill for older players is offered to 8-10 year-olds");
+    expect(!(await picker.getByRole("button", { name: "Ajouter « Revers le long de la ligne »" }).count()), "an exercise for older players is offered to 8-10 year-olds");
+    expect(!(await picker.getByRole("button", { name: "Ajouter « Assise de base au tonneau »" }).count()), "a vaulting exercise is offered to a tennis group");
     await picker.getByPlaceholder("Chercher un exercice").fill(name.slice(0, 8));
     await picker.getByRole("button", { name: `Ajouter « ${name} »` }).click();
     await picker.waitFor({ state: "detached", timeout: 5000 });
@@ -2952,7 +2963,17 @@ await test("tennis: a coach's group, a lesson prepared with drills for its age, 
   await page.getByText("36 min sur 60").waitFor({ timeout: 5000 });
   await page.getByRole("button", { name: "Monter « Le lancer de balle »" }).click();
   await page.locator("ol li").first().getByText("Le lancer de balle").waitFor({ timeout: 5000 });
-  await snap("tennis-lesson");
+
+  // One's own exercise, made right there: it joins the one library.
+  await page.getByRole("button", { name: "Ajouter un exercice" }).click();
+  const picker = page.getByRole("dialog");
+  await picker.getByRole("button", { name: "Nouvel exercice" }).click();
+  await picker.getByRole("textbox", { name: "Nom" }).fill("Mon jeu des cibles");
+  await picker.getByRole("button", { name: "Jeux" }).click();
+  await picker.getByRole("button", { name: "Enregistrer" }).click();
+  await picker.waitFor({ state: "detached", timeout: 5000 });
+  await page.getByText("46 min sur 60").waitFor({ timeout: 5000 });
+  await snap("lessons-lesson");
 
   // On the court: the clock, then what went on.
   await page.getByRole("button", { name: "Lancer au chrono" }).click();
@@ -2961,6 +2982,7 @@ await test("tennis: a coach's group, a lesson prepared with drills for its age, 
   await player.getByRole("button", { name: /Terminer la séance/ }).click();
   const given = page.getByRole("dialog");
   await given.getByRole("heading", { name: "Cours donné" }).waitFor({ timeout: 5000 });
+  expect(!(await given.getByLabel("Cheval").count()), "a horse is asked for a tennis lesson");
   await given.getByLabel("Joueurs présents").fill("7");
   await given.getByRole("button", { name: /^3 · moyenne/ }).click();
   await given.getByRole("textbox", { name: "Note" }).fill("Le lancer progresse");
@@ -2969,25 +2991,86 @@ await test("tennis: a coach's group, a lesson prepared with drills for its age, 
   await page.getByText("7 présents · intensité 3/5 (moyenne)").waitFor({ timeout: 5000 });
 
   // The group, week by week: the themes worked, those left aside.
-  await page.goto(`${BASE}/fr/tennis`);
+  await page.goto(`${BASE}/fr/lessons`);
   await week.getByText("Donné").waitFor({ timeout: 10000 });
   await page.getByRole("link", { name: /Mardi 17h · 8-10 ans/ }).click();
-  await page.waitForURL(/\/fr\/tennis\/group\?id=\d+/, { timeout: 10000 });
+  await page.waitForURL(/\/fr\/lessons\/group\?id=\d+/, { timeout: 10000 });
   const themes = page.locator("section", { has: page.getByRole("heading", { name: "Thèmes des 4 dernières semaines" }) });
   await themes.getByText("Service").waitFor({ timeout: 5000 });
   await themes.getByText(/À revoir : .*Coup droit/).waitFor({ timeout: 5000 });
-  await page.getByText(/Service : le lancer/).first().waitFor({ timeout: 5000 });
-  await snap("tennis-group");
+  await snap("lessons-group");
 
-  // One's own drill, beside the library's.
-  await page.goto(`${BASE}/fr/tennis/drills`);
-  await page.getByRole("button", { name: "Nouvel exercice" }).click();
-  const drill = page.getByRole("dialog");
-  await drill.getByRole("textbox", { name: "Nom" }).fill("Mon jeu des cibles");
-  await drill.getByRole("button", { name: "Jeux" }).click();
-  await drill.getByRole("button", { name: "Enregistrer" }).click();
-  await drill.waitFor({ state: "detached", timeout: 5000 });
-  await page.getByRole("button", { name: "Ouvrir « Mon jeu des cibles »" }).getByText(/le vôtre/).waitFor({ timeout: 5000 });
+  // One library: the exercises page has the tennis ones, one's own among them.
+  await page.goto(`${BASE}/fr/exercises`);
+  await page.getByRole("group", { name: "Sport" }).getByRole("button", { name: "Tennis" }).click();
+  await page.getByText("Mini-tennis", { exact: true }).first().waitFor({ timeout: 5000 });
+  await page.getByText("Mon jeu des cibles", { exact: true }).first().waitFor({ timeout: 5000 });
+  expect(!(await page.getByText("Back Squat", { exact: true }).count()) && !(await page.getByText("Squat arrière", { exact: true }).count()), "a general exercise shows among the tennis ones");
+});
+
+await test("group lessons, vaulting: a group's lesson on a horse logs the horse's work; a vaulting exercise goes in an adult's session too", async () => {
+  // A horse to work.
+  await page.goto(`${BASE}/fr/horses`);
+  await page.getByRole("button", { name: "Ajouter un cheval" }).click();
+  const horseForm = page.getByRole("dialog");
+  await horseForm.getByRole("textbox", { name: "Nom" }).fill("Joker");
+  await horseForm.getByRole("button", { name: "Enregistrer" }).click();
+  await horseForm.waitFor({ state: "detached", timeout: 5000 });
+
+  // A vaulting group, on today.
+  const today = ((new Date().getDay() + 6) % 7) + 1;
+  await page.goto(`${BASE}/fr/lessons`);
+  await page.getByRole("button", { name: "Nouveau groupe" }).click();
+  const form = page.getByRole("dialog");
+  await form.getByRole("button", { name: "Voltige" }).click();
+  await form.getByRole("textbox", { name: "Nom du groupe" }).fill("Voltige mercredi");
+  await form.getByRole("button", { name: "11-13 ans" }).click();
+  await form.getByLabel("Jour").selectOption(String(today));
+  await form.getByRole("button", { name: "Enregistrer" }).click();
+  await form.waitFor({ state: "detached", timeout: 5000 });
+  const week = page.locator("section", { has: page.getByRole("heading", { name: "Cette semaine" }) });
+  await week.getByRole("button", { name: /Voltige mercredi/ }).click();
+  await page.waitForURL(/\/fr\/lessons\/lesson\?id=\d+/, { timeout: 10000 });
+  await page.getByRole("button", { name: "Ajouter un exercice" }).click();
+  const picker = page.getByRole("dialog");
+  await picker.getByRole("group", { name: "Thème" }).getByRole("button", { name: "Tonneau", exact: true }).click();
+  await picker.getByRole("button", { name: "Ajouter « Assise de base au tonneau »" }).click();
+  await picker.waitFor({ state: "detached", timeout: 5000 });
+
+  // Given on Joker: its walk, trot and canter go to its week.
+  await page.getByRole("button", { name: "Marquer comme donné" }).click();
+  const given = page.getByRole("dialog");
+  await given.getByLabel("Cheval").selectOption({ label: "Joker" });
+  await given.getByLabel("Pas (min)").fill("10");
+  await given.getByLabel("Trot (min)").fill("5");
+  await given.getByLabel("Galop (min)").fill("8");
+  await given.getByRole("button", { name: "Enregistrer" }).click();
+  await page.getByRole("status").getByText(/Cours donné le/).waitFor({ timeout: 5000 });
+  await page.goto(`${BASE}/fr/horses`);
+  await page.getByText(/^23 \/ \d+ min cette semaine/).waitFor({ timeout: 10000 });
+  await snap("lessons-horse");
+
+  // The review changed: the horse's work follows, not added twice.
+  await page.goBack();
+  await page.getByRole("button", { name: "Modifier le bilan" }).click();
+  const again = page.getByRole("dialog");
+  expect((await again.getByLabel("Galop (min)").inputValue()) === "8", "the canter logged is not shown back");
+  await again.getByLabel("Galop (min)").fill("4");
+  await again.getByRole("button", { name: "Enregistrer" }).click();
+  await again.waitFor({ state: "detached", timeout: 5000 });
+  await page.goto(`${BASE}/fr/horses`);
+  await page.getByText(/^19 \/ \d+ min cette semaine/).waitFor({ timeout: 10000 });
+
+  // Classic coaching: an adult's session takes a vaulting exercise from the same library.
+  await page.goto(`${BASE}/fr/log`);
+  await page.getByRole("button", { name: /Nouvelle séance/ }).first().click();
+  await page.waitForURL(/\/fr\/log\/session\?id=\d+/, { timeout: 15000 });
+  await page.getByRole("button", { name: /Ajouter un exercice/ }).click();
+  const choose = page.getByRole("dialog");
+  expect(!(await choose.getByText("Assise de base au tonneau", { exact: true }).count()), "a vaulting exercise shows among the general ones");
+  await choose.getByRole("group", { name: "Sport" }).getByRole("button", { name: "Voltige" }).click();
+  await choose.getByText("Assise de base au tonneau", { exact: true }).click();
+  await page.getByText("Assise de base au tonneau").first().waitFor({ timeout: 5000 });
 });
 
 await test("no page threw an error", async () => {

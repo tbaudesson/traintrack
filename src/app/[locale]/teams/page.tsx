@@ -45,7 +45,7 @@ import db from "@/db";
 import { InviteLinkDialog } from "@/components/domain/InviteLinkDialog";
 import { inviteState, listInvites, revokeInvite, type TeamInvite } from "@/lib/inviteService";
 import { useFormat } from "@/lib/format";
-import { TennisTeams } from "@/components/domain/TennisTeams";
+import { LessonTeams } from "@/components/domain/LessonTeams";
 
 export default function TeamsPage() {
   const t = useTranslations("teams");
@@ -167,8 +167,8 @@ export default function TeamsPage() {
           </section>
         )}
 
-        {/* Tennis groups: teams without accounts, kept on the device (they open offline). */}
-        {hasFeature("tennis") && <TennisTeams />}
+        {/* Lesson groups (tennis, vaulting…): teams without accounts, kept on the device (they open offline). */}
+        {hasFeature("group_lessons") && <LessonTeams />}
 
         {loading ? (
           <div className="flex justify-center py-10">

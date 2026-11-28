@@ -49,3 +49,8 @@ export async function deleteHorseSession(id: number): Promise<void> {
   await db.horseSessions.update(id, { deletedAt: now(), _dirty: 1 });
   schedulePush();
 }
+
+export async function updateHorseSession(id: number, fields: Partial<Pick<HorseSession, "horseId" | "date" | "walkMin" | "trotMin" | "canterMin" | "notes">>): Promise<void> {
+  await db.horseSessions.update(id, { ...fields, updatedAt: now(), _dirty: 1 });
+  schedulePush();
+}

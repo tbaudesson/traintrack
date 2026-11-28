@@ -8,6 +8,8 @@ import { useBodyMuscles, useBodyRef } from "@/hooks/useBodyMuscles";
 import { LEVELS, MOVEMENTS } from "@/lib/movements";
 import { groupLabel } from "@/lib/muscles";
 import { useMuscleGroups } from "@/hooks/useMuscleGroups";
+import { useLessonsReference } from "@/hooks/useLessonsReference";
+import { refLabel, sportOf } from "@/lib/lessonsReference";
 import { useExerciseLabel } from "@/lib/exerciseNames";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
@@ -39,9 +41,24 @@ export function ExerciseDetails({ ex, library }: { ex: Exercise; library: Exerci
   const mn = (m: Muscle) => muscleName(muscles, m, locale);
   const target = ex.targetMuscles ?? [];
   const assist = ex.assistMuscles ?? [];
-  if (!tags.length && !target.length && !ex.secondaryMuscles?.length && !cues.length && !mistakes.length && !parent) return null;
+  // Made for group lessons: its sport, theme, minutes, ages and kit.
+  const lessons = useLessonsReference();
+  const sport = lessons && ex.sport ? sportOf(lessons, ex.sport) : undefined;
+  const lessonLine = ex.sport
+    ? [
+        refLabel(lessons?.sports, ex.sport, locale),
+        ex.theme ? refLabel(sport?.themes, ex.theme, locale) : null,
+        ex.minutes ? `${ex.minutes} min` : null,
+        ex.ages?.length ? ex.ages.map((a) => refLabel(sport?.ageBands, a, locale)).join(", ") : null,
+        ex.gear?.length ? ex.gear.map((g) => refLabel(sport?.equipment, g, locale)).join(", ") : null,
+      ]
+        .filter(Boolean)
+        .join(" · ")
+    : "";
+  if (!tags.length && !target.length && !ex.secondaryMuscles?.length && !cues.length && !mistakes.length && !parent && !lessonLine) return null;
   return (
     <div className="space-y-2 text-sm">
+      {lessonLine && <p className="text-xs font-medium text-accent-text">{lessonLine}</p>}
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {tags.map((x) => <span key={x} className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{x}</span>)}
@@ -79,6 +96,8 @@ export function ExerciseDetails({ ex, library }: { ex: Exercise; library: Exerci
 }
 
 export interface DetailsDraft {
+  /** For group lessons: none, or its sport with its theme, minutes, ages and kit. */
+  lesson: { sport: string | null; theme: string | null; minutes: number | null; ages: string[]; gear: string[] };
   level: ExerciseLevel | null;
   movements: Movement[];
   secondaryMuscles: MuscleGroup[];
@@ -90,6 +109,7 @@ export interface DetailsDraft {
 }
 
 export const draftOf = (ex: Exercise): DetailsDraft => ({
+  lesson: { sport: ex.sport ?? null, theme: ex.theme ?? null, minutes: ex.minutes ?? null, ages: ex.ages ?? [], gear: ex.gear ?? [] },
   level: ex.level ?? null,
   movements: ex.movements ?? [],
   secondaryMuscles: ex.secondaryMuscles ?? [],
@@ -123,6 +143,7 @@ export function ExerciseDetailsEditor({ value, onChange, library, self }: { valu
   const toggle = <T,>(list: T[], x: T) => (list.includes(x) ? list.filter((y) => y !== x) : [...list, x]);
   return (
     <div className="space-y-3 rounded-lg bg-muted/40 p-2">
+      <LessonFieldsEditor value={value.lesson} onChange={(lesson) => onChange({ ...value, lesson })} />
       <p className="text-xs font-semibold text-muted-foreground">{t("details")}</p>
       <div>
         <p className="mb-1 text-xs">{t("levelLabel")}</p>
@@ -212,6 +233,73 @@ export function ExerciseDetailsEditor({ value, onChange, library, self }: { valu
           {library.filter((e) => !e.isCustom && e.uuid !== self.uuid).map((e) => <option key={e.id} value={e.uuid}>{xl(e.name)}</option>)}
         </select>
       </label>
+    </div>
+  );
+}
+
+/**
+ * What makes an exercise one for group lessons: its sport (none: not for
+ * lessons), its theme there, its suggested minutes, the ages it suits and
+ * the kit it needs, from the sport's lists.
+ */
+export function LessonFieldsEditor({ value, onChange }: { value: DetailsDraft["lesson"]; onChange: (v: DetailsDraft["lesson"]) => void }) {
+  const t = useTranslations("lessons");
+  const locale = useLocale();
+  const lessons = useLessonsReference();
+  if (!lessons) return null;
+  const sport = value.sport ? sportOf(lessons, value.sport) : undefined;
+  const toggle = (list: string[], v: string) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
+  const chip = (on: boolean) => cn("min-h-9 rounded-full border px-2.5 text-xs", on ? "border-accent-500 bg-accent-500 text-white" : "border-border");
+  return (
+    <div className="space-y-2 rounded-lg border border-border p-2">
+      <p className="text-xs font-semibold">{t("forLessons")}</p>
+      <div className="flex flex-wrap gap-1.5" role="group" aria-label={t("sport")}>
+        <button type="button" aria-pressed={!value.sport} onClick={() => onChange({ sport: null, theme: null, minutes: null, ages: [], gear: [] })} className={chip(!value.sport)}>
+          {t("notForLessons")}
+        </button>
+        {lessons.sports.map((x) => (
+          <button key={x.id} type="button" aria-pressed={value.sport === x.id} onClick={() => onChange({ ...value, sport: x.id, theme: x.themes[0]?.id ?? null, minutes: value.minutes ?? 10 })} className={chip(value.sport === x.id)}>
+            {refLabel(lessons.sports, x.id, locale)}
+          </button>
+        ))}
+      </div>
+      {sport && (
+        <>
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label={t("drillCategory")}>
+            {sport.themes.map(({ id }) => (
+              <button key={id} type="button" aria-pressed={value.theme === id} onClick={() => onChange({ ...value, theme: id })} className={chip(value.theme === id)}>
+                {refLabel(sport.themes, id, locale)}
+              </button>
+            ))}
+          </div>
+          <label className="flex items-center gap-2 text-xs">
+            {t("drillMinutes")}
+            <input
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={60}
+              value={value.minutes ?? ""}
+              onChange={(e) => onChange({ ...value, minutes: e.target.value ? Math.min(60, Math.max(1, Math.round(Number(e.target.value)) || 1)) : null })}
+              className="h-9 w-16 rounded-md border border-border bg-transparent px-1 text-center"
+            />
+          </label>
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label={t("drillAges")}>
+            {sport.ageBands.map(({ id }) => (
+              <button key={id} type="button" aria-pressed={value.ages.includes(id)} onClick={() => onChange({ ...value, ages: toggle(value.ages, id) })} className={chip(value.ages.includes(id))}>
+                {refLabel(sport.ageBands, id, locale)}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label={t("drillEquipment")}>
+            {sport.equipment.map(({ id }) => (
+              <button key={id} type="button" aria-pressed={value.gear.includes(id)} onClick={() => onChange({ ...value, gear: toggle(value.gear, id) })} className={chip(value.gear.includes(id))}>
+                {refLabel(sport.equipment, id, locale)}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

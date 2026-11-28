@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowDown, ArrowUp, Check, Loader2, Plus, Trash2 } from "lucide-react";
 import { getAppSettings, setAppSetting } from "@/lib/adminService";
-import { TENNIS_REFERENCE_KEY, parseTennisReference, type TennisReference } from "@/lib/tennisReference";
+import { LESSONS_REFERENCE_KEY, parseLessonsReference, type LessonSport, type LessonsReference } from "@/lib/lessonsReference";
 import { BODY_MUSCLES_KEY, parseBodyMuscles, type MuscleDef } from "@/lib/muscleMap";
 import { MUSCLE_GROUPS_KEY, groupLabel, parseMuscleGroups, specificGroups, type MuscleGroupDef } from "@/lib/muscles";
 import { useMuscleGroups } from "@/hooks/useMuscleGroups";
@@ -139,21 +139,74 @@ function Frame({ state, title, intro, invalid, saving, saved, onSave, children }
 
 const blankItem = { id: "", fr: "", en: "", de: "" };
 
-/** The tennis notebook's themes, age bands, levels and equipment. */
-export function TennisReferenceTab() {
+/**
+ * The group lessons' sports (tennis, vaulting…): for each, its name, whether
+ * its lessons are given on a horse, and its themes, age bands, levels and
+ * equipment. One sport edited at a time; a new one starts empty but named.
+ */
+export function LessonsReferenceTab() {
   const t = useTranslations("references");
-  const s = useSetting<TennisReference>(TENNIS_REFERENCE_KEY, parseTennisReference);
+  const s = useSetting<LessonsReference>(LESSONS_REFERENCE_KEY, parseLessonsReference);
   const v = s.value;
+  const [current, setCurrent] = useState(0);
+  const sport = v?.sports[current];
+  const setSport = (change: Partial<LessonSport>) => v && s.change({ sports: v.sports.map((x, i) => (i === current ? { ...x, ...change } : x)) });
   return (
-    <Frame state={s.state} title={t("tennisTitle")} intro={t("tennisIntro")} invalid={s.invalid} saving={s.saving} saved={s.saved} onSave={() => v && s.save(JSON.stringify(v, null, 2))}>
-      {v && (
+    <Frame state={s.state} title={t("lessonsTitle")} intro={t("lessonsIntro")} invalid={s.invalid} saving={s.saving} saved={s.saved} onSave={() => v && s.save(JSON.stringify(v, null, 2))}>
+      {v && sport && (
         <>
+          <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t("sports")}>
+            {v.sports.map((x, i) => (
+              <Button key={i} size="sm" variant={i === current ? "default" : "outline"} aria-pressed={i === current} onClick={() => setCurrent(i)}>
+                {x.fr || x.id || "…"}
+              </Button>
+            ))}
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                s.change({ sports: [...v.sports, { ...blankItem, horses: false, themes: [], ageBands: [], levels: [], equipment: [] }] });
+                setCurrent(v.sports.length);
+              }}
+            >
+              <Plus className="mr-1 size-4" aria-hidden="true" />
+              {t("addSport")}
+            </Button>
+          </div>
+          <Card>
+            <CardContent className="grid gap-2 py-3 sm:grid-cols-4">
+              {(["id", "fr", "en", "de"] as const).map((k) => (
+                <label key={k} className="block space-y-1 text-xs">
+                  <span className="font-medium">{t(`field_${k}`)}</span>
+                  <Input value={sport[k]} onChange={(e) => setSport({ [k]: e.target.value })} />
+                </label>
+              ))}
+              <label className="flex min-h-9 items-center gap-2 text-xs sm:col-span-4">
+                <input type="checkbox" checked={sport.horses} onChange={(e) => setSport({ horses: e.target.checked })} className="size-4 accent-accent-600" />
+                {t("onHorse")}
+              </label>
+              {v.sports.length > 1 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="justify-self-start text-destructive sm:col-span-4"
+                  onClick={() => {
+                    s.change({ sports: v.sports.filter((_, i) => i !== current) });
+                    setCurrent(0);
+                  }}
+                >
+                  <Trash2 className="mr-1 size-4" aria-hidden="true" />
+                  {t("remove", { name: sport.fr || sport.id })}
+                </Button>
+              )}
+            </CardContent>
+          </Card>
           <ListEditor
             title={t("themes")}
             hint={t("themesHint")}
-            rows={v.themes}
+            rows={sport.themes}
             blank={{ ...blankItem, core: false }}
-            onChange={(themes) => s.change({ ...v, themes })}
+            onChange={(themes) => setSport({ themes })}
             extra={(r, set) => (
               <label className="flex min-h-9 items-center gap-2 text-xs">
                 <input type="checkbox" checked={!!r.core} onChange={(e) => set({ core: e.target.checked })} className="size-4 accent-accent-600" />
@@ -161,9 +214,9 @@ export function TennisReferenceTab() {
               </label>
             )}
           />
-          <ListEditor title={t("ageBands")} rows={v.ageBands} blank={blankItem} onChange={(ageBands) => s.change({ ...v, ageBands })} />
-          <ListEditor title={t("levels")} rows={v.levels} blank={blankItem} onChange={(levels) => s.change({ ...v, levels })} />
-          <ListEditor title={t("equipment")} rows={v.equipment} blank={blankItem} onChange={(equipment) => s.change({ ...v, equipment })} />
+          <ListEditor title={t("ageBands")} rows={sport.ageBands} blank={blankItem} onChange={(ageBands) => setSport({ ageBands })} />
+          <ListEditor title={t("levels")} rows={sport.levels} blank={blankItem} onChange={(levels) => setSport({ levels })} />
+          <ListEditor title={t("equipment")} rows={sport.equipment} blank={blankItem} onChange={(equipment) => setSport({ equipment })} />
         </>
       )}
     </Frame>

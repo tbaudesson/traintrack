@@ -2,14 +2,21 @@
 
 import { groupLabel } from "@/lib/muscles";
 import { useMuscleGroups } from "@/hooks/useMuscleGroups";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AreaRulesEditor } from "@/components/domain/AreaRulesEditor";
 import type { ExerciseRules } from "@/lib/injuries";
 import { useLocale, useTranslations } from "next-intl";
 import { useExercises, createCustomExercise, updateExercise, deleteExercise, patchExerciseLocal } from "@/hooks/useExercises";
 import { useAuth } from "@/contexts/AuthContext";
 import { adminCreateLibraryExercise, adminSetExerciseDetails, adminSetExerciseInjuryRules, adminSetExerciseMuscles, adminUpdateExerciseContent, adminUpdateExerciseI18n } from "@/lib/adminService";
-import { ExerciseDetails, ExerciseDetailsEditor, draftOf, listsOf, type DetailsDraft } from "@/components/domain/ExerciseDetails";
+import { ExerciseDetails, ExerciseDetailsEditor, LessonFieldsEditor, draftOf, listsOf, type DetailsDraft } from "@/components/domain/ExerciseDetails";
+import { adminSetExerciseLesson } from "@/hooks/useLessons";
+
+/** The lesson fields as saved: none at all when the exercise is not for lessons. */
+const lessonFields = (l: DetailsDraft["lesson"]) =>
+  l.sport
+    ? { sport: l.sport, theme: l.theme, minutes: l.minutes, ages: l.ages.length ? l.ages : null, gear: l.gear.length ? l.gear : null }
+    : { sport: null, theme: null, minutes: null, ages: null, gear: null };
 import db from "@/db";
 import type { Exercise, MuscleGroup, Equipment } from "@/db";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -27,6 +34,9 @@ import { search as searchItems } from "@/lib/search";
 import { MuscleFilter } from "@/components/domain/BodyMap";
 import { matchExercises, type MuscleRole, type MuscleSelection } from "@/lib/muscleMap";
 import { useBodyRef } from "@/hooks/useBodyMuscles";
+import { useLessonsReference } from "@/hooks/useLessonsReference";
+import { refLabel, sportOf } from "@/lib/lessonsReference";
+import { Chip, ChipRow } from "@/components/ui/find";
 
 const EQUIPMENT: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "bodyweight", "kettlebell", "bands", "other"];
 
@@ -44,25 +54,43 @@ export default function ExercisesPage() {
   const [selection, setSelection] = useState<MuscleSelection>({});
   const filtering = Object.keys(selection).length > 0;
 
+  // One library for all: the general exercises, or those made for a sport's lessons (tennis, vaulting…), or all.
+  const lessons = useLessonsReference();
+  const [scope, setScope] = useState<string>("general");
+  useEffect(() => {
+    // Opened from a lesson notebook (?sport=tennis): that sport's exercises.
+    const asked = new URLSearchParams(window.location.search).get("sport");
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reads the address, only on the client
+    if (asked) setScope(asked);
+  }, []);
+  const sport = lessons && scope !== "general" && scope !== "all" ? sportOf(lessons, scope) : undefined;
   // Names in every language and descriptions, accents ignored: "pompes" finds "Push-up".
   const filtered = useMemo(
-    () => searchItems(exercises, search, (e) => ({ names: [e.name, e.nameFr, e.nameDe], others: [e.description, e.descriptionFr, e.descriptionDe] })),
-    [exercises, search]
+    () =>
+      searchItems(
+        exercises.filter((e) => (scope === "all" ? true : scope === "general" ? !e.sport : e.sport === scope)),
+        search,
+        (e) => ({ names: [e.name, e.nameFr, e.nameDe], others: [e.description, e.descriptionFr, e.descriptionDe] })
+      ),
+    [exercises, search, scope]
   );
 
   const bodyRef = useBodyRef();
   const groups = useMuscleGroups();
   const matched = useMemo(() => (filtering && bodyRef ? matchExercises(filtered, selection, bodyRef) : []), [filtering, filtered, selection, bodyRef]);
 
+  // By muscle group; a sport's exercises by their theme in a lesson.
   const grouped = useMemo(() => {
     const map = new Map<string, typeof filtered>();
     for (const e of filtered) {
-      const k = e.muscleGroup ?? "";
+      const k = (sport ? e.theme : e.muscleGroup) ?? "";
       if (!map.has(k)) map.set(k, []);
       map.get(k)!.push(e);
     }
     return map;
-  }, [filtered]);
+  }, [filtered, sport]);
+  const order = sport ? sport.themes.map((th) => th.id) : (groups ?? []).map((g) => g.id);
+  const heading = (k: string) => (sport ? refLabel(sport.themes, k, locale) : groupLabel(groups, k, locale)) || t("noGroup");
 
   return (
     <>
@@ -86,6 +114,16 @@ export default function ExercisesPage() {
               cues: exercises.filter((e) => !e.isCustom && Object.keys(e.cues ?? {}).length).length,
             })}
           </p>
+        )}
+
+        {lessons && (
+          <ChipRow label={t("scope")}>
+            <Chip on={scope === "general"} onClick={() => setScope("general")}>{t("scopeGeneral")}</Chip>
+            {lessons.sports.map((x) => (
+              <Chip key={x.id} on={scope === x.id} onClick={() => setScope(x.id)}>{refLabel(lessons.sports, x.id, locale)}</Chip>
+            ))}
+            <Chip on={scope === "all"} onClick={() => setScope("all")}>{t("scopeAll")}</Chip>
+          </ChipRow>
         )}
 
         <div className="relative">
@@ -120,9 +158,9 @@ export default function ExercisesPage() {
         ) : (
         <div className="grid items-start gap-5 lg:grid-cols-2">
           {/* In the admin's order; a group the list no longer has (or none), after. */}
-          {[...(groups ?? []).map((g) => g.id), ...[...grouped.keys()].filter((k) => !groups?.some((g) => g.id === k))].filter((g) => grouped.has(g)).map((g) => (
+          {[...order, ...[...grouped.keys()].filter((k) => !order.includes(k))].filter((g) => grouped.has(g)).map((g) => (
             <section key={g} className="space-y-1.5">
-              <SectionHeading>{groupLabel(groups, g, locale) || t("noGroup")}</SectionHeading>
+              <SectionHeading>{heading(g)}</SectionHeading>
               {grouped.get(g)!.map((e) => (
                 <ExerciseRow key={e.id} ex={e} library={exercises} />
               ))}
@@ -267,6 +305,7 @@ function ExerciseRow({ ex, library, role }: { ex: Exercise; library: Exercise[];
           name: name.trim() || ex.name,
           description: description.trim() || undefined,
           videoUrl: videoUrl.trim() || undefined,
+          ...lessonFields(details.lesson),
         });
       } else if (isAdmin && ex.uuid) {
         // Built-in row: write server-side via the admin RPCs, then reflect locally.
@@ -277,6 +316,7 @@ function ExerciseRow({ ex, library, role }: { ex: Exercise; library: Exercise[];
         const mistakes = listsOf(details.mistakes);
         await adminSetExerciseDetails(ex.uuid, { level: details.level, movements: details.movements, secondaryMuscles: details.secondaryMuscles, cues, mistakes, variantOf: details.variantOf });
         await adminSetExerciseMuscles(ex.uuid, details.targetMuscles, details.assistMuscles);
+        await adminSetExerciseLesson(ex, lessonFields(details.lesson));
         await patchExerciseLocal(ex.id!, {
           targetMuscles: details.targetMuscles.length ? details.targetMuscles : null,
           assistMuscles: details.assistMuscles.length ? details.assistMuscles : null,
@@ -345,6 +385,7 @@ function ExerciseRow({ ex, library, role }: { ex: Exercise; library: Exercise[];
                   </div>
                 )}
                 {!ex.isCustom && isAdmin && <ExerciseDetailsEditor value={details} onChange={setDetails} library={library} self={ex} />}
+                {ex.isCustom && <LessonFieldsEditor value={details.lesson} onChange={(lesson) => setDetails({ ...details, lesson })} />}
                 {error && <p className="text-xs text-destructive">{error}</p>}
                 <div className="flex gap-2">
                   <Button size="sm" onClick={save} disabled={busy} className="flex-1">

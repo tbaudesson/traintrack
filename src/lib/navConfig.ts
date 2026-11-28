@@ -47,8 +47,8 @@ export const NAVIGATION_CATALOG: readonly NavigationSectionDef[] = [
       { id: "assignments", href: "/programs?view=assigned", icon: "ClipboardCheck", key: "assignments", feature: "coaching" },
       { id: "messages", href: "/messages", icon: "MessageCircle", key: "messages", feature: "coaching" },
       { id: "requests", href: "/activity", icon: "Inbox", key: "requests", feature: "coaching" },
-      // Tennis groups: teams without accounts, a coach's notebook (migrations 088, 089).
-      { id: "tennis", href: "/tennis", icon: "ClipboardPen", key: "tennis", feature: "tennis" },
+      // Lesson groups (tennis, vaulting…): teams without accounts, a coach's notebook (migrations 088 to 092).
+      { id: "lessons", href: "/lessons", icon: "ClipboardPen", key: "lessons", feature: "group_lessons" },
     ],
   },
   {

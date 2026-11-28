@@ -2,6 +2,8 @@
 
 import { groupLabel } from "@/lib/muscles";
 import { useMuscleGroups } from "@/hooks/useMuscleGroups";
+import { useLessonsReference } from "@/hooks/useLessonsReference";
+import { refLabel } from "@/lib/lessonsReference";
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Dumbbell, History, Loader2, Sparkles } from "lucide-react";
@@ -90,7 +92,13 @@ function PickerBody({ onPick, injuries, exclude, exercises }: { onPick: (exercis
   const [ownGear, setOwnGear] = useState(false);
   const [shown, setShown] = useState(PAGE);
 
-  const usable = useMemo(() => exercises.filter((e) => e.id !== undefined && !exclude.includes(e.id)), [exercises, exclude]);
+  // One library: the general exercises at first, a sport's lesson exercises (tennis, vaulting…) on demand.
+  const lessons = useLessonsReference();
+  const [scope, setScope] = useState("general");
+  const usable = useMemo(
+    () => exercises.filter((e) => e.id !== undefined && !exclude.includes(e.id) && (scope === "all" ? true : scope === "general" ? !e.sport : e.sport === scope)),
+    [exercises, exclude, scope]
+  );
   const results = useMemo(() => {
     const byFilter = usable.filter(
       (e) => (!muscle || e.muscleGroup === muscle) && (!ownGear || !e.equipment || e.equipment === "bodyweight" || mine.includes(e.equipment))
@@ -144,6 +152,15 @@ function PickerBody({ onPick, injuries, exclude, exercises }: { onPick: (exercis
           placeholder={t("searchExercise")}
           clearLabel={t("clear")}
         />
+        {lessons && (
+          <ChipRow label={t("scope")}>
+            <Chip on={scope === "general"} onClick={() => { setScope("general"); setShown(PAGE); }}>{t("scopeGeneral")}</Chip>
+            {lessons.sports.map((x) => (
+              <Chip key={x.id} on={scope === x.id} onClick={() => { setScope(x.id); setMuscle(null); setShown(PAGE); }}>{refLabel(lessons.sports, x.id, locale)}</Chip>
+            ))}
+            <Chip on={scope === "all"} onClick={() => { setScope("all"); setShown(PAGE); }}>{t("scopeAll")}</Chip>
+          </ChipRow>
+        )}
         <ChipRow label={t("muscle")}>
           <Chip on={!muscle} onClick={() => setMuscle(null)}>{t("all")}</Chip>
           {groupIds.filter((m) => usable.some((e) => e.muscleGroup === m)).map((m) => (

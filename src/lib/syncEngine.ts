@@ -40,7 +40,7 @@ interface TableSyncConfig {
    * user_id = null).
    */
   trainerVisible?: boolean;
-  /** Only the rows with these values are pulled: a table shared by two kinds of rows (the teams and the tennis groups). */
+  /** Only the rows with these values are pulled: a table shared by two kinds of rows (the teams and the lesson groups). */
   pullFilter?: Record<string, string>;
 }
 
@@ -168,30 +168,24 @@ const TABLE_CONFIGS: TableSyncConfig[] = [
     trainerVisible: true,
   },
   {
-    // A tennis coach's notebook (migrations 088 to 090): one's own tennis
-    // groups, kept with the teams (a team without accounts, kind "tennis")
-    // and synced through a view of them only (the teams' own rules loop when
-    // read directly); the lessons; the drill library (user_id null) read by
-    // everyone, like the exercises.
-    dexieTable: "tennisGroups",
-    supabaseTable: "tennis_groups",
+    // The group lessons (migrations 088 to 092): one's own lesson groups,
+    // kept with the teams (a team without accounts, kind "lessons") and
+    // synced through a view of them only (the teams' own rules loop when
+    // read directly); their lessons, maybe on one of one's horses.
+    dexieTable: "lessonGroups",
+    supabaseTable: "lesson_groups",
     jsonFields: ["slots"],
     hasUpdatedAt: true,
-    pullFilter: { kind: "tennis" },
+    pullFilter: { kind: "lessons" },
   },
   {
-    dexieTable: "tennisDrills",
-    supabaseTable: "tennis_drills",
-    jsonFields: ["ages", "equipment"],
-    hasUpdatedAt: true,
-    trainerVisible: true,
-  },
-  {
-    dexieTable: "tennisLessons",
-    supabaseTable: "tennis_lessons",
+    dexieTable: "groupLessons",
+    supabaseTable: "group_lessons",
     jsonFields: ["plan"],
     fkMappings: {
-      groupId: { parentDexieTable: "tennisGroups", supabaseColumn: "group_id" },
+      groupId: { parentDexieTable: "lessonGroups", supabaseColumn: "group_id" },
+      horseId: { parentDexieTable: "horses", supabaseColumn: "horse_id" },
+      horseSessionId: { parentDexieTable: "horseSessions", supabaseColumn: "horse_session_id" },
     },
     hasUpdatedAt: true,
   },
@@ -215,9 +209,8 @@ const SYNC_ORDER = [
   "horses",
   "horseSessions",
   "goals",
-  "tennisGroups",
-  "tennisDrills",
-  "tennisLessons",
+  "lessonGroups",
+  "groupLessons",
 ];
 
 // ─── Retry with exponential backoff ───────────────────────────────────
@@ -974,9 +967,8 @@ export async function startSync(userId: string): Promise<void> {
 
 /**
  * Rows created before signing in have no owner yet: give them to this user
- * and queue them for upload. The shared exercise library (and the tennis
- * drill library) also has no owner but belongs to nobody, and the server
- * rightly refuses it. An earlier version
+ * and queue them for upload. The shared exercise library also has no owner
+ * but belongs to nobody, and the server rightly refuses it. An earlier version
  * adopted it anyway, so devices may still hold those rows stuck as dirty.
  */
 export async function adoptLocalData(userId: string): Promise<void> {
@@ -988,23 +980,13 @@ export async function adoptLocalData(userId: string): Promise<void> {
         .table("exercises")
         .filter((r: Record<string, unknown>) => !r.isCustom && r._dirty === 1)
         .modify({ userId: null, _dirty: 0 });
-      // The tennis drill library likewise (migration 088): its rows, read from
-      // the server and named in the three languages, were adopted by a first
-      // version of this; given back to no one.
-      await db
-        .table("tennisDrills")
-        .filter((r: Record<string, unknown>) => r._dirty === 1 && !!r.syncedAt && !!r.nameFr && !!r.nameDe)
-        .modify({ userId: null, _dirty: 0 });
-
       for (const { dexieTable } of TABLE_CONFIGS) {
         await db
           .table(dexieTable)
           .filter(
             (r: Record<string, unknown>) =>
               !r.userId &&
-              (dexieTable !== "exercises" || !!r.isCustom) &&
-              // An ownerless drill read from the server is the library's.
-              (dexieTable !== "tennisDrills" || !r.syncedAt)
+              (dexieTable !== "exercises" || !!r.isCustom)
           )
           .modify({ userId, _dirty: 1 });
       }

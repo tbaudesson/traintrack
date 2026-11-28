@@ -4,13 +4,14 @@ import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { ArrowDown, ArrowUp, CheckCircle2, Copy, Pencil, Play, Plus, RotateCcw, Trash2 } from "lucide-react";
-import type { TennisLesson, TennisPlanItem } from "@/db";
+import type { GroupLesson, LessonPlanItem } from "@/db";
 import { useRouter } from "@/i18n/navigation";
-import { deleteTennisLesson, updateTennisLesson, useTennisDrills, useTennisGroup, useTennisLesson, useTennisLessons } from "@/hooks/useTennis";
-import { isGiven, lessonLength, planItem, planMinutes, previousPlan } from "@/lib/tennis";
-import { refLabel, type TennisReference } from "@/lib/tennisReference";
-import { TennisReferenceGate } from "@/components/domain/TennisReferenceGate";
-import { tennisGroupHref } from "@/lib/routes";
+import { deleteGroupLesson, updateGroupLesson, useGroupLesson, useGroupLessons, useLessonGroup } from "@/hooks/useLessons";
+import { useExercises } from "@/hooks/useExercises";
+import { isGiven, lessonLength, planItem, planMinutes, previousPlan } from "@/lib/lessons";
+import { refLabel, sportOf, type LessonsReference } from "@/lib/lessonsReference";
+import { LessonsReferenceGate } from "@/components/domain/LessonsReferenceGate";
+import { lessonGroupHref } from "@/lib/routes";
 import { useFormat } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -18,28 +19,28 @@ import { SectionHeading } from "@/components/ui/page-parts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RequireFeature } from "@/components/domain/UpgradeNotice";
-import { DrillPicker, GivenDialog } from "@/components/domain/TennisDialogs";
+import { GivenDialog, LessonExercisePicker } from "@/components/domain/LessonDialogs";
 import { IntervalPlayer } from "@/components/domain/IntervalPlayer";
 
 /** The seconds before the first drill starts, on the court. */
 const GET_READY_SEC = 10;
 
 /**
- * A lesson: its day, its theme and its drills with their minutes, against
+ * A lesson: its day, its theme and its exercises with their minutes, against
  * the length of the group's slot. Run on the court with the clock, then
  * marked given: how many came, how hard it was, a note.
  */
-function LessonContent({ id, reference }: { id: number; reference: TennisReference }) {
-  const t = useTranslations("tennis");
+function LessonContent({ id, reference }: { id: number; reference: LessonsReference }) {
+  const t = useTranslations("lessons");
   const locale = useLocale();
   const router = useRouter();
   const { day } = useFormat();
-  const lesson = useTennisLesson(id);
-  const group = useTennisGroup(lesson?.groupId);
-  const lessons = useTennisLessons(lesson?.groupId);
-  const drills = useTennisDrills();
+  const lesson = useGroupLesson(id);
+  const group = useLessonGroup(lesson?.groupId);
+  const lessons = useGroupLessons(lesson?.groupId);
+  const exercises = useExercises();
   const [picking, setPicking] = useState(false);
-  const [giving, setGiving] = useState<TennisLesson | null>(null);
+  const [giving, setGiving] = useState<GroupLesson | null>(null);
   const [running, setRunning] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [themeDraft, setThemeDraft] = useState<string | null>(null);
@@ -51,7 +52,8 @@ function LessonContent({ id, reference }: { id: number; reference: TennisReferen
   const length = lessonLength(group, lesson.date);
   const given = isGiven(lesson);
   const previous = lessons ? previousPlan(lessons, lesson.date, lesson.id) : null;
-  const setPlan = (next: TennisPlanItem[]) => void updateTennisLesson(id, { plan: next.slice(0, 40) });
+  const setPlan = (next: LessonPlanItem[]) => void updateGroupLesson(id, { plan: next.slice(0, 40) });
+  const sport = sportOf(reference, group.sport);
   const move = (i: number, by: number) => {
     const next = [...plan];
     const [item] = next.splice(i, 1);
@@ -66,7 +68,7 @@ function LessonContent({ id, reference }: { id: number; reference: TennisReferen
         <div className="grid grid-cols-[9.5rem_1fr] gap-2">
           <label className="space-y-1 text-xs">
             <span className="text-muted-foreground">{t("date")}</span>
-            <Input type="date" value={lesson.date} onChange={(e) => e.target.value && void updateTennisLesson(id, { date: e.target.value })} />
+            <Input type="date" value={lesson.date} onChange={(e) => e.target.value && void updateGroupLesson(id, { date: e.target.value })} />
           </label>
           <label className="space-y-1 text-xs">
             <span className="text-muted-foreground">{t("theme")}</span>
@@ -76,7 +78,7 @@ function LessonContent({ id, reference }: { id: number; reference: TennisReferen
               maxLength={120}
               onChange={(e) => setThemeDraft(e.target.value)}
               onBlur={() => {
-                if (themeDraft !== null) void updateTennisLesson(id, { theme: themeDraft.trim() || null });
+                if (themeDraft !== null) void updateGroupLesson(id, { theme: themeDraft.trim() || null });
                 setThemeDraft(null);
               }}
             />
@@ -103,7 +105,7 @@ function LessonContent({ id, reference }: { id: number; reference: TennisReferen
                 <Pencil className="mr-1 size-4" aria-hidden="true" />
                 {t("editGiven")}
               </Button>
-              <Button size="sm" variant="ghost" onClick={() => void updateTennisLesson(id, { givenAt: null })}>
+              <Button size="sm" variant="ghost" onClick={() => void updateGroupLesson(id, { givenAt: null })}>
                 <RotateCcw className="mr-1 size-4" aria-hidden="true" />
                 {t("backToPlanned")}
               </Button>
@@ -125,7 +127,7 @@ function LessonContent({ id, reference }: { id: number; reference: TennisReferen
                 <span className="w-5 shrink-0 text-xs text-muted-foreground tabular-nums">{i + 1}</span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-medium">{p.name}</span>
-                  <span className="block text-xs text-muted-foreground">{refLabel(reference.themes, p.category, locale)}</span>
+                  <span className="block text-xs text-muted-foreground">{refLabel(sport?.themes, p.category, locale)}</span>
                 </span>
                 <label className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Input
@@ -155,7 +157,7 @@ function LessonContent({ id, reference }: { id: number; reference: TennisReferen
             ))}
           </ol>
           <div className="grid gap-2 sm:grid-cols-2">
-            <Button variant="outline" onClick={() => setPicking(true)} disabled={!drills}>
+            <Button variant="outline" onClick={() => setPicking(true)} disabled={!sport}>
               <Plus className="mr-1 size-4" aria-hidden="true" />
               {t("addDrill")}
             </Button>
@@ -191,8 +193,8 @@ function LessonContent({ id, reference }: { id: number; reference: TennisReferen
                 size="sm"
                 variant="destructive"
                 onClick={async () => {
-                  await deleteTennisLesson(id);
-                  router.push(tennisGroupHref(group.id!));
+                  await deleteGroupLesson(id);
+                  router.push(lessonGroupHref(group.id!));
                 }}
               >
                 {t("deleteLesson")}
@@ -208,21 +210,23 @@ function LessonContent({ id, reference }: { id: number; reference: TennisReferen
         </div>
       </div>
 
-      <DrillPicker
-        open={picking}
-        drills={drills ?? []}
-        reference={reference}
-        ageBand={group.ageBand}
-        onClose={() => setPicking(false)}
-        onPick={(d) => {
-          setPlan([...plan, planItem(d, locale)]);
-          setPicking(false);
-        }}
-      />
-      <GivenDialog lesson={giving} onClose={() => setGiving(null)} />
+      {sport && (
+        <LessonExercisePicker
+          open={picking}
+          exercises={exercises}
+          sport={sport}
+          ageBand={group.ageBand}
+          onClose={() => setPicking(false)}
+          onPick={(ex) => {
+            setPlan([...plan, planItem(ex, locale)]);
+            setPicking(false);
+          }}
+        />
+      )}
+      <GivenDialog lesson={giving} group={group} sport={sport} onClose={() => setGiving(null)} />
       {running && (
         <IntervalPlayer
-          session={{ steps: plan.map((p) => ({ type: "work" as const, exercise: { name: p.name, cue: refLabel(reference.themes, p.category, locale) }, seconds: p.minutes * 60 })) }}
+          session={{ steps: plan.map((p) => ({ type: "work" as const, exercise: { name: p.name, cue: refLabel(sport?.themes, p.category, locale) }, seconds: p.minutes * 60 })) }}
           getReadySec={GET_READY_SEC}
           labels={{ work: t("playerWork"), rest: t("playerNext"), counter: (n, all) => t("counter", { n, total: all }) }}
           onEnd={() => {
@@ -238,12 +242,12 @@ function LessonContent({ id, reference }: { id: number; reference: TennisReferen
 
 function ById() {
   const id = Number(useSearchParams().get("id"));
-  return id > 0 ? <TennisReferenceGate>{(reference) => <LessonContent key={id} id={id} reference={reference} />}</TennisReferenceGate> : null;
+  return id > 0 ? <LessonsReferenceGate>{(reference) => <LessonContent key={id} id={id} reference={reference} />}</LessonsReferenceGate> : null;
 }
 
-export default function TennisLessonPage() {
+export default function GroupLessonPage() {
   return (
-    <RequireFeature feature="tennis" namespace="tennis">
+    <RequireFeature feature="group_lessons" namespace="lessons">
       <Suspense>
         <ById />
       </Suspense>
